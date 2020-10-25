@@ -37,7 +37,6 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE msgpackc-cxx)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 ntc_target(${PROJECT_NAME}
