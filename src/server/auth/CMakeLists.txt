@@ -21,6 +21,11 @@ find_package(
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# cyrus SASL
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(cyrus-sasl REQUIRED IMPORTED_TARGET libsasl2)
+
 set(HEADERS)
 
 set(SOURCES
@@ -38,5 +43,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::cyrus-sasl)
 
 ntc_target(${PROJECT_NAME})
