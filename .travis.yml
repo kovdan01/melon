@@ -1,0 +1,17 @@
+dist: focal
+language: cpp
+
+before_script:
+- sudo add-apt-repository universe -y
+- sudo apt-get update -qq
+- sudo apt-get install g++-9 gcc-9 build-essential cmake -y
+- sudo apt-get install libboost-all-dev -y
+- sudo apt-get install libsasl2-dev -y
+- sudo apt-get install libmsgpackc2 libmsgpack-dev -y
+- sudo apt-get install qt5-default qttools5-dev -y
+
+script:
+- mkdir build
+- cd build
+- cmake ..
+- cmake --build . --target all
