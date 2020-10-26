@@ -15,8 +15,8 @@ build_script:
   cmake -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. &&
   echo -e \"\n> cmake --build . --target all ..\n\" &&
   cmake --build . --target all &&
-  echo -e \"\n> ctest\n\" &&
+  (echo -e \"\n> ctest\n\" &&
   ctest;
   echo -e \"\n> python run-clang-tidy.py -p=. -quiet\n\" &&
-  python /usr/share/clang/run-clang-tidy.py -p=. -quiet &&
+  python /usr/share/clang/run-clang-tidy.py -p=. -quiet) &&
   echo -e \"\nSuccess!!!\n\""
