@@ -16,7 +16,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() = default;
+    ~MainWindow() override = default;
 
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
