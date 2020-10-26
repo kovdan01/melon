@@ -1,0 +1,97 @@
+Checks: >
+  -*,boost-*,bugprone-*,cert-*,
+  clang-analyzer-core.CallAndMessage,
+  clang-analyzer-core.DivideZero,
+  clang-analyzer-core.NullDereference,
+  clang-analyzer-core.StackAddressEscape,
+  clang-analyzer-core.UndefinedBinaryOperatorResult,
+  clang-analyzer-core.VLASize,
+  clang-analyzer-cplusplus.*,
+  clang-analyzer-deadcode.DeadStores,
+  clang-analyzer-optin.cplusplus.VirtualCall,
+  clang-analyzer-optin.performance.Padding,
+  clang-analyzer-osx.NumberObjectConversion,
+  clang-analyzer-osx.cocoa.RunLoopAutoreleaseLeak,
+  clang-analyzer-security.*,
+  clang-analyzer-unix.Malloc,
+  clang-analyzer-unix.MallocSizeof,
+  clang-analyzer-unix.MismatchedDeallocator,
+  clang-analyzer-unix.cstring.NullArg,
+  cppcoreguidelines-avoid-magic-numbers,
+  cppcoreguidelines-c-copy-assignment-signature,
+  cppcoreguidelines-macro-usage
+  cppcoreguidelines-interfaces-global-init,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-slicing,
+  google-default-arguments,
+  google-readability-namespace-comments,
+  google-runtime-int,
+  hicpp-noexcept-move,
+  llvm-*,misc-*,modernize-*,performance-*,
+  -llvm-header-guard,-modernize-use-trailing-return-type,
+  readability-avoid-const-params-in-decls,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-deleted-default,
+  readability-else-after-return,
+  readability-inconsistent-declaration-parameter-name,
+  readability-misleading-indentation,
+  readability-misplaced-array-index,
+  readability-non-const-parameter,
+  readability-redundant-*,
+  readability-simplify-*,
+  readability-static-*,
+  readability-string-compare,
+  readability-uniqueptr-delete-release,
+  readability-rary-objects,
+  readability-identifier-*
+AnalyzeTemporaryDtors: true
+HeaderFilterRegex: '(?!ui_).*'
+CheckOptions:
+- key:   cppcoreguidelines-no-malloc.Allocations
+  value: '::malloc;::calloc;::posix_memalign;::_aligned_malloc;::std::aligned_alloc'
+- key:   misc-assert-side-effect.AssertMacros
+  value: 'assert,Q_ASSERT'
+- key:   modernize-use-auto.RemoveStars
+  value: '1'
+- key:   modernize-use-default-member-init.UseAssignment
+  value: '1'
+- key:   modernize-use-emplace.ContainersWithPushBack
+  value: '::std::vector;::std::list;::std::deque'
+- key:   modernize-use-emplace.SmartPointers
+  value: '::std::shared_ptr;::std::unique_ptr;::std::weak_ptr'
+- key:   modernize-use-nullptr.NullMacros
+  value: 'NULL;Q_NULLPTR'
+- key:   performance-faster-string-find.StringLikeClasses
+  value: 'std::basic_string;std::basic_string_view'
+- key:   readability-simplify-boolean-expr.ChainedConditionalAssignment
+  value: '1'
+- key:   readability-simplify-boolean-expr.ChainedConditionalReturn
+  value: '1'
+- key:   alalareadability-identifier-naming.NamespaceCase
+  value: lower_case
+- key: readability-identifier-naming.ClassCase
+  value: CamelCase
+- key: readability-identifier-naming.PrivateMemberPrefix
+  value: m_
+- key: readability-identifier-naming.StructCase
+  value: CamelCase
+- key: readability-identifier-naming.EnumCase
+  value: CamelCase
+- key: readability-identifier-naming.EnumConstantCase
+  value: UPPER_CASE
+- key: readability-identifier-naming.GlobalConstantCase
+  value: UPPER_CASE
+- key: readability-identifier-naming.GlobalVariablePrefix
+  value: g_
+- key: readability-identifier-naming.FunctionCase
+  value: lower_case
+- key: readability-identifier-naming.VariableCase
+  value: lower_case
+- key: readability-identifier-naming.ParameterCase
+  value: lower_case
+# Comment due to false-positive warnings
+# - key: readability-identifier-naming.TemplateParameterCase
+#   value: CamelCase
