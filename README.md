@@ -2,6 +2,8 @@
 
 A federated messenger.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/9xw4o149e9atbn5y/branch/develop?svg=true)](https://ci.appveyor.com/project/kovdan01/melon/branch/develop)
+
 ## How to build
 
 1. Install cmake 3.16 or newer and a compiler with C++20 support.
