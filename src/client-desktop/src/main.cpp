@@ -6,8 +6,8 @@ namespace mc = melon::client_desktop;
 
 int main(int argc, char* argv[])
 {
-    QApplication a(argc, argv);
-    mc::MainWindow w;
-    w.show();
-    return a.exec();
+    QApplication application(argc, argv);
+    mc::MainWindow window;
+    window.show();
+    return QApplication::exec();
 }
