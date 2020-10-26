@@ -1,0 +1,22 @@
+version: 1.0.{build}
+image: Ubuntu2004
+
+before_build:
+- docker pull kovdan01/melon-archlinux
+
+build_script:
+- docker run
+  -v `pwd`:/melon
+  kovdan01/melon-archlinux
+  /bin/sh -c
+  "echo -e \"> cd melon && mkdir build && cd build\" &&
+  cd melon && mkdir build && cd build &&
+  echo -e \"\n> cmake -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..\n\" &&
+  cmake -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. &&
+  echo -e \"\n> cmake --build . --target all ..\n\" &&
+  cmake --build . --target all &&
+  echo -e \"\n> ctest\n\" &&
+  ctest;
+  echo -e \"\n> python run-clang-tidy.py -p=. -quiet\n\" &&
+  python /usr/share/clang/run-clang-tidy.py -p=. -quiet &&
+  echo -e \"\nSuccess!!!\n\""
