@@ -54,12 +54,21 @@ set(TS_FILES
     translations/en_US.ts
 )
 
-add_executable(${PROJECT_NAME}
-    ${HEADERS}
-    ${SOURCES}
-    ${UI_FILES}
-    ${TS_FILES}
-)
+if(WIN32)
+    add_executable(${PROJECT_NAME} WIN32
+        ${HEADERS}
+        ${SOURCES}
+        ${UI_FILES}
+        ${TS_FILES}
+    )
+else()
+    add_executable(${PROJECT_NAME}
+        ${HEADERS}
+        ${SOURCES}
+        ${UI_FILES}
+        ${TS_FILES}
+    )
+endif()
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
