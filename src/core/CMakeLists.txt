@@ -15,7 +15,7 @@ find_package(
 )
 
 # message pack
-find_package(msgpack REQUIRED)
+# find_package(msgpack REQUIRED)
 
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
