@@ -2,7 +2,7 @@
 
 A federated messenger.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9xw4o149e9atbn5y/branch/develop?svg=true)](https://ci.appveyor.com/project/kovdan01/melon/branch/develop)
+![Build all](https://github.com/kovdan01/melon/workflows/Build%20all/badge.svg)
 
 ## How to build
 
