@@ -45,7 +45,7 @@ jobs:
         with open(os.environ['GITHUB_ENV'], 'a') as env_file:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
-    
+
     - name: Install required python modules
       run: pip install requests
 
@@ -53,28 +53,28 @@ jobs:
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
-        # Comment because gcc and cmake are already installed 
-        # pacman -S --noconfirm mingw-w64-x86_64-gcc 
+        # Comment because gcc and cmake are already installed
+        # pacman -S --noconfirm mingw-w64-x86_64-gcc
         # pacman -S --noconfirm mingw-w64-x86_64-cmake
         pacman -S --noconfirm mingw-w64-x86_64-ninja
-        
+
     - name: Install build tools (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       shell: sh {0}
       run: |
-        # Comment because cmake is already installed 
+        # Comment because cmake is already installed
         # apt-get install cmake -y
         sudo apt-get install gcc-9 g++-9 -y
         sudo apt-get install ninja-build -y
-        
+
     - name: Install build tools (MacOS)
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       shell: sh {0}
       run: |
-        # Comment because cmake is already installed 
+        # Comment because cmake is already installed
         # brew install cmake
         brew install ninja
-        
+
     - name: Boost cache
       uses: actions/cache@v2
       id: cache_boost
@@ -137,15 +137,15 @@ jobs:
           execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}".format(toolset, boost_install_dir))
           execute_command("./b2")
           execute_command("./b2 install")
-      
+
         os.chdir(repo)
-    
+
     - name: Cyrus SASL (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
-    
+
     - name: Cyrus SASL cache (Ubuntu & MacOS)
       uses: actions/cache@v2
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' || matrix.config.name == 'MacOS Latest Clang' }}
@@ -153,7 +153,7 @@ jobs:
       with:
         path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
         key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
-    
+
     - name: Cyrus SASL (Ubuntu & MacOS)
       if: ${{ (matrix.config.name == 'Ubuntu Latest GCC' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
       id: cyrus_sasl_unix
@@ -174,7 +174,7 @@ jobs:
         os.chdir(root)
 
         sasl_version = os.environ['CYRUS_SASL_VERSION']
-        
+
         sasl_source_dir  = os.path.normpath(os.path.join(root, "cyrus-sasl-{}".format(sasl_version)))
         sasl_install_dir = os.path.normpath(os.path.join(root, "${{ env.CYRUS_SASL_INSTALL_PATH }}"))
         os.mkdir(sasl_install_dir)
@@ -191,25 +191,25 @@ jobs:
         execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
         os.chdir(repo)
-    
+
     - name: Qt5 (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
-        
+
     - name: Qt5 (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       shell: sh {0}
       run: |
         sudo apt-get install qt5-default qttools5-dev -y
-        
+
     - name: Qt5 (MacOS)
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       shell: sh {0}
       run: |
         brew install qt5
-    
+
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
@@ -230,7 +230,7 @@ jobs:
         -D CMAKE_NM=/mingw64/bin/nm.exe \
         -D CMAKE_PREFIX_PATH=${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-        
+
     - name: Configure (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       env:
@@ -244,7 +244,7 @@ jobs:
         -G Ninja \
         -D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-        
+
     - name: Configure (MacOS)
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       env:
@@ -295,7 +295,7 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\libbrotlicommon.dll"        install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libiconv-2.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\zlib1.dll"                  install\\bin
-    
+
     - name: Win Deploy Qt
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
@@ -307,15 +307,15 @@ jobs:
       with:
         path: ./install
         name: ${{ matrix.config.artifact }}
-        
+
     - name: Prepare to run static analysis (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       run: mkdir reports
-        
+
     - name: Install clang-tidy (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       run: sudo apt-get install clang-tidy -y
-        
+
     - name: Run clang-tidy (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       run: run-clang-tidy -p=build 2>&1 | tee reports/clang-tidy-report.log
@@ -328,7 +328,7 @@ jobs:
         sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.viva64.com/etc/viva64.list
         sudo apt-get update
         sudo apt-get install pvs-studio
-      
+
     - name: Run PVS-Studio (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
       env:
@@ -338,11 +338,7 @@ jobs:
       run: |
         pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
         pvs-studio-analyzer analyze -f build/compile_commands.json
-        plog-converter -t fullhtml -o reports/pvs-report PVS-Studio.log
-        
-    - name: Fail build (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      run: g++
+        plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
     - name: Upload static analysis results (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
@@ -350,7 +346,15 @@ jobs:
       with:
         path: ./reports
         name: static-analyzer-reports
-    
+
+    - name: Fail if clang-tidy found warnings
+      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      run: cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
+
+    - name: Fail if PVS-Studio found warnings
+      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      run: plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+
   #release:
     #if: contains(github.ref, 'tags/v')
     #runs-on: ubuntu-latest
