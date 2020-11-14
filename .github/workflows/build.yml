@@ -318,7 +318,7 @@ jobs:
 
     - name: Run clang-tidy (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      run: run-clang-tidy -p=build 2>&1 | tee reports/clang-tidy-report.log
+      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
 
     - name: Install PVS-Studio (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
@@ -337,7 +337,7 @@ jobs:
       shell: sh {0}
       run: |
         pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        pvs-studio-analyzer analyze -f build/compile_commands.json
+        pvs-studio-analyzer analyze -j2 -f build/compile_commands.json
         plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
     - name: Upload static analysis results (Ubuntu)
@@ -347,13 +347,13 @@ jobs:
         path: ./reports
         name: static-analyzer-reports
 
-    - name: Fail if clang-tidy found warnings
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      run: cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
+    #- name: Fail if clang-tidy found warnings
+      #if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      #run: cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
 
-    - name: Fail if PVS-Studio found warnings
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      run: plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+    #- name: Fail if PVS-Studio found warnings
+      #if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      #run: plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
   #release:
     #if: contains(github.ref, 'tags/v')
