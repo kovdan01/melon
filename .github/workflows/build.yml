@@ -66,6 +66,7 @@ jobs:
       run: |
         # Comment because cmake is already installed
         # apt-get install cmake -y
+        sudo apt-get install gcc-10 g++-10 -y
         sudo apt-get install clang -y
         sudo apt-get install ninja-build -y
 
