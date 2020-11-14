@@ -347,13 +347,15 @@ jobs:
         path: ./reports
         name: static-analyzer-reports
 
-    #- name: Fail if clang-tidy found warnings
-      #if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      #run: cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
+    - name: Fail if clang-tidy found warnings
+      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      shell: sh {0}
+      run: cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
 
-    #- name: Fail if PVS-Studio found warnings
-      #if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
-      #run: plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+    - name: Fail if PVS-Studio found warnings
+      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      shell: sh {0}
+      run: plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
   #release:
     #if: contains(github.ref, 'tags/v')
