@@ -211,9 +211,6 @@ jobs:
     - name: Qt5 (Ubuntu & MacOS)
       if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
       id: qt_unix
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
       shell: python {0}
       run: |
         import os
