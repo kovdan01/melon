@@ -242,9 +242,11 @@ jobs:
 
         os.chdir(qt_source_dir)
 
-        execute_command("cmake -GNinja -DCMAKE_INSTALL_PREFIX={} .".format(qt_install_dir))
-        execute_command("cmake --build . --target all")
-        execute_command("cmake --build . --target install")
+        execute_command("chmod +x ./configure")
+        execute_command("./configure --prefix={}".format(qt_install_dir))
+        execute_command("make")
+        execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
+
         os.chdir(repo)
 
     #- name: Qt5 (Ubuntu)
