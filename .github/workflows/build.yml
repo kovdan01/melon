@@ -237,7 +237,7 @@ jobs:
 
         qt_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qtbase-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
         open("qt.tar.xz", "wb").write(requests.get(qt_url, allow_redirects=True).content)
-        execute_command("7z x qt.tar.xz -so | 7z x -si -ttar")
+        execute_command("tar -xf qt.tar.xz")
 
         os.chdir(qt_source_dir)
 
