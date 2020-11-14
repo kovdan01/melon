@@ -13,6 +13,8 @@ jobs:
       BOOST_INSTALL_PATH: boost-install
       CYRUS_SASL_VERSION: 2.1.27
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
+      QT_VERSION: 5.15.1
+      QT_INSTALL_PATH: qt-install
     strategy:
       fail-fast: true
       matrix:
@@ -198,17 +200,64 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
 
-    - name: Qt5 (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      shell: sh {0}
-      run: |
-        sudo apt-get install qt5-default qttools5-dev -y
+    - name: Qt5 cache (Ubuntu & MacOS)
+      uses: actions/cache@v2
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      id: cache_qt_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/qt-install
+        key: ${{ runner.os }}-qt-${{ env.QT_VERSION }}
 
-    - name: Qt5 (MacOS)
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      shell: sh {0}
+    - name: Qt5 (Ubuntu & MacOS)
+      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
+      id: qt_unix
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
       run: |
-        brew install qt5
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        qt_version = os.environ['QT_VERSION']
+
+        qt_source_dir  = os.path.normpath(os.path.join(root, "qtbase-{}".format(qt_version)))
+        qt_install_dir = os.path.normpath(os.path.join(root, "${{ env.QT_INSTALL_PATH }}"))
+        os.mkdir(qt_install_dir)
+
+        qt_url = "https://github.com/qt/qtbase/archive/v{}.zip".format(qt_version)
+        open("qt.zip", "wb").write(requests.get(qt_url, allow_redirects=True).content)
+        execute_command("7z x qt.zip")
+
+        os.chdir(qt_source_dir)
+
+        execute_command("cmake -GNinja -DCMAKE_INSTALL_PREFIX={} .".format(qt_install_dir))
+        execute_command("cmake --build . --target all")
+        execute_command("cmake --build . --target install")
+        os.chdir(repo)
+
+    #- name: Qt5 (Ubuntu)
+      #if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      #shell: sh {0}
+      #run: |
+        #sudo apt-get install qt5-default qttools5-dev -y
+
+    #- name: Qt5 (MacOS)
+      #if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      #shell: sh {0}
+      #run: |
+        #brew install qt5
 
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
@@ -231,8 +280,8 @@ jobs:
         -D CMAKE_PREFIX_PATH=${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Configure (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Configure (Ubuntu & MacOS)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -242,22 +291,22 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -G Ninja \
-        -D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}" \
+        -D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Configure (MacOS)
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      run: |
-        cmake \
-        -S . \
-        -B build \
-        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -G Ninja \
-        -D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};/usr/local/opt/qt" \
-        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+    #- name: Configure (MacOS)
+      #if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      #env:
+        #CC: ${{ matrix.config.cc }}
+        #CXX: ${{ matrix.config.cxx }}
+      #run: |
+        #cmake \
+        #-S . \
+        #-B build \
+        #-D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+        #-G Ninja \
+        #-D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};/usr/local/opt/qt" \
+        #-D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
       run: cmake --build build --target all
