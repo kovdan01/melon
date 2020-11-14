@@ -243,7 +243,7 @@ jobs:
         os.chdir(qt_source_dir)
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure --prefix={}".format(qt_install_dir))
+        execute_command("./configure -prefix={}".format(qt_install_dir))
         execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
 
