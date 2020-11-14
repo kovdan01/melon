@@ -207,7 +207,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/qt-install
-        key: ${{ runner.os }}-qt-qtbase-${{ env.QT_VERSION }}
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
 
     - name: Qt5 (Ubuntu & MacOS)
       if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -228,21 +228,33 @@ jobs:
 
         os.chdir(root)
 
-        qt_short_version = os.environ['QT_SHORT_VERSION']
-        qt_version = os.environ['QT_VERSION']
-
-        qt_source_dir  = os.path.normpath(os.path.join(root, "qtbase-everywhere-src-{}".format(qt_version)))
         qt_install_dir = os.path.normpath(os.path.join(root, "${{ env.QT_INSTALL_PATH }}"))
         os.mkdir(qt_install_dir)
 
-        qt_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qtbase-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
-        open("qt.tar.xz", "wb").write(requests.get(qt_url, allow_redirects=True).content)
-        execute_command("tar -xf qt.tar.xz")
+        qt_short_version = os.environ['QT_SHORT_VERSION']
+        qt_version = os.environ['QT_VERSION']
 
-        os.chdir(qt_source_dir)
+        qtbase_source_dir  = os.path.normpath(os.path.join(root, "qtbase-everywhere-src-{}".format(qt_version)))
+        qtbase_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qtbase-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
+        open("qtbase.tar.xz", "wb").write(requests.get(qtbase_url, allow_redirects=True).content)
+        execute_command("tar -xf qtbase.tar.xz")
+
+        os.chdir(qtbase_source_dir)
 
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
+        execute_command("make -j2")
+        execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
+
+        qttools_source_dir  = os.path.normpath(os.path.join(root, "qttools-everywhere-src-{}".format(qt_version)))
+        qttools_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qttools-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
+        open("qttools.tar.xz", "wb").write(requests.get(qttools_url, allow_redirects=True).content)
+        execute_command("tar -xf qttools.tar.xz")
+
+        os.chdir(qttools_source_dir)
+
+        execute_command("chmod +x ./configure")
+        execute_command("{}/bin/qmake qttools.pro".format(qt_install_dir))
         execute_command("make -j2")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
 
