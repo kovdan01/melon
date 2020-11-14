@@ -23,9 +23,9 @@ jobs:
             build_type: "Release", cc: "gcc", cxx: "g++",
           }
         - {
-            name: "Ubuntu Latest GCC", artifact: "Linux",
+            name: "Ubuntu Latest Clang", artifact: "Linux",
             os: ubuntu-20.04,
-            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_type: "Release", cc: "clang", cxx: "clang++",
           }
         - {
             name: "MacOS Latest Clang", artifact: "MacOS",
@@ -59,12 +59,12 @@ jobs:
         pacman -S --noconfirm mingw-w64-x86_64-ninja
 
     - name: Install build tools (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         # Comment because cmake is already installed
         # apt-get install cmake -y
-        sudo apt-get install gcc-9 g++-9 -y
+        sudo apt-get install clang -y
         sudo apt-get install ninja-build -y
 
     - name: Install build tools (MacOS)
@@ -117,7 +117,7 @@ jobs:
         os.chdir(boost_source_dir)
 
         if "${{ matrix.config.name }}" == "Windows Latest MinGW64" or \
-           "${{ matrix.config.name }}" == "Ubuntu Latest GCC":
+           "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
           toolset = "gcc"
         elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
           toolset = "clang"
@@ -148,14 +148,14 @@ jobs:
 
     - name: Cyrus SASL cache (Ubuntu & MacOS)
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' || matrix.config.name == 'MacOS Latest Clang' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
         key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
 
     - name: Cyrus SASL (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest GCC' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
+      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
       id: cyrus_sasl_unix
       shell: python {0}
       run: |
@@ -199,7 +199,7 @@ jobs:
         pacman -S --noconfirm mingw-w64-x86_64-qt5
 
     - name: Qt5 (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         sudo apt-get install qt5-default qttools5-dev -y
@@ -232,7 +232,7 @@ jobs:
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Configure (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -309,19 +309,19 @@ jobs:
         name: ${{ matrix.config.artifact }}
 
     - name: Prepare to run static analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       run: mkdir reports
 
     - name: Install clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       run: sudo apt-get install clang-tidy -y
 
     - name: Run clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
 
     - name: Install PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         wget -q -O - https://files.viva64.com/etc/pubkey.txt | sudo apt-key add -
@@ -330,7 +330,7 @@ jobs:
         sudo apt-get install pvs-studio
 
     - name: Run PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       env:
         PVS_NAME: ${{ secrets.PVS_NAME }}
         PVS_KEY: ${{ secrets.PVS_KEY }}
@@ -341,20 +341,20 @@ jobs:
         plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
     - name: Upload static analysis results (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./reports
         name: static-analyzer-reports
 
     - name: Fail if clang-tidy found warnings
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings
-      if: ${{ matrix.config.name == 'Ubuntu Latest GCC' }}
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
@@ -398,7 +398,7 @@ jobs:
             #os: ubuntu-latest
           #}
         #- {
-            #name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
+            #name: "Ubuntu Latest Clang", artifact: "Linux.tar.xz",
             #os: ubuntu-latest
           #}
         #- {
