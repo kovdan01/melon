@@ -246,6 +246,8 @@ jobs:
         execute_command("make -j2")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
 
+        os.chdir(root)
+
         qttools_source_dir  = os.path.normpath(os.path.join(root, "qttools-everywhere-src-{}".format(qt_version)))
         qttools_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qttools-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
         open("qttools.tar.xz", "wb").write(requests.get(qttools_url, allow_redirects=True).content)
