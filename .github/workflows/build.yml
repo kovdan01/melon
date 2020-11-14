@@ -191,7 +191,7 @@ jobs:
         execute_command("chmod +x ./configure")
         execute_command("./configure --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
-        execute_command("make")
+        execute_command("make -j2")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
         os.chdir(repo)
 
@@ -242,8 +242,8 @@ jobs:
         os.chdir(qt_source_dir)
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} -nomake examples -nomake tests".format(qt_install_dir))
-        execute_command("make")
+        execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
+        execute_command("make -j2")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
 
         os.chdir(repo)
