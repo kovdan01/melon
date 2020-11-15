@@ -119,10 +119,10 @@ jobs:
 
         os.chdir(boost_source_dir)
 
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64" or \
-           "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
           toolset = "gcc"
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
+        elif "${{ matrix.config.name }}" == "MacOS Latest Clang" or
+             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
           toolset = "clang"
         else:
           raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
@@ -159,7 +159,9 @@ jobs:
 
     - name: Cyrus SASL (Ubuntu & MacOS)
       if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
-      id: cyrus_sasl_unix
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       shell: python {0}
       run: |
         import os
@@ -211,7 +213,9 @@ jobs:
 
     - name: Qt5 (Ubuntu & MacOS)
       if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
-      id: qt_unix
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       shell: python {0}
       run: |
         import os
@@ -244,7 +248,7 @@ jobs:
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
         execute_command("make -j2")
-        execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
+        execute_command("make install")
 
         os.chdir(root)
 
@@ -258,21 +262,9 @@ jobs:
         execute_command("chmod +x ./configure")
         execute_command("{}/bin/qmake qttools.pro".format(qt_install_dir))
         execute_command("make -j2")
-        execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
+        execute_command("make install")
 
         os.chdir(repo)
-
-    #- name: Qt5 (Ubuntu)
-      #if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      #shell: sh {0}
-      #run: |
-        #sudo apt-get install qt5-default qttools5-dev -y
-
-    #- name: Qt5 (MacOS)
-      #if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      #shell: sh {0}
-      #run: |
-        #brew install qt5
 
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
@@ -292,7 +284,8 @@ jobs:
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
-        -D CMAKE_PREFIX_PATH=${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
+        -D CMAKE_PREFIX_PATH= \
+          ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Configure (Ubuntu & MacOS)
@@ -306,22 +299,11 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -G Ninja \
-        -D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        -D CMAKE_PREFIX_PATH= \
+          "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}; \
+           ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}; \
+           ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-    #- name: Configure (MacOS)
-      #if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      #env:
-        #CC: ${{ matrix.config.cc }}
-        #CXX: ${{ matrix.config.cxx }}
-      #run: |
-        #cmake \
-        #-S . \
-        #-B build \
-        #-D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        #-G Ninja \
-        #-D CMAKE_PREFIX_PATH="${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};/usr/local/opt/qt" \
-        #-D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
       run: cmake --build build --target all
