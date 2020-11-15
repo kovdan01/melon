@@ -10,7 +10,7 @@ include(ntc-dev-build)
 
 # boost asio
 find_package(
-    Boost REQUIRED
+    Boost 1.74.0 REQUIRED
     COMPONENTS system
 )
 
