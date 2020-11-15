@@ -22,18 +22,10 @@ set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 # qt widgets, translations
-find_package(QT
-    NAMES Qt6 Qt5
+find_package(
+    Qt5 REQUIRED
     COMPONENTS Widgets LinguistTools
-    REQUIRED
 )
-
-find_package(Qt${QT_VERSION_MAJOR}
-    COMPONENTS Widgets LinguistTools)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
@@ -50,25 +42,11 @@ set(UI_FILES
     ui/main_window.ui
 )
 
-set(TS_FILES
-    translations/en_US.ts
+add_executable(${PROJECT_NAME}
+    ${HEADERS}
+    ${SOURCES}
+    ${UI_FILES}
 )
-
-if(WIN32)
-    add_executable(${PROJECT_NAME} WIN32
-        ${HEADERS}
-        ${SOURCES}
-        ${UI_FILES}
-        ${TS_FILES}
-    )
-else()
-    add_executable(${PROJECT_NAME}
-        ${HEADERS}
-        ${SOURCES}
-        ${UI_FILES}
-        ${TS_FILES}
-    )
-endif()
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
@@ -77,6 +55,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
-qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
-
-ntc_target(${PROJECT_NAME})
+ntc_target(${PROJECT_NAME}
+    TRANSLATIONS en_US
+)
