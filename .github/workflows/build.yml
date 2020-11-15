@@ -259,7 +259,6 @@ jobs:
 
         os.chdir(qttools_source_dir)
 
-        execute_command("chmod +x ./configure")
         execute_command("{}/bin/qmake qttools.pro".format(qt_install_dir))
         execute_command("make -j2")
         execute_command("make install")
