@@ -13,7 +13,7 @@ find_package(melon-core REQUIRED)
 
 # boost asio
 find_package(
-    Boost REQUIRED
+    Boost 1.74.0 REQUIRED
     COMPONENTS system
 )
 
