@@ -11,7 +11,8 @@ include_guard(GLOBAL)
 include(GNUInstallDirs)
 
 function(ntc_target TARGET_NAME)
-    cmake_parse_arguments(PARSE_ARGV 1 args "PRIVATE_CONFIG" "ALIAS_NAME;HEADER_PREFIX" "")
+    cmake_parse_arguments(PARSE_ARGV 1 args
+        "PRIVATE_CONFIG" "ALIAS_NAME;HEADER_PREFIX" "TRANSLATIONS")
     if(args_UNPARSED_ARGUMENTS OR args_KEYWORDS_MISSING_VALUES)
         message(SEND_ERROR "Invalid arguments to ntc_target")
     endif()
@@ -85,41 +86,71 @@ function(ntc_target TARGET_NAME)
         )
     endif()
 
-    if(NTC_DEV_BUILD)
-        # Activate flags found by ntc_standard_build, if any.
-        foreach(var COMPILE_OPTIONS LINK_OPTIONS)
-            set_property(TARGET ${TARGET_NAME} APPEND PROPERTY ${var} "${NTC_${var}}")
-        endforeach()
-
-        # Add Boost/Qt-specific definitions, if needed.
-        function(_ntc_auto_add_definitions)
-            foreach(target_var LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
-                get_target_property(libs ${TARGET_NAME} ${target_var})
-                if(target_var STREQUAL LINK_LIBRARIES)
-                    set(scope PRIVATE)
-                else()
-                    set(scope INTERFACE)
+    # Activate AUTO{MOC,UIC,RCC},WIN32_EXECUTABLE automatically if
+    # relevant deps are found, also add NTC_{BOOST,QT}_DEFINITIONS if
+    # set by ntc-dev-build.
+    function(_update_dep_type var dep)
+        if(NOT ${var})
+            set(${var} ${dep} PARENT_SCOPE)
+        elseif(NOT ${var} STREQUAL ${dep})
+            set(${var} PUBLIC PARENT_SCOPE)
+        endif()
+    endfunction()
+    foreach(target_var LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+        get_target_property(libs ${TARGET_NAME} ${target_var})
+        if(target_var STREQUAL LINK_LIBRARIES)
+            set(scope PRIVATE)
+        else()
+            set(scope INTERFACE)
+        endif()
+        foreach(lib IN LISTS libs)
+            if(lib MATCHES "^Boost::")
+                _update_dep_type(boost_dep ${scope})
+            elseif(lib MATCHES "^Qt5::")
+                _update_dep_type(qt5_dep ${scope})
+                if(lib STREQUAL "Qt5::Widgets")
+                    set(qt5_widgets ON)
                 endif()
-                math(EXPR end ${ARGC}-1)
-                foreach(i RANGE 0 ${end} 2)
-                    foreach(lib IN LISTS libs)
-                        if(lib MATCHES "^${ARGV${i}}::")
-                            math(EXPR j ${i}+1)
-                            separate_arguments(defs WINDOWS_COMMAND "${ARGV${j}}")
-                            target_compile_definitions(${TARGET_NAME} ${scope} ${defs})
-                            break()
-                        endif()
-                    endforeach()
-                endforeach()
-            endforeach()
-        endfunction()
-
-        # Extra quotes as otherwise they get separated into multiple args.
-        _ntc_auto_add_definitions(
-            Boost "\"${NTC_BOOST_DEFINITIONS}\""
-            Qt5 "\"${NTC_QT_DEFINITIONS}\""
-        )
+            endif()
+        endforeach()
+    endforeach()
+    get_target_property(sources ${TARGET_NAME} SOURCES)
+    foreach(source IN LISTS sources)
+        if(source MATCHES ".ui$")
+            set(qt5_ui ON)
+        elseif(source MATCHES ".qrc$")
+            set(qt5_qrc ON)
+        endif()
+    endforeach()
+    if(qt5_dep)
+        set_target_properties(${TARGET_NAME} PROPERTIES AUTOMOC ON)
+        if(qt5_ui)
+            set_target_properties(${TARGET_NAME} PROPERTIES AUTOUIC ON)
+        endif()
+        if(qt5_qrc)
+            set_target_properties(${TARGET_NAME} PROPERTIES AUTORCC ON)
+        endif()
+        if(qt5_widgets)
+            set_target_properties(${TARGET_NAME} PROPERTIES WIN32_EXECUTABLE ON)
+        endif()
     endif()
+    if(NTC_DEV_BUILD)
+        if(boost_dep)
+            target_compile_definitions(${TARGET_NAME} ${boost_dep} ${NTC_BOOST_DEFINITIONS})
+        endif()
+        if(qt5_dep)
+            target_compile_definitions(${TARGET_NAME} ${qt5_dep} ${NTC_QT_DEFINITIONS})
+        endif()
+    endif()
+
+    # Set <TARGET_NAME>_REL_DATADIR in outer scope to relative
+    # path from binary directory to data inside prefix.
+    string(MAKE_C_IDENTIFIER "${TARGET_NAME}" rel_datadir_name)
+    string(TOUPPER "${rel_datadir_name}" rel_datadir_name)
+    set(rel_datadir_name "${rel_datadir_name}_REL_DATADIR")
+    file(RELATIVE_PATH ${rel_datadir_name}
+         "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+         "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/${TARGET_NAME}")
 
     # Look for configuration file in source directory.
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in")
@@ -168,6 +199,35 @@ function(ntc_target TARGET_NAME)
                 UNITY_BUILD ON
             )
         endif()
+    endif()
+
+    if(args_TRANSLATIONS)
+        foreach(lang IN LISTS args_TRANSLATIONS)
+            list(APPEND ts_files "${CMAKE_CURRENT_SOURCE_DIR}/translations/${TARGET_NAME}_${lang}.ts")
+        endforeach()
+        target_sources(${TARGET_NAME} PRIVATE ${ts_files})
+        set_source_files_properties(${ts_files} PROPERTIES
+            OUTPUT_LOCATION translations
+        )
+        # qt5_create_translation mentions .ts file in
+        # add_custom_command(OUTPUT ...), which causes them to be deleted
+        # by clean target. No workaround currently, see QTBUG-31860,41736,76410.
+        # This also causes lupdate to be run on every build unconditionally.
+        # Instead just build .qm's from .ts files automatically and create
+        # a special target for lupdate to be run manually.
+        qt5_add_translation(qm_files ${ts_files})
+        target_sources(${TARGET_NAME} PRIVATE ${qm_files})
+        install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/translations"
+                DESTINATION "${CMAKE_INSTALL_DATADIR}/${TARGET_NAME}"
+        )
+        add_custom_target(${TARGET_NAME}-lupdate
+            COMMAND ${Qt5_LUPDATE_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} -ts ${ts_files}
+            VERBATIM
+        )
+        if(NOT TARGET lupdate)
+            add_custom_target(lupdate)
+        endif()
+        add_dependencies(lupdate ${TARGET_NAME}-lupdate)
     endif()
 
     # Export targets if there is a package file.
