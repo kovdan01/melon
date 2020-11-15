@@ -2,7 +2,7 @@
 
 A federated messenger.
 
-![Build all](https://github.com/kovdan01/melon/workflows/Build%20all/badge.svg)
+[![Build all](https://github.com/kovdan01/melon/workflows/Build%20all/badge.svg)](https://github.com/kovdan01/melon/actions?query=workflow%3A%22Build+all%22+branch%3Adevelop)
 
 ## How to build
 
