@@ -283,8 +283,8 @@ jobs:
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
-        -D CMAKE_PREFIX_PATH= \
-          ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
+        -D CMAKE_PREFIX_PATH=\
+        ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Configure (Ubuntu & MacOS)
@@ -298,10 +298,10 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -G Ninja \
-        -D CMAKE_PREFIX_PATH= \
-          "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}; \
-           ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}; \
-           ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        -D CMAKE_PREFIX_PATH=\
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
