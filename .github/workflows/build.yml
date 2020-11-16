@@ -352,14 +352,28 @@ jobs:
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       shell: sh {0}
       run: |
-        chmod 755 install/bin/melon-client-desktop.app/Contents/MacOS/melon-client-desktop
         $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
+
+    - name: Copy required dylibs (MacOS)
+      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      shell: sh {0}
+      run: |
+        cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
+        install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
 
     - name: Tar files (Ubuntu & MacOS)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
       run: tar -cvf install.tar ./install
 
-    - name: Upload binaries
+    - name: Upload binaries (Windows)
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./install
+        name: ${{ matrix.config.artifact }}
+
+    - name: Upload binaries (Ubuntu & MacOS)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install.tar
