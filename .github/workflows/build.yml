@@ -352,6 +352,7 @@ jobs:
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       shell: sh {0}
       run: |
+        chmod 755 install/bin/melon-client-desktop.app/Contents/MacOS/melon-client-desktop
         $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
 
     - name: Upload binaries
