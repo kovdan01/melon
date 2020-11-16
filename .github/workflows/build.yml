@@ -270,10 +270,10 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cmake \
+        -G Ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -G Ninja \
         -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
         -D CMAKE_VERBOSE_MAKEFILE=ON \
         -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
@@ -294,10 +294,11 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       run: |
         cmake \
+        -G Ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -G Ninja \
+        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
@@ -346,6 +347,12 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
+
+    - name: Mac Deploy Qt
+      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      shell: sh {0}
+      run: |
+        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/mac-client-desktop.app
 
     - name: Upload binaries
       uses: actions/upload-artifact@v2
