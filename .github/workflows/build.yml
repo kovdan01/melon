@@ -352,7 +352,7 @@ jobs:
       if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
       shell: sh {0}
       run: |
-        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/mac-client-desktop.app
+        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
 
     - name: Upload binaries
       uses: actions/upload-artifact@v2
