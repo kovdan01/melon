@@ -270,10 +270,10 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cmake \
+        -G Ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -G Ninja \
         -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
         -D CMAKE_VERBOSE_MAKEFILE=ON \
         -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
@@ -294,10 +294,11 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       run: |
         cmake \
+        -G Ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -G Ninja \
+        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
@@ -347,10 +348,35 @@ jobs:
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
-    - name: Upload binaries
+    - name: Mac Deploy Qt
+      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      shell: sh {0}
+      run: |
+        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
+
+    - name: Copy required dylibs (MacOS)
+      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      shell: sh {0}
+      run: |
+        cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
+        install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
+
+    - name: Tar files (Ubuntu & MacOS)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      run: tar -cvf install.tar ./install
+
+    - name: Upload binaries (Windows)
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install
+        name: ${{ matrix.config.artifact }}
+
+    - name: Upload binaries (Ubuntu & MacOS)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./install.tar
         name: ${{ matrix.config.artifact }}
 
     - name: Prepare to run static analysis (Ubuntu)
@@ -392,13 +418,13 @@ jobs:
         path: ./reports
         name: static-analyzer-reports
 
-    - name: Fail if clang-tidy found warnings
+    - name: Fail if clang-tidy found warnings (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
 
-    - name: Fail if PVS-Studio found warnings
+    - name: Fail if PVS-Studio found warnings (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
