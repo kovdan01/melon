@@ -765,11 +765,7 @@ jobs:
           C:/msys64/mingw64/lib/Qt5*.prl
           C:/msys64/mingw64/lib/qtmain.prl
           C:/msys64/mingw64/share/licenses/qt5/
-          C:/msys64/mingw64/share/qt5/mkspecs/
-          C:/msys64/mingw64/share/qt5/phrasebooks/
-          C:/msys64/mingw64/share/qt5/plugins/
-          C:/msys64/mingw64/share/qt5/qml/
-          C:/msys64/mingw64/share/qt5/translations/
+          C:/msys64/mingw64/share/qt5/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL (Windows)
@@ -903,6 +899,7 @@ jobs:
         ls /mingw64/bin/libstdc++-6.dll
         ls /mingw64/bin/libgcc_s_seh-1.dll
         ldd /mingw64/bin/uic.exe
+        uic -h
 
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
