@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 5  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 6  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -571,6 +571,83 @@ jobs:
           C:/msys2/mingw64/lib/pkgconfig/libtiff-4.pc
           C:/msys2/mingw64/share/licenses/libtiff/
 
+          C:/msys2/mingw64/bin/cwebp.exe
+          C:/msys2/mingw64/bin/dwebp.exe
+          C:/msys2/mingw64/bin/gif2webp.exe
+          C:/msys2/mingw64/bin/img2webp.exe
+          C:/msys2/mingw64/bin/libwebp-7.dll
+          C:/msys2/mingw64/bin/libwebpdecoder-3.dll
+          C:/msys2/mingw64/bin/libwebpdemux-2.dll
+          C:/msys2/mingw64/bin/libwebpmux-3.dll
+          C:/msys2/mingw64/bin/webpinfo.exe
+          C:/msys2/mingw64/bin/webpmux.exe
+          C:/msys2/mingw64/include/webp/
+          C:/msys2/mingw64/lib/libwebp*.a
+          C:/msys2/mingw64/lib/libwebp*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libwebp*.pc
+
+          C:/msys2/mingw64/bin/libxml2-2.dll
+          C:/msys2/mingw64/bin/xml2-config
+          C:/msys2/mingw64/bin/xmlcatalog.exe
+          C:/msys2/mingw64/bin/xmllint.exe
+          C:/msys2/mingw64/include/libxml2/
+          C:/msys2/mingw64/lib/cmake/libxml2/
+          C:/msys2/mingw64/lib/libxml2.a
+          C:/msys2/mingw64/lib/libxml2.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libxml-2.0.pc
+          C:/msys2/mingw64/lib/python3.8/site-packages/drv_libxml2.py
+          C:/msys2/mingw64/lib/python3.8/site-packages/libxml2.py
+          C:/msys2/mingw64/lib/python3.8/site-packages/libxml2mod.dll.a
+          C:/msys2/mingw64/lib/python3.8/site-packages/libxml2mod.pyd
+          C:/msys2/mingw64/lib/xml2Conf.sh
+          C:/msys2/mingw64/share/aclocal/libxml.m4
+          C:/msys2/mingw64/share/licenses/libxml2/
+
+          C:/msys2/mingw64/bin/libexslt-0.dll
+          C:/msys2/mingw64/bin/libxslt-1.dll
+          C:/msys2/mingw64/bin/xslt-config
+          C:/msys2/mingw64/bin/xsltproc.exe
+          C:/msys2/mingw64/include/libexslt/
+          C:/msys2/mingw64/include/libxslt/
+          C:/msys2/mingw64/lib/libexslt.a
+          C:/msys2/mingw64/lib/libexslt.dll.a
+          C:/msys2/mingw64/lib/libxslt-plugins/
+          C:/msys2/mingw64/lib/libxslt.a
+          C:/msys2/mingw64/lib/libxslt.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libexslt.pc
+          C:/msys2/mingw64/lib/pkgconfig/libxslt.pc
+          C:/msys2/mingw64/lib/xsltConf.sh
+          C:/msys2/mingw64/share/aclocal/libxslt.m4
+
+          C:/msys2/mingw64/bin/libminizip-1.dll
+          C:/msys2/mingw64/include/minizip/
+          C:/msys2/mingw64/lib/cmake/minizip-exports-release.cmake
+          C:/msys2/mingw64/lib/cmake/minizip-exports.cmake
+          C:/msys2/mingw64/lib/libminizip.a
+          C:/msys2/mingw64/lib/libminizip.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/minizip.pc
+
+          C:/msys2/mingw64/bin/altonegen.exe
+          C:/msys2/mingw64/bin/libopenal-1.dll
+          C:/msys2/mingw64/bin/makemhr.exe
+          C:/msys2/mingw64/bin/openal-info.exe
+          C:/msys2/mingw64/include/AL/
+          C:/msys2/mingw64/lib/cmake/OpenAL/
+          C:/msys2/mingw64/lib/libopenal.a
+          C:/msys2/mingw64/lib/libopenal.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/openal.pc
+          C:/msys2/mingw64/share/openal/
+
+          C:/msys2/mingw64/bin/libpcre*.dll
+          C:/msys2/mingw64/bin/pcre-config
+          C:/msys2/mingw64/bin/pcregrep.exe
+          C:/msys2/mingw64/bin/pcretest.exe
+          C:/msys2/mingw64/include/pcre*.h
+          C:/msys2/mingw64/lib/libpcre*.a
+          C:/msys2/mingw64/lib/libpcre*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libpcre*.pc
+          C:/msys2/mingw64/share/licenses/pcre/
+
           C:/msys2/mingw64/bin/libpcre2*.dll
           C:/msys2/mingw64/bin/pcre2-config
           C:/msys2/mingw64/bin/pcre2grep.exe
@@ -580,6 +657,17 @@ jobs:
           C:/msys2/mingw64/lib/libpcre2*.a
           C:/msys2/mingw64/lib/libpcre2*.dll.a
           C:/msys2/mingw64/lib/pkgconfig/libpcre2*.pc
+          
+          C:/msys2/mingw64/bin/qtbinpatcher.exe
+
+          C:/msys2/mingw64/include/vulkan/
+          C:/msys2/mingw64/share/licenses/vulkan-headers/
+          C:/msys2/mingw64/share/vulkan/
+
+          C:/msys2/mingw64/bin/libvulkan-1.dll
+          C:/msys2/mingw64/lib/libvulkan.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/vulkan.pc
+          C:/msys2/mingw64/share/licenses/vulkan-loader/
 
           C:/msys2/mingw64/bin/edit.dll
           C:/msys2/mingw64/bin/edit_test.exe
@@ -589,6 +677,28 @@ jobs:
           C:/msys2/mingw64/lib/libedit_static.a
           C:/msys2/mingw64/lib/pkgconfig/wineditline.pc
           C:/msys2/mingw64/share/licenses/wineditline/
+
+          C:/msys2/mingw64/bin/cxpm-noX.exe
+          C:/msys2/mingw64/bin/libXpm-noX4.dll
+          C:/msys2/mingw64/include/X11/simx.h
+          C:/msys2/mingw64/include/X11/xpm.h
+          C:/msys2/mingw64/lib/libXpm.a
+          C:/msys2/mingw64/lib/libXpm.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/xpm.pc
+
+          C:/msys2/mingw64/bin/libzzip*.dll
+          C:/msys2/mingw64/bin/unzip-mem.exe
+          C:/msys2/mingw64/bin/unzzip*.exe
+          C:/msys2/mingw64/bin/zz*.exe
+          C:/msys2/mingw64/include/SDL_rwops_zzip/
+          C:/msys2/mingw64/include/zzip-io.h
+          C:/msys2/mingw64/include/zzip.h
+          C:/msys2/mingw64/include/zzip/
+          C:/msys2/mingw64/lib/libzzip*.a
+          C:/msys2/mingw64/lib/libzzip*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/SDL_rwops_zzip.pc
+          C:/msys2/mingw64/lib/pkgconfig/zzip*.pc
+          C:/msys2/mingw64/share/aclocal/zziplib.m4
 
           C:/msys64/mingw64/bin/assistant.exe
           C:/msys64/mingw64/bin/balsam.exe
