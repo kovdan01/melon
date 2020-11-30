@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 2  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 3  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
