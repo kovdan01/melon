@@ -164,6 +164,60 @@ jobs:
           C:/msys2/mingw64/lib/pkgconfig/assimp.pc
           C:/msys2/mingw64/share/licenses/assimp/
 
+          C:/msys2/mingw64/bin/dbus*.exe
+          C:/msys2/mingw64/bin/libdbus-1-3.dll
+          C:/msys2/mingw64/etc/dbus-1/
+          C:/msys2/mingw64/include/dbus-1.0/
+          C:/msys2/mingw64/lib/cmake/DBus1/
+          C:/msys2/mingw64/lib/dbus-1.0/
+          C:/msys2/mingw64/lib/libdbus-1.a
+          C:/msys2/mingw64/lib/libdbus-1.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/dbus-1.pc
+          C:/msys2/mingw64/share/dbus-1/
+          C:/msys2/mingw64/share/xml/dbus-1/
+          C:/msys2/mingw64/var/lib/dbus/
+
+          C:/msys2/mingw64/bin/libdouble-conversion.dll
+          C:/msys2/mingw64/include/double-conversion/
+          C:/msys2/mingw64/lib/cmake/double-conversion/
+          C:/msys2/mingw64/lib/libdouble-conversion.a
+          C:/msys2/mingw64/lib/libdouble-conversion.dll.a
+          C:/msys2/mingw64/share/licenses/double-conversion/
+
+          C:/msys2/mingw64/bin/fc-*.exe
+          C:/msys2/mingw64/bin/libfontconfig-1.dll
+          C:/msys2/mingw64/etc/fonts/conf.d/
+          C:/msys2/mingw64/etc/fonts/fonts.conf
+          C:/msys2/mingw64/include/fontconfig/
+          C:/msys2/mingw64/lib/libfontconfig.a
+          C:/msys2/mingw64/lib/libfontconfig.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/fontconfig.pc
+          C:/msys2/mingw64/share/fontconfig/
+          C:/msys2/mingw64/share/gettext/its/fontconfig.its
+          C:/msys2/mingw64/share/gettext/its/fontconfig.loc
+          C:/msys2/mingw64/share/licenses/fontconfig/
+          C:/msys2/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig-conf.mo
+          C:/msys2/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig.mo
+          C:/msys2/mingw64/share/xml/fontconfig/
+          C:/msys2/mingw64/var/cache/fontconfig/
+
+          C:/msys2/mingw64/bin/libfreeglut.dll
+          C:/msys2/mingw64/include/GL/
+          C:/msys2/mingw64/lib/cmake/FreeGLUT/
+          C:/msys2/mingw64/lib/libfreeglut.dll.a
+          C:/msys2/mingw64/lib/libfreeglut_static.a
+          C:/msys2/mingw64/lib/pkgconfig/freeglut.pc
+
+          C:/msys2/mingw64/bin/freetype-config
+          C:/msys2/mingw64/bin/libfreetype-6.dll
+          C:/msys2/mingw64/include/freetype2/
+          C:/msys2/mingw64/lib/libfreetype.a
+          C:/msys2/mingw64/lib/libfreetype.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/freetype2.pc
+          C:/msys2/mingw64/share/aclocal/freetype2.m4
+          C:/msys2/mingw64/share/licenses/freetype/
+
+
           C:/msys2/mingw64/bin/derb.exe
           C:/msys2/mingw64/bin/genbrk.exe
           C:/msys2/mingw64/bin/gencfu.exe
@@ -196,13 +250,6 @@ jobs:
           C:/msys2/mingw64/sbin/icupkg.exe
           C:/msys2/mingw64/share/icu/
 
-          C:/msys2/mingw64/bin/libdouble-conversion.dll
-          C:/msys2/mingw64/include/double-conversion/
-          C:/msys2/mingw64/lib/cmake/double-conversion/
-          C:/msys2/mingw64/lib/libdouble-conversion.a
-          C:/msys2/mingw64/lib/libdouble-conversion.dll.a
-          C:/msys2/mingw64/share/licenses/double-conversion/
-
           C:/msys2/mingw64/bin/libpcre2*.dll
           C:/msys2/mingw64/bin/pcre2-config
           C:/msys2/mingw64/bin/pcre2grep.exe
@@ -212,6 +259,15 @@ jobs:
           C:/msys2/mingw64/lib/libpcre2*.a
           C:/msys2/mingw64/lib/libpcre2*.dll.a
           C:/msys2/mingw64/lib/pkgconfig/libpcre2*.pc
+
+          C:/msys2/mingw64/bin/edit.dll
+          C:/msys2/mingw64/bin/edit_test.exe
+          C:/msys2/mingw64/bin/edit_test_dll.exe
+          C:/msys2/mingw64/include/editline/
+          C:/msys2/mingw64/lib/libedit.dll.a
+          C:/msys2/mingw64/lib/libedit_static.a
+          C:/msys2/mingw64/lib/pkgconfig/wineditline.pc
+          C:/msys2/mingw64/share/licenses/wineditline/
 
           C:/msys64/mingw64/bin/assistant.exe
           C:/msys64/mingw64/bin/balsam.exe
