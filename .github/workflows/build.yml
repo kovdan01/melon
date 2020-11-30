@@ -21,17 +21,17 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MinGW64", artifact: "Windows-MinGW64",
+            name: "Windows Latest MinGW64", artifact: "all-release-windows-mingw64",
             os: windows-latest,
             build_type: "Release", cc: "gcc", cxx: "g++",
           }
         - {
-            name: "Ubuntu Latest Clang", artifact: "Linux",
+            name: "Ubuntu Latest Clang", artifact: "all-release-linux",
             os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
           }
         - {
-            name: "MacOS Latest Clang", artifact: "MacOS",
+            name: "MacOS Latest Clang", artifact: "all-release-macos",
             os: macos-latest,
             build_type: "Release", cc: "clang", cxx: "clang++",
           }
@@ -431,8 +431,9 @@ jobs:
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
   build-android:
+    name: Android
     runs-on: ubuntu-20.04
-    needs: build-core-server-client-desktop
+    #needs: build-core-server-client-desktop
 
     steps:
     - uses: actions/checkout@v2
