@@ -3,7 +3,7 @@ name: Build all
 on: [push]
 
 jobs:
-  build:
+  build-core-server-client-desktop:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     env:
@@ -429,6 +429,25 @@ jobs:
       shell: sh {0}
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+
+  build-android:
+    runs-on: ubuntu-20.04
+    needs: build-core-server-client-desktop
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build debug apk
+      shell: sh {0}
+      run: |
+        cd src/client-android
+        ./gradlew assembleDebug
+
+    - name: Upload debug apk
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./src/client-android/app/build/outputs/apk/debug/app-debug.apk
+        name: android-debug
 
   #release:
     #if: contains(github.ref, 'tags/v')
