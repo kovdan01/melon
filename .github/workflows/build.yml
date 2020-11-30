@@ -121,7 +121,7 @@ jobs:
 
         if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
           toolset = "gcc"
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang" or
+        elif "${{ matrix.config.name }}" == "MacOS Latest Clang" or \
              "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
           toolset = "clang"
         else:
