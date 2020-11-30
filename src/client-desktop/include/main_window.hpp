@@ -18,6 +18,19 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
+private slots:
+    void on_AddChat_clicked();
+
+//    void on_MenuList_customContextMenuRequested(const QPoint &pos);
+
+    void eraseItem();
+
+    void on_MenuList_itemDoubleClicked(QListWidgetItem *item);
+
+    void on_SendButton_clicked();
+
+    void on_ReceiveButton_clicked();
+
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
 };
