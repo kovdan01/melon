@@ -1069,6 +1069,7 @@ jobs:
       shell: sh {0}
       run: |
         cd src/client-android
+        gradle wrapper
         ./gradlew assembleDebug
 
     - name: Upload debug apk
