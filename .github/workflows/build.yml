@@ -16,6 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
+      MINGW64_CACHE_VERSION: 0  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -143,8 +144,16 @@ jobs:
 
         os.chdir(repo)
 
-    - name: Cyrus SASL (Windows)
+    - name: Mingw64 cache (Windows)
+      uses: actions/cache@v2
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      id: cache_mingw64_windows
+      with:
+        path: C:\\msys64\\mingw64
+        key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
+
+    - name: Cyrus SASL (Windows)
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
@@ -198,7 +207,7 @@ jobs:
         os.chdir(repo)
 
     - name: Qt5 (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
