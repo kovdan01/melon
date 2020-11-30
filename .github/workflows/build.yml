@@ -60,7 +60,7 @@ jobs:
         # Comment because gcc and cmake are already installed
         # pacman -S --noconfirm mingw-w64-x86_64-gcc
         # pacman -S --noconfirm mingw-w64-x86_64-cmake
-        pacman -S --noconfirm mingw-w64-x86_64-ninja
+        pacman -S --noconfirm mingw-w64-x86_64-ninja mingw-w64-x86_64-icu-debug-libs mingw-w64-x86_64-z3 mingw-w64-x86_64-zlib
 
     - name: Install build tools (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
