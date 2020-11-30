@@ -898,6 +898,10 @@ jobs:
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
+        ls /mingw64/bin/Qt5Core.dll
+        ls /mingw64/bin/libwinpthread-1.dll
+        ls /mingw64/bin/libstdc++-6.dll
+        ls /mingw64/bin/libgcc_s_seh-1.dll
         ldd /mingw64/bin/uic.exe
 
     - name: Configure (Windows)
