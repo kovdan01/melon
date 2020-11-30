@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::on_AddChat_clicked()
 {
     static uint counter = 0;
-    m_ui->MenuList->addItem("NewChat" + QString::number(counter));
-    m_ui->statusbar->showMessage("Added Chat");
+    m_ui->MenuList->addItem(QLatin1String("NewChat") + QString::number(counter));
+    m_ui->statusbar->showMessage(QLatin1String("Added Chat"));
     ++counter;
 }
 
@@ -53,7 +53,7 @@ void MainWindow::on_SendButton_clicked()
 {
     m_ui->MsgList->setWordWrap(0); //???
     QString msgText = m_ui->MsgEdit->toPlainText();
-    if (msgText != "")
+    if (msgText != QLatin1String(""))
     {
     QListWidgetItem *msgItem = new QListWidgetItem();
     msgItem->setText(msgText);
@@ -65,7 +65,7 @@ void MainWindow::on_SendButton_clicked()
 
 void MainWindow::on_ReceiveButton_clicked()
 {
-    QString msgText = "I wish I could hear you.";
+    QString msgText = QLatin1String("I wish I could hear you.");
     QListWidgetItem *msgItem = new QListWidgetItem();
     msgItem->setText(msgText);
     msgItem->setTextAlignment(Qt::AlignLeft);
