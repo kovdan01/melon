@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 1  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 2  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -150,6 +150,69 @@ jobs:
       id: cache_mingw64_windows
       with:
         path: |
+          C:/msys2/mingw64/bin/assimp.exe
+          C:/msys2/mingw64/bin/assimp_viewer.exe
+          C:/msys2/mingw64/bin/libassimp.dll
+          C:/msys2/mingw64/include/assimp/
+          C:/msys2/mingw64/lib/cmake/assimp-5.0/
+          C:/msys2/mingw64/lib/cmake/assimp-5.0/assimp-config-version.cmake
+          C:/msys2/mingw64/lib/cmake/assimp-5.0/assimp-config.cmake
+          C:/msys2/mingw64/lib/cmake/assimp-5.0/assimpTargets-release.cmake
+          C:/msys2/mingw64/lib/cmake/assimp-5.0/assimpTargets.cmake
+          C:/msys2/mingw64/lib/libassimp.dll.a
+          C:/msys2/mingw64/lib/libIrrXML.a
+          C:/msys2/mingw64/lib/pkgconfig/assimp.pc
+          C:/msys2/mingw64/share/licenses/assimp/
+
+          C:/msys2/mingw64/bin/derb.exe
+          C:/msys2/mingw64/bin/genbrk.exe
+          C:/msys2/mingw64/bin/gencfu.exe
+          C:/msys2/mingw64/bin/gencnval.exe
+          C:/msys2/mingw64/bin/gendict.exe
+          C:/msys2/mingw64/bin/genrb.exe
+          C:/msys2/mingw64/bin/icu-config
+          C:/msys2/mingw64/bin/icuinfo.exe
+          C:/msys2/mingw64/bin/libicudt67.dll
+          C:/msys2/mingw64/bin/libicuin67.dll
+          C:/msys2/mingw64/bin/libicuio67.dll
+          C:/msys2/mingw64/bin/libicutest67.dll
+          C:/msys2/mingw64/bin/libicutu67.dll
+          C:/msys2/mingw64/bin/libicuuc67.dll
+          C:/msys2/mingw64/bin/makeconv.exe
+          C:/msys2/mingw64/bin/pkgdata.exe
+          C:/msys2/mingw64/bin/uconv.exe
+          C:/msys2/mingw64/include/unicode/
+          C:/msys2/mingw64/lib/icu/
+          C:/msys2/mingw64/lib/libicu*.a
+          C:/msys2/mingw64/lib/libicu*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/icu-i18n.pc
+          C:/msys2/mingw64/lib/pkgconfig/icu-io.pc
+          C:/msys2/mingw64/lib/pkgconfig/icu-uc.pc
+          C:/msys2/mingw64/sbin/escapesrc.exe
+          C:/msys2/mingw64/sbin/genccode.exe
+          C:/msys2/mingw64/sbin/gencmn.exe
+          C:/msys2/mingw64/sbin/gennorm2.exe
+          C:/msys2/mingw64/sbin/gensprep.exe
+          C:/msys2/mingw64/sbin/icupkg.exe
+          C:/msys2/mingw64/share/icu/
+
+          C:/msys2/mingw64/bin/libdouble-conversion.dll
+          C:/msys2/mingw64/include/double-conversion/
+          C:/msys2/mingw64/lib/cmake/double-conversion/
+          C:/msys2/mingw64/lib/libdouble-conversion.a
+          C:/msys2/mingw64/lib/libdouble-conversion.dll.a
+          C:/msys2/mingw64/share/licenses/double-conversion/
+
+          C:/msys2/mingw64/bin/libpcre2*.dll
+          C:/msys2/mingw64/bin/pcre2-config
+          C:/msys2/mingw64/bin/pcre2grep.exe
+          C:/msys2/mingw64/bin/pcre2test.exe
+          C:/msys2/mingw64/include/pcre2.h
+          C:/msys2/mingw64/include/pcre2posix.h
+          C:/msys2/mingw64/lib/libpcre2*.a
+          C:/msys2/mingw64/lib/libpcre2*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libpcre2*.pc
+
           C:/msys64/mingw64/bin/assistant.exe
           C:/msys64/mingw64/bin/balsam.exe
           C:/msys64/mingw64/bin/canbusutil.exe
