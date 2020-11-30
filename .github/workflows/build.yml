@@ -894,6 +894,12 @@ jobs:
 
         os.chdir(repo)
 
+    - name: UIC
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
+      run: |
+        ldd /mingw64/bin/uic.exe
+
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
