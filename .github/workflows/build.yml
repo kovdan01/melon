@@ -433,7 +433,7 @@ jobs:
   build-android:
     name: Android
     runs-on: ubuntu-20.04
-    #needs: build-core-server-client-desktop
+    needs: build-core-server-client-desktop
 
     steps:
     - uses: actions/checkout@v2
