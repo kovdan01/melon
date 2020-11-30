@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 4  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 5  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -374,6 +374,32 @@ jobs:
           C:/msys2/mingw64/share/locale/zh_TW/LC_MESSAGES/glib20.mo
           C:/msys2/usr/share/libalpm/
 
+          C:/msys2/mingw64/bin/gr2fonttest.exe
+          C:/msys2/mingw64/bin/libgraphite2.dll
+          C:/msys2/mingw64/include/graphite2/
+          C:/msys2/mingw64/lib/libgraphite2.a
+          C:/msys2/mingw64/lib/libgraphite2.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/graphite2.pc
+          C:/msys2/mingw64/share/graphite2/
+          C:/msys2/mingw64/share/licenses/graphite2/
+
+          C:/msys2/mingw64/bin/hb-*.exe
+          C:/msys2/mingw64/bin/hb-*.exe
+          C:/msys2/mingw64/bin/hb-*.exe
+          C:/msys2/mingw64/bin/hb-*.exe
+          C:/msys2/mingw64/bin/libharfbuzz*.dll
+          C:/msys2/mingw64/bin/libharfbuzz*.dll
+          C:/msys2/mingw64/bin/libharfbuzz*.dll
+          C:/msys2/mingw64/bin/libharfbuzz*.dll
+          C:/msys2/mingw64/include/harfbuzz/
+          C:/msys2/mingw64/lib/cmake/harfbuzz/
+          C:/msys2/mingw64/lib/girepository-1.0/HarfBuzz-0.0.typelib
+          C:/msys2/mingw64/lib/libharfbuzz*.a
+          C:/msys2/mingw64/lib/libharfbuzz*.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/harfbuzz*.pc
+          C:/msys2/mingw64/share/gir-1.0/HarfBuzz-0.0.gir
+          C:/msys2/mingw64/share/licenses/harfbuzz/
+
           C:/msys2/mingw64/bin/derb.exe
           C:/msys2/mingw64/bin/genbrk.exe
           C:/msys2/mingw64/bin/gencfu.exe
@@ -405,6 +431,145 @@ jobs:
           C:/msys2/mingw64/sbin/gensprep.exe
           C:/msys2/mingw64/sbin/icupkg.exe
           C:/msys2/mingw64/share/icu/
+
+          C:/msys2/mingw64/bin/imgcmp.exe
+          C:/msys2/mingw64/bin/imginfo.exe
+          C:/msys2/mingw64/bin/jasper.exe
+          C:/msys2/mingw64/bin/libjasper-4.dll
+          C:/msys2/mingw64/include/jasper/
+          C:/msys2/mingw64/lib/libjasper.a
+          C:/msys2/mingw64/lib/libjasper.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/jasper.pc
+          C:/msys2/mingw64/share/licenses/jasper/
+
+          C:/msys2/mingw64/bin/jpgicc.exe
+          C:/msys2/mingw64/bin/liblcms2-2.dll
+          C:/msys2/mingw64/bin/linkicc.exe
+          C:/msys2/mingw64/bin/psicc.exe
+          C:/msys2/mingw64/bin/tificc.exe
+          C:/msys2/mingw64/bin/transicc.exe
+          C:/msys2/mingw64/include/lcms2.h
+          C:/msys2/mingw64/include/lcms2_plugin.h
+          C:/msys2/mingw64/lib/liblcms2.a
+          C:/msys2/mingw64/lib/liblcms2.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/lcms2.pc
+
+          C:/msys2/mingw64/bin/dumpsexp.exe
+          C:/msys2/mingw64/bin/hmac256.exe
+          C:/msys2/mingw64/bin/libgcrypt-20.dll
+          C:/msys2/mingw64/bin/libgcrypt-config
+          C:/msys2/mingw64/bin/mpicalc.exe
+          C:/msys2/mingw64/include/gcrypt.h
+          C:/msys2/mingw64/lib/libgcrypt.a
+          C:/msys2/mingw64/lib/libgcrypt.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libgcrypt.pc
+          C:/msys2/mingw64/share/aclocal/libgcrypt.m4
+          C:/msys2/mingw64/share/licenses/libgcrypt/
+
+          C:/msys2/mingw64/bin/gpg-error-config
+          C:/msys2/mingw64/bin/gpg-error.exe
+          C:/msys2/mingw64/bin/gpgrt-config
+          C:/msys2/mingw64/bin/libgpg-error-0.dll
+          C:/msys2/mingw64/bin/yat2m.exe
+          C:/msys2/mingw64/include/gpg-error.h
+          C:/msys2/mingw64/include/gpgrt.h
+          C:/msys2/mingw64/lib/libgpg-error.a
+          C:/msys2/mingw64/lib/libgpg-error.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/gpg-error.pc
+          C:/msys2/mingw64/share/aclocal/gpg-error.m4
+          C:/msys2/mingw64/share/aclocal/gpgrt.m4
+          C:/msys2/mingw64/share/common-lisp/
+          C:/msys2/mingw64/share/libgpg-error/
+          C:/msys2/mingw64/share/licenses/libgpg-error/
+          C:/msys2/mingw64/share/locale/cs/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/da/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/de/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/eo/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/es/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/fr/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/hu/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/it/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/ja/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/nl/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/pl/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/pt/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/ro/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/ru/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/sr/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/sv/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/uk/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/vi/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/zh_CN/LC_MESSAGES/libgpg-error.mo
+          C:/msys2/mingw64/share/locale/zh_TW/LC_MESSAGES/libgpg-error.mo
+
+          C:/msys2/mingw64/bin/cjpeg.exe
+          C:/msys2/mingw64/bin/djpeg.exe
+          C:/msys2/mingw64/bin/jpegtran.exe
+          C:/msys2/mingw64/bin/libjpeg-8.dll
+          C:/msys2/mingw64/bin/libturbojpeg.dll
+          C:/msys2/mingw64/bin/rdjpgcom.exe
+          C:/msys2/mingw64/bin/tjbench.exe
+          C:/msys2/mingw64/bin/wrjpgcom.exe
+          C:/msys2/mingw64/include/jconfig.h
+          C:/msys2/mingw64/include/jerror.h
+          C:/msys2/mingw64/include/jinclude.h
+          C:/msys2/mingw64/include/jmorecfg.h
+          C:/msys2/mingw64/include/jpeglib.h
+          C:/msys2/mingw64/include/transupp.h
+          C:/msys2/mingw64/include/turbojpeg.h
+          C:/msys2/mingw64/lib/libjpeg.a
+          C:/msys2/mingw64/lib/libjpeg.dll.a
+          C:/msys2/mingw64/lib/libturbojpeg.a
+          C:/msys2/mingw64/lib/libturbojpeg.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libjpeg.pc
+          C:/msys2/mingw64/lib/pkgconfig/libturbojpeg.pc
+          C:/msys2/mingw64/share/licenses/libjpeg-turbo/
+
+          C:/msys2/mingw64/bin/libmng-2.dll
+          C:/msys2/mingw64/include/libmng.h
+          C:/msys2/mingw64/include/libmng_conf.h
+          C:/msys2/mingw64/include/libmng_types.h
+          C:/msys2/mingw64/lib/libmng.a
+          C:/msys2/mingw64/lib/libmng.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libmng.pc
+          C:/msys2/mingw64/share/mng-2.0/
+
+          C:/msys2/mingw64/bin/libpng-config
+          C:/msys2/mingw64/bin/libpng16-16.dll
+          C:/msys2/mingw64/bin/libpng16-config
+          C:/msys2/mingw64/bin/png-fix-itxt.exe
+          C:/msys2/mingw64/bin/png2pnm-static.exe
+          C:/msys2/mingw64/bin/png2pnm.exe
+          C:/msys2/mingw64/bin/pngfix.exe
+          C:/msys2/mingw64/bin/pnm2png-static.exe
+          C:/msys2/mingw64/bin/pnm2png.exe
+          C:/msys2/mingw64/include/libpng16/
+          C:/msys2/mingw64/include/png.h
+          C:/msys2/mingw64/include/pngconf.h
+          C:/msys2/mingw64/include/pnglibconf.h
+          C:/msys2/mingw64/lib/libpng.a
+          C:/msys2/mingw64/lib/libpng.dll.a
+          C:/msys2/mingw64/lib/libpng16.a
+          C:/msys2/mingw64/lib/libpng16.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libpng.pc
+          C:/msys2/mingw64/lib/pkgconfig/libpng16.pc
+          C:/msys2/mingw64/share/licenses/libpng/
+
+          C:/msys2/mingw64/bin/fax2ps.exe
+          C:/msys2/mingw64/bin/fax2tiff.exe
+          C:/msys2/mingw64/bin/libtiff-5.dll
+          C:/msys2/mingw64/bin/libtiffxx-5.dll
+          C:/msys2/mingw64/bin/pal2rgb.exe
+          C:/msys2/mingw64/bin/ppm2tiff.exe
+          C:/msys2/mingw64/bin/raw2tiff.exe
+          C:/msys2/mingw64/bin/tiff*.exe
+          C:/msys2/mingw64/include/tif*.h
+          C:/msys2/mingw64/lib/libtiff.a
+          C:/msys2/mingw64/lib/libtiff.dll.a
+          C:/msys2/mingw64/lib/libtiffxx.a
+          C:/msys2/mingw64/lib/libtiffxx.dll.a
+          C:/msys2/mingw64/lib/pkgconfig/libtiff-4.pc
+          C:/msys2/mingw64/share/licenses/libtiff/
 
           C:/msys2/mingw64/bin/libpcre2*.dll
           C:/msys2/mingw64/bin/pcre2-config
