@@ -1,13 +1,11 @@
-#include "main_window.hpp"
+#include "mainwindow.h"
 
 #include <QApplication>
 
-namespace mc = melon::client_desktop;
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-    QApplication application(argc, argv);
-    mc::MainWindow window;
-    window.show();
-    return QApplication::exec();
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
 }

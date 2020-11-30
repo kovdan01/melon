@@ -1,45 +1,32 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5)
 
-project(melon-client-desktop
-        VERSION 0.0.0
-        LANGUAGES CXX
-)
+project(TestWidgets LANGUAGES CXX)
 
-find_package(ntc-cmake REQUIRED)
-include(ntc-dev-build)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# own libraries
-find_package(melon-core REQUIRED)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
-# boost asio
-find_package(
-    Boost 1.74.0 REQUIRED
-    COMPONENTS system
-)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# thread support
-set(THREADS_PREFER_PTHERAD_FLAG ON)
-find_package(Threads REQUIRED)
-
-# qt widgets, translations
-find_package(
-    Qt5 REQUIRED
-    COMPONENTS Widgets LinguistTools
-)
+find_package(QT NAMES Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
-    include/main_window.hpp
+    include/mainwindow.h
 )
 
 set(SOURCES
     src/main.cpp
-    src/main_window.cpp
+    src/mainwindow.cpp
 )
 
 set(UI_FILES
-    ui/main_window.ui
+    ui/mainwindow.ui
 )
 
 add_executable(${PROJECT_NAME}
@@ -48,13 +35,4 @@ add_executable(${PROJECT_NAME}
     ${UI_FILES}
 )
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
-
-ntc_target(${PROJECT_NAME}
-    TRANSLATIONS en_US
-)
+target_link_libraries(TestWidgets PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
