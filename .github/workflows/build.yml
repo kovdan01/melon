@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 7  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 8  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -60,7 +60,7 @@ jobs:
         # Comment because gcc and cmake are already installed
         # pacman -S --noconfirm mingw-w64-x86_64-gcc
         # pacman -S --noconfirm mingw-w64-x86_64-cmake
-        pacman -S --noconfirm mingw-w64-x86_64-ninja mingw-w64-x86_64-icu-debug-libs mingw-w64-x86_64-z3 mingw-w64-x86_64-zlib
+        pacman -S --noconfirm mingw-w64-x86_64-ninja
 
     - name: Install build tools (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
@@ -657,8 +657,6 @@ jobs:
           C:/msys64/mingw64/lib/libpcre2*.a
           C:/msys64/mingw64/lib/libpcre2*.dll.a
           C:/msys64/mingw64/lib/pkgconfig/libpcre2*.pc
-          
-          C:/msys64/mingw64/bin/qtbinpatcher.exe
 
           C:/msys64/mingw64/include/vulkan/
           C:/msys64/mingw64/share/licenses/vulkan-headers/
@@ -765,7 +763,11 @@ jobs:
           C:/msys64/mingw64/lib/Qt5*.prl
           C:/msys64/mingw64/lib/qtmain.prl
           C:/msys64/mingw64/share/licenses/qt5/
-          C:/msys64/mingw64/share/qt5/
+          C:/msys64/mingw64/share/qt5/mkspecs/
+          C:/msys64/mingw64/share/qt5/phrasebooks/
+          C:/msys64/mingw64/share/qt5/plugins/
+          C:/msys64/mingw64/share/qt5/qml/
+          C:/msys64/mingw64/share/qt5/translations/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL (Windows)
@@ -889,22 +891,6 @@ jobs:
         execute_command("make install")
 
         os.chdir(repo)
-
-    - name: UIC
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
-      run: |
-        # ls /mingw64/bin/Qt5Core.dll
-        # ls /mingw64/bin/libwinpthread-1.dll
-        # ls /mingw64/bin/libstdc++-6.dll
-        # ls /mingw64/bin/libgcc_s_seh-1.dll
-        which Qt5Core.dll
-        which libwinpthread-1.dll
-        which libstdc++-6.dll
-        which libgcc_s_seh-1.dll
-        ldd /mingw64/bin/uic.exe
-        # qtbinpatcher force nobackup old-dir /c/msys2
-        uic -h
 
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
