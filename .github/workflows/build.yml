@@ -16,7 +16,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 0  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 1  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -149,11 +149,81 @@ jobs:
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       id: cache_mingw64_windows
       with:
-        path: C:\\msys64\\mingw64
+        path: |
+          C:/msys64/mingw64/bin/assistant.exe
+          C:/msys64/mingw64/bin/balsam.exe
+          C:/msys64/mingw64/bin/canbusutil.exe
+          C:/msys64/mingw64/bin/designer.exe
+          C:/msys64/mingw64/bin/dumpcpp.exe
+          C:/msys64/mingw64/bin/dumpdoc.exe
+          C:/msys64/mingw64/bin/fixqt4headers.pl
+          C:/msys64/mingw64/bin/idc.exe
+          C:/msys64/mingw64/bin/lconvert.exe
+          C:/msys64/mingw64/bin/linguist.exe
+          C:/msys64/mingw64/bin/lprodump.exe
+          C:/msys64/mingw64/bin/lrelease-pro.exe
+          C:/msys64/mingw64/bin/lrelease.exe
+          C:/msys64/mingw64/bin/lupdate-pro.exe
+          C:/msys64/mingw64/bin/lupdate.exe
+          C:/msys64/mingw64/bin/meshdebug.exe
+          C:/msys64/mingw64/bin/moc.exe
+          C:/msys64/mingw64/bin/pixeltool.exe
+          C:/msys64/mingw64/bin/qcollectiongenerator.exe
+          C:/msys64/mingw64/bin/qdbus.exe
+          C:/msys64/mingw64/bin/qdbuscpp2xml.exe
+          C:/msys64/mingw64/bin/qdbusviewer.exe
+          C:/msys64/mingw64/bin/qdbusxml2cpp.exe
+          C:/msys64/mingw64/bin/qdistancefieldgenerator.exe
+          C:/msys64/mingw64/bin/qdoc.exe
+          C:/msys64/mingw64/bin/qgltf.exe
+          C:/msys64/mingw64/bin/qhelpgenerator.exe
+          C:/msys64/mingw64/bin/qlalr.exe
+          C:/msys64/mingw64/bin/qmake.exe
+          C:/msys64/mingw64/bin/qml*.exe
+          C:/msys64/mingw64/bin/qscxmlc.exe
+          C:/msys64/mingw64/bin/Qt5*.dll
+          C:/msys64/mingw64/bin/qtattributionsscanner.exe
+          C:/msys64/mingw64/bin/qtdiag.exe
+          C:/msys64/mingw64/bin/qtpaths.exe
+          C:/msys64/mingw64/bin/qtplugininfo.exe
+          C:/msys64/mingw64/bin/qvkgen.exe
+          C:/msys64/mingw64/bin/rcc.exe
+          C:/msys64/mingw64/bin/repc.exe
+          C:/msys64/mingw64/bin/syncqt.pl
+          C:/msys64/mingw64/bin/testcon.exe
+          C:/msys64/mingw64/bin/tracegen.exe
+          C:/msys64/mingw64/bin/uic.exe
+          C:/msys64/mingw64/bin/windeployqt.exe
+          C:/msys64/mingw64/bin/xmlpatterns.exe
+          C:/msys64/mingw64/bin/xmlpatternsvalidator.exe
+          C:/msys64/mingw64/include/ActiveQt/
+          C:/msys64/mingw64/include/Qt*/
+          C:/msys64/mingw64/lib/cmake/Qt5*/
+          C:/msys64/mingw64/lib/libQt5*.dll.a
+          C:/msys64/mingw64/lib/libqtmain.a
+          C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5gui_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qml_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qmlmodels_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qmlworkerscript_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quick_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quickparticles_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quickshapes_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quicktest_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5widgets_metatypes.json
+          C:/msys64/mingw64/lib/pkgconfig/Qt5*.pc
+          C:/msys64/mingw64/lib/Qt5*.prl
+          C:/msys64/mingw64/lib/qtmain.prl
+          C:/msys64/mingw64/share/licenses/qt5/
+          C:/msys64/mingw64/share/qt5/mkspecs/
+          C:/msys64/mingw64/share/qt5/phrasebooks/
+          C:/msys64/mingw64/share/qt5/plugins/
+          C:/msys64/mingw64/share/qt5/qml/
+          C:/msys64/mingw64/share/qt5/translations/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
