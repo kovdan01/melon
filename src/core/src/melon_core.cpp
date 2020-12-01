@@ -1,4 +1,5 @@
 #include <melon_core.hpp>
+#include <yaml_config.hpp>
 
 #include <iostream>
 
