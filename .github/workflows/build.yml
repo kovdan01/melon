@@ -936,6 +936,11 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+
     - name: Build
       run: cmake --build build --target all
 
@@ -1060,6 +1065,9 @@ jobs:
       shell: sh {0}
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
 
   build-android:
     name: Android
