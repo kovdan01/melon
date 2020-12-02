@@ -948,8 +948,6 @@ jobs:
     - name: Perform CodeQL Analysis (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       uses: github/codeql-action/analyze@v1
-      with:
-        checkout_path: _build
 
     - name: Run tests
       run: cd build && ctest && cd ..
