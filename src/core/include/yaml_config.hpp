@@ -5,11 +5,11 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace melon::core::yaml_conf
 {
-inline const std::string conf_filename = "m_config.yaml";
 
 /**
  * Lists top-level keys in a yaml-cpp node, that are missing
@@ -20,7 +20,7 @@ inline const std::string conf_filename = "m_config.yaml";
  * @return A list of missing keys
  **/
 template <typename It>
-std::vector<std::string> check_missing_params(const YAML::Node& conf, const It begin, const It end)
+std::vector<std::string> check_missing_params(const YAML::Node& conf, It begin, It end)
 {
     std::vector<std::string> res;
     for (It it = begin; it != end; ++it)
@@ -50,6 +50,14 @@ std::vector<std::string> check_superfluous_params(const YAML::Node& conf, It beg
     return res;
 }
 
+
+using ParsedNodes = std::unordered_map<std::string, YAML::Node>;
+struct KeyAbnormalities
+{
+    std::vector<std::string> missing;
+    std::vector<std::string> superfluous;
+};
+
 /**
  * Parses the yaml-cpp map node with a list of expected keys into lower level nodes.
  * Lists missing and extra parameters
@@ -59,20 +67,18 @@ std::vector<std::string> check_superfluous_params(const YAML::Node& conf, It beg
  * expected then parsing this leve
  * @param[in] check_for_superfluous Flag. If true, the returns returns a list of extra keys.
  * If false, returns an empty list
- * @return A pair of pairs:
- * Node key with corresponding lower-leve node
- * List of missing keys with list of extra keys
+ * @return A pair of ParsedNodes and KeyAbnormalities:
+ * ParsedNodes is a parsed map.
+ * KeyAbnormalities is a list of missing keys and a list of extra keys
  **/
 template <typename It>
-std::pair<
-std::vector<std::pair<std::string,YAML::Node>>,
-std::pair<std::vector<std::string>, std::vector<std::string>>>
+std::pair<ParsedNodes, KeyAbnormalities>
 parse_one_level_down(const YAML::Node& parent_node,
                      It begin,
                      It end,
                      bool check_for_superfluous = true)
 {
-    std::vector<std::pair<std::string, YAML::Node> > node_res = {};
+    std::unordered_map<std::string, YAML::Node> node_res;
     std::vector<std::string> missing_res, superfluous_res;
     if (check_for_superfluous)
         superfluous_res = check_superfluous_params(parent_node, begin, end);
@@ -83,15 +89,16 @@ parse_one_level_down(const YAML::Node& parent_node,
             if (!*parent_node[*it])
                 missing_res.emplace_back(*it);
             else
-                node_res.emplace_back(*it, parent_node[*it]);
+                node_res.insert({*it, parent_node[*it]});
         }
     }
     catch (const YAML::ParserException& e)
     {
-       std::cerr<<"YAML parser error: " << e.what() << std::endl;
+       std::cerr << "YAML parser error: " << e.what() << std::endl;
     }
-    return std::make_pair(node_res, std::make_pair(missing_res, superfluous_res));
+    return {node_res, {missing_res, superfluous_res}};
 }
-}  // namespace melon::core
+
+}  // namespace melon::core::yaml_conf
 
 #endif  // MELON_CORE_YAML_CONFIG_HPP_
