@@ -21,12 +21,17 @@ find_package(
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# yaml-cpp
+find_package(yaml-cpp REQUIRED)
+
 set(HEADERS
     include/melon_core.hpp
+    include/yaml_config.hpp
 )
 
 set(SOURCES
     src/melon_core.cpp
+    src/yaml_config.cpp
 )
 
 add_library(${PROJECT_NAME}
@@ -38,6 +43,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 
 ntc_target(${PROJECT_NAME}
     ALIAS_NAME melon::core

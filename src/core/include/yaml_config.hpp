@@ -2,9 +2,14 @@
 #define YAML_CONFIG_HPP
 
 #include <melon/core/export.h>
+
+#include <yaml-cpp/yaml.h>
+
 #include <string>
 #include <vector>
-#include <filesystem>
+
+#include<iostream>
+
 
 namespace melon::core::yaml_conf
 {
@@ -26,8 +31,6 @@ enum class Locations // supported location types
  };
 */
 
-namespace fs = std::filesystem;
-
 struct networking {
     std::string protocol;
     std::string ip;
@@ -35,8 +38,6 @@ struct networking {
 };
 struct location {
     std::string service_kind;
-    std::string location_kind;
-    fs::path path;
     std::string protocol;
     std::string ip;
     uint64_t port;
@@ -52,10 +53,70 @@ enum class Policies // supported location types
 }*/
 
 // returns a vector of missing strings
-MELON_CORE_EXPORT std::vector<std::string> check_reqired_params(const std::vector<std::string> & keys );
-MELON_CORE_EXPORT std::vector<std::string> check_superfluous_params(const std::vector<std::string> & keys );
-MELON_CORE_EXPORT std::pair<networking, std::vector<location>> parse_common_params();
-}  // namespace melon::core
+template <typename It>
+MELON_CORE_EXPORT std::vector<std::string> check_missing_params(YAML::Node conf, const It req_begin, const It req_end)
+{
+    std::vector<std::string> res;
+    for( It it = req_begin; it != req_end; ++it )
+    {
+        if (!conf[*it])
+        {
+            res.push_back(*it);
+        }
+    }
+    return res;
+}
+template <typename It>
+MELON_CORE_EXPORT std::vector<std::string> check_superfluous_params(YAML::Node conf, const It req_begin, const It req_end)
+{
+    std::vector<std::string> res;
+    for(YAML::const_iterator it=conf.begin();it != conf.end();++it)
+    {
+        std::string key = (it->first).as<std::string>();
+        if(std::find(req_begin,req_end,key)==req_end)
+            res.push_back(key);
+    }
+    return res;
+}
 
+MELON_CORE_EXPORT std::pair<networking, std::vector<location>> parse_common_params();
+
+template <typename It>
+MELON_CORE_EXPORT std::pair<
+                  std::vector<std::pair<std::string,YAML::Node> >,
+                  std::pair<std::vector<std::string>, std::vector<std::string> >
+                  > parse_one_level_down(YAML::Node parent_node,
+                                                                                                        It req_begin,
+                                                                                                        It req_end,
+                                                                                                        bool check_for_superfluous = true)
+{
+    std::vector<std::pair<std::string, YAML::Node> > node_res = {};
+    std::vector<std::string> missing_res = {}, superfluous_res;
+    if(check_for_superfluous)
+        superfluous_res = check_superfluous_params(parent_node, req_begin, req_end);
+    else
+        superfluous_res = {};
+    try
+    {
+    for(It it = req_begin; it != req_end; ++it)
+        {
+            if(!*parent_node[*it])
+            {
+                missing_res.emplace_back(*it);
+            }
+            else
+            {
+                node_res.emplace_back(std::make_pair(*it,parent_node[*it]));
+            }
+
+        }
+    }
+    catch (YAML::ParserException &e)
+    {
+       std::cerr<<"YAML parser error: "<<e.what()<<std::endl;
+    }
+    return std::make_pair(node_res, std::make_pair(missing_res, superfluous_res));
+}
+}  // namespace melon::core
 
 #endif // YAML_CONFIG_HPP
