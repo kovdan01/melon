@@ -60,7 +60,7 @@ Every service type has a number of it's own requrired parameters, which are deta
 | Parameter key | Description | Allowed Values | Default |
 |---------------|-------------|----------------|---------|
 | `db-location` |Location of the database|path/to/db   |
-| `rdbms-type`  |Type of RDBMS used |`MySQL`<br>`MS SQL Server`<br>…|`MySQL` |
+| `rdbms-type`  |Type of RDBMS used |`mysql`<br>`ms sql server`<br>…|`MySQL` |
 
 ### Message Service
 | Parameter key | Description | Allowed Values | Default |
