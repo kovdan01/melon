@@ -17,6 +17,8 @@ jobs:
       BOOST_INSTALL_PATH: boost-install
       CYRUS_SASL_VERSION: 2.1.27
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
+      YAML_CPP_VERSION: 0.6.3
+      YAML_CPP_INSTALL_PATH: yaml-cpp-install
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
@@ -200,6 +202,58 @@ jobs:
         execute_command("chmod +x ./config/install-sh")
         execute_command("make -j2")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
+        os.chdir(repo)
+
+    - name: Yaml CPP (Windows)
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
+
+    - name: Yaml CPP cache (Ubuntu & MacOS)
+      uses: actions/cache@v2
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      id: cache_yaml_cpp_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+
+    - name: Yaml CPP (Ubuntu & MacOS)
+      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        yaml_version = os.environ['YAML_CPP_VERSION']
+
+        yaml_source_dir  = os.path.normpath(os.path.join(root, "yaml-cpp-yaml-cpp-{}".format(yaml_version)))
+        yaml_install_dir = os.path.normpath(os.path.join(root, "${{ env.YAML_CPP_INSTALL_PATH }}"))
+        os.mkdir(yaml_install_dir)
+
+        yaml_url = "https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-{}.tar.gz".format(yaml_version)
+        open("yaml.tar.gz", "wb").write(requests.get(yaml_url, allow_redirects=True).content)
+        execute_command("7z x yaml.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(yaml_source_dir)
+
+        execute_command("cmake -GNinja -DYAML_BUILD_SHARED_LIBS=ON -DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} .".format(yaml_install_dir))
+        execute_command("cmake --build . --target all")
+        execute_command("cmake --build . --target install")
         os.chdir(repo)
 
     - name: Mingw64 cache (Windows)
@@ -933,6 +987,7 @@ jobs:
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
