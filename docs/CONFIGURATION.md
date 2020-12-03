@@ -10,7 +10,7 @@ All config files have the same structure: `m_config.yaml` is YAML format file pl
 
 Every service has a number of required parameters provided. This file details the necessary parameters for every service. 
 ### Common for all services
-Every service needs to specify its networking options. Every service needs to know the location of all other services. This information is provided in form of a list. Possible locations include `local` (using path to service) and `remote` (using port and IP).  I
+Every service needs to specify its networking options. Every service needs to know the location of all other services. This information is provided in form of list.
 ```yaml
 # required parameters
 networking:
@@ -19,35 +19,30 @@ networking:
     port: 6606
 locations:
     -
-	  service_kind: server-server
-	  location_kind: remote
-	  protocol: ipv4
+      service_kind: server-server
+      protocol: ipv4
       ip: 192.168.66.1
       port: 6607
     -
-	  service_kind: client-server
-	  location_kind: remote
-	  protocol: ipv6
+      service_kind: client-server
+      protocol: ipv6
       ip: "2001:db8::1"
       port: 6608  
-     -
-	  service_kind: storage
-	  location_kind: local
-      path: path/to/storage/
-     -
-	  service_kind: storage
-	  location_kind: remote
-	  protocol: ipv6
+    -
+      service_kind: storage
+      protocol: ipv4
+      ip: 192.168.67.2
+      port: 6666
+    -
+      service_kind: message
+      protocol: ipv6
       ip: "2001:db8::1"
       port: 6607  
-     -
-	  service_kind: message
-	  location_kind: local
-      path: path/to/message/
-     -
-	  service_kind: authentification
-	  location_kind: local
-      path: path/to/authentification/   
+    -
+      service_kind: authentification
+      protocol: ipv4
+      ip: 192.168.67.3
+      port: 6666   
 ```
 Note that in this example there are two storage services: a local and a remote one.
 Every service type has a number of it's own requrired parameters, which are detailed below. I
@@ -64,13 +59,13 @@ Every service type has a number of it's own requrired parameters, which are deta
 ### Storage Service
 | Parameter key | Description | Allowed Values | Default |
 |---------------|-------------|----------------|---------|
-| `db-location`|Location of the database|path/to/db|
-| `rdbms-type` |Type of RDBMS used |`MySQL`<br>`MS SQL Server`<br>…|`MySQL` |
+| `db-location` |Location of the database|path/to/db   |
+| `rdbms-type`  |Type of RDBMS used |`MySQL`<br>`MS SQL Server`<br>…|`MySQL` |
 
 ### Message Service
 | Parameter key | Description | Allowed Values | Default |
 |---------------|-------------|----------------|---------|
-||||
+|               |             |                |         |
 ### Authentification Service
 | Parameter key | Description | Allowed Values | Default |
 |---------------|-------------|----------------|---------|
@@ -86,7 +81,7 @@ networking:
     port: 6606
 # <...>
 # additional parameters
-favourite-animal: dog
+favourite-animal: corvus oeconomica
 favourite-cuisine:
      - italian
      - russian

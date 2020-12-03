@@ -6,9 +6,7 @@
 namespace melon::core::yaml_conf
 {
 
-
-
-std::pair<networking, std::vector<location>> parse_common_params()
+/*std::pair<networking, std::vector<location>> parse_common_params()
 {
 
     YAML::Node conf = YAML::LoadFile(conf_filename);
@@ -33,6 +31,6 @@ std::pair<networking, std::vector<location>> parse_common_params()
         std::cout << ex.what() << std::endl;
     }
     return {net_res,loc_res};
-}
+}*/
 
 }  // namespace melon::core
