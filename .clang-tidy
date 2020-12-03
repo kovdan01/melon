@@ -56,7 +56,7 @@ Checks: >
   readability-string-compare,
   readability-uniqueptr-delete-release
 AnalyzeTemporaryDtors: true
-HeaderFilterRegex: '(?!ui_).*'
+HeaderFilterRegex: '.*'
 CheckOptions:
 - key:   cppcoreguidelines-no-malloc.Allocations
   value: '::malloc;::calloc;::posix_memalign;::_aligned_malloc;::std::aligned_alloc'
@@ -78,7 +78,7 @@ CheckOptions:
   value: '1'
 - key:   readability-simplify-boolean-expr.ChainedConditionalReturn
   value: '1'
-- key:   alalareadability-identifier-naming.NamespaceCase
+- key:   readability-identifier-naming.NamespaceCase
   value: lower_case
 - key: readability-identifier-naming.ClassCase
   value: CamelCase
