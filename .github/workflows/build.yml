@@ -1032,7 +1032,7 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
-        -G Ninja
+        -G Ninja \
         -D CMAKE_MAKE_PROGRAM=../${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
         -B build \
