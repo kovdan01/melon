@@ -1031,8 +1031,10 @@ jobs:
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
-        export PATH="../${{ env.NINJA_TOOL_PATH }}:$PATH"
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
+        export PATH="${{ env.CMAKE_TOOL_BINARY_PATH }}:${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}:$PATH"
+        cmake --version
+        ninja --version
+        cmake \
         -G Ninja \
         -S . \
         -B build \
