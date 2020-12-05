@@ -26,7 +26,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 10  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 11  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -709,6 +709,7 @@ jobs:
           C:/msys64/mingw64/bin/qgltf.exe
           C:/msys64/mingw64/bin/qhelpgenerator.exe
           C:/msys64/mingw64/bin/qlalr.exe
+          C:/msys64/mingw64/bin/qmake.exe
           C:/msys64/mingw64/bin/qscxmlc.exe
           C:/msys64/mingw64/bin/Qt5Core.dll
           C:/msys64/mingw64/bin/Qt5Gui.dll
