@@ -136,6 +136,9 @@ function(ntc_target TARGET_NAME)
         endif()
     endif()
     if(NTC_DEV_BUILD)
+        foreach(var in COMPILE_OPTIONS LINK_OPTIONS)
+            set_property(TARGET ${TARGET_NAME} APPEND PROPERTY ${var} "${NTC_${var}}")
+        endforeach()
         if(boost_dep)
             target_compile_definitions(${TARGET_NAME} ${boost_dep} ${NTC_BOOST_DEFINITIONS})
         endif()
@@ -144,7 +147,7 @@ function(ntc_target TARGET_NAME)
         endif()
     endif()
 
-    # Set <TARGET_NAME>_REL_DATADIR in outer scope to relative
+    # Set <TARGET_NAME>_REL_DATADIR to relative
     # path from binary directory to data inside prefix.
     string(MAKE_C_IDENTIFIER "${TARGET_NAME}" rel_datadir_name)
     string(TOUPPER "${rel_datadir_name}" rel_datadir_name)
@@ -172,13 +175,19 @@ function(ntc_target TARGET_NAME)
     endif()
 
     # If there are include directories below current source/build trees, use them.
-    foreach(incdir "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include")
-        if(EXISTS "${incdir}")
-            # These directories are used only during build, common include directory
-            # where everything gets installed is specified in install(TARGETS ... INCLUDES DESTINATION)
-            target_include_directories(${TARGET_NAME} ${include_type} "$<BUILD_INTERFACE:${incdir}>")
-        endif()
-    endforeach()
+    # These directories are used only during build, common include directory
+    # where everything gets installed is specified in install(TARGETS ... INCLUDES DESTINATION).
+    # Build subdirectory is set as system to suppress warnings in generated files.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include")
+        target_include_directories(${TARGET_NAME} ${include_type}
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        )
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/include")
+        target_include_directories(${TARGET_NAME} SYSTEM ${include_type}
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+        )
+    endif()
 
     # Set our output properties.
     set_target_properties(${TARGET_NAME} PROPERTIES
@@ -190,7 +199,9 @@ function(ntc_target TARGET_NAME)
 
     if(NTC_DEV_BUILD)
         # Enable IPO in standard builds, if supported.
-        if(IPO_SUPPORTED)
+        # Clang+LTO miscompiles Qt signal connections:
+        # https://bugs.llvm.org/show_bug.cgi?id=46469
+        if(IPO_SUPPORTED AND NOT (qt5_dep AND CMAKE_CXX_COMPILER_ID MATCHES Clang))
             set_target_properties(${TARGET_NAME} PROPERTIES
                 INTERPROCEDURAL_OPTIMIZATION ON
             )
