@@ -26,7 +26,7 @@ jobs:
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 9  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 10  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -239,19 +239,6 @@ jobs:
           C:/msys64/mingw64/lib/libgdbm_compat.a
           C:/msys64/mingw64/lib/libgdbm_compat.dll.a
           C:/msys64/mingw64/share/licenses/gdbm/
-          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/fi/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/pt_BR/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/gdbm.mo
-          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/gdbm.mo
 
           C:/msys64/mingw64/bin/libsasl2-3.dll
           C:/msys64/mingw64/include/sasl/
@@ -386,113 +373,10 @@ jobs:
           C:/msys64/mingw64/share/aclocal/glib-2.0.m4
           C:/msys64/mingw64/share/aclocal/glib-gettext.m4
           C:/msys64/mingw64/share/aclocal/gsettings.m4
-          C:/msys64/mingw64/share/bash-completion/completions/gapplication
-          C:/msys64/mingw64/share/bash-completion/completions/gdbus
-          C:/msys64/mingw64/share/bash-completion/completions/gio
-          C:/msys64/mingw64/share/bash-completion/completions/gresource
-          C:/msys64/mingw64/share/bash-completion/completions/gsettings
           C:/msys64/mingw64/share/gettext/its/gschema.its
           C:/msys64/mingw64/share/gettext/its/gschema.loc
           C:/msys64/mingw64/share/glib-2.0/
           C:/msys64/mingw64/share/licenses/glib2/
-          C:/msys64/mingw64/share/locale/af/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/am/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/an/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ar/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/as/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ast/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/az/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/be/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/be@latin/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bn_IN/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bs/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ca/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ca@valencia/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/cy/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/dz/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/el/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en@shaw/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en_CA/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en_GB/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/et/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/eu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fur/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ga/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gd/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/he/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hy/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/id/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/is/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ka/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/kk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/kn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ko/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ku/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/lt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/lv/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mai/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ml/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ms/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nb/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nds/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ne/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/oc/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/or/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ps/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pt_BR/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/rw/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/si/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sq/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr@ije/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr@latin/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ta/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/te/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/th/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ug/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/wa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/xh/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/yi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_HK/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/glib20.mo
           C:/msys2/usr/share/libalpm/
 
           C:/msys64/mingw64/bin/gr2fonttest.exe
@@ -602,26 +486,6 @@ jobs:
           C:/msys64/mingw64/share/common-lisp/
           C:/msys64/mingw64/share/libgpg-error/
           C:/msys64/mingw64/share/licenses/libgpg-error/
-          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/libgpg-error.mo
 
           C:/msys64/mingw64/bin/cjpeg.exe
           C:/msys64/mingw64/bin/djpeg.exe
@@ -819,10 +683,8 @@ jobs:
           C:/msys64/mingw64/lib/pkgconfig/zzip*.pc
           C:/msys64/mingw64/share/aclocal/zziplib.m4
 
-          C:/msys64/mingw64/bin/assistant.exe
           C:/msys64/mingw64/bin/balsam.exe
           C:/msys64/mingw64/bin/canbusutil.exe
-          C:/msys64/mingw64/bin/designer.exe
           C:/msys64/mingw64/bin/dumpcpp.exe
           C:/msys64/mingw64/bin/dumpdoc.exe
           C:/msys64/mingw64/bin/fixqt4headers.pl
@@ -847,10 +709,10 @@ jobs:
           C:/msys64/mingw64/bin/qgltf.exe
           C:/msys64/mingw64/bin/qhelpgenerator.exe
           C:/msys64/mingw64/bin/qlalr.exe
-          C:/msys64/mingw64/bin/qmake.exe
-          C:/msys64/mingw64/bin/qml*.exe
           C:/msys64/mingw64/bin/qscxmlc.exe
-          C:/msys64/mingw64/bin/Qt5*.dll
+          C:/msys64/mingw64/bin/Qt5Core.dll
+          C:/msys64/mingw64/bin/Qt5Gui.dll
+          C:/msys64/mingw64/bin/Qt5Widgets.dll
           C:/msys64/mingw64/bin/qtattributionsscanner.exe
           C:/msys64/mingw64/bin/qtdiag.exe
           C:/msys64/mingw64/bin/qtpaths.exe
@@ -866,19 +728,16 @@ jobs:
           C:/msys64/mingw64/bin/xmlpatterns.exe
           C:/msys64/mingw64/bin/xmlpatternsvalidator.exe
           C:/msys64/mingw64/include/ActiveQt/
-          C:/msys64/mingw64/include/Qt*/
+          C:/msys64/mingw64/include/QtCore/
+          C:/msys64/mingw64/include/QtGui/
+          C:/msys64/mingw64/include/QtWidgets/
           C:/msys64/mingw64/lib/cmake/Qt5*/
-          C:/msys64/mingw64/lib/libQt5*.dll.a
+          C:/msys64/mingw64/lib/libQt5Core.dll.a
+          C:/msys64/mingw64/lib/libQt5Gui.dll.a
+          C:/msys64/mingw64/lib/libQt5Widgets.dll.a
           C:/msys64/mingw64/lib/libqtmain.a
           C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
           C:/msys64/mingw64/lib/metatypes/qt5gui_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qml_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qmlmodels_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qmlworkerscript_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quick_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quickparticles_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quickshapes_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quicktest_metatypes.json
           C:/msys64/mingw64/lib/metatypes/qt5widgets_metatypes.json
           C:/msys64/mingw64/lib/pkgconfig/Qt5*.pc
           C:/msys64/mingw64/lib/Qt5*.prl
@@ -887,7 +746,6 @@ jobs:
           C:/msys64/mingw64/share/qt5/mkspecs/
           C:/msys64/mingw64/share/qt5/phrasebooks/
           C:/msys64/mingw64/share/qt5/plugins/
-          C:/msys64/mingw64/share/qt5/qml/
           C:/msys64/mingw64/share/qt5/translations/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
