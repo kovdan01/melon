@@ -280,16 +280,16 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
 
-    - name: Yaml CPP cache (Ubuntu & MacOS)
-      uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      id: cache_yaml_cpp_unix
-      with:
-        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+    #- name: Yaml CPP cache (Ubuntu & MacOS)
+      #uses: actions/cache@v2
+      #if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      #id: cache_yaml_cpp_unix
+      #with:
+        #path: ${{ env.ROOT_PATH }}/yaml-cpp-install
+        #key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
 
     - name: Yaml CPP (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
+      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') }} #&& steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
