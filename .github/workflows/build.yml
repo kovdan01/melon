@@ -153,12 +153,12 @@ jobs:
         if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
           open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
           execute_command("7z x cmake.zip")
-          os.path.rename(cmake_dir, cmake_tool_path)
+          os.rename(cmake_dir, cmake_tool_path)
         elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang" or \
              "${{ matrix.config.name }}" == "MacOS Latest Clang":
           open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
           execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
-          os.path.rename(cmake_dir, cmake_tool_path)
+          os.rename(cmake_dir, cmake_tool_path)
           execute_command("chmod +x {}/cmake".format(cmake_tool_binary_path))
 
         os.chdir(repo)
