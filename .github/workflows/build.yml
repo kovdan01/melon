@@ -75,15 +75,6 @@ jobs:
     - name: Install required python modules
       run: pip install requests
 
-    #- name: Install build tools (Windows)
-      #if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      #shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      #run: |
-        #Comment because gcc and cmake are already installed
-        #pacman -S --noconfirm mingw-w64-x86_64-gcc
-        #pacman -S --noconfirm mingw-w64-x86_64-cmake
-        #pacman -S --noconfirm mingw-w64-x86_64-ninja
-
     - name: Install Clang (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
@@ -93,16 +84,17 @@ jobs:
         sudo apt-get install clang -y
         # sudo apt-get install ninja-build -y
 
-    #- name: Install build tools (MacOS)
-      #if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      #shell: sh {0}
-      #run: |
-        #Comment because cmake is already installed
-        #brew install cmake
-        #brew install ninja
+    - name: Ninja and CMake cache
+      uses: actions/cache@v2
+      id: cache_ninja_and_cmake
+      with:
+        path: |
+          ${{ env.ROOT_PATH }}/${{ env.CMAKE_TOOL_PATH }}
+          ${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}
+        key: ${{ runner.os }}-ninja-${{ env.NINJA_TOOL_VERSION }}-cmake-${{ env.CMAKE_TOOL_VERSION }}
 
     - name: Download Ninja and CMake
-      id: download_cmake_and_ninja
+      id: download_ninja_and_cmake
       shell: python {0}
       run: |
         import os
@@ -1040,7 +1032,7 @@ jobs:
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
         -G Ninja \
-        -D CMAKE_MAKE_PROGRAM ${{ env.NINJA_TOOL_PATH }}\\ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
@@ -1065,7 +1057,7 @@ jobs:
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
         -G Ninja \
-        -D CMAKE_MAKE_PROGRAM ${{ env.NINJA_TOOL_PATH }}/ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
