@@ -95,6 +95,7 @@ jobs:
 
     - name: Download Ninja and CMake
       id: download_ninja_and_cmake
+      if: ${{ steps.cache_ninja_and_cmake.outputs.cache-hit != 'true' }}
       shell: python {0}
       run: |
         import os
