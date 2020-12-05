@@ -120,7 +120,7 @@ jobs:
         os.chdir(root)
 
         cmake_version = os.environ['CMAKE_TOOL_VERSION']
-        ninja_version = os.version['NINJA_TOOL_VERSION']
+        ninja_version = os.environ['NINJA_TOOL_VERSION']
         cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
