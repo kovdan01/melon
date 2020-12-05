@@ -1029,7 +1029,7 @@ jobs:
 
     - name: Configure (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
+      # shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
         -G Ninja \
