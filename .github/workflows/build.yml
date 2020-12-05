@@ -11,6 +11,10 @@ jobs:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     env:
+      CMAKE_TOOL_VERSION: 3.19.1
+      CMAKE_TOOL_PATH: cmake-tool
+      NINJA_TOOL_VERSION: 1.10.2
+      NINJA_TOOL_PATH: ninja-tool
       BOOST_MAJOR: 1
       BOOST_MINOR: 74
       BOOST_BUILD: 0
@@ -50,40 +54,107 @@ jobs:
       shell: python {0}
       run: |
         import os
+
         repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
         root = os.path.normpath(os.path.dirname(repo))
+
+        cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
+
         with open(os.environ['GITHUB_ENV'], 'a') as env_file:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
 
+          if "${{ matrix.config.name }}" == "Windows Latest MinGW64" or \
+             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
+          elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
+            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin").replace("\\", "\\\\")))
+          else:
+            raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+
     - name: Install required python modules
       run: pip install requests
 
-    - name: Install build tools (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        # Comment because gcc and cmake are already installed
-        # pacman -S --noconfirm mingw-w64-x86_64-gcc
-        # pacman -S --noconfirm mingw-w64-x86_64-cmake
-        pacman -S --noconfirm mingw-w64-x86_64-ninja
-
-    - name: Install build tools (Ubuntu)
+    - name: Install Clang (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         # Comment because cmake is already installed
         # apt-get install cmake -y
         sudo apt-get install clang -y
-        sudo apt-get install ninja-build -y
+        # sudo apt-get install ninja-build -y
 
-    - name: Install build tools (MacOS)
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      shell: sh {0}
+    - name: Ninja and CMake cache
+      uses: actions/cache@v2
+      id: cache_ninja_and_cmake
+      with:
+        path: |
+          ${{ env.ROOT_PATH }}/${{ env.CMAKE_TOOL_PATH }}
+          ${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}
+        key: ${{ runner.os }}-ninja-${{ env.NINJA_TOOL_VERSION }}-cmake-${{ env.CMAKE_TOOL_VERSION }}
+
+    - name: Download Ninja and CMake
+      id: download_ninja_and_cmake
+      if: ${{ steps.cache_ninja_and_cmake.outputs.cache-hit != 'true' }}
+      shell: python {0}
       run: |
-        # Comment because cmake is already installed
-        # brew install cmake
-        brew install ninja
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        cmake_version = os.environ['CMAKE_TOOL_VERSION']
+        ninja_version = os.environ['NINJA_TOOL_VERSION']
+        cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+          ninja_suffix = "win.zip"
+          cmake_suffix = "win64-x64.zip"
+          cmake_dir = "cmake-{}-win64-x64".format(cmake_version)
+        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+          ninja_suffix = "linux.zip"
+          cmake_suffix = "Linux-x86_64.tar.gz"
+          cmake_dir = "cmake-{}-Linux-x86_64".format(cmake_version)
+        elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
+          ninja_suffix = "mac.zip"
+          cmake_suffix = "Darwin-x86_64.tar.gz"
+          cmake_dir = "cmake-{}-Darwin-x86_64".format(cmake_version)
+        else:
+          raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+
+        os.mkdir(ninja_tool_path)
+        os.chdir(ninja_tool_path)
+        ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
+        open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
+        execute_command("7z x ninja.zip")
+        if not "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+          execute_command("chmod +x ninja")
+        os.chdir(root)
+
+        cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
+        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+          open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
+          execute_command("7z x cmake.zip")
+          os.rename(cmake_dir, cmake_tool_path)
+        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang" or \
+             "${{ matrix.config.name }}" == "MacOS Latest Clang":
+          open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
+          execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
+          os.rename(cmake_dir, cmake_tool_path)
+          execute_command("chmod +x {}/cmake".format(cmake_tool_binary_path))
+
+        os.chdir(repo)
 
     - name: Boost cache
       uses: actions/cache@v2
@@ -236,6 +307,8 @@ jobs:
 
         root = os.environ['ROOT_PATH']
         repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
 
         os.chdir(root)
 
@@ -251,9 +324,13 @@ jobs:
 
         os.chdir(yaml_source_dir)
 
-        execute_command("cmake -GNinja -DYAML_BUILD_SHARED_LIBS=ON -DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} .".format(yaml_install_dir))
-        execute_command("cmake --build . --target all")
-        execute_command("cmake --build . --target install")
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
+                       "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  yaml_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
         os.chdir(repo)
 
     - name: Mingw64 cache (Windows)
@@ -954,7 +1031,8 @@ jobs:
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
-        cmake \
+        cp ${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja.exe C:\\msys64\\mingw64\\bin\\ninja.exe
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
         -G Ninja \
         -S . \
         -B build \
@@ -978,8 +1056,9 @@ jobs:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
       run: |
-        cmake \
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
         -G Ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
