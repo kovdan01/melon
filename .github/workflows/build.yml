@@ -142,14 +142,14 @@ jobs:
 
         os.mkdir(ninja_tool_path)
         os.chdir(ninja_tool_path)
-        ninja_url = "https://github.com/ninja-build/ninja/releases/download/v${}/ninja-${}".format(ninja_version, ninja_suffix)
+        ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
         open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
         execute_command("7z x ninja.zip")
         if not "${{ matrix.config.name }}" == "Windows Latest MinGW64":
           execute_command("chmod +x {}/ninja".format(ninja_tool_path))
         os.chdir(root)
 
-        cmake_url = "https://github.com/Kitware/CMake/releases/download/v${}/cmake-${}-${}".format(cmake_version, cmake_version, cmake_suffix)
+        cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
         if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
           open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
           execute_command("7z x cmake.zip")
