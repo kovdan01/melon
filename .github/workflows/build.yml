@@ -326,7 +326,7 @@ jobs:
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
                        "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(ninja_tool_path, "ninja")
+                                  os.path.join(ninja_tool_path, "ninja"),
                                   yaml_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
