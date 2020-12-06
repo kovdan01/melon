@@ -1,9 +1,13 @@
 name: Build all
 
-on: [push]
+on:
+  push:
+    branches: develop
+  pull_request:
+    branches: develop
 
 jobs:
-  build:
+  build-core-server-client-desktop:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     env:
@@ -13,25 +17,28 @@ jobs:
       BOOST_INSTALL_PATH: boost-install
       CYRUS_SASL_VERSION: 2.1.27
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
+      YAML_CPP_VERSION: 0.6.3
+      YAML_CPP_INSTALL_PATH: yaml-cpp-install
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
+      MINGW64_CACHE_VERSION: 8  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
         config:
         - {
-            name: "Windows Latest MinGW64", artifact: "Windows-MinGW64",
+            name: "Windows Latest MinGW64", artifact: "all-release-windows-mingw64",
             os: windows-latest,
             build_type: "Release", cc: "gcc", cxx: "g++",
           }
         - {
-            name: "Ubuntu Latest Clang", artifact: "Linux",
+            name: "Ubuntu Latest Clang", artifact: "all-release-linux",
             os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
           }
         - {
-            name: "MacOS Latest Clang", artifact: "MacOS",
+            name: "MacOS Latest Clang", artifact: "all-release-macos",
             os: macos-latest,
             build_type: "Release", cc: "clang", cxx: "clang++",
           }
@@ -197,8 +204,686 @@ jobs:
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
         os.chdir(repo)
 
-    - name: Qt5 (Windows)
+    - name: Yaml CPP (Windows)
       if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
+
+    - name: Yaml CPP cache (Ubuntu & MacOS)
+      uses: actions/cache@v2
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      id: cache_yaml_cpp_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+
+    - name: Yaml CPP (Ubuntu & MacOS)
+      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        yaml_version = os.environ['YAML_CPP_VERSION']
+
+        yaml_source_dir  = os.path.normpath(os.path.join(root, "yaml-cpp-yaml-cpp-{}".format(yaml_version)))
+        yaml_install_dir = os.path.normpath(os.path.join(root, "${{ env.YAML_CPP_INSTALL_PATH }}"))
+        os.mkdir(yaml_install_dir)
+
+        yaml_url = "https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-{}.tar.gz".format(yaml_version)
+        open("yaml.tar.gz", "wb").write(requests.get(yaml_url, allow_redirects=True).content)
+        execute_command("7z x yaml.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(yaml_source_dir)
+
+        execute_command("cmake -GNinja -DYAML_BUILD_SHARED_LIBS=ON -DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} .".format(yaml_install_dir))
+        execute_command("cmake --build . --target all")
+        execute_command("cmake --build . --target install")
+        os.chdir(repo)
+
+    - name: Mingw64 cache (Windows)
+      uses: actions/cache@v2
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      id: cache_mingw64_windows
+      with:
+        path: |
+          C:/msys64/mingw64/bin/assimp.exe
+          C:/msys64/mingw64/bin/assimp_viewer.exe
+          C:/msys64/mingw64/bin/libassimp.dll
+          C:/msys64/mingw64/include/assimp/
+          C:/msys64/mingw64/lib/cmake/assimp-5.0/
+          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimp-config-version.cmake
+          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimp-config.cmake
+          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimpTargets-release.cmake
+          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimpTargets.cmake
+          C:/msys64/mingw64/lib/libassimp.dll.a
+          C:/msys64/mingw64/lib/libIrrXML.a
+          C:/msys64/mingw64/lib/pkgconfig/assimp.pc
+          C:/msys64/mingw64/share/licenses/assimp/
+
+          C:/msys64/mingw64/bin/dbus*.exe
+          C:/msys64/mingw64/bin/libdbus-1-3.dll
+          C:/msys64/mingw64/etc/dbus-1/
+          C:/msys64/mingw64/include/dbus-1.0/
+          C:/msys64/mingw64/lib/cmake/DBus1/
+          C:/msys64/mingw64/lib/dbus-1.0/
+          C:/msys64/mingw64/lib/libdbus-1.a
+          C:/msys64/mingw64/lib/libdbus-1.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/dbus-1.pc
+          C:/msys64/mingw64/share/dbus-1/
+          C:/msys64/mingw64/share/xml/dbus-1/
+          C:/msys64/mingw64/var/lib/dbus/
+
+          C:/msys64/mingw64/bin/libdouble-conversion.dll
+          C:/msys64/mingw64/include/double-conversion/
+          C:/msys64/mingw64/lib/cmake/double-conversion/
+          C:/msys64/mingw64/lib/libdouble-conversion.a
+          C:/msys64/mingw64/lib/libdouble-conversion.dll.a
+          C:/msys64/mingw64/share/licenses/double-conversion/
+
+          C:/msys64/mingw64/bin/fc-*.exe
+          C:/msys64/mingw64/bin/libfontconfig-1.dll
+          C:/msys64/mingw64/etc/fonts/conf.d/
+          C:/msys64/mingw64/etc/fonts/fonts.conf
+          C:/msys64/mingw64/include/fontconfig/
+          C:/msys64/mingw64/lib/libfontconfig.a
+          C:/msys64/mingw64/lib/libfontconfig.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/fontconfig.pc
+          C:/msys64/mingw64/share/fontconfig/
+          C:/msys64/mingw64/share/gettext/its/fontconfig.its
+          C:/msys64/mingw64/share/gettext/its/fontconfig.loc
+          C:/msys64/mingw64/share/licenses/fontconfig/
+          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig-conf.mo
+          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig.mo
+          C:/msys64/mingw64/share/xml/fontconfig/
+          C:/msys64/mingw64/var/cache/fontconfig/
+
+          C:/msys64/mingw64/bin/libfreeglut.dll
+          C:/msys64/mingw64/include/GL/
+          C:/msys64/mingw64/lib/cmake/FreeGLUT/
+          C:/msys64/mingw64/lib/libfreeglut.dll.a
+          C:/msys64/mingw64/lib/libfreeglut_static.a
+          C:/msys64/mingw64/lib/pkgconfig/freeglut.pc
+
+          C:/msys64/mingw64/bin/freetype-config
+          C:/msys64/mingw64/bin/libfreetype-6.dll
+          C:/msys64/mingw64/include/freetype2/
+          C:/msys64/mingw64/lib/libfreetype.a
+          C:/msys64/mingw64/lib/libfreetype.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/freetype2.pc
+          C:/msys64/mingw64/share/aclocal/freetype2.m4
+          C:/msys64/mingw64/share/licenses/freetype/
+
+          C:/msys64/mingw64/bin/gif*.exe
+          C:/msys64/mingw64/bin/libgif-7.dll
+          C:/msys64/mingw64/include/gif_lib.h
+          C:/msys64/mingw64/lib/libgif.a
+          C:/msys64/mingw64/lib/libgif.dll.a
+
+          C:/msys64/mingw64/bin/gdbus-codegen-script.py
+          C:/msys64/mingw64/bin/gdbus-codegen.exe
+          C:/msys64/mingw64/bin/gdbus.exe
+          C:/msys64/mingw64/bin/gio-querymodules.exe
+          C:/msys64/mingw64/bin/gio.exe
+          C:/msys64/mingw64/bin/glib-*.exe
+          C:/msys64/mingw64/bin/gobject-query.exe
+          C:/msys64/mingw64/bin/gresource.exe
+          C:/msys64/mingw64/bin/gsettings.exe
+          C:/msys64/mingw64/bin/gspawn-win64-helper-console.exe
+          C:/msys64/mingw64/bin/gspawn-win64-helper.exe
+          C:/msys64/mingw64/bin/gtester-report-script.py
+          C:/msys64/mingw64/bin/gtester-report.exe
+          C:/msys64/mingw64/bin/libgio-2.0-0.dll
+          C:/msys64/mingw64/bin/libglib-2.0-0.dll
+          C:/msys64/mingw64/bin/libgmodule-2.0-0.dll
+          C:/msys64/mingw64/bin/libgobject-2.0-0.dll
+          C:/msys64/mingw64/bin/libgthread-2.0-0.dll
+          C:/msys64/mingw64/include/gio-win32-2.0/
+          C:/msys64/mingw64/include/glib-2.0/
+          C:/msys64/mingw64/lib/glib-2.0/
+          C:/msys64/mingw64/lib/libgio-2.0.a
+          C:/msys64/mingw64/lib/libgio-2.0.dll.a
+          C:/msys64/mingw64/lib/libglib-2.0.a
+          C:/msys64/mingw64/lib/libglib-2.0.dll.a
+          C:/msys64/mingw64/lib/libgmodule-2.0.a
+          C:/msys64/mingw64/lib/libgmodule-2.0.dll.a
+          C:/msys64/mingw64/lib/libgobject-2.0.a
+          C:/msys64/mingw64/lib/libgobject-2.0.dll.a
+          C:/msys64/mingw64/lib/libgthread-2.0.a
+          C:/msys64/mingw64/lib/libgthread-2.0.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/gio-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gio-windows-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/glib-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gmodule-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gmodule-export-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gmodule-no-export-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gobject-2.0.pc
+          C:/msys64/mingw64/lib/pkgconfig/gthread-2.0.pc
+          C:/msys64/mingw64/share/aclocal/glib-2.0.m4
+          C:/msys64/mingw64/share/aclocal/glib-gettext.m4
+          C:/msys64/mingw64/share/aclocal/gsettings.m4
+          C:/msys64/mingw64/share/bash-completion/completions/gapplication
+          C:/msys64/mingw64/share/bash-completion/completions/gdbus
+          C:/msys64/mingw64/share/bash-completion/completions/gio
+          C:/msys64/mingw64/share/bash-completion/completions/gresource
+          C:/msys64/mingw64/share/bash-completion/completions/gsettings
+          C:/msys64/mingw64/share/gettext/its/gschema.its
+          C:/msys64/mingw64/share/gettext/its/gschema.loc
+          C:/msys64/mingw64/share/glib-2.0/
+          C:/msys64/mingw64/share/licenses/glib2/
+          C:/msys64/mingw64/share/locale/af/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/am/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/an/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ar/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/as/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ast/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/az/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/be/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/be@latin/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/bg/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/bn/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/bn_IN/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/bs/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ca/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ca@valencia/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/cy/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/dz/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/el/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/en@shaw/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/en_CA/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/en_GB/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/et/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/eu/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/fa/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/fi/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/fur/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ga/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/gd/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/gl/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/gu/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/he/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/hi/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/hr/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/hy/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/id/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/is/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ka/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/kk/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/kn/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ko/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ku/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/lt/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/lv/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/mai/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/mg/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/mk/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ml/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/mn/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/mr/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ms/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/nb/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/nds/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ne/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/nn/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/oc/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/or/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/pa/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ps/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/pt_BR/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/rw/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/si/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sk/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sl/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sq/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sr@ije/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sr@latin/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ta/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/te/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/tg/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/th/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/tl/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/tr/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/tt/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/ug/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/wa/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/xh/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/yi/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/zh_HK/LC_MESSAGES/glib20.mo
+          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/glib20.mo
+          C:/msys2/usr/share/libalpm/
+
+          C:/msys64/mingw64/bin/gr2fonttest.exe
+          C:/msys64/mingw64/bin/libgraphite2.dll
+          C:/msys64/mingw64/include/graphite2/
+          C:/msys64/mingw64/lib/libgraphite2.a
+          C:/msys64/mingw64/lib/libgraphite2.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/graphite2.pc
+          C:/msys64/mingw64/share/graphite2/
+          C:/msys64/mingw64/share/licenses/graphite2/
+
+          C:/msys64/mingw64/bin/hb-*.exe
+          C:/msys64/mingw64/bin/hb-*.exe
+          C:/msys64/mingw64/bin/hb-*.exe
+          C:/msys64/mingw64/bin/hb-*.exe
+          C:/msys64/mingw64/bin/libharfbuzz*.dll
+          C:/msys64/mingw64/bin/libharfbuzz*.dll
+          C:/msys64/mingw64/bin/libharfbuzz*.dll
+          C:/msys64/mingw64/bin/libharfbuzz*.dll
+          C:/msys64/mingw64/include/harfbuzz/
+          C:/msys64/mingw64/lib/cmake/harfbuzz/
+          C:/msys64/mingw64/lib/girepository-1.0/HarfBuzz-0.0.typelib
+          C:/msys64/mingw64/lib/libharfbuzz*.a
+          C:/msys64/mingw64/lib/libharfbuzz*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/harfbuzz*.pc
+          C:/msys64/mingw64/share/gir-1.0/HarfBuzz-0.0.gir
+          C:/msys64/mingw64/share/licenses/harfbuzz/
+
+          C:/msys64/mingw64/bin/derb.exe
+          C:/msys64/mingw64/bin/genbrk.exe
+          C:/msys64/mingw64/bin/gencfu.exe
+          C:/msys64/mingw64/bin/gencnval.exe
+          C:/msys64/mingw64/bin/gendict.exe
+          C:/msys64/mingw64/bin/genrb.exe
+          C:/msys64/mingw64/bin/icu-config
+          C:/msys64/mingw64/bin/icuinfo.exe
+          C:/msys64/mingw64/bin/libicudt67.dll
+          C:/msys64/mingw64/bin/libicuin67.dll
+          C:/msys64/mingw64/bin/libicuio67.dll
+          C:/msys64/mingw64/bin/libicutest67.dll
+          C:/msys64/mingw64/bin/libicutu67.dll
+          C:/msys64/mingw64/bin/libicuuc67.dll
+          C:/msys64/mingw64/bin/makeconv.exe
+          C:/msys64/mingw64/bin/pkgdata.exe
+          C:/msys64/mingw64/bin/uconv.exe
+          C:/msys64/mingw64/include/unicode/
+          C:/msys64/mingw64/lib/icu/
+          C:/msys64/mingw64/lib/libicu*.a
+          C:/msys64/mingw64/lib/libicu*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/icu-i18n.pc
+          C:/msys64/mingw64/lib/pkgconfig/icu-io.pc
+          C:/msys64/mingw64/lib/pkgconfig/icu-uc.pc
+          C:/msys64/mingw64/sbin/escapesrc.exe
+          C:/msys64/mingw64/sbin/genccode.exe
+          C:/msys64/mingw64/sbin/gencmn.exe
+          C:/msys64/mingw64/sbin/gennorm2.exe
+          C:/msys64/mingw64/sbin/gensprep.exe
+          C:/msys64/mingw64/sbin/icupkg.exe
+          C:/msys64/mingw64/share/icu/
+
+          C:/msys64/mingw64/bin/imgcmp.exe
+          C:/msys64/mingw64/bin/imginfo.exe
+          C:/msys64/mingw64/bin/jasper.exe
+          C:/msys64/mingw64/bin/libjasper-4.dll
+          C:/msys64/mingw64/include/jasper/
+          C:/msys64/mingw64/lib/libjasper.a
+          C:/msys64/mingw64/lib/libjasper.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/jasper.pc
+          C:/msys64/mingw64/share/licenses/jasper/
+
+          C:/msys64/mingw64/bin/jpgicc.exe
+          C:/msys64/mingw64/bin/liblcms2-2.dll
+          C:/msys64/mingw64/bin/linkicc.exe
+          C:/msys64/mingw64/bin/psicc.exe
+          C:/msys64/mingw64/bin/tificc.exe
+          C:/msys64/mingw64/bin/transicc.exe
+          C:/msys64/mingw64/include/lcms2.h
+          C:/msys64/mingw64/include/lcms2_plugin.h
+          C:/msys64/mingw64/lib/liblcms2.a
+          C:/msys64/mingw64/lib/liblcms2.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/lcms2.pc
+
+          C:/msys64/mingw64/bin/dumpsexp.exe
+          C:/msys64/mingw64/bin/hmac256.exe
+          C:/msys64/mingw64/bin/libgcrypt-20.dll
+          C:/msys64/mingw64/bin/libgcrypt-config
+          C:/msys64/mingw64/bin/mpicalc.exe
+          C:/msys64/mingw64/include/gcrypt.h
+          C:/msys64/mingw64/lib/libgcrypt.a
+          C:/msys64/mingw64/lib/libgcrypt.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libgcrypt.pc
+          C:/msys64/mingw64/share/aclocal/libgcrypt.m4
+          C:/msys64/mingw64/share/licenses/libgcrypt/
+
+          C:/msys64/mingw64/bin/gpg-error-config
+          C:/msys64/mingw64/bin/gpg-error.exe
+          C:/msys64/mingw64/bin/gpgrt-config
+          C:/msys64/mingw64/bin/libgpg-error-0.dll
+          C:/msys64/mingw64/bin/yat2m.exe
+          C:/msys64/mingw64/include/gpg-error.h
+          C:/msys64/mingw64/include/gpgrt.h
+          C:/msys64/mingw64/lib/libgpg-error.a
+          C:/msys64/mingw64/lib/libgpg-error.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/gpg-error.pc
+          C:/msys64/mingw64/share/aclocal/gpg-error.m4
+          C:/msys64/mingw64/share/aclocal/gpgrt.m4
+          C:/msys64/mingw64/share/common-lisp/
+          C:/msys64/mingw64/share/libgpg-error/
+          C:/msys64/mingw64/share/licenses/libgpg-error/
+          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/libgpg-error.mo
+          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/libgpg-error.mo
+
+          C:/msys64/mingw64/bin/cjpeg.exe
+          C:/msys64/mingw64/bin/djpeg.exe
+          C:/msys64/mingw64/bin/jpegtran.exe
+          C:/msys64/mingw64/bin/libjpeg-8.dll
+          C:/msys64/mingw64/bin/libturbojpeg.dll
+          C:/msys64/mingw64/bin/rdjpgcom.exe
+          C:/msys64/mingw64/bin/tjbench.exe
+          C:/msys64/mingw64/bin/wrjpgcom.exe
+          C:/msys64/mingw64/include/jconfig.h
+          C:/msys64/mingw64/include/jerror.h
+          C:/msys64/mingw64/include/jinclude.h
+          C:/msys64/mingw64/include/jmorecfg.h
+          C:/msys64/mingw64/include/jpeglib.h
+          C:/msys64/mingw64/include/transupp.h
+          C:/msys64/mingw64/include/turbojpeg.h
+          C:/msys64/mingw64/lib/libjpeg.a
+          C:/msys64/mingw64/lib/libjpeg.dll.a
+          C:/msys64/mingw64/lib/libturbojpeg.a
+          C:/msys64/mingw64/lib/libturbojpeg.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libjpeg.pc
+          C:/msys64/mingw64/lib/pkgconfig/libturbojpeg.pc
+          C:/msys64/mingw64/share/licenses/libjpeg-turbo/
+
+          C:/msys64/mingw64/bin/libmng-2.dll
+          C:/msys64/mingw64/include/libmng.h
+          C:/msys64/mingw64/include/libmng_conf.h
+          C:/msys64/mingw64/include/libmng_types.h
+          C:/msys64/mingw64/lib/libmng.a
+          C:/msys64/mingw64/lib/libmng.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libmng.pc
+          C:/msys64/mingw64/share/mng-2.0/
+
+          C:/msys64/mingw64/bin/libpng-config
+          C:/msys64/mingw64/bin/libpng16-16.dll
+          C:/msys64/mingw64/bin/libpng16-config
+          C:/msys64/mingw64/bin/png-fix-itxt.exe
+          C:/msys64/mingw64/bin/png2pnm-static.exe
+          C:/msys64/mingw64/bin/png2pnm.exe
+          C:/msys64/mingw64/bin/pngfix.exe
+          C:/msys64/mingw64/bin/pnm2png-static.exe
+          C:/msys64/mingw64/bin/pnm2png.exe
+          C:/msys64/mingw64/include/libpng16/
+          C:/msys64/mingw64/include/png.h
+          C:/msys64/mingw64/include/pngconf.h
+          C:/msys64/mingw64/include/pnglibconf.h
+          C:/msys64/mingw64/lib/libpng.a
+          C:/msys64/mingw64/lib/libpng.dll.a
+          C:/msys64/mingw64/lib/libpng16.a
+          C:/msys64/mingw64/lib/libpng16.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libpng.pc
+          C:/msys64/mingw64/lib/pkgconfig/libpng16.pc
+          C:/msys64/mingw64/share/licenses/libpng/
+
+          C:/msys64/mingw64/bin/fax2ps.exe
+          C:/msys64/mingw64/bin/fax2tiff.exe
+          C:/msys64/mingw64/bin/libtiff-5.dll
+          C:/msys64/mingw64/bin/libtiffxx-5.dll
+          C:/msys64/mingw64/bin/pal2rgb.exe
+          C:/msys64/mingw64/bin/ppm2tiff.exe
+          C:/msys64/mingw64/bin/raw2tiff.exe
+          C:/msys64/mingw64/bin/tiff*.exe
+          C:/msys64/mingw64/include/tif*.h
+          C:/msys64/mingw64/lib/libtiff.a
+          C:/msys64/mingw64/lib/libtiff.dll.a
+          C:/msys64/mingw64/lib/libtiffxx.a
+          C:/msys64/mingw64/lib/libtiffxx.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libtiff-4.pc
+          C:/msys64/mingw64/share/licenses/libtiff/
+
+          C:/msys64/mingw64/bin/cwebp.exe
+          C:/msys64/mingw64/bin/dwebp.exe
+          C:/msys64/mingw64/bin/gif2webp.exe
+          C:/msys64/mingw64/bin/img2webp.exe
+          C:/msys64/mingw64/bin/libwebp-7.dll
+          C:/msys64/mingw64/bin/libwebpdecoder-3.dll
+          C:/msys64/mingw64/bin/libwebpdemux-2.dll
+          C:/msys64/mingw64/bin/libwebpmux-3.dll
+          C:/msys64/mingw64/bin/webpinfo.exe
+          C:/msys64/mingw64/bin/webpmux.exe
+          C:/msys64/mingw64/include/webp/
+          C:/msys64/mingw64/lib/libwebp*.a
+          C:/msys64/mingw64/lib/libwebp*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libwebp*.pc
+
+          C:/msys64/mingw64/bin/libxml2-2.dll
+          C:/msys64/mingw64/bin/xml2-config
+          C:/msys64/mingw64/bin/xmlcatalog.exe
+          C:/msys64/mingw64/bin/xmllint.exe
+          C:/msys64/mingw64/include/libxml2/
+          C:/msys64/mingw64/lib/cmake/libxml2/
+          C:/msys64/mingw64/lib/libxml2.a
+          C:/msys64/mingw64/lib/libxml2.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libxml-2.0.pc
+          C:/msys64/mingw64/lib/python3.8/site-packages/drv_libxml2.py
+          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2.py
+          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2mod.dll.a
+          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2mod.pyd
+          C:/msys64/mingw64/lib/xml2Conf.sh
+          C:/msys64/mingw64/share/aclocal/libxml.m4
+          C:/msys64/mingw64/share/licenses/libxml2/
+
+          C:/msys64/mingw64/bin/libexslt-0.dll
+          C:/msys64/mingw64/bin/libxslt-1.dll
+          C:/msys64/mingw64/bin/xslt-config
+          C:/msys64/mingw64/bin/xsltproc.exe
+          C:/msys64/mingw64/include/libexslt/
+          C:/msys64/mingw64/include/libxslt/
+          C:/msys64/mingw64/lib/libexslt.a
+          C:/msys64/mingw64/lib/libexslt.dll.a
+          C:/msys64/mingw64/lib/libxslt-plugins/
+          C:/msys64/mingw64/lib/libxslt.a
+          C:/msys64/mingw64/lib/libxslt.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libexslt.pc
+          C:/msys64/mingw64/lib/pkgconfig/libxslt.pc
+          C:/msys64/mingw64/lib/xsltConf.sh
+          C:/msys64/mingw64/share/aclocal/libxslt.m4
+
+          C:/msys64/mingw64/bin/libminizip-1.dll
+          C:/msys64/mingw64/include/minizip/
+          C:/msys64/mingw64/lib/cmake/minizip-exports-release.cmake
+          C:/msys64/mingw64/lib/cmake/minizip-exports.cmake
+          C:/msys64/mingw64/lib/libminizip.a
+          C:/msys64/mingw64/lib/libminizip.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/minizip.pc
+
+          C:/msys64/mingw64/bin/altonegen.exe
+          C:/msys64/mingw64/bin/libopenal-1.dll
+          C:/msys64/mingw64/bin/makemhr.exe
+          C:/msys64/mingw64/bin/openal-info.exe
+          C:/msys64/mingw64/include/AL/
+          C:/msys64/mingw64/lib/cmake/OpenAL/
+          C:/msys64/mingw64/lib/libopenal.a
+          C:/msys64/mingw64/lib/libopenal.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/openal.pc
+          C:/msys64/mingw64/share/openal/
+
+          C:/msys64/mingw64/bin/libpcre*.dll
+          C:/msys64/mingw64/bin/pcre-config
+          C:/msys64/mingw64/bin/pcregrep.exe
+          C:/msys64/mingw64/bin/pcretest.exe
+          C:/msys64/mingw64/include/pcre*.h
+          C:/msys64/mingw64/lib/libpcre*.a
+          C:/msys64/mingw64/lib/libpcre*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libpcre*.pc
+          C:/msys64/mingw64/share/licenses/pcre/
+
+          C:/msys64/mingw64/bin/libpcre2*.dll
+          C:/msys64/mingw64/bin/pcre2-config
+          C:/msys64/mingw64/bin/pcre2grep.exe
+          C:/msys64/mingw64/bin/pcre2test.exe
+          C:/msys64/mingw64/include/pcre2.h
+          C:/msys64/mingw64/include/pcre2posix.h
+          C:/msys64/mingw64/lib/libpcre2*.a
+          C:/msys64/mingw64/lib/libpcre2*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libpcre2*.pc
+
+          C:/msys64/mingw64/include/vulkan/
+          C:/msys64/mingw64/share/licenses/vulkan-headers/
+          C:/msys64/mingw64/share/vulkan/
+
+          C:/msys64/mingw64/bin/libvulkan-1.dll
+          C:/msys64/mingw64/lib/libvulkan.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/vulkan.pc
+          C:/msys64/mingw64/share/licenses/vulkan-loader/
+
+          C:/msys64/mingw64/bin/edit.dll
+          C:/msys64/mingw64/bin/edit_test.exe
+          C:/msys64/mingw64/bin/edit_test_dll.exe
+          C:/msys64/mingw64/include/editline/
+          C:/msys64/mingw64/lib/libedit.dll.a
+          C:/msys64/mingw64/lib/libedit_static.a
+          C:/msys64/mingw64/lib/pkgconfig/wineditline.pc
+          C:/msys64/mingw64/share/licenses/wineditline/
+
+          C:/msys64/mingw64/bin/cxpm-noX.exe
+          C:/msys64/mingw64/bin/libXpm-noX4.dll
+          C:/msys64/mingw64/include/X11/simx.h
+          C:/msys64/mingw64/include/X11/xpm.h
+          C:/msys64/mingw64/lib/libXpm.a
+          C:/msys64/mingw64/lib/libXpm.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/xpm.pc
+
+          C:/msys64/mingw64/bin/libzzip*.dll
+          C:/msys64/mingw64/bin/unzip-mem.exe
+          C:/msys64/mingw64/bin/unzzip*.exe
+          C:/msys64/mingw64/bin/zz*.exe
+          C:/msys64/mingw64/include/SDL_rwops_zzip/
+          C:/msys64/mingw64/include/zzip-io.h
+          C:/msys64/mingw64/include/zzip.h
+          C:/msys64/mingw64/include/zzip/
+          C:/msys64/mingw64/lib/libzzip*.a
+          C:/msys64/mingw64/lib/libzzip*.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/SDL_rwops_zzip.pc
+          C:/msys64/mingw64/lib/pkgconfig/zzip*.pc
+          C:/msys64/mingw64/share/aclocal/zziplib.m4
+
+          C:/msys64/mingw64/bin/assistant.exe
+          C:/msys64/mingw64/bin/balsam.exe
+          C:/msys64/mingw64/bin/canbusutil.exe
+          C:/msys64/mingw64/bin/designer.exe
+          C:/msys64/mingw64/bin/dumpcpp.exe
+          C:/msys64/mingw64/bin/dumpdoc.exe
+          C:/msys64/mingw64/bin/fixqt4headers.pl
+          C:/msys64/mingw64/bin/idc.exe
+          C:/msys64/mingw64/bin/lconvert.exe
+          C:/msys64/mingw64/bin/linguist.exe
+          C:/msys64/mingw64/bin/lprodump.exe
+          C:/msys64/mingw64/bin/lrelease-pro.exe
+          C:/msys64/mingw64/bin/lrelease.exe
+          C:/msys64/mingw64/bin/lupdate-pro.exe
+          C:/msys64/mingw64/bin/lupdate.exe
+          C:/msys64/mingw64/bin/meshdebug.exe
+          C:/msys64/mingw64/bin/moc.exe
+          C:/msys64/mingw64/bin/pixeltool.exe
+          C:/msys64/mingw64/bin/qcollectiongenerator.exe
+          C:/msys64/mingw64/bin/qdbus.exe
+          C:/msys64/mingw64/bin/qdbuscpp2xml.exe
+          C:/msys64/mingw64/bin/qdbusviewer.exe
+          C:/msys64/mingw64/bin/qdbusxml2cpp.exe
+          C:/msys64/mingw64/bin/qdistancefieldgenerator.exe
+          C:/msys64/mingw64/bin/qdoc.exe
+          C:/msys64/mingw64/bin/qgltf.exe
+          C:/msys64/mingw64/bin/qhelpgenerator.exe
+          C:/msys64/mingw64/bin/qlalr.exe
+          C:/msys64/mingw64/bin/qmake.exe
+          C:/msys64/mingw64/bin/qml*.exe
+          C:/msys64/mingw64/bin/qscxmlc.exe
+          C:/msys64/mingw64/bin/Qt5*.dll
+          C:/msys64/mingw64/bin/qtattributionsscanner.exe
+          C:/msys64/mingw64/bin/qtdiag.exe
+          C:/msys64/mingw64/bin/qtpaths.exe
+          C:/msys64/mingw64/bin/qtplugininfo.exe
+          C:/msys64/mingw64/bin/qvkgen.exe
+          C:/msys64/mingw64/bin/rcc.exe
+          C:/msys64/mingw64/bin/repc.exe
+          C:/msys64/mingw64/bin/syncqt.pl
+          C:/msys64/mingw64/bin/testcon.exe
+          C:/msys64/mingw64/bin/tracegen.exe
+          C:/msys64/mingw64/bin/uic.exe
+          C:/msys64/mingw64/bin/windeployqt.exe
+          C:/msys64/mingw64/bin/xmlpatterns.exe
+          C:/msys64/mingw64/bin/xmlpatternsvalidator.exe
+          C:/msys64/mingw64/include/ActiveQt/
+          C:/msys64/mingw64/include/Qt*/
+          C:/msys64/mingw64/lib/cmake/Qt5*/
+          C:/msys64/mingw64/lib/libQt5*.dll.a
+          C:/msys64/mingw64/lib/libqtmain.a
+          C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5gui_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qml_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qmlmodels_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5qmlworkerscript_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quick_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quickparticles_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quickshapes_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5quicktest_metatypes.json
+          C:/msys64/mingw64/lib/metatypes/qt5widgets_metatypes.json
+          C:/msys64/mingw64/lib/pkgconfig/Qt5*.pc
+          C:/msys64/mingw64/lib/Qt5*.prl
+          C:/msys64/mingw64/lib/qtmain.prl
+          C:/msys64/mingw64/share/licenses/qt5/
+          C:/msys64/mingw64/share/qt5/mkspecs/
+          C:/msys64/mingw64/share/qt5/phrasebooks/
+          C:/msys64/mingw64/share/qt5/plugins/
+          C:/msys64/mingw64/share/qt5/qml/
+          C:/msys64/mingw64/share/qt5/translations/
+        key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
+
+    - name: Qt5 (Windows)
+      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
@@ -302,11 +987,22 @@ jobs:
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
+    - name: Initialize CodeQL (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+
     - name: Build
       run: cmake --build build --target all
+
+    - name: Perform CodeQL Analysis (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/analyze@v1
 
     - name: Run tests
       run: cd build && ctest && cd ..
@@ -422,13 +1118,34 @@ jobs:
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: '; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'autogen'; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+
+  build-android:
+    name: Android
+    runs-on: ubuntu-20.04
+    needs: build-core-server-client-desktop
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build debug apk
+      shell: sh {0}
+      run: |
+        cd src/client-android
+        gradle wrapper
+        ./gradlew assembleDebug
+
+    - name: Upload debug apk
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./src/client-android/app/build/outputs/apk/debug/app-debug.apk
+        name: android-debug
 
   #release:
     #if: contains(github.ref, 'tags/v')
