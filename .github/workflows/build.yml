@@ -103,7 +103,7 @@ jobs:
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
           else:
-            raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+            raise RuntimeError("Unknown OS {}".format("${{ runner.os }}"))
 
     - name: Install required python modules
       run: pip install requests
@@ -159,7 +159,7 @@ jobs:
           cmake_suffix = "Darwin-x86_64.tar.gz"
           cmake_dir = "cmake-{}-Darwin-x86_64".format(cmake_version)
         else:
-          raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+          raise RuntimeError("Unknown OS {}".format("${{ runner.os }}"))
 
         os.mkdir(ninja_tool_path)
         os.chdir(ninja_tool_path)
@@ -231,7 +231,7 @@ jobs:
              "${{ runner.os }}" == "Linux":
           toolset = "clang"
         else:
-          raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+          raise RuntimeError("Unknown OS {}".format("${{ runner.os }}"))
 
         if "${{ runner.os }}" == "Windows":
           cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
@@ -1084,7 +1084,7 @@ jobs:
         name: ${{ matrix.config.artifact }}
 
     - name: Upload binaries (Linux & macOS)
-      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      if: ${{ (runner.os == 'Linux' && matrix.config.suffix == '') || runner.os == 'macOS' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install.tar
