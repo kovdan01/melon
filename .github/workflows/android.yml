@@ -312,12 +312,12 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build-core-arm
     env:
-      GRADLE_AND_BUILD_CACHE_VERSION: 2  # increment when need to update gradle wrapper & build cache
+      GRADLE_AND_BUILD_CACHE_VERSION: 3  # increment when need to update gradle & build cache
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Gradle wrapper & build cache
+    - name: Gradle & build cache
       uses: actions/cache@v2
       id: cache_gradle
       with:
@@ -328,7 +328,7 @@ jobs:
           src/client-android/gradlew.bat
           src/client-android/build/
           src/client-android/app/build/
-        key: ${{ runner.os }}-gradle-wrapper-${{ env.GRADLE_AND_BUILD_CACHE_VERSION }}
+        key: ${{ runner.os }}-gradle-and-build-${{ env.GRADLE_AND_BUILD_CACHE_VERSION }}
 
     - name: Gradle wrapper
       if: ${{ steps.cache_gradle.outputs.cache-hit != 'true' }}
