@@ -1,5 +1,3 @@
-#include <sasl/sasl.h>
-#include <sasl/saslplug.h>
 #include <sasl/saslutil.h>
 
 #include <iostream>
@@ -9,10 +7,12 @@
 
 
 
+
 class Sasl_conn
 {
+
 public:
-    Sasl_conn();
+
     ~Sasl_conn();
     sasl_conn_t* get_conn();
     sasl_conn_t** get_pconn();
@@ -20,154 +20,241 @@ public:
 private:
     sasl_conn_t* conn;
     sasl_conn_t** pconn=&conn;
+
 };
 
-Sasl_conn::~Sasl_conn()
+Sasl_conn::~Sasl_conn(){sasl_dispose(&conn);}
+
+sasl_conn_t* Sasl_conn::get_conn(){return conn;}
+
+sasl_conn_t** Sasl_conn::get_pconn(){return pconn;}
+
+
+
+
+
+
+class SaslServer
 {
-    sasl_dispose(&conn);
+
+public:
+    //SaslServer(){};
+    ~SaslServer();
+    std::string get_service();
+    std::string get_chosenmech();
+    sasl_conn_t* get_conn();
+    sasl_conn_t** get_pconn();
+    unsigned* get_len();
+    unsigned* get_count();
+    //void set_data(const char* string);
+    void set_service(std::string);
+    int sasl_server_start_wrapper();
+    int sasl_server_new_wrapper();
+
+private:
+    unsigned *len, *count;
+    //std::string_view data;
+    std::string chosenmech;
+    std::string service;
+    Sasl_conn conn;
+
+};
+
+int SaslServer::sasl_server_start_wrapper()
+{
+    const char* clientin;
+    unsigned clientinlen = 0;
+    return sasl_server_start(this->get_conn(), this->get_chosenmech().c_str(), clientin, clientinlen, &clientin, &clientinlen);
 }
 
-sasl_conn_t* Sasl_conn::get_conn()
+int SaslServer::sasl_server_new_wrapper()
 {
-    return conn;
+    return sasl_server_new(this->get_service().c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, this->get_pconn());
 }
 
-sasl_conn_t** Sasl_conn::get_pconn()
+SaslServer::~SaslServer(){sasl_server_done();}
+
+std::string SaslServer::get_service(){return service;}
+
+std::string SaslServer::get_chosenmech(){return chosenmech;}
+
+sasl_conn_t* SaslServer::get_conn(){return conn.get_conn();}
+
+sasl_conn_t** SaslServer::get_pconn(){return conn.get_pconn();}
+
+unsigned* SaslServer::get_len(){return len;}
+
+unsigned* SaslServer::get_count(){return count;}
+
+
+//void SaslServer::set_data(const char *string)
+//{
+//    data = string;
+//}
+
+void SaslServer::set_service(std::string string)
 {
-    return pconn;
+    service = string;
 }
 
 
-int sasl_server_new_wrapper(std::string service, Sasl_conn context)
+//int sasl_server_new_wrapper(SaslServer &server)
+//{
+//    return sasl_server_new(server.get_service().c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, server.get_pconn());
+//}
+
+
+int sasl_listmech_wrapper(SaslServer server)
 {
-    return sasl_server_new(service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, context.get_pconn());
+    const char* data;
+    int ret = sasl_listmech(server.get_conn(), nullptr, nullptr, " ", nullptr, &data, (unsigned int *) server.get_len(), (int *) server.get_count());
+    //server.set_data(data);
+    return ret;
 }
 
-//int sasl_client_new_wrapper(std::string service, sasl_conn_t context)
+
+//int sasl_server_start_wrapper(SaslServer server)
 //{
-//    return sasl_client_new(service.c_str(), nullptr, nullptr, nullptr, nullptr, 0, context.get_pconn());
+//    const char* clientin;
+//    unsigned clientinlen = 0;
+//    return sasl_server_start(server.get_conn(), server.get_chosenmech().c_str(), clientin, clientinlen, &clientin, &clientinlen);
+//}
+
+
+
+int sasl_getprop_username_wrapper(SaslServer server)
+{
+    const void** userid;
+    int ret =  sasl_getprop(server.get_conn(), SASL_USERNAME, (const void **) &userid);
+    std::cout << "Username: " << userid;
+    return ret;
+}
+
+
+
+
+
+class SaslClient
+{
+public:
+    SaslClient(){};
+    ~SaslClient();
+    std::string get_service();
+    std::string get_chosenmech();
+    sasl_conn_t* get_conn();
+    sasl_conn_t** get_pconn();
+    unsigned* get_len();
+    unsigned* get_count();
+    void set_data(const char* string);
+
+private:
+    unsigned *len, *count;
+    //std::string_view data;
+    std::string chosenmech;
+    std::string service;
+    Sasl_conn conn;
+};
+
+
+
+
+SaslClient::~SaslClient()
+{
+     sasl_client_done();
+}
+
+std::string SaslClient::get_service()
+{
+    return service;
+}
+
+std::string SaslClient::get_chosenmech()
+{
+    return chosenmech;
+}
+
+sasl_conn_t* SaslClient::get_conn()
+{
+    return conn.get_conn();
+}
+
+sasl_conn_t** SaslClient::get_pconn()
+{
+    return conn.get_pconn();
+}
+
+
+unsigned* SaslClient::get_len()
+{
+    return len;
+}
+
+unsigned* SaslClient::get_count()
+{
+    return count;
+}
+
+
+//void SaslClient::set_data(const char *string)
+//{
+//    data = string;
 //}
 
 
 
 
-
-//char buffordata[1000];
-
-//static char *
-//getpassphrase(const char *prompt)
-//{
-//  return getpass(prompt);
-//}
+int sasl_client_new_wrapper(SaslClient client)
+{
+    return sasl_client_new(client.get_service().c_str(), nullptr, nullptr, nullptr, nullptr, 0, client.get_pconn());
+}
 
 
+int sasl_client_start_wrapper(SaslClient client)
+{
+    const char * clientout;
+    unsigned clientoutlen;
+    const char* mech;
+    return sasl_client_start(client.get_conn(), client.get_chosenmech().c_str(), nullptr, &clientout, (unsigned int *) &clientoutlen, &mech);
+}
 
-//static int simple(void *context, int id, const char **result, unsigned *len)
-//{
-//  const char *value = (const char *)context;
+int main()
+{
 
-//  if (! result)
-//    return SASL_BADPARAM;
-
-//  switch (id) {
-//  case SASL_CB_USER:
-//    *result = value;
-//    if (len)
-//      *len = value ? (unsigned) strlen(value) : 0;
-//    break;
-//  case SASL_CB_AUTHNAME:
-//    *result = value;
-//    if (len)
-//      *len = value ? (unsigned) strlen(value) : 0;
-//    break;
-//  default:
-//    return SASL_BADPARAM;
-//  }
-
-//  printf("returning OK: %s\n", *result);
-
-//  return SASL_OK;
-//}
+    //this is done once
+    int result = sasl_server_init(nullptr, "sample");
+    if (result != SASL_OK)
+    {
+        std::cout<<"Fail sasl_server_init()"<<std::endl;
+    }
 
 
-//static int
-//getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), int id, sasl_secret_t **psecret)
-//{
-//  char *password;
-//  unsigned len;
+    SaslClient client;
+    SaslServer server;
+    server.set_service("fake");
 
-//  if (! conn || ! psecret || id != SASL_CB_PASS)
-//    return SASL_BADPARAM;
+    std::cout << "Service: " << server.get_service() <<std::endl;
 
-//  password = getpassphrase("Password: ");
-//  if (! password)
-//    return SASL_FAIL;
+    result = server.sasl_server_new_wrapper();
+    {
+        std::cout<<"Fail sasl_server_new()"<<std::endl;
+    }
 
-//  len = (unsigned) strlen(password);
-
-//  *psecret = (sasl_secret_t *) malloc(sizeof(sasl_secret_t) + len);
-
-//  if (! *psecret) {
-//    memset(password, 0, len);
-//    return SASL_NOMEM;
-//  }
-
-//  (*psecret)->len = len;
-//  strcpy((char *)(*psecret)->data, password);
-//  memset(password, 0, len);
-
-//  return SASL_OK;
-//}
+}
 
 
-//static int
-//prompt(void *context __attribute__((unused)),
-//       int id,
-//       const char *challenge,
-//       const char *prompt,
-//       const char *defresult,
-//       const char **result,
-//       unsigned *len)
-//{
-//  if ((id != SASL_CB_ECHOPROMPT && id != SASL_CB_NOECHOPROMPT)
-//      || !prompt || !result || !len)
-//    return SASL_BADPARAM;
 
-//  if (! defresult)
-//    defresult = "";
 
-//  fputs(prompt, stdout);
-//  if (challenge)
-//    printf(" [challenge: %s]", challenge);
-//  printf(" [%s]: ", defresult);
-//  fflush(stdout);
 
-//  if (id == SASL_CB_ECHOPROMPT) {
-//    char *original = getpassphrase("");
-//    if (! original)
-//      return SASL_FAIL;
-//    if (*original)
-//      *result = strdup(original);
-//    else
-//      *result = strdup(defresult);
-//    memset(original, 0L, strlen(original));
-//  } else {
-//    char buf[1024];
-//    fgets(buf, 1024, stdin);
-//    if (buf[0]) {
-//      *result = strdup(buf);
-//    } else {
-//      *result = strdup(defresult);
-//    }
-//    memset(buf, 0L, sizeof(buf));
-//  }
-//  if (! *result)
-//    return SASL_NOMEM;
 
-//  *len = (unsigned) strlen(*result);
 
-//  return SASL_OK;
-//}
+
+
+
+
+
+
+
+
 
 
 
@@ -184,76 +271,12 @@ int sasl_server_new_wrapper(std::string service, Sasl_conn context)
 //{
 
 
-//    static sasl_callback_t callbacks[8], *callback;
-//    char *userid = NULL, *authid = NULL;
 
-//    userid = (char*)"user";
-//    authid = (char*)"user";
-
-
-//    callback = callbacks;
-
-//    /* user */
-//    if (userid) {
-//      callback->id = SASL_CB_USER;
-//      callback->proc = (sasl_callback_ft)&simple;
-//      callback->context = userid;
-//      ++callback;
-//    }
-
-//    /* authname */
-//    if (authid) {
-//      callback->id = SASL_CB_AUTHNAME;
-//      callback->proc = (sasl_callback_ft)&simple;
-//      callback->context = authid;
-//      ++callback;
-//    }
-
-//    /* password */
-//    callback->id = SASL_CB_PASS;
-//    callback->proc = (sasl_callback_ft)&getsecret;
-//    callback->context = NULL;
-//    ++callback;
-
-//    /* echoprompt */
-//     callback->id = SASL_CB_ECHOPROMPT;
-//     callback->proc = (sasl_callback_ft)&prompt;
-//     callback->context = NULL;
-//     ++callback;
-
-
-//     /* noechoprompt */
-//      callback->id = SASL_CB_NOECHOPROMPT;
-//      callback->proc = (sasl_callback_ft)&prompt;
-//      callback->context = NULL;
-//      ++callback;
-
-//      /* termination */
-//       callback->id = SASL_CB_LIST_END;
-//       callback->proc = NULL;
-//       callback->context = NULL;
-//       ++callback;
-
-//    std::string mechclient;
-//    std::string mechserver;
 
 //    mechclient = "PLAIN"; //chosen by client - we should ask to enter this
 
-//    //this is done once
-//    int result = sasl_server_init(nullptr, "sample");
-//    if (result != SASL_OK)
-//    {
-//        std::cout<<"Fail sasl_server_init()"<<std::endl;
-//    }
 
-//    //server context
-//    sasl_conn_t *connserver;
 
-//    result = sasl_server_new_wrapper("fake", &connserver);
-//    if (result != SASL_OK)
-//    {
-//        std::cout<<"Fail sasl_server_new()"<<std::endl;
-//    }
 
 //    //in callbacks defined that future authID will be asked
 //    result = sasl_client_init(callbacks);
