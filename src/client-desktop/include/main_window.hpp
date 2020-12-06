@@ -2,10 +2,15 @@
 #define MELON_CLIENT_DESKTOP_MAIN_WINDOW_HPP
 
 #include "ui_main_window.h"
-
 #include <QMainWindow>
-
 #include <memory>
+
+QT_BEGIN_NAMESPACE
+namespace Ui
+{
+    class MainWindow;
+}
+QT_END_NAMESPACE
 
 namespace melon::client_desktop
 {
@@ -19,20 +24,13 @@ public:
     ~MainWindow() override = default;
 
 private slots:
-    void on_AddChat_clicked();
+    void add_chat();
 
-//    void on_MenuList_customContextMenuRequested(const QPoint &pos);
-
-    void eraseItem();
-
-    void on_MenuList_itemDoubleClicked(QListWidgetItem *item);
-
-    void on_SendButton_clicked();
-
-    void on_ReceiveButton_clicked();
+//    void eraseItem();
+//    void on_MenuList_itemDoubleClicked(QListWidgetItem *item);
 
 private:
-    std::unique_ptr<Ui::MainWindow> m_ui;
+    QScopedPointer<Ui::MainWindow> m_ui;
 };
 
 }  // namespace melon::client_desktop

@@ -31,15 +31,18 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
     include/main_window.hpp
+    include/chat_widget.hpp
 )
 
 set(SOURCES
     src/main.cpp
     src/main_window.cpp
+    src/chat_widget.cpp
 )
 
 set(UI_FILES
     ui/main_window.ui
+    ui/chat_widget.ui
 )
 
 add_executable(${PROJECT_NAME}

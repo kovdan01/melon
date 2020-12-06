@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>934</width>
+    <width>768</width>
     <height>570</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="mouseTracking">
    <bool>true</bool>
@@ -23,14 +29,14 @@
      <height>500</height>
     </size>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,8">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,5">
     <item>
      <widget class="QWidget" name="ChatsMenuLayout" native="true">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
         <horstretch>123</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -47,11 +53,11 @@
         <height>16777208</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="19,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="15,1">
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QListWidget" name="MenuList">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -59,15 +65,19 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <item>
-          <property name="text">
-           <string>Chat1</string>
-          </property>
-         </item>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Fixed</enum>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="AddChat">
+        <widget class="QPushButton" name="AddChatButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -83,63 +93,22 @@
      </widget>
     </item>
     <item>
-     <widget class="QWidget" name="MessageLayout" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="15,1">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
-       </property>
-       <item>
-        <widget class="QListWidget" name="MsgList">
-         <property name="mouseTracking">
-          <bool>true</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>Welcome Message</string>
-          </property>
-          <property name="font">
-           <font>
-            <italic>true</italic>
-           </font>
-          </property>
-          <property name="textAlignment">
-           <set>AlignCenter</set>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0">
-         <item>
-          <widget class="QPlainTextEdit" name="MsgEdit"/>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="QPushButton" name="SendButton">
-             <property name="text">
-              <string>Send</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="ReceiveButton">
-             <property name="text">
-              <string>Receive</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
+     <widget class="QStackedWidget" name="ChatsWidgetStack">
+      <widget class="QWidget" name="page">
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>200</y>
+          <width>271</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Oops! I can't find any chat!</string>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -149,7 +118,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>934</width>
+     <width>768</width>
      <height>39</height>
     </rect>
    </property>
@@ -213,7 +182,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>AddChat</sender>
+   <sender>AddChatButton</sender>
    <signal>clicked()</signal>
    <receiver>MenuList</receiver>
    <slot>doItemsLayout()</slot>
