@@ -336,11 +336,16 @@ jobs:
       run: |
         cd src/client-android
         gradle wrapper
+
+    - name: Disable Gradle daemon
+      run: echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+
     - name: Build debug apk
       shell: sh {0}
       run: |
         cd src/client-android
         ./gradlew assembleDebug
+
     - name: Upload debug apk
       uses: actions/upload-artifact@v2
       with:
