@@ -341,7 +341,7 @@ jobs:
       shell: sh {0}
       run: |
         cd src/client-android
-        ./gradlew --no-daemon --parallel --configuration-cache --build-cache assembleDebug
+        ./gradlew --no-daemon --parallel --build-cache assembleDebug
 
     - name: Upload debug apk
       uses: actions/upload-artifact@v2
