@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build-core-arm
     env:
-      GRADLE_AND_BUILD_CACHE_VERSION: 4  # increment when need to update gradle & build cache
+      GRADLE_AND_BUILD_CACHE_VERSION: 5  # increment when need to update gradle & build cache
 
     steps:
     - uses: actions/checkout@v2
@@ -341,7 +341,7 @@ jobs:
       shell: sh {0}
       run: |
         cd src/client-android
-        ./gradlew --no-daemon --offline --parallel assembleDebug
+        ./gradlew --no-daemon --offline --parallel --configuration-cache --build-cache assembleDebug
 
     - name: Upload debug apk
       uses: actions/upload-artifact@v2
