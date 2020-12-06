@@ -17,10 +17,10 @@ option(MELON_BUILD_SERVER "Build server services" ON)
 option(MELON_BUILD_DESKTOP_CLIENT "Build desktop client (Qt is required)" ON)
 
 add_subdirectory(src/core)
-if(${MELON_BUILD_SERVER})
+if(MELON_BUILD_SERVER)
     add_subdirectory(src/server)
 elseif()
-if(${MELON_BUILD_DESKTOP_CLIENT})
+if(MELON_BUILD_DESKTOP_CLIENT)
     add_subdirectory(src/client-desktop)
 elseif()
 
