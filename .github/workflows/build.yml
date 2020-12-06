@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
-    name: ${{ format('{{ {0} {1} {2} }}', runner.os, matrix.config.build_type, matrix.config.suffix) }}
+    name: ${{ format('{{ {0} {1} {2} }}', matrix.config.os, matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: 3.19.1
