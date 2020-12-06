@@ -465,7 +465,7 @@ jobs:
       shell: sh {0}
       run: |
         pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        pvs-studio-analyzer analyze -e *melon/build* -j2 -f build/compile_commands.json
+        pvs-studio-analyzer analyze -e *melon/build/src* -j2 -f build/compile_commands.json
         plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
     - name: Upload static analysis results
@@ -479,7 +479,7 @@ jobs:
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build'; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src'; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings
       if: ${{ matrix.config.suffix == 'PVS-Studio' }}
