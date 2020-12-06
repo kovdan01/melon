@@ -308,7 +308,7 @@ jobs:
   build-android:
     name: Android Debug
     runs-on: ubuntu-20.04
-    needs: build-core-server-client-desktop
+    needs: build-core-arm
     env:
       GRADLE_WRAPPER_CACHE_VERSION: 1  # increment when need to update gradle wrapper
 
