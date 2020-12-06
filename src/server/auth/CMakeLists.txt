@@ -26,10 +26,13 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(cyrus-sasl REQUIRED IMPORTED_TARGET libsasl2)
 
-set(HEADERS)
+set(HEADERS
+    include/sasl_wrapper.hpp
+)
 
 set(SOURCES
     src/main.cpp
+    src/sasl_wrapper.cpp
 )
 
 add_executable(${PROJECT_NAME}
