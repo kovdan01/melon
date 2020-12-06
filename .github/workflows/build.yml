@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
-    name: ${{ format('{0} {1} {2}', matrix.config.os, matrix.config.build_type, matrix.config.suffix) }}
+    name: ${{ format('{0} {1} {2}', matrix.config.prefix, matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: 3.19.1
@@ -33,6 +33,7 @@ jobs:
         config:
         - {
             os: windows-latest,
+            prefix: "Windows",
             suffix: "",
             artifact: "all-release-windows-mingw64",
             build_type: "Release",
@@ -41,6 +42,7 @@ jobs:
           }
         - {
             os: ubuntu-20.04,
+            prefix: "Linux",
             suffix: "",
             artifact: "all-release-linux",
             build_type: "Release",
@@ -49,6 +51,7 @@ jobs:
           }
         - {
             os: ubuntu-20.04,
+            prefix: "Linux",
             suffix: "CodeQL",
             artifact: "",
             build_type: "Debug",
@@ -57,6 +60,7 @@ jobs:
           }
         - {
             os: ubuntu-20.04,
+            prefix: "Linux",
             suffix: "PVS-Studio",
             artifact: "",
             build_type: "Debug",
@@ -65,6 +69,7 @@ jobs:
           }
         - {
             os: ubuntu-20.04,
+            prefix: "Linux",
             suffix: "clang-tidy",
             artifact: "",
             build_type: "Debug",
@@ -73,6 +78,7 @@ jobs:
           }
         - {
             os: macos-latest,
+            prefix: "macOS",
             suffix: "",
             artifact: "all-release-macos",
             build_type: "Release",
@@ -1142,7 +1148,7 @@ jobs:
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
   build-android:
-    name: Android
+    name: Android Debug
     runs-on: ubuntu-20.04
     needs: build-core-server-client-desktop
 
