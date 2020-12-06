@@ -21,8 +21,8 @@ public:
     std::string_view start(std::string_view chosen_mechanism);
     std::string_view get_username();
 
-    const sasl_conn_t* conn() const;
-    sasl_conn_t* conn();
+    [[nodiscard]]const sasl_conn_t* conn() const;
+    [[nodiscard]]sasl_conn_t* conn();
 
 private:
     std::string m_service;
