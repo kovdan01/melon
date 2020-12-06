@@ -35,6 +35,7 @@ Checks: >
   hicpp-noexcept-move,
   llvm-*,
   -llvm-header-guard,
+  -llvm-include-order,
   misc-*,
   modernize-*,
   -modernize-use-trailing-return-type,
