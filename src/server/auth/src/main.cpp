@@ -32,4 +32,6 @@ int main()
     std::cout << "Mechs: " << server.list_mechanisms() << '\n';
     std::cout << "Start: " << server.start("PLAIN") << '\n';
     std::cout << "Username: " << server.get_username() << '\n';
+
+    return 0;
 }
