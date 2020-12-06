@@ -8,5 +8,5 @@ int main(int argc, char* argv[])
     QApplication application(argc, argv);
     mc::MainWindow window;
     window.show();
-    return application.exec();
-}   // NOLINT (readability-static-accessed-through-instance)
+    return application.exec();   // NOLINT (readability-static-accessed-through-instance)
+}

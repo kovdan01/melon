@@ -8,7 +8,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui    // NOLINT (readability-identifier-naming)
 {
 class ChatWidget;
-} // namespace Ui
+}               // NOLINT (llvm-namespace-comment)
 QT_END_NAMESPACE
 
 namespace melon::client_desktop

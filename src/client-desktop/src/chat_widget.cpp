@@ -17,11 +17,11 @@ ChatWidget::ChatWidget(QWidget *parent) :
 void ChatWidget::send_message()
 {
     m_ui->MsgList->setWordWrap(true);
-    QString msgText = m_ui->MsgEdit->toPlainText();
-    if (!msgText.isEmpty())
+    QString msg_text = m_ui->MsgEdit->toPlainText();
+    if (!msg_text.isEmpty())
     {
         QListWidgetItem *msg_item = new QListWidgetItem(); // NOLINT (modernize-use-auto)
-        msg_item->setText(msgText);
+        msg_item->setText(msg_text);
         m_ui->MsgEdit->clear();
         msg_item->setTextAlignment(Qt::AlignRight);
         //set width of item?..
