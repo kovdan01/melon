@@ -973,18 +973,8 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Initialize CodeQL (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-
     - name: Build
       run: cmake --build build --target all
-
-    - name: Perform CodeQL Analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/analyze@v1
 
     - name: Run tests
       run: cd build && ctest && cd ..
@@ -1057,6 +1047,40 @@ jobs:
         path: ./install.tar
         name: ${{ matrix.config.artifact }}
 
+    - name: Configure Debug (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: |
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -G Ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+        -S . \
+        -B build-debug \
+        -D CMAKE_BUILD_TYPE=Debug \
+        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+        -D CMAKE_PREFIX_PATH=\
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Initialize CodeQL (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+
+    - name: Build Debug (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      run: cmake --build build-debug --target all
+
+    - name: Perform CodeQL Analysis (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/analyze@v1
+
     - name: Prepare to run static analysis (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       run: mkdir reports
@@ -1067,7 +1091,7 @@ jobs:
 
     - name: Run clang-tidy (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
+      run: run-clang-tidy -p=build-debug -j=2 2>&1 | tee reports/clang-tidy-report.log
 
     - name: Install PVS-Studio (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
@@ -1086,7 +1110,7 @@ jobs:
       shell: sh {0}
       run: |
         pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        pvs-studio-analyzer analyze -j2 -f build/compile_commands.json
+        pvs-studio-analyzer analyze -e *melon/build-debug* -j2 -f build-debug/compile_commands.json
         plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
     - name: Upload static analysis results (Ubuntu)
@@ -1100,7 +1124,7 @@ jobs:
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build'; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build-debug'; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
