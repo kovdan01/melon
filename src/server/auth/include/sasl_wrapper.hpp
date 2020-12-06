@@ -1,7 +1,7 @@
 #ifndef MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
 #define MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
 
-#include <melon-auth/export.h>
+#include <melon/server/auth/export.h>
 
 #include <sasl/saslutil.h>
 
@@ -11,7 +11,7 @@
 namespace melon::server::auth
 {
 
-class MELON_AUTH_EXPORT SaslServer
+class SASL_WRAPPERS_EXPORT SaslServer
 {
 public:
     SaslServer(std::string service);
