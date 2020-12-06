@@ -21,7 +21,7 @@ public:
     }
 
 private:
-    static SaslServerSingleton* m_instance;
+    static SaslServerSingleton* g_instance;
 };
 
 int main()

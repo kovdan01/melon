@@ -2,4 +2,6 @@
 
 int main()
 {
+    melon::core::hello();
+    return 0;
 }

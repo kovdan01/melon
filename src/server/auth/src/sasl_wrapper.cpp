@@ -9,7 +9,7 @@ namespace melon::server::auth
 SaslServer::SaslServer(std::string service)
     : m_service(std::move(service))
 {
-    sasl_server_new(service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
+    sasl_server_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
 }
 
 std::string_view SaslServer::start(std::string_view chosen_mechanism)
