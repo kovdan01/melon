@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
-    name: ${{ matrix.config.name }}
+    name: ${{ matrix.config.os + ' ' + matrix.config.build_type + ' ' + matrix.config.suffix }}
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: 3.19.1
@@ -32,19 +32,52 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MinGW64", artifact: "all-release-windows-mingw64",
             os: windows-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++",
+            suffix: "",
+            artifact: "all-release-windows-mingw64",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
-            name: "Ubuntu Latest Clang", artifact: "all-release-linux",
             os: ubuntu-20.04,
-            build_type: "Release", cc: "clang", cxx: "clang++",
+            suffix: "",
+            artifact: "all-release-linux",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
           }
         - {
-            name: "MacOS Latest Clang", artifact: "all-release-macos",
+            os: ubuntu-20.04,
+            suffix: "CodeQL",
+            artifact: "all-release-linux",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: ubuntu-20.04,
+            suffix: "PVS-Studio",
+            artifact: "all-release-linux",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: ubuntu-20.04,
+            suffix: "clang-tidy",
+            artifact: "all-release-linux",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
             os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
           }
 
     steps:
@@ -64,19 +97,19 @@ jobs:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
 
-          if "${{ matrix.config.name }}" == "Windows Latest MinGW64" or \
-             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+          if "${{ runner.os }}" == "Windows" or \
+             "${{ runner.os }}" == "Linux":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
-          elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
-            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin").replace("\\", "\\\\")))
+          elif "${{ runner.os }}" == "macOS":
+            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
           else:
             raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
 
     - name: Install required python modules
       run: pip install requests
 
-    - name: Install Clang (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Install Clang (Linux)
+      if: ${{ runner.os == 'Linux' }}
       run: sudo apt-get install clang -y
 
     - name: Ninja and CMake cache
@@ -113,15 +146,15 @@ jobs:
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
 
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+        if "${{ runner.os }}" == "Windows":
           ninja_suffix = "win.zip"
           cmake_suffix = "win64-x64.zip"
           cmake_dir = "cmake-{}-win64-x64".format(cmake_version)
-        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+        elif "${{ runner.os }}" == "Linux":
           ninja_suffix = "linux.zip"
           cmake_suffix = "Linux-x86_64.tar.gz"
           cmake_dir = "cmake-{}-Linux-x86_64".format(cmake_version)
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
+        elif "${{ runner.os }}" == "macOS":
           ninja_suffix = "mac.zip"
           cmake_suffix = "Darwin-x86_64.tar.gz"
           cmake_dir = "cmake-{}-Darwin-x86_64".format(cmake_version)
@@ -133,17 +166,17 @@ jobs:
         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
         open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
         execute_command("7z x ninja.zip")
-        if not "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+        if not "${{ runner.os }}" == "Windows":
           execute_command("chmod +x ninja")
         os.chdir(root)
 
         cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+        if "${{ runner.os }}" == "Windows":
           open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
           execute_command("7z x cmake.zip")
           os.rename(cmake_dir, cmake_tool_path)
-        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang" or \
-             "${{ matrix.config.name }}" == "MacOS Latest Clang":
+        elif "${{ runner.os }}" == "Linux" or \
+             "${{ runner.os }}" == "macOS":
           open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
           execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
           os.rename(cmake_dir, cmake_tool_path)
@@ -192,10 +225,10 @@ jobs:
 
         os.chdir(boost_source_dir)
 
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
+        if "${{ runner.os }}" == "Windows":
           toolset = "gcc"
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang" or \
-             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
+        elif "${{ runner.os }}" == "macOS" or \
+             "${{ runner.os }}" == "Linux":
           toolset = "clang"
         else:
           raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
@@ -222,7 +255,7 @@ jobs:
     # - mingw-w64-x86_64-qt5 and its dependencies
     - name: Mingw64 cache (Windows)
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       id: cache_mingw64_windows
       with:
         path: |
@@ -751,21 +784,21 @@ jobs:
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
 
-    - name: Cyrus SASL cache (Ubuntu & MacOS)
+    - name: Cyrus SASL cache (Linux & macOS)
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
         key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
 
-    - name: Cyrus SASL (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
+    - name: Cyrus SASL (Linux & macOS)
+      if: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -805,21 +838,21 @@ jobs:
         os.chdir(repo)
 
     - name: Yaml CPP (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
 
-    - name: Yaml CPP cache (Ubuntu & MacOS)
+    - name: Yaml CPP cache (Linux & macOS)
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/yaml-cpp-install
         key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
 
-    - name: Yaml CPP (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
+    - name: Yaml CPP (Linux & macOS)
+      if: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -863,21 +896,21 @@ jobs:
         os.chdir(repo)
 
     - name: Qt5 (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
 
-    - name: Qt5 cache (Ubuntu & MacOS)
+    - name: Qt5 cache (Linux & macOS)
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/qt-install
         key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
 
-    - name: Qt5 (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
+    - name: Qt5 (Linux & macOS)
+      if: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -931,7 +964,7 @@ jobs:
         os.chdir(repo)
 
     - name: Configure (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cp ${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja.exe C:\\msys64\\mingw64\\bin\\ninja.exe
@@ -953,8 +986,8 @@ jobs:
         ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Configure (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+    - name: Configure (Linux & macOS)
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -973,8 +1006,18 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
+    - name: Initialize CodeQL (Linux)
+      if: ${{ matrix.config.suffix == 'CodeQL' }}
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+
     - name: Build
       run: cmake --build build --target all
+
+    - name: Perform CodeQL Analysis (Linux)
+      if: ${{ matrix.config.suffix == 'CodeQL' }}
+      uses: github/codeql-action/analyze@v1
 
     - name: Run tests
       run: cd build && ctest && cd ..
@@ -983,7 +1026,7 @@ jobs:
       run: cmake --install build --prefix install --strip
 
     - name: Copy required DLL (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       run: |
         copy "C:\\msys64\\mingw64\\bin\\libstdc++-6.dll"            install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libgcc_s_seh-1.dll"         install\\bin
@@ -1011,90 +1054,56 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\zlib1.dll"                  install\\bin
 
     - name: Win Deploy Qt
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
     - name: Mac Deploy Qt
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+      if: ${{ runner.os == 'macOS' }}
       shell: sh {0}
       run: |
         $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
 
-    - name: Copy required dylibs (MacOS)
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
+    - name: Copy required dylibs (macOS)
+      if: ${{ runner.os == 'macOS' }}
       shell: sh {0}
       run: |
         cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
         install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
 
-    - name: Tar files (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+    - name: Tar files (Linux & macOS)
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       run: tar -cvf install.tar ./install
 
     - name: Upload binaries (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install
         name: ${{ matrix.config.artifact }}
 
-    - name: Upload binaries (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
+    - name: Upload binaries (Linux & macOS)
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install.tar
         name: ${{ matrix.config.artifact }}
 
-    - name: Configure Debug (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
-        -G Ninja \
-        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-        -S . \
-        -B build-debug \
-        -D CMAKE_BUILD_TYPE=Debug \
-        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D CMAKE_PREFIX_PATH=\
-        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
-        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-    - name: Initialize CodeQL (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-
-    - name: Build Debug (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: cmake --build build-debug --target all
-
-    - name: Perform CodeQL Analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/analyze@v1
-
-    - name: Prepare to run static analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Prepare to run static analysis (Linux)
+      if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
       run: mkdir reports
 
-    - name: Install clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Install clang-tidy (Linux)
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
       run: sudo apt-get install clang-tidy -y
 
-    - name: Run clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: run-clang-tidy -p=build-debug -j=2 2>&1 | tee reports/clang-tidy-report.log
+    - name: Run clang-tidy (Linux)
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
+      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
 
-    - name: Install PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Install PVS-Studio (Linux)
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
       shell: sh {0}
       run: |
         wget -q -O - https://files.viva64.com/etc/pubkey.txt | sudo apt-key add -
@@ -1102,32 +1111,32 @@ jobs:
         sudo apt-get update
         sudo apt-get install pvs-studio
 
-    - name: Run PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Run PVS-Studio (Linux)
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
       env:
         PVS_NAME: ${{ secrets.PVS_NAME }}
         PVS_KEY: ${{ secrets.PVS_KEY }}
       shell: sh {0}
       run: |
         pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        pvs-studio-analyzer analyze -e *melon/build-debug* -j2 -f build-debug/compile_commands.json
+        pvs-studio-analyzer analyze -e *melon/build* -j2 -f build/compile_commands.json
         plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
-    - name: Upload static analysis results (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Upload static analysis results (Linux)
+      if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./reports
         name: static-analyzer-reports
 
-    - name: Fail if clang-tidy found warnings (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Fail if clang-tidy found warnings (Linux)
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build-debug'; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build'; status=$?; test $status -ne 0
 
-    - name: Fail if PVS-Studio found warnings (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+    - name: Fail if PVS-Studio found warnings (Linux)
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
       shell: sh {0}
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
