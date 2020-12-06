@@ -1,0 +1,347 @@
+name: Build Android
+
+on:
+  push:
+    branches: develop
+  pull_request:
+    branches: develop
+
+jobs:
+  build-core-arm:
+    name: ${{ format('{0} {1} {2}', matrix.config.prefix, matrix.config.build_type, matrix.config.suffix) }}
+    runs-on: ${{ matrix.config.os }}
+    env:
+      CMAKE_TOOL_VERSION: 3.19.1
+      CMAKE_TOOL_PATH: cmake-tool
+      NINJA_TOOL_VERSION: 1.10.2
+      NINJA_TOOL_PATH: ninja-tool
+      BOOST_MAJOR: 1
+      BOOST_MINOR: 74
+      BOOST_BUILD: 0
+      BOOST_INSTALL_PATH: boost-install
+      CYRUS_SASL_VERSION: 2.1.27
+      CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
+      YAML_CPP_VERSION: 0.6.3
+      YAML_CPP_INSTALL_PATH: yaml-cpp-install
+    strategy:
+      fail-fast: true
+      matrix:
+        config:
+        - {
+            os: ubuntu-20.04,
+            prefix: "Android Core ARM",
+            suffix: "",
+            artifact: "core-arm-debug-android",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set environment variables
+      shell: python {0}
+      run: |
+        import os
+
+        repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
+        root = os.path.normpath(os.path.dirname(repo))
+
+        cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
+
+        with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
+          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
+
+          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
+
+    - name: Install required python modules
+      run: pip install requests
+
+    - name: Install Clang
+      run: sudo apt-get install clang -y
+
+    - name: Ninja and CMake cache
+      uses: actions/cache@v2
+      id: cache_ninja_and_cmake
+      with:
+        path: |
+          ${{ env.ROOT_PATH }}/${{ env.CMAKE_TOOL_PATH }}
+          ${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}
+        key: ${{ runner.os }}-ninja-${{ env.NINJA_TOOL_VERSION }}-cmake-${{ env.CMAKE_TOOL_VERSION }}
+
+    - name: Download Ninja and CMake
+      id: download_ninja_and_cmake
+      if: ${{ steps.cache_ninja_and_cmake.outputs.cache-hit != 'true' }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        cmake_version = os.environ['CMAKE_TOOL_VERSION']
+        ninja_version = os.environ['NINJA_TOOL_VERSION']
+        cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        ninja_suffix = "linux.zip"
+        cmake_suffix = "Linux-x86_64.tar.gz"
+        cmake_dir = "cmake-{}-Linux-x86_64".format(cmake_version)
+
+        os.mkdir(ninja_tool_path)
+        os.chdir(ninja_tool_path)
+        ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
+        open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
+        execute_command("7z x ninja.zip")
+        execute_command("chmod +x ninja")
+        os.chdir(root)
+
+        cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
+
+        open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
+        execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
+        os.rename(cmake_dir, cmake_tool_path)
+        execute_command("chmod +x {}/cmake".format(cmake_tool_binary_path))
+
+        os.chdir(repo)
+
+    - name: Boost cache
+      uses: actions/cache@v2
+      id: cache_boost
+      with:
+        path: ${{ env.ROOT_PATH }}/boost-install
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
+
+    - name: Boost
+      id: boost
+      if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        boost_major = os.environ['BOOST_MAJOR']
+        boost_minor = os.environ['BOOST_MINOR']
+        boost_build = os.environ['BOOST_BUILD']
+
+        boost_source_dir  = os.path.normpath(os.path.join(root, "boost_{}_{}_{}".format(boost_major, boost_minor, boost_build)))
+        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}"))
+        os.mkdir(boost_install_dir)
+
+        boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
+                                                                                                        boost_major, boost_minor, boost_build)
+        open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
+        execute_command("7z x boost.zip")
+
+        os.chdir(boost_source_dir)
+
+        toolset = "clang"
+
+        execute_command("chmod +x ./bootstrap.sh")
+        execute_command("chmod +x ./tools/build/src/engine/build.sh")
+        execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}".format(toolset, boost_install_dir))
+        execute_command("./b2")
+        execute_command("./b2 install")
+
+        os.chdir(repo)
+
+    - name: Cyrus SASL cache
+      uses: actions/cache@v2
+      id: cache_cyrus_sasl_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
+        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
+
+    - name: Cyrus SASL
+      if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+
+        os.chdir(root)
+
+        sasl_version = os.environ['CYRUS_SASL_VERSION']
+
+        sasl_source_dir  = os.path.normpath(os.path.join(root, "cyrus-sasl-{}".format(sasl_version)))
+        sasl_install_dir = os.path.normpath(os.path.join(root, "${{ env.CYRUS_SASL_INSTALL_PATH }}"))
+        os.mkdir(sasl_install_dir)
+
+        sasl_url = "https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-{}/cyrus-sasl-{}.tar.gz".format(sasl_version, sasl_version)
+        open("sasl.tar.gz", "wb").write(requests.get(sasl_url, allow_redirects=True).content)
+        execute_command("7z x sasl.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(sasl_source_dir)
+
+        execute_command("chmod +x ./configure")
+        execute_command("./configure --prefix={}".format(sasl_install_dir))
+        execute_command("chmod +x ./config/install-sh")
+        execute_command("make -j2")
+        execute_command("make install")
+        os.chdir(repo)
+
+    - name: Yaml CPP cache
+      uses: actions/cache@v2
+      id: cache_yaml_cpp_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+
+    - name: Yaml CPP
+      if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        os.chdir(root)
+
+        yaml_version = os.environ['YAML_CPP_VERSION']
+
+        yaml_source_dir  = os.path.normpath(os.path.join(root, "yaml-cpp-yaml-cpp-{}".format(yaml_version)))
+        yaml_install_dir = os.path.normpath(os.path.join(root, "${{ env.YAML_CPP_INSTALL_PATH }}"))
+        os.mkdir(yaml_install_dir)
+
+        yaml_url = "https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-{}.tar.gz".format(yaml_version)
+        open("yaml.tar.gz", "wb").write(requests.get(yaml_url, allow_redirects=True).content)
+        execute_command("7z x yaml.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(yaml_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
+                       "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  yaml_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        os.chdir(repo)
+
+    - name: Configure
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: |
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -D MELON_BUILD_SERVER=OFF \
+        -D MELON_BUILD_DESKTOP_CLIENT=OFF \
+        -G Ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+        -S . \
+        -B build \
+        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+        -D CMAKE_PREFIX_PATH=\
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Build
+      run: cmake --build build --target melon-core
+
+    - name: Run tests
+      run: cd build && ctest && cd ..
+
+    - name: Install Strip
+      run: cmake --install build --prefix install --strip
+
+    - name: Tar files
+      run: tar -cvf install.tar ./install
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./install.tar
+        name: ${{ matrix.config.artifact }}
+
+  build-android:
+    name: Android Debug
+    runs-on: ubuntu-20.04
+    needs: build-core-arm
+    env:
+      GRADLE_AND_BUILD_CACHE_VERSION: 5  # increment when need to update gradle & build cache
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Gradle & build cache
+      uses: actions/cache@v2
+      id: cache_gradle
+      with:
+        path: |
+          src/client-android/.gradle/
+          src/client-android/gradle/
+          src/client-android/gradlew
+          src/client-android/gradlew.bat
+          src/client-android/build/
+          src/client-android/app/build/
+        key: ${{ runner.os }}-gradle-and-build-${{ env.GRADLE_AND_BUILD_CACHE_VERSION }}
+
+    - name: Gradle wrapper
+      if: ${{ steps.cache_gradle.outputs.cache-hit != 'true' }}
+      shell: sh {0}
+      run: |
+        cd src/client-android
+        gradle wrapper
+
+    - name: Build debug apk
+      shell: sh {0}
+      run: |
+        cd src/client-android
+        ./gradlew --no-daemon --parallel --build-cache assembleDebug
+
+    - name: Upload debug apk
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./src/client-android/app/build/outputs/apk/debug/app-debug.apk
+        name: android-debug
