@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
+    name: format('{{ {0} {1} {2} }}', ${{ runner.os }}, ${{ matrix.config.build_type }}, ${{ matrix.config.suffix }})
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: 3.19.1
@@ -49,24 +50,24 @@ jobs:
         - {
             os: ubuntu-20.04,
             suffix: "CodeQL",
-            artifact: "all-release-linux",
-            build_type: "Release",
+            artifact: "",
+            build_type: "Debug",
             cc: "clang",
             cxx: "clang++",
           }
         - {
             os: ubuntu-20.04,
             suffix: "PVS-Studio",
-            artifact: "all-release-linux",
-            build_type: "Release",
+            artifact: "",
+            build_type: "Debug",
             cc: "clang",
             cxx: "clang++",
           }
         - {
             os: ubuntu-20.04,
             suffix: "clang-tidy",
-            artifact: "all-release-linux",
-            build_type: "Release",
+            artifact: "",
+            build_type: "Debug",
             cc: "clang",
             cxx: "clang++",
           }
