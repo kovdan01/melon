@@ -1,5 +1,5 @@
-#include "main_window.hpp"
 #include "chat_widget.hpp"
+#include "main_window.hpp"
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QWidget>

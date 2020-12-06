@@ -20,21 +20,21 @@ void ChatWidget::send_message()
     QString msgText = m_ui->MsgEdit->toPlainText();
     if (!msgText.isEmpty())
     {
-        QListWidgetItem *msgItem = new QListWidgetItem();
-        msgItem->setText(msgText);
+        QListWidgetItem *msg_item = new QListWidgetItem(); // NOLINT (modernize-use-auto)
+        msg_item->setText(msgText);
         m_ui->MsgEdit->clear();
-        msgItem->setTextAlignment(Qt::AlignRight);
+        msg_item->setTextAlignment(Qt::AlignRight);
         //set width of item?..
         // and color it
-        m_ui->MsgList->addItem(msgItem);
+        m_ui->MsgList->addItem(msg_item);
     }
 }
 
 void ChatWidget::receive_message()
 {
-    QString msgText = QStringLiteral("I wish I could hear you.");
-    QListWidgetItem *msgItem = new QListWidgetItem();
-    msgItem->setText(msgText);
+    QString msg_text = QStringLiteral("I wish I could hear you.");
+    QListWidgetItem *msgItem = new QListWidgetItem();    // NOLINT (modernize-use-auto)
+    msgItem->setText(msg_text);
     msgItem->setTextAlignment(Qt::AlignLeft);
     m_ui->MsgList->addItem(msgItem);
 }

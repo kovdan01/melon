@@ -6,10 +6,10 @@
 #include <memory>
 
 QT_BEGIN_NAMESPACE
-namespace Ui
+namespace Ui    // NOLINT (readability-identifier-naming)
 {
     class MainWindow;
-}
+} //namespace ui
 QT_END_NAMESPACE
 
 namespace melon::client_desktop
@@ -29,8 +29,8 @@ private slots:
 //    void eraseItem();
 //    void on_MenuList_itemDoubleClicked(QListWidgetItem *item);
 
-private:
-    QScopedPointer<Ui::MainWindow> m_ui;
+private:                                    // NOLINT (readability-redundant-access-specifiers)
+    QScopedPointer<Ui::MainWindow> m_ui;    // NOLINT (modernize-use-default-member-init)
 };
 
 }  // namespace melon::client_desktop
