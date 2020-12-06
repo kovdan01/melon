@@ -13,9 +13,16 @@ include(ntc-dev-build)
 
 enable_testing()
 
+option(MELON_BUILD_SERVER "Build server services" ON)
+option(MELON_BUILD_DESKTOP_CLIENT "Build desktop client (Qt is required)" ON)
+
 add_subdirectory(src/core)
-add_subdirectory(src/server)
-add_subdirectory(src/client-desktop)
+if(${MELON_BUILD_SERVER})
+    add_subdirectory(src/server)
+elseif()
+if(${MELON_BUILD_DESKTOP_CLIENT})
+    add_subdirectory(src/client-desktop)
+elseif()
 
 include(FeatureSummary)
 feature_summary(WHAT ALL)

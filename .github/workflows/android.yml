@@ -34,7 +34,7 @@ jobs:
             os: ubuntu-20.04,
             prefix: "Android Core ARM",
             suffix: "",
-            artifact: "core-arm-debug-linux",
+            artifact: "core-arm-debug-android",
             build_type: "Debug",
             cc: "clang",
             cxx: "clang++",
@@ -275,6 +275,8 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -D MELON_BUILD_SERVER=OFF \
+        -D MELON_BUILD_DESKTOP_CLIENT=OFF \
         -G Ninja \
         -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
