@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build-core-arm
     env:
-      GRADLE_AND_BUILD_CACHE_VERSION: 3  # increment when need to update gradle & build cache
+      GRADLE_AND_BUILD_CACHE_VERSION: 4  # increment when need to update gradle & build cache
 
     steps:
     - uses: actions/checkout@v2
