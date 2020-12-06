@@ -1074,6 +1074,7 @@ jobs:
         languages: cpp
 
     - name: Build Debug (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
       run: cmake --build build-debug --target all
 
     - name: Perform CodeQL Analysis (Ubuntu)
