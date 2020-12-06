@@ -23,9 +23,6 @@ jobs:
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
       YAML_CPP_VERSION: 0.6.3
       YAML_CPP_INSTALL_PATH: yaml-cpp-install
-      QT_SHORT_VERSION: 5.15
-      QT_VERSION: 5.15.1
-      QT_INSTALL_PATH: qt-install
     strategy:
       fail-fast: true
       matrix:
