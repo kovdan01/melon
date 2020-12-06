@@ -973,18 +973,8 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Initialize CodeQL (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-
     - name: Build
       run: cmake --build build --target all
-
-    - name: Perform CodeQL Analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/analyze@v1
 
     - name: Run tests
       run: cd build && ctest && cd ..
@@ -1077,8 +1067,18 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
+    - name: Initialize CodeQL (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+
     - name: Build Debug (Ubuntu)
-      run: cmake --build build --target all
+      run: cmake --build build-debug --target all
+
+    - name: Perform CodeQL Analysis (Ubuntu)
+      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
+      uses: github/codeql-action/analyze@v1
 
     - name: Prepare to run static analysis (Ubuntu)
       if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
