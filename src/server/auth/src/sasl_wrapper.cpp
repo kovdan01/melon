@@ -127,20 +127,14 @@ int client_getsimple(void* context, int id, const char** result, unsigned* resul
     {
     case SASL_CB_AUTHNAME:
     case SASL_CB_USER:
-        std::cout<<"SASL_USER"<<std::endl;
+        if( result != nullptr )
+            *result = client->get_username().c_str();
+        if (result_len != nullptr)
+            *result_len = static_cast<unsigned>(client->get_username().size());
         break;
     default:
         return SASL_FAIL;
     }
-    if (client->get_username().empty())
-        return SASL_FAIL;
-    const char* value = client->get_username().c_str();
-    *result = value;
-    if (result_len)
-    {
-        *result_len = static_cast<unsigned>(client->get_username().size());
-    }
-    std::cout << "returning OK" << *result <<std::endl;
     return SASL_OK;
 }
 
