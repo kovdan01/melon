@@ -340,8 +340,14 @@ jobs:
         cd src/client-android
         ./gradlew --no-daemon --parallel --build-cache assembleDebug
 
-    - name: Upload debug apk
+    - name: Upload app module debug apk
       uses: actions/upload-artifact@v2
       with:
         path: ./src/client-android/app/build/outputs/apk/debug/app-debug.apk
-        name: android-debug
+        name: app-debug
+
+    - name: Upload chats list module debug apk
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./src/client-android/feature_chats_list/build/outputs/apk/debug/feature_chats_list-debug.apk
+        name: chats_list-debug
