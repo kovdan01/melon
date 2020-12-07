@@ -31,12 +31,12 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::ChatWidget> m_ui;
 };
 
-namespace ColorReceive
+namespace rgba_receive
 {
-constexpr int r = 250;
-constexpr int g = 224;
-constexpr int b = 180;
-constexpr int a = 127;
+constexpr int R = 250;
+constexpr int G = 224;
+constexpr int B = 180;
+constexpr int A = 127;
 }  // namespace ColorReceive
 
 }  // namespace melon::client_desktop

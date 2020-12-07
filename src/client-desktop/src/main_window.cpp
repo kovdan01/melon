@@ -48,7 +48,7 @@ void MainWindow::add_chat()
 void MainWindow::provide_chat_context_menu(const QPoint &pos)
 {
     QPoint item = m_ui->ChatList->mapToGlobal(pos);
-    auto submenu = new QMenu(this);
+    auto *submenu = new QMenu(this);
     submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
     submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
     submenu->popup(item);
