@@ -36,7 +36,7 @@ std::vector<std::string> check_missing_params(const YAML::Node& conf, It begin, 
 {
     std::vector<std::string> res;
     for (It it = begin; it != end; ++it)
-        if (conf[*it] == false)
+        if (!static_cast<bool>(conf[*it]))
             res.emplace_back(*it);
     return res;
 }
@@ -55,7 +55,7 @@ std::vector<std::string> check_superfluous_params(const YAML::Node& conf, It beg
     std::vector<std::string> res;
     for (YAML::const_iterator it = conf.begin(); it != conf.end(); ++it)
     {
-        std::string key = it->first.as<std::string>();
+        auto key = it->first.as<std::string>();
         if (std::find(begin, end, key) == end)
             res.emplace_back(key);
     }
