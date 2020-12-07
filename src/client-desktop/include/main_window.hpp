@@ -26,7 +26,7 @@ public:
 
 private slots:
     void add_chat();
-    void provide_chat_context_menu(const QPoint &pos);
+    void provide_chat_context_menu(const QPoint& pos);
     void delete_chat();
     void rename_chat();
 
