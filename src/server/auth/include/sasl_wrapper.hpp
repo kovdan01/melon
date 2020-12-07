@@ -49,20 +49,20 @@ public:
 
     [[nodiscard]]const sasl_conn_t* conn() const;
     [[nodiscard]]sasl_conn_t* conn();
-    void set_username(std::string username);
+    void set_username(std::string m_username);
     [[nodiscard]]const std::string  get_username();
 
 private:
     std::string m_service;
-    std::string username ="user";
+    std::string m_username ="user";
     sasl_conn_t* m_conn;
-    sasl_callback_t m_callbacks[4] =
-    {
+    std::array<sasl_callback_t, 4> m_callbacks =
+    {{
       {SASL_CB_AUTHNAME, saslcallback(client_getsimple), this},
       {SASL_CB_USER, saslcallback(client_getsimple), this},
       // {SASL_CB_PASS, (sasl_callback_ft)&client_getpassword, this},
       {SASL_CB_LIST_END, nullptr, nullptr}
-    };
+    }};
 };
 
 }  // namespace melon::server::auth

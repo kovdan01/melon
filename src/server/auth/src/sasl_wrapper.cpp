@@ -70,7 +70,7 @@ std::string_view SaslServer::get_username()
 SaslClient::SaslClient(std::string service)
     : m_service(std::move(service))
 {
-    int res = sasl_client_init(m_callbacks);
+    int res = sasl_client_init(m_callbacks.data());
 
     if (res != SASL_OK)
         throw std::runtime_error("Sasl client init exit code " + std::to_string(res));
@@ -113,7 +113,7 @@ const sasl_conn_t* SaslClient::conn() const
 
 const std::string SaslClient::get_username()
 {
-    return username;
+    return m_username;
 }
 
 //register callback to allow library to ask for authentification id
