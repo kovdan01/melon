@@ -1,4 +1,5 @@
 #include "main_window.hpp"
+
 #include <QApplication>
 
 namespace mc = melon::client_desktop;

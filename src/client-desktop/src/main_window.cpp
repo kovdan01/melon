@@ -1,5 +1,6 @@
 #include "chat_widget.hpp"
 #include "main_window.hpp"
+
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QWidget>
@@ -24,7 +25,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::add_chat()
 {
-    static uint counter = 0;
+    static int counter = 0;
     bool ok;
     QString text = QInputDialog::getText(this, tr("Creating new chat"),
                                          tr("Name of chat:"), QLineEdit::Normal,
@@ -32,7 +33,6 @@ void MainWindow::add_chat()
    if (ok && !text.isEmpty() && text.size() <= MAX_NAME_SIZE)
    {
        m_ui->ChatList->addItem(text);
-       //m_ui->statusbar->showMessage(tr("Added Chat ") + QString::number(counter));
        m_ui->ChatsWidgetStack->insertWidget(counter, new ChatWidget);
        m_ui->ChatList->setCurrentRow(counter);
        ++counter;
@@ -48,7 +48,7 @@ void MainWindow::add_chat()
 void MainWindow::provide_chat_context_menu(const QPoint &pos)
 {
     QPoint item = m_ui->ChatList->mapToGlobal(pos);
-    auto *submenu = new QMenu(this);
+    auto* submenu = new QMenu(this);
     submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
     submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
     submenu->popup(item);
@@ -57,7 +57,7 @@ void MainWindow::provide_chat_context_menu(const QPoint &pos)
 void MainWindow::delete_chat()
 {
     int cur_row = m_ui->ChatList->currentRow();
-    QListWidgetItem *item = m_ui->ChatList->takeItem(cur_row);
+    QListWidgetItem* item = m_ui->ChatList->takeItem(cur_row);
     QWidget* chat = m_ui->ChatsWidgetStack->widget(cur_row);
     m_ui->ChatsWidgetStack->removeWidget(chat);
     delete chat;
@@ -66,7 +66,6 @@ void MainWindow::delete_chat()
 
 void MainWindow::rename_chat()
 {
-    //int cur_row = m_ui->ChatList->currentRow();
     QListWidgetItem *item = m_ui->ChatList->currentItem();
     QString old_name = item->text();
     bool ok;

@@ -1,5 +1,5 @@
-#ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP
-#define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP
+#ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
+#define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
 #include "ui_chat_widget.h"
 
@@ -9,7 +9,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui  // NOLINT (readability-identifier-naming)
 {
 class ChatWidget;
-} // namespace Ui
+}  // namespace Ui
 QT_END_NAMESPACE
 
 namespace melon::client_desktop
@@ -20,7 +20,7 @@ class ChatWidget : public QWidget
     Q_OBJECT
 
 public:
-    ChatWidget(QWidget *parent = nullptr);
+    ChatWidget(QWidget* parent = nullptr);
     ~ChatWidget() override = default;
 
 private slots:
@@ -41,4 +41,4 @@ constexpr int A = 127;
 
 }  // namespace melon::client_desktop
 
-#endif // MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP
+#endif  // MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
