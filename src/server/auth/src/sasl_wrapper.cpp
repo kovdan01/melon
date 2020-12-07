@@ -116,7 +116,7 @@ const std::string SaslClient::get_username()
 //register callback to allow library to ask for authentification id
 int client_getsimple(void* context, int id, const char** result, unsigned* result_len)
 {
-    auto client = static_cast<SaslClient*>(context);
+    auto* client = static_cast<SaslClient*>(context);
     if (!result)
         return SASL_BADPARAM;
 
