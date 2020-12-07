@@ -1,0 +1,6 @@
+package ru.romananchugov.melonmessenger.presentation.base
+
+import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AppCompatActivity
+
+open class BaseActivity(@LayoutRes layoutRes: Int) : AppCompatActivity(layoutRes)
