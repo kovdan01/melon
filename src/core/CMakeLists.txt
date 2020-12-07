@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(melon-core
         VERSION 0.0.0
@@ -25,8 +25,8 @@ find_package(Threads REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 set(HEADERS
-    include/melon/core/exception.hpp
     include/melon/core.hpp
+    include/melon/core/exception.hpp
     include/melon/core/yaml_config.hpp
 )
 

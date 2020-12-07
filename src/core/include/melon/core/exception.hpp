@@ -16,12 +16,11 @@ class Exception : public std::runtime_error
 namespace melon::core
 {
 
-class Exception: public melon::Exception
+class Exception : public melon::Exception
 {
-public:
     using melon::Exception::Exception;
 };
 
-} // namespace melon::core
+}  // namespace melon::core
 
-#endif // EXCEPTION_HPP
+#endif  // MELON_CORE_EXCEPTION_HPP_
