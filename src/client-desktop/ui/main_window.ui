@@ -130,23 +130,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QStackedWidget" name="ChatsWidgetStack">
-      <widget class="QWidget" name="page">
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>200</y>
-          <width>271</width>
-          <height>81</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Oops! I can't find any chat!</string>
-        </property>
-       </widget>
-      </widget>
-     </widget>
+     <widget class="QStackedWidget" name="ChatsWidgetStack"/>
     </item>
    </layout>
   </widget>
