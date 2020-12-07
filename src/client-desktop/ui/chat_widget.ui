@@ -7,44 +7,84 @@
     <x>0</x>
     <y>0</y>
     <width>620</width>
-    <height>512</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>200</width>
-    <height>0</height>
+    <width>300</width>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,20,1">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Chat</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="20,1">
      <item>
       <widget class="QListWidget" name="MsgList">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <kerning>true</kerning>
+        </font>
+       </property>
+       <property name="cursor" stdset="0">
+        <cursorShape>ArrowCursor</cursorShape>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhMultiLine</set>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
+       </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::MultiSelection</enum>
        </property>
        <property name="selectionBehavior">
         <enum>QAbstractItemView::SelectItems</enum>
        </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideMiddle</enum>
+       </property>
+       <property name="movement">
+        <enum>QListView::Static</enum>
+       </property>
+       <property name="isWrapping" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="resizeMode">
+        <enum>QListView::Adjust</enum>
+       </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="selectionRectVisible">
+        <bool>false</bool>
+       </property>
+       <property name="itemAlignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignRight|Qt::AlignTrailing</set>
        </property>
       </widget>
      </item>
@@ -52,25 +92,46 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QTextEdit" name="MsgEdit">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>200</width>
-           <height>0</height>
+           <height>100</height>
           </size>
+         </property>
+         <property name="placeholderText">
+          <string>Type your message...</string>
          </property>
         </widget>
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QPushButton" name="ReceiveButton">
+          <widget class="QPushButton" name="SendButton">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Send</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="SendButton">
+          <widget class="QPushButton" name="ReceiveButton">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Receive</string>
            </property>
