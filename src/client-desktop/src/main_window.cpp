@@ -7,6 +7,8 @@
 namespace melon::client_desktop
 {
 
+constexpr int MAX_NAME_SIZE = 20;
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
     , m_ui{new Ui::MainWindow}
@@ -27,7 +29,7 @@ void MainWindow::add_chat()
     QString text = QInputDialog::getText(this, tr("Creating new chat"),
                                          tr("Name of chat:"), QLineEdit::Normal,
                                          tr("NewChat") + QString::number(counter), &ok);
-   if (ok && !text.isEmpty() && text.size() <= 20)
+   if (ok && !text.isEmpty() && text.size() <= MAX_NAME_SIZE)
    {
        m_ui->ChatList->addItem(text);
        //m_ui->statusbar->showMessage(tr("Added Chat ") + QString::number(counter));
@@ -46,7 +48,7 @@ void MainWindow::add_chat()
 void MainWindow::provide_chat_context_menu(const QPoint &pos)
 {
     QPoint item = m_ui->ChatList->mapToGlobal(pos);
-    QMenu* submenu = new QMenu(this);
+    auto submenu = new QMenu(this);
     submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
     submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
     submenu->popup(item);
@@ -73,7 +75,7 @@ void MainWindow::rename_chat()
                                          old_name, &ok);
     // TODO: text == old_name handling (without creating new item)
     // TODO: various warning messages for too long, == old and so on
-    if (ok && !text.isEmpty() && text != old_name && text.size() <= 20)
+    if (ok && !text.isEmpty() && text != old_name && text.size() <= MAX_NAME_SIZE)
     {
         item->setText(text);
     }

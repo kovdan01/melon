@@ -38,7 +38,8 @@ void ChatWidget::receive_message()
     auto *msg_item = new QListWidgetItem();
     msg_item->setText(msg_text);
     msg_item->setTextAlignment(Qt::AlignLeft);
-    QColor background_color(250, 224, 180, 127);
+    QColor background_color(ColorReceive::r, ColorReceive::g,
+                            ColorReceive::b, ColorReceive::a);
     msg_item->setBackground(background_color);
     //m_ui->MsgList->setItemAlignment(Qt::AlignLeft);
     m_ui->MsgList->addItem(msg_item);
