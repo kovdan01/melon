@@ -37,7 +37,7 @@ constexpr int R = 250;
 constexpr int G = 224;
 constexpr int B = 180;
 constexpr int A = 127;
-}  // namespace ColorReceive
+}  // namespace rgba_receive
 
 }  // namespace melon::client_desktop
 
