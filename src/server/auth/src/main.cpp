@@ -29,7 +29,9 @@ int main()
     static const SaslServerSingleton singletone;
 
     msa::SaslServer server("fake");
-    std::cout << "Mechs: " << server.list_mechanisms() << '\n';
+    msa::SaslClient client("fake");
+
+    std::cout << "Mechs: " << server.list_mechanisms() << '\n';   
     std::cout << "Start: " << server.start("PLAIN") << '\n';
     std::cout << "Username: " << server.get_username() << '\n';
 

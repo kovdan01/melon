@@ -64,14 +64,12 @@ std::string_view SaslServer::get_username()
     return { username };
 }
 
-}  // namespace melon::server::auth
 
-namespace melon::client::auth
-{
 
 SaslClient::SaslClient(std::string service)
     : m_service(std::move(service))
 {
+    sasl_client_init(m_callbacks);
     sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr,  0, &m_conn);
 }
 
@@ -125,6 +123,9 @@ int client_getsimple(void* context, int id, const char** result, unsigned* resul
     }
     return SASL_OK;
 }
+}  // namespace melon::server::auth
+
+
 /*
 int SaslClient::client_password(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret)
 {
@@ -140,4 +141,3 @@ int SaslClient::client_password(sasl_conn_t* conn, void* context, int id, sasl_s
 }*/
 
 
-}  // namespace melon::client::auth
