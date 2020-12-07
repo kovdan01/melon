@@ -1,4 +1,4 @@
-#include <melon_core.hpp>
+#include <melon/core.hpp>
 
 int main()
 {
