@@ -2,7 +2,9 @@
 
 A federated messenger.
 
-[![Build all](https://github.com/kovdan01/melon/workflows/Build%20all/badge.svg)](https://github.com/kovdan01/melon/actions?query=workflow%3A%22Build+all%22+branch%3Adevelop)
+[![Build Linux & macOS](https://github.com/kovdan01/melon/workflows/Build%20Linux%20&%20macOS/badge.svg)](https://github.com/kovdan01/melon/actions?query=workflow%3A%22Build+Linux+%26+MacOS%22+branch%3Adevelop)
+[![Build Windows](https://github.com/kovdan01/melon/workflows/Build%20Windows/badge.svg)](https://github.com/kovdan01/melon/actions?query=workflow%3A%22Build+Windows%22+branch%3Adevelop)
+[![Build Android](https://github.com/kovdan01/melon/workflows/Build%20Android/badge.svg)](https://github.com/kovdan01/melon/actions?query=workflow%3A%22Build+Android%22+branch%3Adevelop)
 
 ## How to build
 
