@@ -1,4 +1,4 @@
-name: Build all
+name: Build Windows
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
-    name: ${{ matrix.config.name }}
+    name: ${{ format('Windows {0} {1}', matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: 3.19.1
@@ -19,32 +19,19 @@ jobs:
       BOOST_MINOR: 74
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: boost-install
-      CYRUS_SASL_VERSION: 2.1.27
-      CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
-      YAML_CPP_VERSION: 0.6.3
-      YAML_CPP_INSTALL_PATH: yaml-cpp-install
-      QT_SHORT_VERSION: 5.15
-      QT_VERSION: 5.15.1
-      QT_INSTALL_PATH: qt-install
-      MINGW64_CACHE_VERSION: 8  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 11  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
         config:
         - {
-            name: "Windows Latest MinGW64", artifact: "all-release-windows-mingw64",
             os: windows-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++",
-          }
-        - {
-            name: "Ubuntu Latest Clang", artifact: "all-release-linux",
-            os: ubuntu-20.04,
-            build_type: "Release", cc: "clang", cxx: "clang++",
-          }
-        - {
-            name: "MacOS Latest Clang", artifact: "all-release-macos",
-            os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++",
+            prefix: "Windows",
+            suffix: "",
+            artifact: "all-release-windows-mingw64",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
           }
 
     steps:
@@ -63,26 +50,10 @@ jobs:
         with open(os.environ['GITHUB_ENV'], 'a') as env_file:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
-
-          if "${{ matrix.config.name }}" == "Windows Latest MinGW64" or \
-             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
-            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
-          elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
-            env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin").replace("\\", "\\\\")))
-          else:
-            raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
 
     - name: Install required python modules
       run: pip install requests
-
-    - name: Install Clang (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      shell: sh {0}
-      run: |
-        # Comment because cmake is already installed
-        # apt-get install cmake -y
-        sudo apt-get install clang -y
-        # sudo apt-get install ninja-build -y
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -118,41 +89,22 @@ jobs:
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
 
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
-          ninja_suffix = "win.zip"
-          cmake_suffix = "win64-x64.zip"
-          cmake_dir = "cmake-{}-win64-x64".format(cmake_version)
-        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
-          ninja_suffix = "linux.zip"
-          cmake_suffix = "Linux-x86_64.tar.gz"
-          cmake_dir = "cmake-{}-Linux-x86_64".format(cmake_version)
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang":
-          ninja_suffix = "mac.zip"
-          cmake_suffix = "Darwin-x86_64.tar.gz"
-          cmake_dir = "cmake-{}-Darwin-x86_64".format(cmake_version)
-        else:
-          raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+        ninja_suffix = "win.zip"
+        cmake_suffix = "win64-x64.zip"
+        cmake_dir = "cmake-{}-win64-x64".format(cmake_version)
 
         os.mkdir(ninja_tool_path)
         os.chdir(ninja_tool_path)
         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
         open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
         execute_command("7z x ninja.zip")
-        if not "${{ matrix.config.name }}" == "Windows Latest MinGW64":
-          execute_command("chmod +x ninja")
         os.chdir(root)
 
         cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
-          open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
-          execute_command("7z x cmake.zip")
-          os.rename(cmake_dir, cmake_tool_path)
-        elif "${{ matrix.config.name }}" == "Ubuntu Latest Clang" or \
-             "${{ matrix.config.name }}" == "MacOS Latest Clang":
-          open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
-          execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
-          os.rename(cmake_dir, cmake_tool_path)
-          execute_command("chmod +x {}/cmake".format(cmake_tool_binary_path))
+
+        open("cmake.zip", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
+        execute_command("7z x cmake.zip")
+        os.rename(cmake_dir, cmake_tool_path)
 
         os.chdir(repo)
 
@@ -197,148 +149,59 @@ jobs:
 
         os.chdir(boost_source_dir)
 
-        if "${{ matrix.config.name }}" == "Windows Latest MinGW64":
-          toolset = "gcc"
-        elif "${{ matrix.config.name }}" == "MacOS Latest Clang" or \
-             "${{ matrix.config.name }}" == "Ubuntu Latest Clang":
-          toolset = "clang"
-        else:
-          raise RuntimeError("Unknown config name {}".format("${{ matrix.config.name }}"))
+        toolset = "gcc"
 
-        if "${{ runner.os }}" == "Windows":
-          cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
-          execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
-          execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
-          execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, "../boost-install"))
-          execute_command(cmd_prefix + '"./b2"')
-          execute_command(cmd_prefix + '"./b2 install"')
-        else:
-          execute_command("chmod +x ./bootstrap.sh")
-          execute_command("chmod +x ./tools/build/src/engine/build.sh")
-          execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}".format(toolset, boost_install_dir))
-          execute_command("./b2")
-          execute_command("./b2 install")
+        cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+        execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
+        execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, "../boost-install"))
+        execute_command(cmd_prefix + '"./b2"')
+        execute_command(cmd_prefix + '"./b2 install"')
 
         os.chdir(repo)
 
-    - name: Cyrus SASL (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
-
-    - name: Cyrus SASL cache (Ubuntu & MacOS)
+    # mingw64 packages:
+    # - mingw-w64-x86_64-cyrus-sasl (and mingw-w64-x86_64-gdbm as a dependency)
+    # - mingw-w64-x86_64-yaml-cpp
+    # - mingw-w64-x86_64-qt5 and its dependencies
+    - name: Mingw64 cache
       uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      id: cache_cyrus_sasl_unix
-      with:
-        path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
-        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
-
-    - name: Cyrus SASL (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
-      run: |
-        import os
-        import requests
-        import subprocess
-
-        def execute_command(cmd):
-          ret = subprocess.call(cmd, shell=True)
-          if ret != 0:
-            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
-
-        root = os.environ['ROOT_PATH']
-        repo = os.environ['REPO_PATH']
-
-        os.chdir(root)
-
-        sasl_version = os.environ['CYRUS_SASL_VERSION']
-
-        sasl_source_dir  = os.path.normpath(os.path.join(root, "cyrus-sasl-{}".format(sasl_version)))
-        sasl_install_dir = os.path.normpath(os.path.join(root, "${{ env.CYRUS_SASL_INSTALL_PATH }}"))
-        os.mkdir(sasl_install_dir)
-
-        sasl_url = "https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-{}/cyrus-sasl-{}.tar.gz".format(sasl_version, sasl_version)
-        open("sasl.tar.gz", "wb").write(requests.get(sasl_url, allow_redirects=True).content)
-        execute_command("7z x sasl.tar.gz -so | 7z x -si -ttar")
-
-        os.chdir(sasl_source_dir)
-
-        execute_command("chmod +x ./configure")
-        execute_command("./configure --prefix={}".format(sasl_install_dir))
-        execute_command("chmod +x ./config/install-sh")
-        execute_command("make -j2")
-        execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
-        os.chdir(repo)
-
-    - name: Yaml CPP (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
-
-    - name: Yaml CPP cache (Ubuntu & MacOS)
-      uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      id: cache_yaml_cpp_unix
-      with:
-        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
-
-    - name: Yaml CPP (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
-      run: |
-        import os
-        import requests
-        import subprocess
-
-        def execute_command(cmd):
-          ret = subprocess.call(cmd, shell=True)
-          if ret != 0:
-            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
-
-        root = os.environ['ROOT_PATH']
-        repo = os.environ['REPO_PATH']
-        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
-        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
-
-        os.chdir(root)
-
-        yaml_version = os.environ['YAML_CPP_VERSION']
-
-        yaml_source_dir  = os.path.normpath(os.path.join(root, "yaml-cpp-yaml-cpp-{}".format(yaml_version)))
-        yaml_install_dir = os.path.normpath(os.path.join(root, "${{ env.YAML_CPP_INSTALL_PATH }}"))
-        os.mkdir(yaml_install_dir)
-
-        yaml_url = "https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-{}.tar.gz".format(yaml_version)
-        open("yaml.tar.gz", "wb").write(requests.get(yaml_url, allow_redirects=True).content)
-        execute_command("7z x yaml.tar.gz -so | 7z x -si -ttar")
-
-        os.chdir(yaml_source_dir)
-
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
-                       "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  yaml_install_dir))
-        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
-        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
-        os.chdir(repo)
-
-    - name: Mingw64 cache (Windows)
-      uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       id: cache_mingw64_windows
       with:
         path: |
+          C:/msys64/mingw64/bin/gdbm_dump.exe
+          C:/msys64/mingw64/bin/gdbm_load.exe
+          C:/msys64/mingw64/bin/gdbmtool.exe
+          C:/msys64/mingw64/bin/libgdbm-6.dll
+          C:/msys64/mingw64/bin/libgdbm_compat-4.dll
+          C:/msys64/mingw64/include/dbm.h
+          C:/msys64/mingw64/include/gdbm.h
+          C:/msys64/mingw64/include/ndbm.h
+          C:/msys64/mingw64/lib/libgdbm.a
+          C:/msys64/mingw64/lib/libgdbm.dll.a
+          C:/msys64/mingw64/lib/libgdbm_compat.a
+          C:/msys64/mingw64/lib/libgdbm_compat.dll.a
+          C:/msys64/mingw64/share/licenses/gdbm/
+
+          C:/msys64/mingw64/bin/libsasl2-3.dll
+          C:/msys64/mingw64/include/sasl/
+          C:/msys64/mingw64/lib/libsasl2.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libsasl2.pc
+          C:/msys64/mingw64/lib/sasl2/
+          C:/msys64/mingw64/sbin/pluginviewer.exe
+          C:/msys64/mingw64/sbin/sasldblistusers2.exe
+          C:/msys64/mingw64/sbin/saslpasswd2.exe
+          C:/msys64/mingw64/share/licenses/cyrus-sasl/
+
+          C:/msys64/mingw64/bin/yaml-cpp.dll
+          C:/msys64/mingw64/include/yaml-cpp/
+          C:/msys64/mingw64/lib/cmake/yaml-cpp/
+          C:/msys64/mingw64/lib/libyaml-cpp.a
+          C:/msys64/mingw64/lib/pkgconfig/yaml-cpp.pc
+          C:/msys64/mingw64/lib/yaml-cpp.dll.a
+          C:/msys64/mingw64/share/licenses/yaml-cpp/
+
           C:/msys64/mingw64/bin/assimp.exe
           C:/msys64/mingw64/bin/assimp_viewer.exe
           C:/msys64/mingw64/bin/libassimp.dll
@@ -454,113 +317,10 @@ jobs:
           C:/msys64/mingw64/share/aclocal/glib-2.0.m4
           C:/msys64/mingw64/share/aclocal/glib-gettext.m4
           C:/msys64/mingw64/share/aclocal/gsettings.m4
-          C:/msys64/mingw64/share/bash-completion/completions/gapplication
-          C:/msys64/mingw64/share/bash-completion/completions/gdbus
-          C:/msys64/mingw64/share/bash-completion/completions/gio
-          C:/msys64/mingw64/share/bash-completion/completions/gresource
-          C:/msys64/mingw64/share/bash-completion/completions/gsettings
           C:/msys64/mingw64/share/gettext/its/gschema.its
           C:/msys64/mingw64/share/gettext/its/gschema.loc
           C:/msys64/mingw64/share/glib-2.0/
           C:/msys64/mingw64/share/licenses/glib2/
-          C:/msys64/mingw64/share/locale/af/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/am/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/an/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ar/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/as/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ast/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/az/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/be/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/be@latin/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bn_IN/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/bs/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ca/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ca@valencia/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/cy/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/dz/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/el/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en@shaw/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en_CA/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/en_GB/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/et/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/eu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/fur/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ga/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gd/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/gu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/he/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/hy/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/id/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/is/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ka/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/kk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/kn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ko/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ku/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/lt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/lv/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mai/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ml/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/mr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ms/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nb/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nds/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ne/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/nn/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/oc/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/or/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ps/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/pt_BR/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/rw/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/si/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sq/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr@ije/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sr@latin/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ta/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/te/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tg/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/th/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tl/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tr/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/tt/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/ug/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/wa/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/xh/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/yi/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_HK/LC_MESSAGES/glib20.mo
-          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/glib20.mo
           C:/msys2/usr/share/libalpm/
 
           C:/msys64/mingw64/bin/gr2fonttest.exe
@@ -670,26 +430,6 @@ jobs:
           C:/msys64/mingw64/share/common-lisp/
           C:/msys64/mingw64/share/libgpg-error/
           C:/msys64/mingw64/share/licenses/libgpg-error/
-          C:/msys64/mingw64/share/locale/cs/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/da/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/de/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/eo/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/es/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/fr/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/hu/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/it/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ja/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/nl/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/pl/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/pt/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ro/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/ru/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/sr/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/sv/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/uk/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/vi/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/libgpg-error.mo
-          C:/msys64/mingw64/share/locale/zh_TW/LC_MESSAGES/libgpg-error.mo
 
           C:/msys64/mingw64/bin/cjpeg.exe
           C:/msys64/mingw64/bin/djpeg.exe
@@ -887,10 +627,8 @@ jobs:
           C:/msys64/mingw64/lib/pkgconfig/zzip*.pc
           C:/msys64/mingw64/share/aclocal/zziplib.m4
 
-          C:/msys64/mingw64/bin/assistant.exe
           C:/msys64/mingw64/bin/balsam.exe
           C:/msys64/mingw64/bin/canbusutil.exe
-          C:/msys64/mingw64/bin/designer.exe
           C:/msys64/mingw64/bin/dumpcpp.exe
           C:/msys64/mingw64/bin/dumpdoc.exe
           C:/msys64/mingw64/bin/fixqt4headers.pl
@@ -916,9 +654,10 @@ jobs:
           C:/msys64/mingw64/bin/qhelpgenerator.exe
           C:/msys64/mingw64/bin/qlalr.exe
           C:/msys64/mingw64/bin/qmake.exe
-          C:/msys64/mingw64/bin/qml*.exe
           C:/msys64/mingw64/bin/qscxmlc.exe
-          C:/msys64/mingw64/bin/Qt5*.dll
+          C:/msys64/mingw64/bin/Qt5Core.dll
+          C:/msys64/mingw64/bin/Qt5Gui.dll
+          C:/msys64/mingw64/bin/Qt5Widgets.dll
           C:/msys64/mingw64/bin/qtattributionsscanner.exe
           C:/msys64/mingw64/bin/qtdiag.exe
           C:/msys64/mingw64/bin/qtpaths.exe
@@ -934,19 +673,16 @@ jobs:
           C:/msys64/mingw64/bin/xmlpatterns.exe
           C:/msys64/mingw64/bin/xmlpatternsvalidator.exe
           C:/msys64/mingw64/include/ActiveQt/
-          C:/msys64/mingw64/include/Qt*/
+          C:/msys64/mingw64/include/QtCore/
+          C:/msys64/mingw64/include/QtGui/
+          C:/msys64/mingw64/include/QtWidgets/
           C:/msys64/mingw64/lib/cmake/Qt5*/
-          C:/msys64/mingw64/lib/libQt5*.dll.a
+          C:/msys64/mingw64/lib/libQt5Core.dll.a
+          C:/msys64/mingw64/lib/libQt5Gui.dll.a
+          C:/msys64/mingw64/lib/libQt5Widgets.dll.a
           C:/msys64/mingw64/lib/libqtmain.a
           C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
           C:/msys64/mingw64/lib/metatypes/qt5gui_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qml_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qmlmodels_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5qmlworkerscript_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quick_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quickparticles_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quickshapes_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5quicktest_metatypes.json
           C:/msys64/mingw64/lib/metatypes/qt5widgets_metatypes.json
           C:/msys64/mingw64/lib/pkgconfig/Qt5*.pc
           C:/msys64/mingw64/lib/Qt5*.prl
@@ -955,80 +691,29 @@ jobs:
           C:/msys64/mingw64/share/qt5/mkspecs/
           C:/msys64/mingw64/share/qt5/phrasebooks/
           C:/msys64/mingw64/share/qt5/plugins/
-          C:/msys64/mingw64/share/qt5/qml/
           C:/msys64/mingw64/share/qt5/translations/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
-    - name: Qt5 (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+    - name: Cyrus SASL
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
+
+    - name: Yaml CPP
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
+
+    - name: Qt5
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
 
-    - name: Qt5 cache (Ubuntu & MacOS)
-      uses: actions/cache@v2
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      id: cache_qt_unix
-      with:
-        path: ${{ env.ROOT_PATH }}/qt-install
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
-
-    - name: Qt5 (Ubuntu & MacOS)
-      if: ${{ (matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang') && steps.cache_qt_unix.outputs.cache-hit != 'true' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
-      run: |
-        import os
-        import requests
-        import subprocess
-
-        def execute_command(cmd):
-          ret = subprocess.call(cmd, shell=True)
-          if ret != 0:
-            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
-
-        root = os.environ['ROOT_PATH']
-        repo = os.environ['REPO_PATH']
-
-        os.chdir(root)
-
-        qt_install_dir = os.path.normpath(os.path.join(root, "${{ env.QT_INSTALL_PATH }}"))
-        os.mkdir(qt_install_dir)
-
-        qt_short_version = os.environ['QT_SHORT_VERSION']
-        qt_version = os.environ['QT_VERSION']
-
-        qtbase_source_dir  = os.path.normpath(os.path.join(root, "qtbase-everywhere-src-{}".format(qt_version)))
-        qtbase_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qtbase-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
-        open("qtbase.tar.xz", "wb").write(requests.get(qtbase_url, allow_redirects=True).content)
-        execute_command("tar -xf qtbase.tar.xz")
-
-        os.chdir(qtbase_source_dir)
-
-        execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
-        execute_command("make -j2")
-        execute_command("make install")
-
-        os.chdir(root)
-
-        qttools_source_dir  = os.path.normpath(os.path.join(root, "qttools-everywhere-src-{}".format(qt_version)))
-        qttools_url = "http://download.qt.io/official_releases/qt/{}/{}/submodules/qttools-everywhere-src-{}.tar.xz".format(qt_short_version, qt_version, qt_version)
-        open("qttools.tar.xz", "wb").write(requests.get(qttools_url, allow_redirects=True).content)
-        execute_command("tar -xf qttools.tar.xz")
-
-        os.chdir(qttools_source_dir)
-
-        execute_command("{}/bin/qmake qttools.pro".format(qt_install_dir))
-        execute_command("make -j2")
-        execute_command("make install")
-
-        os.chdir(repo)
-
-    - name: Configure (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+    - name: Configure
+      if: ${{ runner.os == 'Windows' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cp ${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja.exe C:\\msys64\\mingw64\\bin\\ninja.exe
@@ -1050,38 +735,8 @@ jobs:
         ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Configure (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
-        -G Ninja \
-        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-        -S . \
-        -B build \
-        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D CMAKE_PREFIX_PATH=\
-        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
-        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-    - name: Initialize CodeQL (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-
     - name: Build
       run: cmake --build build --target all
-
-    - name: Perform CodeQL Analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: github/codeql-action/analyze@v1
 
     - name: Run tests
       run: cd build && ctest && cd ..
@@ -1089,8 +744,8 @@ jobs:
     - name: Install Strip
       run: cmake --install build --prefix install --strip
 
-    - name: Copy required DLL (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+    - name: Copy required DLL
+      if: ${{ runner.os == 'Windows' }}
       run: |
         copy "C:\\msys64\\mingw64\\bin\\libstdc++-6.dll"            install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libgcc_s_seh-1.dll"         install\\bin
@@ -1118,186 +773,14 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\zlib1.dll"                  install\\bin
 
     - name: Win Deploy Qt
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+      if: ${{ runner.os == 'Windows' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
-    - name: Mac Deploy Qt
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      shell: sh {0}
-      run: |
-        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
-
-    - name: Copy required dylibs (MacOS)
-      if: ${{ matrix.config.name == 'MacOS Latest Clang' }}
-      shell: sh {0}
-      run: |
-        cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
-        install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
-
-    - name: Tar files (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      run: tar -cvf install.tar ./install
-
-    - name: Upload binaries (Windows)
-      if: ${{ matrix.config.name == 'Windows Latest MinGW64' }}
+    - name: Upload binaries
+      if: ${{ runner.os == 'Windows' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install
         name: ${{ matrix.config.artifact }}
-
-    - name: Upload binaries (Ubuntu & MacOS)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' || matrix.config.name == 'MacOS Latest Clang' }}
-      uses: actions/upload-artifact@v2
-      with:
-        path: ./install.tar
-        name: ${{ matrix.config.artifact }}
-
-    - name: Prepare to run static analysis (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: mkdir reports
-
-    - name: Install clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: sudo apt-get install clang-tidy -y
-
-    - name: Run clang-tidy (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
-
-    - name: Install PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      shell: sh {0}
-      run: |
-        wget -q -O - https://files.viva64.com/etc/pubkey.txt | sudo apt-key add -
-        sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.viva64.com/etc/viva64.list
-        sudo apt-get update
-        sudo apt-get install pvs-studio
-
-    - name: Run PVS-Studio (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      env:
-        PVS_NAME: ${{ secrets.PVS_NAME }}
-        PVS_KEY: ${{ secrets.PVS_KEY }}
-      shell: sh {0}
-      run: |
-        pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        pvs-studio-analyzer analyze -j2 -f build/compile_commands.json
-        plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
-
-    - name: Upload static analysis results (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      uses: actions/upload-artifact@v2
-      with:
-        path: ./reports
-        name: static-analyzer-reports
-
-    - name: Fail if clang-tidy found warnings (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      shell: sh {0}
-      run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build'; status=$?; test $status -ne 0
-
-    - name: Fail if PVS-Studio found warnings (Ubuntu)
-      if: ${{ matrix.config.name == 'Ubuntu Latest Clang' }}
-      shell: sh {0}
-      run: |
-        plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
-
-  build-android:
-    name: Android
-    runs-on: ubuntu-20.04
-    needs: build-core-server-client-desktop
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Build debug apk
-      shell: sh {0}
-      run: |
-        cd src/client-android
-        gradle wrapper
-        ./gradlew assembleDebug
-
-    - name: Upload debug apk
-      uses: actions/upload-artifact@v2
-      with:
-        path: ./src/client-android/app/build/outputs/apk/debug/app-debug.apk
-        name: android-debug
-
-  #release:
-    #if: contains(github.ref, 'tags/v')
-    #runs-on: ubuntu-latest
-    #needs: build
-
-    #steps:
-    #- name: Create Release
-      #id: create_release
-      #uses: actions/create-release@v1.0.0
-      #env:
-        #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #with:
-        #tag_name: ${{ github.ref }}
-        #release_name: Release ${{ github.ref }}
-        #draft: false
-        #prerelease: false
-
-    #- name: Store Release url
-      #run: |
-        #echo "${{ steps.create_release.outputs.upload_url }}" > ./upload_url
-
-    #- uses: actions/upload-artifact@v1
-      #with:
-        #path: ./upload_url
-        #name: upload_url
-
-  #publish:
-    #if: contains(github.ref, 'tags/v')
-    #name: ${{ matrix.config.name }}
-    #runs-on: ${{ matrix.config.os }}
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #config:
-        #- {
-            #name: "Windows Latest MinGW64", artifact: "Windows-MinGW64.tar.xz",
-            #os: ubuntu-latest
-          #}
-        #- {
-            #name: "Ubuntu Latest Clang", artifact: "Linux.tar.xz",
-            #os: ubuntu-latest
-          #}
-        #- {
-            #name: "MacOS Latest Clang", artifact: "MacOS.tar.xz",
-            #os: ubuntu-latest
-          #}
-    #needs: release
-
-    #steps:
-    #- name: Download artifact
-      #uses: actions/download-artifact@v1
-      #with:
-        #name: ${{ matrix.config.artifact }}
-        #path: ./
-
-    #- name: Download URL
-      #uses: actions/download-artifact@v1
-      #with:
-        #name: upload_url
-        #path: ./
-    #- id: set_upload_url
-      #run: |
-        #upload_url=`cat ./upload_url`
-        #echo ::set-output name=upload_url::$upload_url
-
-    #- name: Upload to Release
-      #id: upload_to_release
-      #uses: actions/upload-release-asset@v1.0.1
-      #env:
-        #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #with:
-        #upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
-        #asset_path: ./${{ matrix.config.artifact }}
-        #asset_name: ${{ matrix.config.artifact }}
-        #asset_content_type: application/x-gtar
