@@ -2,7 +2,6 @@
 
 #include <utility>
 #include <stdexcept>
-#include <iostream>
 
 namespace melon::server::auth
 {
@@ -98,8 +97,6 @@ SaslClient::~SaslClient()
 {
     sasl_dispose(&m_conn);
 }
-
-
 
 sasl_conn_t* SaslClient::conn()
 {
