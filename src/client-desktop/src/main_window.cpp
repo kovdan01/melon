@@ -5,6 +5,8 @@
 #include <QMessageBox>
 #include <QWidget>
 
+#include <iostream>
+
 namespace melon::client_desktop
 {
 
@@ -45,7 +47,7 @@ void MainWindow::add_chat()
    m_ui->ChatList->scrollToBottom();
 }
 
-void MainWindow::provide_chat_context_menu(const QPoint &pos)
+void MainWindow::provide_chat_context_menu(const QPoint& pos)
 {
     QPoint item = m_ui->ChatList->mapToGlobal(pos);
     auto* submenu = new QMenu(this);
@@ -66,7 +68,7 @@ void MainWindow::delete_chat()
 
 void MainWindow::rename_chat()
 {
-    QListWidgetItem *item = m_ui->ChatList->currentItem();
+    QListWidgetItem* item = m_ui->ChatList->currentItem();
     QString old_name = item->text();
     bool ok;
     QString text = QInputDialog::getText(this, tr("Type new name"),
