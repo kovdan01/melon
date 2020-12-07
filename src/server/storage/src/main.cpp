@@ -8,58 +8,56 @@
 #include <string>
 #include <vector>
 
+namespace meco = melon::core;
 
-void low_level_parameter_irregularities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where)
+void parameter_abnormalities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where)
 {
     if (!missing_params.empty())
-    {
-        std::cout << "[error]:\tsome " << where << " params are missing!\n";
-        throw std::runtime_error("Reqired parameters are missing");
-    }
+        throw meco::MissingParamsException("missing required params at " + where);
     if (!superfluous_params.empty())
-    {
-        std::cout << "[warning]:\tsome " << where << " params are unused!\n";
-    }
+        throw meco::ExtraParamsException("extra params at " + where);
 }
 
-void parse_locations(const std::string& title, const YAML::Node& node, const std::array<std::string, 4>& required_parameters_locations)
+template <std::size_t Size>
+void parse_locations(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_locations)
 {
     for (const YAML::Node& node_of_list : node)
     {
-        auto parsed_level_2 = melon::core::yaml_conf::parse_one_level_down(node_of_list,
-                                                                    required_parameters_locations.begin(),
-                                                                    required_parameters_locations.end());
-        auto [missing_params, superfluous_params] = parsed_level_2.second;
-        low_level_parameter_irregularities_reaction(missing_params, superfluous_params, title);
+        auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node_of_list,
+                                                                        required_parameters_locations.begin(),
+                                                                        required_parameters_locations.end());
+        auto [missing_params, superfluous_params] = abnormal;
+        parameter_abnormalities_reaction(missing_params, superfluous_params, title);
         std::string kind, ip;
-        for (auto& [title, node2] : parsed_level_2.first)
+        for (auto& [title, node2] : parsed)
         {
             if (title == "service_kind")
-                kind = node2.as<std::string>();
+                kind = node2.template as<std::string>();
             else if (title == "ip")
-                ip = node2.as<std::string>();
+                ip = node2.template as<std::string>();
 
             // else if (title == "...")
             // ...
 
         }
-        std::cout << "The " << kind << " service is at " << ip << "\n";
+        std::cout << "The " << kind << " service is at " << ip << '\n';
     }
 }
 
-void parse_networking(const std::string& title, const YAML::Node& node, const std::array<std::string, 3>& required_parameters_networking)
+template <std::size_t Size>
+void parse_networking(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_networking)
 {
-    auto parsed_level_2 = melon::core::yaml_conf::parse_one_level_down(node,
+    auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node,
                                                                 required_parameters_networking.begin(),
                                                                 required_parameters_networking.end());
-    auto& [missing_params, superfluous_params] = parsed_level_2.second;
-    low_level_parameter_irregularities_reaction(missing_params, superfluous_params, title);
-    for (auto& [title, node2] : parsed_level_2.first)
+    auto& [missing_params, superfluous_params] = abnormal;
+    parameter_abnormalities_reaction(missing_params, superfluous_params, title);
+    for (auto& [title, node2] : parsed)
     {
         if (title == "ip")
         {
-            std::string ip = node2.as<std::string>();
-            std::cout << "I am at " << ip << "\n";
+            std::string ip = node2.template as<std::string>();
+            std::cout << "I am at " << ip << '\n';
         }
 
         // else if ( title == "...")
@@ -70,7 +68,6 @@ void parse_networking(const std::string& title, const YAML::Node& node, const st
 
 void auth_config_parse(const YAML::Node& conf_file)
 {
-    namespace meco = melon::core;
 
     // Parameters we want on top level of YAML
     static const std::array<std::string, 3> required_parameters =
@@ -98,17 +95,7 @@ void auth_config_parse(const YAML::Node& conf_file)
     //  Parse the top level of YAML and notify about parameter abnormalities
     auto parsed_level_1 = meco::yaml_conf::parse_one_level_down(conf_file, required_parameters.begin(), required_parameters.end());
     auto [missing_params, superfluous_params] = parsed_level_1.second;
-    if (!missing_params.empty())
-    {
-        for (std::string& key : missing_params)
-            std::cout << "[error]:\t\"" << key << "\" key is missing from config" << std::endl;
-        throw std::runtime_error("Reqired parameters are missing");
-    }
-    if (!superfluous_params.empty())
-    {
-        for (std::string& key : superfluous_params)
-            std::cout << "[warning]:\t\"" << key << "\" key is unused" << std::endl;
-    }
+    parameter_abnormalities_reaction(missing_params, superfluous_params, "top level");
     // Go deeper
     for (auto& [title, node] : parsed_level_1.first)
     {
@@ -117,15 +104,9 @@ void auth_config_parse(const YAML::Node& conf_file)
         else if (title == "locations")
             parse_locations(title, node, required_parameters_locations);
         else if (title == "db-location")
-        {
-            std::string db_loc = node.as<std::string>();
-            std::cout << "Database is located at " << db_loc << "\n";
-        }
+            std::cout << "Database is located at " << node.as<std::string>() << '\n';
         else
-        {
-            // Something went really wrong, let's throw an exception...
-            throw std::runtime_error("Parsing logic failure");
-        }
+            throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
     }
 }
 
@@ -144,10 +125,10 @@ int main()
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Configuration file parsing exception: " << e.what() << "\n";
+        std::cerr << "Configuration file parsing exception: " << e.what() << '\n';
         // ...
     }
 
-    melon::core::hello();
+    meco::hello();
     return 0;
 }
