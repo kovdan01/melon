@@ -45,8 +45,6 @@ public:
     ~SaslClient();
 
     std::string_view start(std::string_view mechanism);
-    //std::string_view get_username();
-
     [[nodiscard]]const sasl_conn_t* conn() const;
     [[nodiscard]]sasl_conn_t* conn();
     void set_username(std::string m_username);
