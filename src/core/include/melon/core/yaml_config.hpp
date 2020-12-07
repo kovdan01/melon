@@ -1,6 +1,7 @@
 #ifndef MELON_CORE_YAML_CONFIG_HPP_
 #define MELON_CORE_YAML_CONFIG_HPP_
 
+#include <melon/core/exception.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <iostream>
@@ -8,8 +9,19 @@
 #include <unordered_map>
 #include <vector>
 
+
 namespace melon::core::yaml_conf
 {
+
+class MissingParamsException : public melon::core::Exception
+{
+    using melon::core::Exception::Exception;
+};
+
+class ExtraParamsException : public melon::core::Exception
+{
+    using melon::core::Exception::Exception;
+};
 
 /**
  * Lists top-level keys in a yaml-cpp node, that are missing

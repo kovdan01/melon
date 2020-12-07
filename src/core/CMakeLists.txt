@@ -25,8 +25,9 @@ find_package(Threads REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 set(HEADERS
-    include/melon_core.hpp
-    include/yaml_config.hpp
+    include/melon/core/exception.hpp
+    include/melon/core.hpp
+    include/melon/core/yaml_config.hpp
 )
 
 set(SOURCES

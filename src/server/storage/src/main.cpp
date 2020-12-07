@@ -1,4 +1,4 @@
-#include <melon_core.hpp>
+#include <melon/core.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -13,9 +13,9 @@ namespace meco = melon::core;
 void parameter_abnormalities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where)
 {
     if (!missing_params.empty())
-        throw meco::MissingParamsException("missing required params at " + where);
+        throw meco::yaml_conf::MissingParamsException("missing required params at " + where);
     if (!superfluous_params.empty())
-        throw meco::ExtraParamsException("extra params at " + where);
+        throw meco::yaml_conf::ExtraParamsException("extra params at " + where);
 }
 
 template <std::size_t Size>
