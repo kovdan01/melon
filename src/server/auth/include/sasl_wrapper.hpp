@@ -4,6 +4,8 @@
 #include <melon/server/auth/export.h>
 
 #include <sasl/saslutil.h>
+#include <sasl/sasl.h>
+#include <sasl/saslplug.h>
 
 #include <string>
 #include <string_view>
@@ -31,6 +33,10 @@ private:
 };
 
 
+int client_getsimple(void* context, int id, const char** result, unsigned* result_len);
+int client_getpassword(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret);
+
+typedef int (*saslcallback)();
 
 class SASL_WRAPPERS_EXPORT SaslClient
 {
@@ -43,17 +49,21 @@ public:
 
     [[nodiscard]]const sasl_conn_t* conn() const;
     [[nodiscard]]sasl_conn_t* conn();
-    std::string username;
-    //int client_password(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret);
+    void set_username(std::string username);
+    [[nodiscard]]const std::string  get_username();
 
 private:
     std::string m_service;
+    std::string username ="user";
     sasl_conn_t* m_conn;
-    sasl_callback_t m_callbacks[2];
-    std::unique_ptr<char[]> m_password;
+    sasl_callback_t m_callbacks[4] =
+    {
+      {SASL_CB_AUTHNAME, saslcallback(client_getsimple), this},
+      {SASL_CB_USER, saslcallback(client_getsimple), this},
+      // {SASL_CB_PASS, (sasl_callback_ft)&client_getpassword, this},
+      {SASL_CB_LIST_END, nullptr, nullptr}
+    };
 };
-
-
 
 }  // namespace melon::server::auth
 

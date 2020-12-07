@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <stdexcept>
+#include <iostream>
 
 namespace melon::server::auth
 {
@@ -69,8 +70,15 @@ std::string_view SaslServer::get_username()
 SaslClient::SaslClient(std::string service)
     : m_service(std::move(service))
 {
-    sasl_client_init(m_callbacks);
-    sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr,  0, &m_conn);
+    int res = sasl_client_init(m_callbacks);
+
+    if (res != SASL_OK)
+        throw std::runtime_error("Sasl client init exit code " + std::to_string(res));
+
+    res = sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr,  0, &m_conn);
+
+    if (res != SASL_OK)
+        throw std::runtime_error("Sasl client new exit code " + std::to_string(res));
 }
 
 std::string_view SaslClient::start(std::string_view mechanism)
@@ -81,7 +89,7 @@ std::string_view SaslClient::start(std::string_view mechanism)
     int res = sasl_client_start(m_conn, mechanism.data(), nullptr, &clientout, &clientout_len, &mech);
 
     if (res != SASL_OK)
-        throw std::runtime_error("Sasl server start exit code " + std::to_string(res));
+        throw std::runtime_error("Sasl client start exit code " + std::to_string(res));
 
     return { clientout, clientout_len };
 }
@@ -103,41 +111,56 @@ const sasl_conn_t* SaslClient::conn() const
     return m_conn;
 }
 
+const std::string SaslClient::get_username()
+{
+    return username;
+}
+
+//register callback to allow library to ask for authentification id
 int client_getsimple(void* context, int id, const char** result, unsigned* result_len)
 {
     SaslClient* client = static_cast<SaslClient*>(context);
     if (!result)
         return SASL_BADPARAM;
+
     switch (id)
     {
     case SASL_CB_AUTHNAME:
     case SASL_CB_USER:
-        *result = client->username.c_str();
-        if (result_len)
-        {
-            *result_len = static_cast<unsigned>(client->username.size());
-        }
+        std::cout<<"SASL_USER"<<std::endl;
         break;
     default:
         return SASL_FAIL;
     }
+    if (client->get_username().empty())
+        return SASL_FAIL;
+    const char* value = client->get_username().c_str();
+    *result = value;
+    if (result_len)
+    {
+        *result_len = static_cast<unsigned>(client->get_username().size());
+    }
+    std::cout << "returning OK" << *result <<std::endl;
     return SASL_OK;
 }
+
+//int client_getpassword(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret)
+//{
+//    SaslClient* client = static_cast<SaslClient*>(context);
+//    if (!out_secret)
+//        return SASL_BADPARAM;
+
+//    sasl_secret_t* password = client->get_password();
+//    if (secret == nullptr) //User didn't provide password
+//        return SASL_FAIL;
+//    *out_secret = secret;
+//    return SASL_OK;
+//}
+
+
 }  // namespace melon::server::auth
 
 
-/*
-int SaslClient::client_password(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret)
-{
-    SaslClient* client = static_cast<SaslClient*>(context);
-    if (!out_secret)
-        return SASL_BADPARAM;
-    sasl_secret_t* password = static_cast<sasl_secret_t*>(static_cast<void*>(m_password.get()));
-    client->password() = new char[sizeof(sasl_secret_t) + value.size() + 1];
-    if (secret == nullptr)
-        return SASL_FAIL;
-    *out_secret = secret;
-    return SASL_OK;
-}*/
+
 
 
