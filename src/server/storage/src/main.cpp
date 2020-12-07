@@ -56,7 +56,7 @@ void parse_networking(const std::string& title, const YAML::Node& node, const st
     {
         if (title == "ip")
         {
-            std::string ip = node2.template as<std::string>();
+            auto ip = node2.template as<std::string>();
             std::cout << "I am at " << ip << '\n';
         }
 
