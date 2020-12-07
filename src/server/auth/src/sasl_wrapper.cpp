@@ -127,9 +127,7 @@ int client_getsimple(void* context, int id, const char** result, unsigned* resul
     {
     case SASL_CB_AUTHNAME:
     case SASL_CB_USER:
-        if( result != nullptr )
             *result = client->get_username().c_str();
-        if (result_len != nullptr)
             *result_len = static_cast<unsigned>(client->get_username().size());
         break;
     default:
