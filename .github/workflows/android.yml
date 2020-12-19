@@ -60,6 +60,9 @@ jobs:
 
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
 
+    - name: List dir NDK
+      run: ls -al /usr/local/lib/android/
+
     - name: Install required python modules
       run: pip install requests
 
