@@ -62,9 +62,7 @@ jobs:
 
     - name: List dir NDK
       run: |
-        ls -al /usr/local/lib/android/sdk/
-        ls -al /opt/
-        ls -al ~
+        ls -al /usr/local/lib/android/sdk/ndk-bundle
 
     - name: Install required python modules
       run: pip install requests
