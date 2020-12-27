@@ -65,7 +65,19 @@ jobs:
         ls -al /usr/local/lib/android/sdk/ndk-bundle
 
     - name: Docker
-      run: docker build . -t build-android
+      run: |
+        docker build . -t build-android
+        CONTAINER_ID=`docker run -d build-android`
+        docker cp $CONTAINER_ID:/home/builduser/repo/install `pwd`/install
+
+    - name: Tar files
+      run: tar -cvf install.tar ./install
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./install.tar
+        name: ${{ matrix.config.artifact }}
 
   build-android:
     name: Android Debug
