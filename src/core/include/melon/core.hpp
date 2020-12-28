@@ -2,6 +2,7 @@
 #define MELON_CORE_MELON_CORE_HPP_
 
 #include <melon/core/export.h>
+#include <melon/core/yaml_config.hpp>
 
 namespace melon::core
 {
