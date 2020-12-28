@@ -31,10 +31,8 @@ jobs:
             os: ubuntu-20.04,
             prefix: "Android Core ARM",
             suffix: "",
-            artifact: "core-arm-debug-android",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            artifact: "core-arm-release-android",
+            build_type: "Release",
           }
 
     steps:
@@ -44,10 +42,6 @@ jobs:
       shell: python {0}
       run: |
         import os
-
-        print("\n\nAAA\n\n")
-        print(os.environ);
-        print("\n\nBBB\n\n")
 
         repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
         root = os.path.normpath(os.path.dirname(repo))
@@ -60,12 +54,9 @@ jobs:
 
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
 
-    - name: List dir NDK
+    - name: Build
       run: |
-        ls -al /usr/local/lib/android/sdk/ndk-bundle
-
-    - name: Docker
-      run: |
+        cp .github/workflows/android/Dockerfile Dockerfile
         docker build . -t build-android
         CONTAINER_ID=`docker run -d build-android`
         docker cp $CONTAINER_ID:/home/builduser/repo/install `pwd`/install
@@ -80,7 +71,7 @@ jobs:
         name: ${{ matrix.config.artifact }}
 
   build-android:
-    name: Android Debug
+    name: Android App Debug
     runs-on: ubuntu-20.04
     needs: build-core-arm
     env:
