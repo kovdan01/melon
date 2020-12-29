@@ -29,7 +29,7 @@ jobs:
         config:
         - {
             os: ubuntu-20.04,
-            prefix: "Android Core ARM",
+            prefix: "Android Core ARM64",
             suffix: "",
             artifact: "core-arm-release-android",
             build_type: "Release",
