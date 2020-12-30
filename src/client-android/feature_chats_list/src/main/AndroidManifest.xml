@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:dist="http://schemas.android.com/apk/distribution"
-    package="ru.romananchugov.feature_chats_list">
+    package="org.melon.feature_chats_list">
 
     <dist:module
         dist:instant="false"

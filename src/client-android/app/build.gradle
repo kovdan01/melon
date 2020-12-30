@@ -11,7 +11,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "ru.romananchugov.melonmessenger"
+        applicationId "org.melon.melon"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1

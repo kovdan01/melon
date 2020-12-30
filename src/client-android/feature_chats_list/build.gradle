@@ -11,7 +11,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "ru.romananchugov.feature_chats_list"
+        applicationId "ru.melon.feature_chats_list"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1
