@@ -41,13 +41,13 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
-    //Hilt
+    // Hilt
     implementation "com.google.dagger:hilt-android:2.28-alpha"
     kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
     implementation 'androidx.hilt:hilt-common:1.0.0-alpha02'
     kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
 
-    //Groupie
+    // Groupie
     implementation "com.xwray:groupie:2.8.1"
     implementation "com.xwray:groupie-kotlin-android-extensions:2.8.1"
 }
