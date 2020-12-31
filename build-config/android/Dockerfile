@@ -1,6 +1,6 @@
 FROM kovdan01/melon-android-env:latest
 
-ADD . /home/builduser/repo
+ADD ../.. /home/builduser/repo
 
 RUN cd repo &&                                                                \
     cmake                                                                     \

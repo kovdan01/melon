@@ -56,9 +56,10 @@ jobs:
 
     - name: Build
       run: |
-        cp .github/workflows/android/Dockerfile Dockerfile
+        cd build-config/android
         docker build . -t build-android
         CONTAINER_ID=`docker run -d build-android`
+        cd ../..
         docker cp $CONTAINER_ID:/home/builduser/repo/install `pwd`/install
 
     - name: Tar files
