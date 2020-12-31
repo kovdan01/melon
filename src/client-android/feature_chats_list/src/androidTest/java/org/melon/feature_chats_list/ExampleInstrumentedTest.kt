@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("ru.melon.feature_chats_list", appContext.packageName)
+        assertEquals("org.melon.feature_chats_list", appContext.packageName)
     }
 }
