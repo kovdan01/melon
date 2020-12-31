@@ -1,2 +1,3 @@
+include ':feature_chats_list'
 include ':app'
 rootProject.name = "Melon"

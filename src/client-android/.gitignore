@@ -1,3 +1,8 @@
+# Gradle wrapper generated files
+gradle/wrapper
+gradlew
+gradlew.bat
+
 # Built application files
 *.apk
 *.aar

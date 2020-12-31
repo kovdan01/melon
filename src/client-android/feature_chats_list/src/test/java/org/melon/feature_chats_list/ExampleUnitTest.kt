@@ -1,4 +1,4 @@
-package org.melon.melon
+package org.melon.feature_chats_list
 
 import org.junit.Test
 

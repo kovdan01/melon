@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/chatsListFragment">
+
+    <fragment
+        android:id="@+id/chatsListFragment"
+        android:name="org.melon.feature_chats_list.presentation.fragments.ChatsListFragment"
+        android:label="ChatsListFragment" >
+        <action
+            android:id="@+id/action_chatsListFragment_to_chatContentFragment2"
+            app:destination="@id/chatContentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatContentFragment"
+        android:name="org.melon.feature_chats_list.presentation.fragments.ChatContentFragment"
+        android:label="ChatContentFragment" />
+</navigation>
