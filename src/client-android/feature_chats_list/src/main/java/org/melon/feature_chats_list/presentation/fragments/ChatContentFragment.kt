@@ -14,7 +14,7 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    //TODO: why should i use it???
+                    // TODO: why should i use it???
                     findNavController().popBackStack()
                 }
             })

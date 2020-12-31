@@ -11,7 +11,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        //TODO: use startup library for it
+        // TODO: use startup library for it
         Timber.plant(Timber.DebugTree())
     }
 }
