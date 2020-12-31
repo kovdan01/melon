@@ -1,3 +1,5 @@
+# Build context is assumed to be in the repository root
+
 FROM kovdan01/melon-android-env:latest
 
 ADD . /home/builduser/repo

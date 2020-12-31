@@ -56,8 +56,7 @@ jobs:
 
     - name: Build
       run: |
-        cp .github/workflows/android/Dockerfile Dockerfile
-        docker build . -t build-android
+        docker build -f build-config/android/Dockerfile . -t build-android
         CONTAINER_ID=`docker run -d build-android`
         docker cp $CONTAINER_ID:/home/builduser/repo/install `pwd`/install
 
