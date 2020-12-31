@@ -1,3 +1,5 @@
+# Available as kovdan01/melon-android-env on Docker Hub
+
 FROM archlinux:latest
 
 RUN useradd builduser -m &&                                                                                           \
@@ -15,9 +17,10 @@ RUN pacman -Sy --noconfirm &&                                                   
 
 WORKDIR "/home/builduser"
 
-RUN sudo -u builduser bash -c 'wget https://github.com/kovdan01/archlinux-android-pkgs/archive/v0.0.2.tar.gz' &&      \
-    sudo -u builduser bash -c 'tar -xf v0.0.2.tar.gz' &&                                                              \
-    cd archlinux-android-pkgs-0.0.2/android-sdk &&                                                                    \
+ADD . /home/builduser/archlinux-android-pkgs
+
+RUN chown -R builduser archlinux-android-pkgs &&                                                                      \ 
+    cd archlinux-android-pkgs/android-sdk &&                                                                          \
     sudo -u builduser bash -c 'makepkg -sri --noconfirm' &&                                                           \
     cd ../android-ndk &&                                                                                              \
     sudo -u builduser bash -c 'makepkg -sri --noconfirm' &&                                                           \
@@ -63,6 +66,6 @@ RUN sudo -u builduser bash -c 'wget https://github.com/kovdan01/archlinux-androi
       cmake --build . --target all &&                                                                                 \
       sudo cmake --build . --target install' &&                                                                       \
     cd ../.. &&                                                                                                       \
-    rm -rf archlinux-android-pkgs-0.0.2 v0.0.2.tar.gz                                                                 \
+    rm -rf archlinux-android-pkgs                                                                                     \
            cyrus-sasl-2.1.27 cyrus-sasl-2.1.27.tar.gz                                                                 \
            yaml-cpp-yaml-cpp-0.6.3 yaml-cpp-0.6.3.tar.gz
