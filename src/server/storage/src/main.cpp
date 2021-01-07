@@ -10,7 +10,7 @@
 
 namespace meco = melon::core;
 
-void parameter_abnormalities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where)
+static void parameter_abnormalities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where)
 {
     if (!missing_params.empty())
         throw meco::yaml_conf::MissingParamsException("missing required params at " + where);
@@ -19,7 +19,7 @@ void parameter_abnormalities_reaction(const std::vector<std::string>& missing_pa
 }
 
 template <std::size_t Size>
-void parse_locations(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_locations)
+static void parse_locations(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_locations)
 {
     for (const YAML::Node& node_of_list : node)
     {
@@ -45,7 +45,7 @@ void parse_locations(const std::string& title, const YAML::Node& node, const std
 }
 
 template <std::size_t Size>
-void parse_networking(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_networking)
+static void parse_networking(const std::string& title, const YAML::Node& node, const std::array<std::string, Size>& required_parameters_networking)
 {
     auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node,
                                                                 required_parameters_networking.begin(),
@@ -66,7 +66,7 @@ void parse_networking(const std::string& title, const YAML::Node& node, const st
 }
 
 
-void auth_config_parse(const YAML::Node& conf_file)
+static void auth_config_parse(const YAML::Node& conf_file)
 {
 
     // Parameters we want on top level of YAML
