@@ -16,11 +16,13 @@ namespace melon::core::yaml_conf
 class MissingParamsException : public melon::core::Exception
 {
     using melon::core::Exception::Exception;
+    virtual ~MissingParamsException();
 };
 
 class ExtraParamsException : public melon::core::Exception
 {
     using melon::core::Exception::Exception;
+    virtual ~ExtraParamsException();
 };
 
 /**
