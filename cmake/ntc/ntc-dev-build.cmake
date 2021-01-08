@@ -45,7 +45,7 @@ if(NTC_DEV_BUILD)
     # Diagnostics
     _ntc_try_append_cxx_flag(-Wall)
     _ntc_try_append_cxx_flag(-Wextra)
-    _ntc_try_append_cxx_flag(-Werror)
+    # _ntc_try_append_cxx_flag(-Werror)
     _ntc_try_append_cxx_flag(-Wabstract-vbase-init)
     _ntc_try_append_cxx_flag(-Warray-bounds-pointer-arithmetic)
     _ntc_try_append_cxx_flag(-Wcast-align)
