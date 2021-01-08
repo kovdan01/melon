@@ -26,8 +26,10 @@ class ExtraParamsException : public melon::core::Exception
 /**
  * Lists top-level keys in a yaml-cpp node, that are missing
  * @tparam It Iterator that satisfies C++ named requirement LegacyForwardIterator
- * @param[in] yaml-cpp node we want to check
- * @param[in] begin,end Iterators, specifying a range of std::strings containing keys,
+ * @param[in] conf yaml-cpp node we want to check
+ * @param[in] begin Iterator, specifying the beginning of a range of std::strings containing keys,
+ * are expected then parsing this level
+ * @param[in] end Iterator, specifying past-the-end of a range of std::strings containing keys,
  * are expected then parsing this level
  * @return A list of missing keys
  **/
@@ -44,8 +46,10 @@ std::vector<std::string> check_missing_params(const YAML::Node& conf, It begin, 
 /**
  * Lists top-level keys in a yaml-cpp node, that are not excepted
  * @tparam It Iterator that satisfies C++ named requirement LegacyForwardIterator
- * @param[in] yaml-cpp node we want to check
- * @param[in] begin,end Iterators, specifying a range of std::strings containing keys,
+ * @param[in] conf yaml-cpp node we want to check
+ * @param[in] begin Iterator, specifying the beginning of a range of std::strings containing keys,
+ * not expected then parsing this level
+ * @param[in] end Iterator, specifying past-the-end of a range of std::strings containing keys,
  * not expected then parsing this level
  * @return A list of extra keys
  **/
@@ -75,8 +79,10 @@ struct KeyAbnormalities
  * Lists missing and extra parameters
  * @tparam It Iterator that satisfies C++ named requirement LegacyForwardIterator
  * @param[in] parent_node yaml-cpp map node we want to parse
- * @param[in] begin,end Iterators, specifying a range of std::strings containing keys,
- * expected then parsing this leve
+ * @param[in] begin Iterator, specifying the beginning of a range of std::strings containing keys,
+ * expected then parsing this level
+ * @param[in] end Iterator, specifying past-the-end of a range of std::strings containing keys,
+ * expected then parsing this level
  * @param[in] check_for_superfluous Flag. If true, the returns returns a list of extra keys.
  * If false, returns an empty list
  * @return A pair of ParsedNodes and KeyAbnormalities:
