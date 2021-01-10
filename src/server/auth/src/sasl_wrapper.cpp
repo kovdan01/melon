@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <stdexcept>
+#include <cstring>
 
 namespace melon::server::auth
 {
@@ -52,24 +53,57 @@ const sasl_conn_t* SaslServer::conn() const
     return m_conn;
 }
 
-std::string_view SaslServer::get_username()
+//std::string_view SaslServer::get_username()
+//{
+//    const char* username;
+
+//    int res = sasl_getprop(m_conn, SASL_USERNAME, reinterpret_cast<const void**>(&username));
+
+//    if (res != SASL_OK)
+//        throw std::runtime_error("Sasl getprop exit code " + std::to_string(res));
+
+//    return { username };
+//}
+
+
+
+//SaslClient::SaslClient(std::string service, std::string login, std::string username, std::string password)
+//    : m_service(std::move(service)), m_login(std::move(login)), m_username(std::move(username)), m_password(std::move(password))
+//{
+
+
+
+//    secret = (sasl_secret_t*)malloc(sizeof(*secret) + get_password().length());
+//    secret->len = m_password.length();
+//    memcpy(secret->data, m_password.c_str(), m_password.length() + 1);
+
+//    //int res = sasl_client_init(m_callbacks.data());
+//    int res = sasl_client_init(m_callbacks);
+
+//    if (res != SASL_OK)
+//        throw std::runtime_error("Sasl client init exit code " + std::to_string(res));
+
+//    res = sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr,  0, &m_conn);
+
+//    if (res != SASL_OK)
+//        throw std::runtime_error("Sasl client new exit code " + std::to_string(res));
+
+//}
+
+SaslClient::SaslClient(std::string service, std::string login, std::string username, std::string password)
+    : m_service(std::move(service)), m_login(std::move(login)), m_username(std::move(username)), m_password(std::move(password))
 {
-    const char* username;
+    m_callbacks[0] = {SASL_CB_USER, (sasl_callback_ft)&sasl_getsimple, this};
+    m_callbacks[1] = {SASL_CB_AUTHNAME, (sasl_callback_ft)&sasl_getsimple, this};
+    m_callbacks[2] = {SASL_CB_PASS, (sasl_callback_ft)&sasl_getsecret, this};
+    m_callbacks[3] = {SASL_CB_LIST_END, nullptr, nullptr};
 
-    int res = sasl_getprop(m_conn, SASL_USERNAME, reinterpret_cast<const void**>(&username));
+    secret = (sasl_secret_t*)malloc(sizeof(*secret) + get_password().length());
+    secret->len = m_password.length();
+    memcpy(secret->data, m_password.c_str(), m_password.length() + 1);
 
-    if (res != SASL_OK)
-        throw std::runtime_error("Sasl getprop exit code " + std::to_string(res));
-
-    return { username };
-}
-
-
-
-SaslClient::SaslClient(std::string service)
-    : m_service(std::move(service))
-{
-    int res = sasl_client_init(m_callbacks.data());
+    //int res = sasl_client_init(m_callbacks.data());
+    int res = sasl_client_init(m_callbacks);
 
     if (res != SASL_OK)
         throw std::runtime_error("Sasl client init exit code " + std::to_string(res));
@@ -78,23 +112,34 @@ SaslClient::SaslClient(std::string service)
 
     if (res != SASL_OK)
         throw std::runtime_error("Sasl client new exit code " + std::to_string(res));
-}
 
-std::string_view SaslClient::start(std::string_view mechanism)
-{
     const char* clientout;
     unsigned clientout_len;
     const char* mech;
-    int res = sasl_client_start(m_conn, mechanism.data(), nullptr, &clientout, &clientout_len, &mech);
 
-    if (res != SASL_OK)
+    res = sasl_client_start(m_conn, "PLAIN", nullptr, &clientout, &clientout_len, &mech);
+
+    if ((res != SASL_CONTINUE) && (res != SASL_OK))
         throw std::runtime_error("Sasl client start exit code " + std::to_string(res));
 
-    return { clientout, clientout_len };
 }
+
+//std::string_view SaslClient::start(std::string mechs)
+//{
+//    const char* clientout;
+//    unsigned clientout_len;
+//    const char* mech;
+//    int res = sasl_client_start(m_conn, mechs.c_str(), nullptr, &clientout, &clientout_len, &mech);
+
+//    if (res != SASL_OK)
+//        throw std::runtime_error("Sasl client start exit code " + std::to_string(res));
+
+//    return { clientout, clientout_len };
+//}
 
 SaslClient::~SaslClient()
 {
+    free(secret);
     sasl_dispose(&m_conn);
 }
 
@@ -108,43 +153,59 @@ const sasl_conn_t* SaslClient::conn() const
     return m_conn;
 }
 
+const std::string SaslClient::get_password()
+{
+    return m_password;
+}
+
+const std::string SaslClient::get_login()
+{
+    return m_login;
+}
+
 const std::string SaslClient::get_username()
 {
     return m_username;
 }
 
-//register callback to allow library to ask for authentification id
-int client_getsimple(void* context, int id, const char** result, unsigned* result_len)
+const sasl_secret_t* SaslClient::get_sasl_secret()
 {
-    auto* client = static_cast<SaslClient*>(context);
-    if (!result)
-        return SASL_BADPARAM;
-
-    switch (id)
-    {
-    case SASL_CB_AUTHNAME:
-    case SASL_CB_USER:
-            *result = client->get_username().c_str();
-            *result_len = static_cast<unsigned>(client->get_username().size());
-        break;
-    default:
-        return SASL_FAIL;
-    }
-    return SASL_OK;
+    return m_sasl_secret;
 }
 
-//int client_getpassword(sasl_conn_t* conn, void* context, int id, sasl_secret_t** out_secret)
-//{
-//    SaslClient* client = static_cast<SaslClient*>(context);
-//    if (!out_secret)
-//        return SASL_BADPARAM;
 
-//    sasl_secret_t* password = client->get_password();
-//    if (secret == nullptr) //User didn't provide password
-//        return SASL_FAIL;
-//    *out_secret = secret;
-//    return SASL_OK;
-//}
+int sasl_getsimple(void * context, int id, const char ** result, unsigned * len)
+{
+    auto* client = static_cast<SaslClient*>(context);
+    switch (id) {
+    case SASL_CB_USER:
+        if (result != NULL)
+            *result = client->get_login().c_str();
+        if (len != NULL)
+            *len = client->get_login().length();
+        return SASL_OK;
+
+    case SASL_CB_AUTHNAME:
+        if (result != NULL)
+            *result = client->get_username().c_str();
+        if (len != NULL)
+            *len = client->get_username().length();
+        return SASL_OK;
+ }
+ return SASL_FAIL;
+}
+
+int sasl_getsecret(sasl_conn_t* conn, void* context, int id, sasl_secret_t** psecret)
+{
+    auto* client = static_cast<SaslClient*>(context);
+    switch (id) {
+    case SASL_CB_PASS:
+        if (psecret != nullptr)
+            *psecret = (sasl_secret_t*)client->get_sasl_secret();
+        return SASL_OK;
+    }
+    return SASL_FAIL;
+}
 
 
 }  // namespace melon::server::auth
