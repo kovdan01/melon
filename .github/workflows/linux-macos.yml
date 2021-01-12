@@ -16,7 +16,7 @@ jobs:
       NINJA_TOOL_VERSION: 1.10.2
       NINJA_TOOL_PATH: ninja-tool
       BOOST_MAJOR: 1
-      BOOST_MINOR: 74
+      BOOST_MINOR: 75
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: boost-install
       CYRUS_SASL_VERSION: 2.1.27

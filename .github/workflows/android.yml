@@ -10,19 +10,6 @@ jobs:
   build-core-arm:
     name: ${{ format('{0} {1} {2}', matrix.config.prefix, matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
-    env:
-      CMAKE_TOOL_VERSION: 3.19.1
-      CMAKE_TOOL_PATH: cmake-tool
-      NINJA_TOOL_VERSION: 1.10.2
-      NINJA_TOOL_PATH: ninja-tool
-      BOOST_MAJOR: 1
-      BOOST_MINOR: 74
-      BOOST_BUILD: 0
-      BOOST_INSTALL_PATH: boost-install
-      CYRUS_SASL_VERSION: 2.1.27
-      CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
-      YAML_CPP_VERSION: 0.6.3
-      YAML_CPP_INSTALL_PATH: yaml-cpp-install
     strategy:
       fail-fast: true
       matrix:
@@ -37,22 +24,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set environment variables
-      shell: python {0}
-      run: |
-        import os
-
-        repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
-        root = os.path.normpath(os.path.dirname(repo))
-
-        cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
-
-        with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
-          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
-
-          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
 
     - name: Build
       run: |
