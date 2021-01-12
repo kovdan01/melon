@@ -32,17 +32,18 @@ android {
         jvmTarget = '1.8'
     }
 
-    dynamicFeatures = [':feature_chats_list']
+    dynamicFeatures = [':feature_chats_list', ':feature_chat_content']
 }
 
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    api 'androidx.core:core-ktx:1.3.2'
+    api 'androidx.appcompat:appcompat:1.2.0'
+    api "androidx.fragment:fragment-ktx:1.3.0-rc01"
+    api 'androidx.constraintlayout:constraintlayout:2.0.4'
+    api 'com.google.android.material:material:1.2.1'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
 
     def nav_version = "2.3.2"
     api "androidx.navigation:navigation-fragment-ktx:$nav_version"
@@ -58,4 +59,8 @@ dependencies {
 
     // Timber
     api 'com.jakewharton.timber:timber:4.7.1'
+
+    // Groupie
+    api "com.xwray:groupie:2.8.1"
+    api "com.xwray:groupie-kotlin-android-extensions:2.8.1"
 }
