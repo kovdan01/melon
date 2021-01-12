@@ -19,19 +19,31 @@ class ChatsListViewModel @Inject constructor(
     val openChatFragment: LiveData<Boolean>
         get() = _openChatFragment
 
+    private val _openCreateChatFragment: MutableLiveData<Boolean> = MutableLiveData()
+    val openCreateChatFragment: LiveData<Boolean>
+        get() = _openCreateChatFragment
+
     fun getChatsList() = chatsListUseCase.getChatsList()
 
     fun onNewChatClick() {
+        _openCreateChatFragment.value = true
+    }
+
+    fun onNewChatCreated(chatName: String) {
         _chatsLiveData.value =
-            _chatsLiveData.value?.plus(listOf(ChatUi("Test chat", "Stick finger in ...")))
-                ?: listOf(ChatUi("Test chat", "Stick finger in ..."))
+            _chatsLiveData.value?.plus(listOf(ChatUi(chatName, "Stick finger in ...")))
+                ?: listOf(ChatUi(chatName, "Stick finger in ..."))
     }
 
     fun onChatClick(chatUi: ChatUi) {
         _openChatFragment.value = true
     }
 
-    fun onNavigateToChatContent(){
+    fun onNavigateToChatContent() {
         _openChatFragment.value = false
+    }
+
+    fun onNavigateToChatCreate() {
+        _openCreateChatFragment.value = false
     }
 }

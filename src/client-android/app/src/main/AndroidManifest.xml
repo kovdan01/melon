@@ -10,7 +10,9 @@
         android:supportsRtl="true"
         android:name="org.melon.melonmessenger.presentation.App"
         android:theme="@style/Theme.MelonMessenger">
-        <activity android:name="org.melon.melonmessenger.presentation.MainActivity">
+        <activity
+            android:name="org.melon.melonmessenger.presentation.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
