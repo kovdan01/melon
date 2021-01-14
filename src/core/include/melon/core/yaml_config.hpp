@@ -2,6 +2,7 @@
 #define MELON_CORE_YAML_CONFIG_HPP_
 
 #include <melon/core/exception.hpp>
+#include <melon/core/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <iostream>
@@ -13,14 +14,18 @@
 namespace melon::core::yaml_conf
 {
 
-class MissingParamsException : public melon::core::Exception
+class MELON_CORE_EXPORT MissingParamsException : public melon::core::Exception
 {
     using melon::core::Exception::Exception;
+public:
+    ~MissingParamsException() override;
 };
 
-class ExtraParamsException : public melon::core::Exception
+class MELON_CORE_EXPORT ExtraParamsException : public melon::core::Exception
 {
     using melon::core::Exception::Exception;
+public:
+    ~ExtraParamsException() override;
 };
 
 /**
