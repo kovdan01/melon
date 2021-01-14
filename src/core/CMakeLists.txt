@@ -32,6 +32,8 @@ set(HEADERS
 
 set(SOURCES
     src/melon_core.cpp
+    src/exception.cpp
+    src/yaml_config.cpp
 )
 
 add_library(${PROJECT_NAME}

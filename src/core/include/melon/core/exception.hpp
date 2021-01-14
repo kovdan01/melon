@@ -1,14 +1,18 @@
 #ifndef MELON_CORE_EXCEPTION_HPP_
 #define MELON_CORE_EXCEPTION_HPP_
 
+#include <melon/core/export.h>
+
 #include <stdexcept>
 
 namespace melon
 {
 
-class Exception : public std::runtime_error
+class MELON_CORE_EXPORT Exception : public std::runtime_error
 {
+public:
     using std::runtime_error::runtime_error;
+    ~Exception() override;
 };
 
 }  // namespace melon
@@ -16,9 +20,11 @@ class Exception : public std::runtime_error
 namespace melon::core
 {
 
-class Exception : public melon::Exception
+class MELON_CORE_EXPORT Exception : public melon::Exception
 {
+public:
     using melon::Exception::Exception;
+    ~Exception() override;
 };
 
 }  // namespace melon::core
