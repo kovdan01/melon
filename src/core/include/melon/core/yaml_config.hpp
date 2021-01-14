@@ -16,15 +16,15 @@ namespace melon::core::yaml_conf
 
 class MELON_CORE_EXPORT MissingParamsException : public melon::core::Exception
 {
-    using melon::core::Exception::Exception;
 public:
+    using melon::core::Exception::Exception;
     ~MissingParamsException() override;
 };
 
 class MELON_CORE_EXPORT ExtraParamsException : public melon::core::Exception
 {
-    using melon::core::Exception::Exception;
 public:
+    using melon::core::Exception::Exception;
     ~ExtraParamsException() override;
 };
 

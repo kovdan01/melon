@@ -1,4 +1,14 @@
 #include <melon/core/exception.hpp>
 
-melon::Exception::~Exception() = default;
-melon::core::Exception::~Exception() = default;
+namespace melon {
+
+Exception::~Exception() = default;
+
+}  // namespace melon
+
+namespace melon::core {
+
+Exception::~Exception() = default;
+
+}  // namespace melon::core
+
