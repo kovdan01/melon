@@ -9,7 +9,7 @@
 #include <cstring>
 #include <iostream>
 
-constexpr std::uint64_t MAX_MESSAGE_LEN = 256;
+constexpr std::uint64_t MAX_MESSAGE_LEN = 25600;
 
 using saslret = int;
 
@@ -36,12 +36,12 @@ namespace fakenet  // just what it says on the tin: this is a simulation of netw
             *where = (what & mask) >> shift;
     }
 
-    static void write_bytes(byte_t* from, size_t len)
+    static void write_bytes(byte_t* from, std::size_t len)
     {
         std::memmove(network.data(), from, len);
     }
 
-    static byte_t* read_bytes(byte_t* where, size_t len)
+    static byte_t* read_bytes(byte_t* where, std::size_t len)
     {
         std::memmove(where, network.data(), len);
         return where;
@@ -65,9 +65,11 @@ namespace callbacks
         {
         case SASL_CB_USER:
         case SASL_CB_AUTHNAME:
-            std::cout << "Setting username to " << params->username <<"\n";
+            std::cout << "Setting username to " << params->username <<std::endl;
             *result = params->username.c_str();
-            *len = static_cast<unsigned>(params->username.size());
+            std::cerr << len << std::endl;
+            if(len != nullptr)
+                *len = static_cast<unsigned>(params->username.size());
             break;
         default:
             return SASL_BADPARAM;
@@ -80,16 +82,16 @@ namespace callbacks
         if(id != SASL_CB_PASS)
             return SASL_BADPARAM;
         auto* params = static_cast<MyContext*>(context);
-
+        std::cout << "Setting pass to " << params->password <<std::endl;
         // somehow rewrite this proper C++ way
         static sasl_secret_t *secret;
-        auto temp = reinterpret_cast<sasl_secret_t*>(std::realloc(secret, sizeof(sasl_secret_t) + params->password.size()));
-        if(temp != nullptr)
+        auto* temp = reinterpret_cast<sasl_secret_t*>(std::realloc(secret, sizeof(sasl_secret_t) + params->password.size()));
+        if (temp != nullptr)
             secret = temp;
         else
             return SASL_NOMEM;
         secret->len = params->password.size();
-        strncpy(reinterpret_cast<char*>(secret->data), params->password.c_str(), secret->len);
+        std::memcpy(secret->data, params->password.c_str(), secret->len + 1);
         *psecret = secret;
         // somehow rewrite this proper C++ way
 
@@ -98,7 +100,7 @@ namespace callbacks
 
 
 
-} // namespace callbacks
+} // namespace fakenet
 
 int main()
 {
@@ -131,7 +133,7 @@ int main()
 
     // cyrus-SASL server
     sasl_conn_t* server_conn;
-    retcode = sasl_server_new("rcmd", nullptr, nullptr, nullptr, nullptr, nullptr, 0, &server_conn);
+    retcode = sasl_server_new("cumnection", nullptr, nullptr, nullptr, nullptr, nullptr, 0, &server_conn);
     if(retcode != SASL_OK)
     {
       throw std::runtime_error("server new connection: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
@@ -144,16 +146,16 @@ int main()
       throw std::runtime_error("server mech capabilities: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
     }
     std::string server_servermechs(server_capabilites_ptr, server_capabilites_len);
-    fakenet::write_type(server_servermechs.size());
+    fakenet::write_type<std::size_t>(server_servermechs.size());
 
     // cyrus-SASL client
     sasl_conn_t *client_conn;
-    retcode = sasl_client_new("rcmd", nullptr, nullptr, nullptr, nullptr, 0, &client_conn);
+    retcode = sasl_client_new("cumnection", nullptr, nullptr, nullptr, nullptr, 0, &client_conn);
     if(retcode != SASL_OK)
     {
       throw std::runtime_error("client new connection: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
     }
-    size_t client_servermechs_len = fakenet::read_type<size_t>();
+    std::size_t client_servermechs_len = fakenet::read_type<std::size_t>();
 
     // cyrus-SASL server
     fakenet::write_bytes(reinterpret_cast<unsigned char*>(server_servermechs.data()),server_servermechs.size());
@@ -165,11 +167,20 @@ int main()
     const char* client_saslout;
     const char* client_saslselectedmech;
     unsigned int clietn_saslout_len;
-    retcode = sasl_client_start(client_conn, client_recieved_buffer.data(), nullptr, &client_saslout, &clietn_saslout_len, &client_saslselectedmech);
-    if(retcode != SASL_OK)
+    retcode = sasl_client_start(client_conn, /*client_recieved_buffer.data()*/"PLAIN", nullptr, &client_saslout, &clietn_saslout_len, &client_saslselectedmech);
+    if(retcode != SASL_OK && retcode != SASL_CONTINUE)
     {
       throw std::runtime_error("client negotioation start: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
     }
     std::cout<<client_saslselectedmech<<"\n";
+
+    // cyrus-SASL client
+    sasl_dispose(&client_conn);
+    sasl_client_done();
+
+    // cyrus-SASL server
+    sasl_dispose(&server_conn);
+    sasl_server_done();
+
     return 0;
 }
