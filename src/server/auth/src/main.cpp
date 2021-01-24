@@ -10,6 +10,7 @@
 #include <iostream>
 
 constexpr std::uint64_t MAX_MESSAGE_LEN = 25600;
+const std::string wanted_mech = "PLAIN";
 
 using saslret = int;
 
@@ -58,7 +59,7 @@ namespace callbacks
         const std::string password;
     };
 
-    static saslret login_name(void* context, int id, const char **result, unsigned *len)
+    static saslret login_name(void* context, int id, const char** result, unsigned* len)
     {
         auto* params = static_cast<MyContext*>(context);
         switch (id)
@@ -67,7 +68,6 @@ namespace callbacks
         case SASL_CB_AUTHNAME:
             std::cout << "Setting username to " << params->username <<std::endl;
             *result = params->username.c_str();
-            std::cerr << len << std::endl;
             if(len != nullptr)
                 *len = static_cast<unsigned>(params->username.size());
             break;
@@ -77,14 +77,14 @@ namespace callbacks
         return SASL_OK;
     }
 
-    static saslret login_pass(sasl_conn_t*, void* context, int id, sasl_secret_t **psecret)
+    static saslret login_pass(sasl_conn_t*, void* context, int id, sasl_secret_t** psecret)
     {
         if(id != SASL_CB_PASS)
             return SASL_BADPARAM;
         auto* params = static_cast<MyContext*>(context);
         std::cout << "Setting pass to " << params->password <<std::endl;
         // somehow rewrite this proper C++ way
-        static sasl_secret_t *secret;
+        static sasl_secret_t* secret;
         auto* temp = reinterpret_cast<sasl_secret_t*>(std::realloc(secret, sizeof(sasl_secret_t) + params->password.size()));
         if (temp != nullptr)
             secret = temp;
@@ -133,7 +133,7 @@ int main()
 
     // cyrus-SASL server
     sasl_conn_t* server_conn;
-    retcode = sasl_server_new("cumnection", nullptr, nullptr, nullptr, nullptr, nullptr, 0, &server_conn);
+    retcode = sasl_server_new("rcmd", nullptr, nullptr, nullptr, nullptr, nullptr, 0, &server_conn);
     if(retcode != SASL_OK)
     {
       throw std::runtime_error("server new connection: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
@@ -149,8 +149,8 @@ int main()
     fakenet::write_type<std::size_t>(server_servermechs.size());
 
     // cyrus-SASL client
-    sasl_conn_t *client_conn;
-    retcode = sasl_client_new("cumnection", nullptr, nullptr, nullptr, nullptr, 0, &client_conn);
+    sasl_conn_t* client_conn;
+    retcode = sasl_client_new("rcmd", nullptr, nullptr, nullptr, nullptr, 0, &client_conn);
     if(retcode != SASL_OK)
     {
       throw std::runtime_error("client new connection: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
@@ -164,15 +164,32 @@ int main()
     std::array<char, MAX_MESSAGE_LEN> client_recieved_buffer;
     fakenet::read_bytes(reinterpret_cast<unsigned char*>(client_recieved_buffer.data()),client_servermechs_len);
     client_recieved_buffer[client_servermechs_len]='\0';
+
+    /*
+     * client checks if he can use the wanted mech, sends it to server, server confirms that he's ready
+     */
+
+    // cyrus-SASL client
     const char* client_saslout;
     const char* client_saslselectedmech;
-    unsigned int clietn_saslout_len;
-    retcode = sasl_client_start(client_conn, /*client_recieved_buffer.data()*/"PLAIN", nullptr, &client_saslout, &clietn_saslout_len, &client_saslselectedmech);
+    unsigned int client_saslout_len;
+    retcode = sasl_client_start(client_conn, /*client_recieved_buffer.data()*/wanted_mech.c_str(), nullptr, &client_saslout, &client_saslout_len, &client_saslselectedmech);
     if(retcode != SASL_OK && retcode != SASL_CONTINUE)
     {
       throw std::runtime_error("client negotioation start: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
     }
-    std::cout<<client_saslselectedmech<<"\n";
+    fakenet::write_bytes(reinterpret_cast<unsigned char*>(const_cast<char*>(client_saslout)), client_saslout_len);
+    // cyrus-SASL server
+    std::array<char, MAX_MESSAGE_LEN> server_recieved_buffer;
+    fakenet::read_bytes(reinterpret_cast<unsigned char*>(server_recieved_buffer.data()), client_saslout_len); // !! client_servermechs_len
+    server_recieved_buffer[client_servermechs_len]='\0'; // !!
+    const char* server_saslout;
+    unsigned int server_saslout_len;
+    retcode = sasl_server_start(server_conn, wanted_mech.c_str(), server_recieved_buffer.data(), client_saslout_len, &server_saslout, &server_saslout_len);
+    if(retcode != SASL_OK && retcode != SASL_CONTINUE)
+    {
+      throw std::runtime_error("server negotioation start: " + std::string(sasl_errstring(retcode, nullptr, nullptr)));
+    }
 
     // cyrus-SASL client
     sasl_dispose(&client_conn);
