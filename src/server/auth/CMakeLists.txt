@@ -26,6 +26,30 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(cyrus-sasl REQUIRED IMPORTED_TARGET libsasl2)
 
+# own sasl wrappers
+set(LIB_HEADERS
+    include/sasl_wrapper.hpp
+)
+
+set(LIB_SOURCES
+)
+
+add_library(sasl-wrappers INTERFACE
+    ${LIB_HEADERS}
+    ${LIB_SOURCES}
+)
+
+target_compile_features(sasl-wrappers INTERFACE cxx_std_20)
+
+target_link_libraries(sasl-wrappers INTERFACE PkgConfig::cyrus-sasl)
+
+ntc_target(sasl-wrappers
+    HEADER_PREFIX melon/server/auth/
+    ALIAS_NAME melon::sasl_wrappers
+)
+
+# melon-auth executable
+
 set(HEADERS)
 
 set(SOURCES
@@ -43,6 +67,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::cyrus-sasl)
+target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
 ntc_target(${PROJECT_NAME})
