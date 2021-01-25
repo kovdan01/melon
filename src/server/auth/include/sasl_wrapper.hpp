@@ -204,13 +204,6 @@ class SaslCientSingleton
 {
 public:
     SaslCientSingleton()
-        : m_callbacks
-          {
-              sasl_callback_t{ .id = SASL_CB_USER,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
-              sasl_callback_t{ .id = SASL_CB_AUTHNAME, .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
-              sasl_callback_t{ .id = SASL_CB_PASS,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_password), .context = nullptr },
-              sasl_callback_t{ .id = SASL_CB_LIST_END, .proc = nullptr,                                                              .context = nullptr }
-          }
     {
         sasl_res res = sasl_client_init(m_callbacks.data());
         detail::check_sasl_result(res, "client init");
@@ -230,7 +223,13 @@ public:
 
 private:
     static SaslServerSingleton* g_instance;
-    std::array<sasl_callback_t, 4> m_callbacks;
+    std::array<sasl_callback_t, 4> m_callbacks =
+    {
+        sasl_callback_t{ .id = SASL_CB_USER,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
+        sasl_callback_t{ .id = SASL_CB_AUTHNAME, .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
+        sasl_callback_t{ .id = SASL_CB_PASS,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_password), .context = nullptr },
+        sasl_callback_t{ .id = SASL_CB_LIST_END, .proc = nullptr,                                                              .context = nullptr }
+    };
 };
 
 }  // namespace melon::server::auth
