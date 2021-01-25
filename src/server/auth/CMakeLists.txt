@@ -44,7 +44,6 @@ target_compile_features(sasl-wrappers INTERFACE cxx_std_20)
 target_link_libraries(sasl-wrappers INTERFACE PkgConfig::cyrus-sasl)
 
 ntc_target(sasl-wrappers
-    HEADER_PREFIX melon/server/auth/
     ALIAS_NAME melon::sasl_wrappers
 )
 

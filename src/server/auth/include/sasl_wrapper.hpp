@@ -1,8 +1,6 @@
 #ifndef MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
 #define MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
 
-#include <melon/server/auth/export.h>
-
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -20,7 +18,7 @@ namespace melon::server::auth
 
 using sasl_res = int;
 
-struct SASL_WRAPPERS_EXPORT Credentials
+struct Credentials
 {
     const std::string username;
     const std::string password;
@@ -83,7 +81,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 
 }  // namespace detail
 
-class SASL_WRAPPERS_EXPORT SaslServer
+class SaslServer
 {
 public:
     SaslServer(std::string service)
@@ -137,7 +135,7 @@ private:
     sasl_conn_t* m_conn;
 };
 
-class SASL_WRAPPERS_EXPORT SaslServerSingleton
+class SaslServerSingleton
 {
 public:
     SaslServerSingleton()
@@ -155,7 +153,7 @@ private:
     static SaslServerSingleton* g_instance;
 };
 
-class SASL_WRAPPERS_EXPORT SaslClient
+class SaslClient
 {
 public:
     SaslClient(std::string service)
@@ -202,7 +200,7 @@ private:
     sasl_conn_t* m_conn;
 };
 
-class SASL_WRAPPERS_EXPORT SaslCientSingleton
+class SaslCientSingleton
 {
 public:
     SaslCientSingleton()
