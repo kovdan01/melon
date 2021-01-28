@@ -17,6 +17,13 @@ find_package(
     COMPONENTS program_options system
 )
 
+# mariadb
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET mariadb)
+
+# sqlpp11
+find_package(Sqlpp11 REQUIRED)
+
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -37,6 +44,9 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
+target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp-mysql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 ntc_target(${PROJECT_NAME})
