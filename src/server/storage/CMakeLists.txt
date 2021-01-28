@@ -19,10 +19,29 @@ find_package(
 
 # mariadb
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET mariadb)
+pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET libmariadb)
 
 # sqlpp11
 find_package(Sqlpp11 REQUIRED)
+
+set(SQLPP11_MYSQL_CONNECTOR_PREFIX
+    "/usr"
+    CACHE
+    FILEPATH
+    "Path to the sqlpp11 mysql connector prefix"
+)
+set(SQLPP11_MYSQL_CONNECTOR_INCLUDE
+    "${SQLPP11_MYSQL_CONNECTOR_PREFIX}/include"
+    CACHE
+    FILEPATH
+    "Path to the directory containing sqlpp11/mysql/mysql.h"
+)
+set(SQLPP11_MYSQL_CONNECTOR_LIB
+    "${SQLPP11_MYSQL_CONNECTOR_PREFIX}/lib"
+    CACHE
+    FILEPATH
+    "Path to the directory containing libsqlpp-mysql.a"
+)
 
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
@@ -40,6 +59,9 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SQLPP11_MYSQL_CONNECTOR_INCLUDE})
+target_link_directories(${PROJECT_NAME} PRIVATE ${SQLPP11_MYSQL_CONNECTOR_LIB})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
