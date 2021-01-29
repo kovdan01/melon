@@ -34,6 +34,8 @@ set(SOURCES
     src/main.cpp
 )
 
+include_directories("melondb.h")
+
 add_executable(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
