@@ -381,7 +381,19 @@ jobs:
         open("chrono_date.tar.gz", "wb").write(requests.get(chrono_date_url, allow_redirects=True).content)
         execute_command("tar -xf chrono_date.tar.gz")
 
+        os.chdir(chrono_date_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
         # sqlpp11 connector mysql
+        os.chdir(root)
+
         sqlpp11_conn_version = os.environ['SQLPP11_CONNECTOR_MYSQL_VERSION']
         sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_conn_version)))
 
@@ -397,8 +409,8 @@ jobs:
                        "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                   os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir, sqlpp11_install_dir,
-                                  chrono_date_source_dir, sqlpp11_install_dir))
+                                  sqlpp11_install_dir, # sqlpp11_install_dir,
+                                  sqlpp11_install_dir, sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
