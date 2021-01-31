@@ -11,23 +11,23 @@ jobs:
     name: ${{ format('{0} {1} {2}', matrix.config.prefix, matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
-      CMAKE_TOOL_VERSION: 3.19.1
+      CMAKE_TOOL_VERSION: "3.19.1"
       CMAKE_TOOL_PATH: cmake-tool
-      NINJA_TOOL_VERSION: 1.10.2
+      NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: ninja-tool
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: boost-install
-      CYRUS_SASL_VERSION: 2.1.27
+      CYRUS_SASL_VERSION: "2.1.27"
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
-      YAML_CPP_VERSION: 0.6.3
+      YAML_CPP_VERSION: "0.6.3"
       YAML_CPP_INSTALL_PATH: yaml-cpp-install
-      SQLPP11_VERSION: 0.60
-      SQLPP11_CONNECTOR_MYSQL_VERSION: 0.29
+      SQLPP11_VERSION: "0.60"
+      SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       SQLPP11_INSTALL_PATH: sqlpp11-install
-      QT_SHORT_VERSION: 5.15
-      QT_VERSION: 5.15.1
+      QT_SHORT_VERSION: "5.15"
+      QT_VERSION: "5.15.1"
       QT_INSTALL_PATH: qt-install
     strategy:
       fail-fast: true
