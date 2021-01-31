@@ -204,6 +204,7 @@ jobs:
         sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.tar.gz".format(sqlpp11_version)
         open("sqlpp11.tar.gz", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
         execute_command("tar -xf sqlpp11.tar.gz --directory={}".format(root))
+        print(os.listdir(root))
 
         os.chdir(sqlpp11_source_dir)
 
@@ -243,7 +244,6 @@ jobs:
 
         sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.tar.gz".format(sqlpp11_conn_version)
         open("sqlpp11_conn.tar.gz", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
-        print(os.listdir(root))
         execute_command("tar -xf sqlpp11_conn.tar.gz --directory={}".format(root))
 
         os.chdir(sqlpp11_conn_source_dir)
