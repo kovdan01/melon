@@ -105,12 +105,17 @@ jobs:
     - name: Install required python modules
       run: pip install requests
 
-    - name: Install Clang
+    - name: Install Clang and MariaDB (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt update -y
         sudo apt install clang -y
         sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+
+    - name: Install MariaDB (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      run: |
+        brew install mariadb
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2

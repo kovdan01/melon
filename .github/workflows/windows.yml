@@ -207,7 +207,6 @@ jobs:
         sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.zip".format(sqlpp11_version)
         open("sqlpp11.zip", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
         execute_command("7z x sqlpp11.zip")
-        print(os.listdir(root))
 
         os.chdir(sqlpp11_source_dir)
 
@@ -259,6 +258,9 @@ jobs:
                                         sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_msys_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_msys_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
+        print(os.listdir(sqlpp11_install_dir))
+        print(os.listdir(os.path.join(sqlpp11_install_dir, "lib")))
 
         os.chdir(repo)
 
