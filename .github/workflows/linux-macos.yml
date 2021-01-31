@@ -69,15 +69,15 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        #- {
-            #os: macos-latest,
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: macos-latest,
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -372,7 +372,7 @@ jobs:
 
         # sqlpp11 connector mysql
         sqlpp11_conn_version = os.environ['SQLPP11_CONNECTOR_MYSQL_VERSION']
-        sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_version)))
+        sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_conn_version)))
 
         sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.tar.gz".format(sqlpp11_conn_version)
         open("sqlpp11_conn.tar.gz", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
