@@ -1,2 +1,19 @@
 To do:
-как настроить бд на сервере 
+как настроить бд на сервере:
+
+sudo mysql -u root
+CREATE DATABASE melon;
+
+Проверим, что такая базы данных теперь есть:
+SHOW DATABASES;
+
+Создам пользователя:
+CREATE USER 'melon'@'localhost' IDENTIFIED BY 'melonpass';
+GRANT ALL PRIVILEGES ON melon.* TO 'melon'@'localhost';
+quit;
+
+Проверям, что пользователь создан и базу данных он/она видит:
+mysql -u melon -p
+(enter melonpass)
+ SHOW DATABASES;
+ quit;
