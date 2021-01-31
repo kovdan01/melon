@@ -182,7 +182,7 @@ jobs:
         import requests
         import subprocess
 
-        def execute_command(cmd):
+        def execute_command(cmd, is7z=False):
           ret = subprocess.call(cmd, shell=True)
           if is7z:
             if ret != 0 and ret != 1:  # 1 means warnings
