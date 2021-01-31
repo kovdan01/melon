@@ -243,6 +243,7 @@ jobs:
 
         sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.tar.gz".format(sqlpp11_conn_version)
         open("sqlpp11_conn.tar.gz", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
+        print(os.listdir(root))
         execute_command("tar -xf sqlpp11_conn.tar.gz --directory={}".format(root))
 
         os.chdir(sqlpp11_conn_source_dir)
