@@ -23,7 +23,7 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MINGW64_CACHE_VERSION: 11  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 12  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -303,6 +303,18 @@ jobs:
           C:/msys64/mingw64/lib/pkgconfig/yaml-cpp.pc
           C:/msys64/mingw64/lib/yaml-cpp.dll.a
           C:/msys64/mingw64/share/licenses/yaml-cpp/
+
+          C:/msys64/mingw64/bin/libmariadb.dll
+          C:/msys64/mingw64/bin/mariadb_config.exe
+          C:/msys64/mingw64/include/mariadb/
+          C:/msys64/mingw64/include/mysql/
+          C:/msys64/mingw64/lib/libmariadb.dll.a
+          C:/msys64/mingw64/lib/libmariadbclient.a
+          C:/msys64/mingw64/lib/libmysqlclient.a
+          C:/msys64/mingw64/lib/libmysqlclient.dll.a
+          C:/msys64/mingw64/lib/libmysqlclient_r.a
+          C:/msys64/mingw64/lib/libmysqlclient_r.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libmariadb.pc
 
           C:/msys64/mingw64/bin/assimp.exe
           C:/msys64/mingw64/bin/assimp_viewer.exe
@@ -807,6 +819,12 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
+
+    - name: MariaDB
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-libmariadbclient
 
     - name: Qt5
       if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
