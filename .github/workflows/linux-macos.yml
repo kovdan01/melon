@@ -12,9 +12,9 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: "3.19.1"
-      CMAKE_TOOL_PATH: cmake-tool
+      CMAKE_TOOL_PATH: "cmake-tool"
       NINJA_TOOL_VERSION: "1.10.2"
-      NINJA_TOOL_PATH: ninja-tool
+      NINJA_TOOL_PATH: "ninja-tool"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0

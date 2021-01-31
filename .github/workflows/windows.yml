@@ -11,21 +11,25 @@ jobs:
     name: ${{ format('Windows {0} {1}', matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
-      CMAKE_TOOL_VERSION: 3.19.1
-      CMAKE_TOOL_PATH: cmake-tool
-      NINJA_TOOL_VERSION: 1.10.2
-      NINJA_TOOL_PATH: ninja-tool
+      CMAKE_TOOL_VERSION: "3.19.1"
+      CMAKE_TOOL_PATH: "cmake-tool"
+      NINJA_TOOL_VERSION: "1.10.2"
+      NINJA_TOOL_PATH: "ninja-tool"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
-      BOOST_INSTALL_PATH: boost-install
+      BOOST_INSTALL_PATH: "boost-install"
+      SQLPP11_VERSION: "0.60"
+      SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
+      CHRONO_DATE_VERSION: "3.0.0"
+      SQLPP11_INSTALL_PATH: "sqlpp11-install"
       MINGW64_CACHE_VERSION: 11  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
         config:
         - {
-            os: windows-latest,
+            os: "windows-latest",
             prefix: "Windows",
             suffix: "",
             artifact: "all-release-windows-mingw64",
@@ -112,7 +116,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_boost
       with:
-        path: ${{ env.ROOT_PATH }}/boost-install
+        path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
         key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
 
     - name: Boost
@@ -157,6 +161,100 @@ jobs:
         execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, "../boost-install"))
         execute_command(cmd_prefix + '"./b2"')
         execute_command(cmd_prefix + '"./b2 install"')
+
+        os.chdir(repo)
+
+    - name: SQLPP11 cache
+      uses: actions/cache@v2
+      id: cache_sqlpp11
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+
+    - name: SQLPP11
+      if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          ret = subprocess.call(cmd_prefix + '"cmd"', shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        # sqlpp11 itself
+        os.chdir(root)
+
+        sqlpp11_version = os.environ['SQLPP11_VERSION']
+        sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
+        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}"))
+        os.mkdir(sqlpp11_install_dir)
+
+        sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.tar.gz".format(sqlpp11_version)
+        open("sqlpp11.tar.gz", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
+        execute_command("tar -xf sqlpp11.tar.gz")
+
+        os.chdir(sqlpp11_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
+        # chrono date (sqlpp11 connector mysql dependency)
+        os.chdir(root)
+
+        chrono_date_version = os.environ['CHRONO_DATE_VERSION']
+        chrono_date_source_dir  = os.path.normpath(os.path.join(root, "date-{}".format(chrono_date_version)))
+
+        chrono_date_url = "https://github.com/HowardHinnant/date/archive/v{}.tar.gz".format(chrono_date_version)
+        open("chrono_date.tar.gz", "wb").write(requests.get(chrono_date_url, allow_redirects=True).content)
+        execute_command("tar -xf chrono_date.tar.gz")
+
+        os.chdir(chrono_date_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
+        # sqlpp11 connector mysql
+        os.chdir(root)
+
+        sqlpp11_conn_version = os.environ['SQLPP11_CONNECTOR_MYSQL_VERSION']
+        sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_conn_version)))
+
+        sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.tar.gz".format(sqlpp11_conn_version)
+        open("sqlpp11_conn.tar.gz", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
+        execute_command("tar -xf sqlpp11_conn.tar.gz")
+
+        os.chdir(sqlpp11_conn_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
         os.chdir(repo)
 
@@ -732,7 +830,8 @@ jobs:
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
         -D CMAKE_PREFIX_PATH=\
-        ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
+        ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}\\${{ env.SQLPP11_INSTALL_PATH }} \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
