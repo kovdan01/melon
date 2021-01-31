@@ -23,6 +23,9 @@ jobs:
       CYRUS_SASL_INSTALL_PATH: cyrus-sasl-install
       YAML_CPP_VERSION: 0.6.3
       YAML_CPP_INSTALL_PATH: yaml-cpp-install
+      SQLPP11_VERSION: 0.60
+      SQLPP11_CONNECTOR_MYSQL_VERSION: 0.29
+      SQLPP11_INSTALL_PATH: sqlpp11-install
       QT_SHORT_VERSION: 5.15
       QT_VERSION: 5.15.1
       QT_INSTALL_PATH: qt-install
@@ -103,7 +106,9 @@ jobs:
 
     - name: Install Clang
       if: ${{ runner.os == 'Linux' }}
-      run: sudo apt-get install clang -y
+      run: |
+        sudo apt install clang -y
+        sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -312,6 +317,77 @@ jobs:
                                   yaml_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        os.chdir(repo)
+
+    - name: SQLPP11 cache
+      uses: actions/cache@v2
+      id: cache_sqlpp11_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/sqlpp11-install
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+
+    - name: SQLPP11
+      if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        os.chdir(root)
+
+        # sqlpp11 itself
+        sqlpp11_version = os.environ['SQLPP11_VERSION']
+        sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
+        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}"))
+        os.mkdir(sqlpp11_install_dir)
+
+        sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.tar.gz".format(sqlpp11_version)
+        open("sqlpp11.tar.gz", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
+        execute_command("7z x sqlpp11.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(sqlpp11_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
+        # sqlpp11 connector mysql
+        sqlpp11_conn_version = os.environ['SQLPP11_CONNECTOR_MYSQL_VERSION']
+        sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_version)))
+
+        sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.tar.gz".format(sqlpp11_conn_version)
+        open("sqlpp11_conn.tar.gz", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
+        execute_command("7z x sqlpp11_conn.tar.gz -so | 7z x -si -ttar")
+
+        os.chdir(sqlpp11_conn_source_dir)
+
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       "-DUSE_MARIADB=TRUE -DSQLPP11_INCLUDE_DIR={}/include "
+                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                  os.path.join(root, ninja_tool_path, "ninja"),
+                                  sqlpp11_install_dir, sqlpp11_install_dir))
+        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+
         os.chdir(repo)
 
     - name: Qt5 cache
