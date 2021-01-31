@@ -176,7 +176,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_boost
       with:
-        path: ${{ env.ROOT_PATH }}/boost-install
+        path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
         key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
 
     - name: Boost
@@ -227,7 +227,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_cyrus_sasl_unix
       with:
-        path: ${{ env.ROOT_PATH }}/cyrus-sasl-install
+        path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
         key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
 
     - name: Cyrus SASL
@@ -274,7 +274,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_yaml_cpp_unix
       with:
-        path: ${{ env.ROOT_PATH }}/yaml-cpp-install
+        path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
         key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
 
     - name: Yaml CPP
@@ -325,7 +325,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_sqlpp11_unix
       with:
-        path: ${{ env.ROOT_PATH }}/sqlpp11-install
+        path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
         key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
 
     - name: SQLPP11
@@ -405,12 +405,10 @@ jobs:
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                       "-DUSE_MARIADB=TRUE " # -DCMAKE_PREFIX_PATH={} "
-                       "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
+                       "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                   os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir, # sqlpp11_install_dir,
-                                  sqlpp11_install_dir, sqlpp11_install_dir))
+                                  sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -420,7 +418,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_qt_unix
       with:
-        path: ${{ env.ROOT_PATH }}/qt-install
+        path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
         key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
 
     - name: Qt5
@@ -493,6 +491,7 @@ jobs:
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
