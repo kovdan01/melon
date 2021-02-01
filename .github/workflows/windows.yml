@@ -849,8 +849,8 @@ jobs:
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
         -D CMAKE_PREFIX_PATH=\
-        ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}\\${{ env.SQLPP11_INSTALL_PATH }} \
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
