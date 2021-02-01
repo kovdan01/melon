@@ -109,6 +109,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
+        sudo apt-get purge *mysql*
+        sudo apt-get purge *mariadb*
         sudo apt-get install clang -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 

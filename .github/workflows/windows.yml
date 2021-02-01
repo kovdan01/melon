@@ -203,6 +203,7 @@ jobs:
         repo = os.environ['REPO_PATH']
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+        cmake_binary = os.path.join(cmake_tool_binary_path, "cmake").replace("\\", "/")
 
         # sqlpp11 itself
         os.chdir(root)
@@ -223,11 +224,11 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         print("EEEE")
-        execute_command(cmd_prefix + '"{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} ."'.format(os.path.join(cmake_tool_binary_path, "cmake"), sqlpp11_install_dir))
+        execute_command(cmd_prefix + '"{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} ."'.format(cmake_binary, sqlpp11_install_dir))
         print("FFFF")
-        execute_msys_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
         print("GGGG")
-        execute_msys_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
 
         print("HHHH")
         # chrono date (sqlpp11 connector mysql dependency)
@@ -242,13 +243,9 @@ jobs:
 
         os.chdir(chrono_date_source_dir)
 
-        execute_msys_command("{} "#-GNinja -DCMAKE_MAKE_PROGRAM={} "
-                             "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                             ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                        #os.path.join(root, ninja_tool_path, "ninja"),
-                                        sqlpp11_install_dir))
-        execute_msys_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
-        execute_msys_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_msys_command("{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} .".format(cmake_binary, sqlpp11_install_dir))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
 
         # sqlpp11 connector mysql
         os.chdir(root)
@@ -262,14 +259,9 @@ jobs:
 
         os.chdir(sqlpp11_conn_source_dir)
 
-        execute_msys_command("{} "#-GNinja -DCMAKE_MAKE_PROGRAM={} "
-                             "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                             "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
-                             ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                        #os.path.join(root, ninja_tool_path, "ninja"),
-                                        sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
-        execute_msys_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
-        execute_msys_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_msys_command("{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include .".format(cmake_binary, sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
 
         os.chdir(repo)
 
