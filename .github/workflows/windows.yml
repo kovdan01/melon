@@ -117,7 +117,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system-x
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
 
     - name: Boost
       id: boost
@@ -197,6 +197,8 @@ jobs:
           cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
           execute_command(cmd_prefix + '"cmd"')
 
+        cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+
         root = os.environ['ROOT_PATH']
         repo = os.environ['REPO_PATH']
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
@@ -205,25 +207,29 @@ jobs:
         # sqlpp11 itself
         os.chdir(root)
 
+        print("AAAA")
         sqlpp11_version = os.environ['SQLPP11_VERSION']
         sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
         sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}"))
         os.mkdir(sqlpp11_install_dir)
 
+        print("BBBB")
         sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.zip".format(sqlpp11_version)
         open("sqlpp11.zip", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
+        print("CCCC")
         execute_command("7z x sqlpp11.zip")
 
+        print("DDDD")
         os.chdir(sqlpp11_source_dir)
 
-        execute_msys_command("{} " #-GNinja -DCMAKE_MAKE_PROGRAM={} "
-                             "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                             ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                        #os.path.join(root, ninja_tool_path, "ninja"),
-                                        sqlpp11_install_dir))
+        print("EEEE")
+        execute_command(cmd_prefix + '"{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} ."'.format(os.path.join(cmake_tool_binary_path, "cmake"), sqlpp11_install_dir))
+        print("FFFF")
         execute_msys_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        print("GGGG")
         execute_msys_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
+        print("HHHH")
         # chrono date (sqlpp11 connector mysql dependency)
         os.chdir(root)
 
