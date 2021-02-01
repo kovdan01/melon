@@ -782,9 +782,10 @@ jobs:
 
         os.chdir(sqlpp11_source_dir)
 
-        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
-                              "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} " +
-                              ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir))
+        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release " +
+                              "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
+                              ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
+                                          root + "/" + os.environ['BOOST_INSTALL_PATH']))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
         execute_msys_command("{} --build . --target install".format(cmake_binary))
 
@@ -819,8 +820,7 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
-                              "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} " +
-                              "-DUSE_MARIADB=TRUE " +
+                              "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE " +
                               "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           sqlpp11_install_dir, sqlpp11_install_dir))
