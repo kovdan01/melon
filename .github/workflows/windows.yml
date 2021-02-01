@@ -202,6 +202,7 @@ jobs:
         root = os.environ['ROOT_PATH']
         repo = os.environ['REPO_PATH']
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        ninja_binary = os.path.join(ninja_tool_path, "ninja").replace("\\", "/")
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
         cmake_binary = os.path.join(cmake_tool_binary_path, "cmake").replace("\\", "/")
 
@@ -224,7 +225,7 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         print("EEEE")
-        execute_command(cmd_prefix + '"{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} ."'.format(cmake_binary, sqlpp11_install_dir))
+        execute_command(cmd_prefix + '"{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} ."'.format(cmake_binary, ninja_binary, sqlpp11_install_dir))
         print("FFFF")
         execute_msys_command("{} --build . --target all".format(cmake_binary))
         print("GGGG")
@@ -243,7 +244,7 @@ jobs:
 
         os.chdir(chrono_date_source_dir)
 
-        execute_msys_command("{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} .".format(cmake_binary, sqlpp11_install_dir))
+        execute_msys_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} .".format(cmake_binary, ninja_binary, sqlpp11_install_dir))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
         execute_msys_command("{} --build . --target install".format(cmake_binary))
 
@@ -259,7 +260,7 @@ jobs:
 
         os.chdir(sqlpp11_conn_source_dir)
 
-        execute_msys_command("{} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include .".format(cmake_binary, sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
+        execute_msys_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include .".format(cmake_binary, ninja_binary, sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
         execute_msys_command("{} --build . --target install".format(cmake_binary))
 
