@@ -848,6 +848,7 @@ jobs:
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
+        -D SQLPP11_MYSQL_CONNECTOR_PREFIX="${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
