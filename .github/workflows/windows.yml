@@ -52,9 +52,9 @@ jobs:
         cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
 
         with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
-          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
-          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
+          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "/")))
+          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "/")))
+          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
 
     - name: Install required python modules
       run: pip install requests
@@ -143,7 +143,7 @@ jobs:
         boost_build = os.environ['BOOST_BUILD']
 
         boost_source_dir  = os.path.normpath(os.path.join(root, "boost_{}_{}_{}".format(boost_major, boost_minor, boost_build)))
-        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "\\\\\\\\")
+        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(boost_install_dir)
 
         boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
@@ -210,7 +210,7 @@ jobs:
         print("AAAA")
         sqlpp11_version = os.environ['SQLPP11_VERSION']
         sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
-        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}")).replace("\\", "\\\\\\\\")
+        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(sqlpp11_install_dir)
 
         print("BBBB")
