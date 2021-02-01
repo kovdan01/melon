@@ -373,12 +373,12 @@ jobs:
           C:/msys64/mingw64/bin/genrb.exe
           C:/msys64/mingw64/bin/icu-config
           C:/msys64/mingw64/bin/icuinfo.exe
-          C:/msys64/mingw64/bin/libicudt67.dll
-          C:/msys64/mingw64/bin/libicuin67.dll
-          C:/msys64/mingw64/bin/libicuio67.dll
-          C:/msys64/mingw64/bin/libicutest67.dll
-          C:/msys64/mingw64/bin/libicutu67.dll
-          C:/msys64/mingw64/bin/libicuuc67.dll
+          C:/msys64/mingw64/bin/libicudt68.dll
+          C:/msys64/mingw64/bin/libicuin68.dll
+          C:/msys64/mingw64/bin/libicuio68.dll
+          C:/msys64/mingw64/bin/libicutest68.dll
+          C:/msys64/mingw64/bin/libicutu68.dll
+          C:/msys64/mingw64/bin/libicuuc68.dll
           C:/msys64/mingw64/bin/makeconv.exe
           C:/msys64/mingw64/bin/pkgdata.exe
           C:/msys64/mingw64/bin/uconv.exe
@@ -872,12 +872,12 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\Qt5Core.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Gui.dll"                 install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Widgets.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuin67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicuin68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libdouble-conversion.dll"   install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuuc67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicuuc68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libzstd.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libpcre2-16-0.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicudt67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicudt68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libharfbuzz-0.dll"          install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libpng16-16.dll"            install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libgraphite2.dll"           install\\bin
