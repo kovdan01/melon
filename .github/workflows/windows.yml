@@ -164,12 +164,6 @@ jobs:
 
         os.chdir(repo)
 
-    - name: Make
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -S --noconfirm make
-
     - name: SQLPP11 cache
       uses: actions/cache@v2
       id: cache_sqlpp11
@@ -202,7 +196,7 @@ jobs:
         root = os.environ['ROOT_PATH']
         repo = os.environ['REPO_PATH']
         ninja_tool_path = os.environ['NINJA_TOOL_PATH']
-        ninja_binary = os.path.join(ninja_tool_path, "ninja").replace("\\", "/")
+        ninja_binary = os.path.join(root, ninja_tool_path, "ninja").replace("\\", "/")
         cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
         cmake_binary = os.path.join(cmake_tool_binary_path, "cmake").replace("\\", "/")
 
