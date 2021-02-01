@@ -117,7 +117,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system-y
 
     - name: Boost
       id: boost
@@ -143,7 +143,7 @@ jobs:
         boost_build = os.environ['BOOST_BUILD']
 
         boost_source_dir  = os.path.normpath(os.path.join(root, "boost_{}_{}_{}".format(boost_major, boost_minor, boost_build)))
-        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}"))
+        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "\\\\")
         os.mkdir(boost_install_dir)
 
         boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
@@ -158,7 +158,7 @@ jobs:
         cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, "../boost-install"))
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, boost_install_dir))
         execute_command(cmd_prefix + '"./b2"')
         execute_command(cmd_prefix + '"./b2 install"')
 
@@ -210,7 +210,7 @@ jobs:
         print("AAAA")
         sqlpp11_version = os.environ['SQLPP11_VERSION']
         sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
-        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}"))
+        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}")).replace("\\", "\\\\")
         os.mkdir(sqlpp11_install_dir)
 
         print("BBBB")
