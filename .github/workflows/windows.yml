@@ -250,7 +250,7 @@ jobs:
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
                               "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} " +
-                              "-DUSE_MARIADB=TRUE -DMYSQL_INCLUDE_DIR=/mingw64/include/mariadb/ " +
+                              "-DUSE_MARIADB=TRUE -DMYSQL_INCLUDE_DIR=/mingw64/include/mariadb/ -DMYSQL_LIBRARY=/mingw64/bin/libmariadb.dll " +
                               "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           sqlpp11_install_dir, sqlpp11_install_dir))
