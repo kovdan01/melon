@@ -189,7 +189,7 @@ jobs:
 
         def execute_msys_command(cmd):
           cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
-          execute_command(cmd_prefix + '"cmd"')
+          execute_command(cmd_prefix + '"{}"'.format(cmd))
 
         root = os.environ['ROOT_PATH']
         repo = os.environ['REPO_PATH']
