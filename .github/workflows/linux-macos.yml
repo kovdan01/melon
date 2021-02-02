@@ -369,11 +369,12 @@ jobs:
 
         os.chdir(sqlpp11_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release "
+                       "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                   os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir))
+                                  sqlpp11_install_dir,
+                                  os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -410,7 +411,7 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
                        "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                   os.path.join(root, ninja_tool_path, "ninja"),
