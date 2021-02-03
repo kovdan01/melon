@@ -64,11 +64,8 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     auto* params = static_cast<Credentials*>(context);
     // std::cerr << "Setting pass to " << params->password << std::endl;
 
-    static sasl_secret_t* secret;
-    auto* temp = reinterpret_cast<sasl_secret_t*>(std::realloc(secret, sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
-    if (temp != nullptr)
-        secret = temp;
-    else
+    static auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size() + 1));  // NOLINT cppcoreguidelines-no-malloc
+    if (secret == nullptr)
         return SASL_NOMEM;
     secret->len = params->password.size();
     std::memcpy(secret->data, params->password.c_str(), secret->len + 1);
