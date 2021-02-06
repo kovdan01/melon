@@ -26,8 +26,8 @@ struct Credentials
 
 enum auth_completness
 {
-    complete = SASL_OK,
-    incomplete = SASL_CONTINUE,
+    COMPLETE = SASL_OK,
+    INCOMPLETE = SASL_CONTINUE,
 };
 
 struct StepResult
@@ -76,7 +76,8 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     auto* params = static_cast<Credentials*>(context);
     // std::cerr << "Setting pass to " << params->password << std::endl;
 
-    static auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size() + 1));  // NOLINT cppcoreguidelines-no-malloc
+    // There is no additional byte allocated, as sasl_secret_t already contains a single bite for password
+    static auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
     if (secret == nullptr)
         return SASL_NOMEM;
     secret->len = params->password.size();

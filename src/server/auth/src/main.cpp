@@ -26,7 +26,7 @@ int main() try
 
     auto [server_completness, server_response] = server.start(selected_mechanism, client_response);
     msa::auth_completness auth_completness = server_completness;
-    while(auth_completness == msa::auth_completness::incomplete)
+    while(auth_completness == msa::auth_completness::INCOMPLETE)
     {
         std::cout << "Performing extra auth step..." << std::endl;
         auto client_step_res = client.step(server_response);
