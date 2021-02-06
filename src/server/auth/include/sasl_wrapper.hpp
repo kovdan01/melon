@@ -24,7 +24,7 @@ struct Credentials
     const std::string password;
 };
 
-enum auth_completness
+enum AuthCompletness
 {
     COMPLETE = SASL_OK,
     INCOMPLETE = SASL_CONTINUE,
@@ -32,7 +32,7 @@ enum auth_completness
 
 struct StepResult
 {
-    auth_completness completness;
+    AuthCompletness completness;
     std::string_view response;
 };
 
@@ -127,7 +127,7 @@ public:
 
         detail::check_sasl_result(res, "server start");
 
-        return {.completness = static_cast<auth_completness>(res), .response = { serverout, serverout_len }};
+        return {.completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len }};
     }
 
 
@@ -140,7 +140,7 @@ public:
 
         detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-        return {.completness = static_cast<auth_completness>(res), .response = { serverout, serverout_len }};
+        return {.completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len }};
     }
 
     [[nodiscard]] const sasl_conn_t* conn() const
@@ -227,7 +227,7 @@ public:
 
         detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-        return {.completness = static_cast<auth_completness>(res), .response = { clientout, clientout_len }};
+        return {.completness = static_cast<AuthCompletness>(res), .response = { clientout, clientout_len }};
     }
 
     [[nodiscard]] const sasl_conn_t* conn() const
