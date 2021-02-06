@@ -5,29 +5,27 @@
 #include <sqlpp11/remove.h>
 
 #include <iostream>
-#include <array>
 
 #include "melondb.h"
 
 namespace mysql = sqlpp::mysql;
 
 
+namespace melon::core{
+
 /* User:
 *
 * user_id (unsigned) - UNSIGNED INT   4 294 967 295 = uint_32  NOT NULL AUTOINCREMENT - PRIMARY KEY
 * username (char[255])  - varchar(255) = std::string < 255 NOT NULL
-* enum status (ONLINE = 1, OFFLINE = 0) - UNSIGNED TINYINT 255 = uint8_t NOT NULL DEFAULT 0
+* status (ONLINE = 1, OFFLINE = 0) - UNSIGNED TINYINT 255 = uint8_t NOT NULL DEFAULT 0 (enum is nor supported
+* by sqlpp11)
 */
 
 struct User
 {
-    uint32_t userid;
+    std::uint32_t userid;
     std::string username;
-    enum status
-    {
-        OFFLINE,
-        ONLINE,
-    } stat;
+    std::uint8_t status;
 };
 
 /* Message:
@@ -46,34 +44,33 @@ struct User
 
 struct Message
 {
-    uint64_t messageid;
+    std::uint64_t messageid;
     std::string text;
-    enum status
-    {
-        FAIL,
-        SUCCES
-    } stat;
+    std::uint8_t status;
     bool seen;
     std::chrono::high_resolution_clock::time_point timestamp;
-    uint32_t user_id;
-    uint32_t chat_id;
+    std::uint32_t user_id;
+    std::uint32_t chat_id;
 };
 
 /* Chat:
 *
 * chat_id (unsigned) - UNSIGNED INT   4 294 967 295 = uint_32  NOT NULL AUTOINCREMENT - PRIMARY KEY
 * chatname (char[255])  - varchar(255) = std::string < 255 NOT NULL
+*
 */
 
 struct Chat
 {
-    uint32_t chatid;
+    std::uint32_t chatid;
     std::string chatname;
 };
 
-const auto users = melon::Users{};
-const auto messages = melon::Messages{};
-const auto chats = melon::Chats{};
+}
+
+const melon::Users users;
+const melon::Messages messages;
+const melon::Chats chats;
 
 static auto config_melondb()
 {
@@ -98,12 +95,12 @@ static std::vector<std::string> get_online_users_names(mysql::connection& db)
     return online_users_names;
 }
 
-static std::vector<User> get_online_users(mysql::connection& db)
+static std::vector<melon::core::User> get_online_users(mysql::connection& db)
 {
-    std::vector<User> online_users;
+    std::vector<melon::core::User> online_users;
     for (const auto& row : db(select(all_of(users)).from(users).where(users.status == 1)))
     {
-        User user;
+        melon::core::User user;
         user.userid = row.userId;
         user.username = row.username;
         //user.status = row.status;
@@ -112,24 +109,24 @@ static std::vector<User> get_online_users(mysql::connection& db)
     return online_users;
 }
 
-static void add_user(mysql::connection& db, User user)
+static void add_user(mysql::connection& db, melon::core::User user)
 {
     db(insert_into(users).set(users.username = user.username, users.status = 0));
 }
 
-static void make_user_online(mysql::connection& db, User user)
+static void make_user_online(mysql::connection& db, melon::core::User user)
 {
     db(update(users).set(users.status = 1).where(users.username == user.username));
 }
 
-static void make_user_offline(mysql::connection& db, User user)
+static void make_user_offline(mysql::connection& db, melon::core::User user)
 {
     db(update(users).set(users.status = 0).where(users.username == user.username));
 }
 
 /* Messages */
 
-static void add_message(mysql::connection& db, Message message)
+static void add_message(mysql::connection& db, melon::core::Message message)
 {
     db(insert_into(messages).set(messages.text = message.text, messages.timesend = message.timestamp, messages.status = 0,
             messages.seen = 0, messages.userId = message.user_id, messages.chatId = message.chat_id));
@@ -137,24 +134,23 @@ static void add_message(mysql::connection& db, Message message)
 
 /* Chat */
 
-static void add_chat(mysql::connection& db, Chat chat)
+static void add_chat(mysql::connection& db, melon::core::Chat chat)
 {
     db(insert_into(chats).set(chats.chatname = chat.chatname));
 }
 
-static std::vector<Message> get_messages_for_chat(mysql::connection& db, Chat chat)
+static std::vector<melon::core::Message> get_messages_for_chat(mysql::connection& db, melon::core::Chat chat)
 {
-    std::vector<Message> messages_in_chat;
+    std::vector<melon::core::Message> messages_in_chat;
     for (const auto& row : db(select(all_of(messages)).from(messages).where(messages.chatId == chat.chatid)))
     {
-        Message message;
+        melon::core::Message message;
         message.text = row.text;
         message.seen = row.seen;
-        //user.status = row.status;
+        message.status = row.status;
         messages_in_chat.emplace_back(std::move(message));
     }
     return messages_in_chat;
-
 }
 
 
@@ -195,25 +191,44 @@ int main()
             ))");
 
 
+        //check that time in mariadb
 
-        User user;
+        melon::core::User user;
         user.username = "h3ll0kitt1";
         add_user(db, user);
 
-        Chat chat;
+        melon::core::Chat chat;
+        chat.chatid = 1;
         chat.chatname = "secret_chat";
         add_chat(db, chat);
 
-        Message message;
+        melon::core::Message message;
         message.text = "Let's protest";
         message.seen = 1;
+        message.status = 1;
         message.timestamp = std::chrono::system_clock::now();
         message.user_id = 1;
         message.chat_id = 1;
         add_message(db, message);
 
+        message.text = "or go to OVD";
+        message.seen = 0;
+        message.status = 0;
+        message.timestamp = std::chrono::system_clock::now();
+        message.user_id = 1;
+        message.chat_id = 1;
+        add_message(db, message);
 
-        std::vector<User> online_users = get_online_users(db);
+        std::vector<melon::core::Message> chat_message = get_messages_for_chat(db, chat);
+
+        std::cout << "Messages of chat: " << std::endl;
+        for (const auto& a: chat_message)
+        {
+            std:: cout << "message id: " << a.messageid << "\ntext: " << a.text << std::endl;
+        }
+
+
+        std::vector<melon::core::User> online_users = get_online_users(db);
 
         std::cout << "Online users: " << std::endl;
         for (auto& a: online_users)
@@ -223,20 +238,20 @@ int main()
 
         std::cout << "Change status for online" << std::endl;
         make_user_online(db, user);
-        std::vector<std::string> onlineUsersNames = get_online_users_names(db);
+        std::vector<std::string> online_users_names = get_online_users_names(db);
 
         std::cout << "Online users: " << std::endl;
-        for (const auto &a: onlineUsersNames)
+        for (const auto &a: online_users_names)
         {
             std:: cout << a << std::endl;
         }
 
         std::cout << "Change status for offline" << std::endl;
         make_user_offline(db, user);
-        onlineUsersNames = get_online_users_names(db);
+        online_users_names = get_online_users_names(db);
 
         std::cout << "Online users: " << std::endl;
-        for (auto& a: onlineUsersNames)
+        for (auto& a: online_users_names)
         {
             std:: cout << a << std::endl;
         }

@@ -49,7 +49,9 @@ set(SQLPP11_)
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(HEADERS)
+set(HEADERS
+    #include/melon/storage.hpp
+    )
 
 set(SOURCES
     src/main.cpp
