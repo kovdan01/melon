@@ -29,6 +29,7 @@ pkg_check_modules(cyrus-sasl REQUIRED IMPORTED_TARGET libsasl2)
 # own sasl wrappers
 set(LIB_HEADERS
     include/sasl_wrapper.hpp
+    include/sasl_wrapper.ipp
 )
 
 set(LIB_SOURCES

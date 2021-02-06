@@ -25,14 +25,14 @@ int main() try
     assert(selected_mechanism == wanted_mechanism);
 
     auto [server_completness, server_response] = server.start(selected_mechanism, client_response);
-    msa::AuthCompletness auth_completness = server_completness;
-    while (auth_completness == msa::AuthCompletness::INCOMPLETE)
+
+    while (server_completness == msa::AuthCompletness::INCOMPLETE)
     {
         std::cout << "Performing extra auth step..." << std::endl;
         msa::StepResult client_step_res = client.step(server_response);
         msa::StepResult server_step_res = server.step(client_step_res.response);
         server_response = server_step_res.response;
-        auth_completness = server_step_res.completness;
+        server_completness = server_step_res.completness;
     }
 
     return 0;
