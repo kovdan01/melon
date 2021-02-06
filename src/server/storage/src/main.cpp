@@ -72,7 +72,7 @@ const melon::Users Users;
 const melon::Messages Messages;
 const melon::Chats chats;
 
-static auto config_melondb()
+static std::shared_ptr<mysql::connection_config> config_melondb()
 {
     auto config = std::make_shared<mysql::connection_config>();
     config->user = "melon";
@@ -90,7 +90,7 @@ static std::vector<std::string> get_online_users_names(mysql::connection& db)
     std::vector<std::string> online_users_names;
     for (const auto& row : db(select(Users.username).from(Users).where(Users.status == 1)))
     {
-        online_users_names.emplace_back(std::move(row.username));
+        online_users_names.emplace_back(row.username);
     }
     return online_users_names;
 }
@@ -103,23 +103,22 @@ static std::vector<melon::core::User> get_online_users(mysql::connection& db)
         melon::core::User user;
         user.userid = row.userId;
         user.username = row.username;
-        //user.status = row.status;
         online_users.emplace_back(std::move(user));
     }
     return online_users;
 }
 
-static void add_user(mysql::connection& db, melon::core::User user)
+static void add_user(mysql::connection& db, const melon::core::User& user)
 {
     db(insert_into(Users).set(Users.username = user.username, Users.status = 0));
 }
 
-static void make_user_online(mysql::connection& db, melon::core::User user)
+static void make_user_online(mysql::connection& db, melon::core::User& user)
 {
     db(update(Users).set(Users.status = 1).where(Users.username == user.username));
 }
 
-static void make_user_offline(mysql::connection& db, melon::core::User user)
+static void make_user_offline(mysql::connection& db, melon::core::User& user)
 {
     db(update(Users).set(Users.status = 0).where(Users.username == user.username));
 }

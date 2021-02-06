@@ -50,10 +50,11 @@ set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set(HEADERS
-    #include/melon/storage.hpp
-    )
+    include/melon/storage.hpp
+)
 
 set(SOURCES
+    src/melon_storage.cpp
     src/main.cpp
 )
 
@@ -92,4 +93,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp-mysql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-ntc_target(${PROJECT_NAME})
+ntc_target(${PROJECT_NAME}
+    ALIAS_NAME melon::server
+    HEADER_PREFIX melon/server/storage
+)
