@@ -168,6 +168,11 @@ public:
         return instance;
     }
 
+    SaslServerSingleton(const SaslServerSingleton& root) = delete;
+    SaslServerSingleton& operator=(const SaslServerSingleton&) = delete;
+    SaslServerSingleton(SaslServerSingleton&& root) = delete;
+    SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
+
 private:
     SaslServerSingleton()
     {
@@ -179,12 +184,6 @@ private:
     {
         sasl_server_done();
     }
-
-    SaslServerSingleton(const SaslServerSingleton& root) = delete;
-    SaslServerSingleton& operator=(const SaslServerSingleton&) = delete;
-    SaslServerSingleton(SaslServerSingleton&& root) = delete;
-    SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
-
 };
 
 class SaslClientConnection
@@ -264,6 +263,11 @@ public:
         m_callbacks[2].context = credentials;
     }
 
+    SaslClientSingleton(const SaslClientSingleton& root) = delete;
+    SaslClientSingleton& operator=(const SaslClientSingleton&) = delete;
+    SaslClientSingleton(SaslClientSingleton&& root) = delete;
+    SaslClientSingleton& operator=(SaslClientSingleton&&) = delete;
+
 private:
 
     SaslClientSingleton()
@@ -276,11 +280,6 @@ private:
     {
         sasl_server_done();
     }
-
-    SaslClientSingleton(const SaslClientSingleton& root) = delete;
-    SaslClientSingleton& operator=(const SaslClientSingleton&) = delete;
-    SaslClientSingleton(SaslClientSingleton&& root) = delete;
-    SaslClientSingleton& operator=(SaslClientSingleton&&) = delete;
 
     std::array<sasl_callback_t, 4> m_callbacks =
     {
