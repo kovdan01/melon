@@ -8,6 +8,197 @@
 
 namespace melon
 {
+  namespace Chats_
+  {
+    struct ChatId
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "chat_id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T chatId;
+            T& operator()() { return chatId; }
+            const T& operator()() const { return chatId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer_unsigned, sqlpp::tag::must_not_insert, sqlpp::tag::must_not_update>;
+    };
+    struct Chatname
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "chatname";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T chatname;
+            T& operator()() { return chatname; }
+            const T& operator()() const { return chatname; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+    };
+  } // namespace Chats_
+
+  struct Chats: sqlpp::table_t<Chats,
+               Chats_::ChatId,
+               Chats_::Chatname>
+  {
+    struct _alias_t
+    {
+      static constexpr const char _literal[] =  "chats";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+      template<typename T>
+      struct _member_t
+      {
+        T chats;
+        T& operator()() { return chats; }
+        const T& operator()() const { return chats; }
+      };
+    };
+  };
+  namespace Messages_
+  {
+    struct MessageId
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "message_id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T messageId;
+            T& operator()() { return messageId; }
+            const T& operator()() const { return messageId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::bigint_unsigned, sqlpp::tag::must_not_insert, sqlpp::tag::must_not_update>;
+    };
+    struct Text
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "text";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T text;
+            T& operator()() { return text; }
+            const T& operator()() const { return text; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+    };
+    struct Status
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "status";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T status;
+            T& operator()() { return status; }
+            const T& operator()() const { return status; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::tinyint_unsigned>;
+    };
+    struct Seen
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "seen";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T seen;
+            T& operator()() { return seen; }
+            const T& operator()() const { return seen; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::tinyint>;
+    };
+    struct Timesend
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "timesend";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T timesend;
+            T& operator()() { return timesend; }
+            const T& operator()() const { return timesend; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::time_point>;
+    };
+    struct UserId
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "user_id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T userId;
+            T& operator()() { return userId; }
+            const T& operator()() const { return userId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer_unsigned, sqlpp::tag::require_insert>;
+    };
+    struct ChatId
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "chat_id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T chatId;
+            T& operator()() { return chatId; }
+            const T& operator()() const { return chatId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer_unsigned, sqlpp::tag::require_insert>;
+    };
+  } // namespace Messages_
+
+  struct Messages: sqlpp::table_t<Messages,
+               Messages_::MessageId,
+               Messages_::Text,
+               Messages_::Status,
+               Messages_::Seen,
+               Messages_::Timesend,
+               Messages_::UserId,
+               Messages_::ChatId>
+  {
+    struct _alias_t
+    {
+      static constexpr const char _literal[] =  "messages";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+      template<typename T>
+      struct _member_t
+      {
+        T messages;
+        T& operator()() { return messages; }
+        const T& operator()() const { return messages; }
+      };
+    };
+  };
   namespace Users_
   {
     struct UserId
@@ -24,7 +215,7 @@ namespace melon
             const T& operator()() const { return userId; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::must_not_insert, sqlpp::tag::must_not_update>;
+      using _traits = sqlpp::make_traits<sqlpp::integer_unsigned, sqlpp::tag::must_not_insert, sqlpp::tag::must_not_update>;
     };
     struct Username
     {
@@ -56,7 +247,7 @@ namespace melon
             const T& operator()() const { return status; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::tinyint>;
+      using _traits = sqlpp::make_traits<sqlpp::tinyint_unsigned>;
     };
   } // namespace Users_
 

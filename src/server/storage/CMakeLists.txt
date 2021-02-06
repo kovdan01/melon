@@ -43,6 +43,8 @@ set(SQLPP11_MYSQL_CONNECTOR_LIB
     "Path to the directory containing libsqlpp-mysql.a"
 )
 
+set(SQLPP11_)
+
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -52,6 +54,21 @@ set(HEADERS)
 set(SOURCES
     src/main.cpp
 )
+
+#message(STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
+#message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+
+#find_package(PythonInterp REQUIRED)
+
+#add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/melondb.h"
+#    COMMAND "${PYTHON_EXECUTABLE}" /home/user/Downloads/sqlpp11/scripts/ddl2cpp" --argument
+#    DEPENDS some_target)
+
+
+##add_custom_target(generate_header ALL
+##    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp")
+
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp DESTINATION include)
 
 include_directories("melondb.h")
 
