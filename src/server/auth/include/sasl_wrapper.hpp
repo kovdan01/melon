@@ -24,6 +24,18 @@ struct Credentials
     const std::string password;
 };
 
+enum auth_completness
+{
+    complete = SASL_OK,
+    incomplete = SASL_CONTINUE,
+};
+
+struct StepResult
+{
+    auth_completness completness;
+    std::string_view response;
+};
+
 namespace detail
 {
 
@@ -105,7 +117,7 @@ public:
         return { data, plen };
     }
 
-    std::string_view start(std::string_view chosen_mechanism, std::string_view client_initial_response)
+    StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response)
     {
         const char* serverout;
         unsigned serverout_len;
@@ -114,7 +126,20 @@ public:
 
         detail::check_sasl_result(res, "server start");
 
-        return { serverout, serverout_len };
+        return {.completness = static_cast<auth_completness>(res), .response = { serverout, serverout_len }};
+    }
+
+
+    StepResult step(std::string_view client_response)
+    {
+        const char* serverout;
+        unsigned serverout_len;
+        sasl_res res = sasl_server_step(m_conn, client_response.data(), static_cast<unsigned>(client_response.size()), &serverout, &serverout_len);
+        ++m_step_count;
+
+        detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
+
+        return {.completness = static_cast<auth_completness>(res), .response = { serverout, serverout_len }};
     }
 
     [[nodiscard]] const sasl_conn_t* conn() const
@@ -129,6 +154,7 @@ public:
 
 private:
     const std::string m_service;
+    size_t m_step_count = 0;
     sasl_conn_t* m_conn;
 };
 
@@ -182,6 +208,18 @@ public:
         return StartResult{ .response = { out, len }, .selected_mechanism = selected_mechanism };
     }
 
+    StepResult step(std::string_view server_response)
+    {
+        const char* clientout;
+        unsigned clientout_len;
+        sasl_res res = sasl_client_step(m_conn, server_response.data(), static_cast<unsigned>(server_response.size()), nullptr,  &clientout, &clientout_len);
+        ++m_step_count;
+
+        detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
+
+        return {.completness = static_cast<auth_completness>(res), .response = { clientout, clientout_len }};
+    }
+
     [[nodiscard]] const sasl_conn_t* conn() const
     {
         return m_conn;
@@ -194,6 +232,7 @@ public:
 
 private:
     const std::string m_service;
+    size_t m_step_count = 0;
     sasl_conn_t* m_conn;
 };
 
@@ -219,7 +258,6 @@ public:
     }
 
 private:
-    static SaslServerSingleton* g_instance;
     std::array<sasl_callback_t, 4> m_callbacks =
     {
         sasl_callback_t{ .id = SASL_CB_USER,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
