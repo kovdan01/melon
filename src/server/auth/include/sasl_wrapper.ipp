@@ -10,26 +10,6 @@
 namespace melon::server::auth
 {
 
-using sasl_res = int;
-
-struct Credentials
-{
-    const std::string username;
-    const std::string password;
-};
-
-enum class AuthCompletness
-{
-    COMPLETE = SASL_OK,
-    INCOMPLETE = SASL_CONTINUE,
-};
-
-struct StepResult
-{
-    AuthCompletness completness;
-    std::string_view response;
-};
-
 namespace detail
 {
 
@@ -69,7 +49,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     auto* params = static_cast<Credentials*>(context);
 
     // There is no additional byte allocated, as sasl_secret_t already contains a single byte for password
-    static auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
+    auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
     if (secret == nullptr)
         return SASL_NOMEM;
     secret->len = params->password.size();
@@ -95,7 +75,7 @@ inline SaslServerConnection::~SaslServerConnection()
     sasl_dispose(&m_conn);
 }
 
-inline std::string_view SaslServerConnection::list_mechanisms()
+inline const std::string_view SaslServerConnection::list_mechanisms()
 {
     const char* data;
     unsigned plen;
@@ -144,13 +124,13 @@ inline StepResult SaslServerConnection::step(std::string_view client_response)
 
 inline SaslServerSingleton::SaslServerSingleton()
 {
-sasl_res res = sasl_server_init(nullptr, "localserver");
-detail::check_sasl_result(res, "server init");
+    sasl_res res = sasl_server_init(nullptr, "localserver");
+    detail::check_sasl_result(res, "server init");
 }
 
 inline SaslServerSingleton::~SaslServerSingleton()
 {
-sasl_server_done();
+    sasl_server_done();
 }
 
 inline SaslClientConnection::SaslClientConnection(std::string service)
@@ -165,12 +145,6 @@ inline SaslClientConnection::~SaslClientConnection()
     sasl_dispose(&m_conn);
 }
 
-struct SaslClientConnection::StartResult
-{
-    std::string_view response;
-    std::string_view selected_mechanism;
-};
-
 inline SaslClientConnection::StartResult SaslClientConnection::start(std::string_view wanted_mech_list)
 {
     const char* out;
@@ -179,7 +153,7 @@ inline SaslClientConnection::StartResult SaslClientConnection::start(std::string
     sasl_res res = sasl_client_start(m_conn, wanted_mech_list.data(), nullptr, &out, &len, &selected_mechanism);
     detail::check_sasl_result(res, "client start");
 
-    return SaslClientConnection::StartResult{ .response = { out, len }, .selected_mechanism = selected_mechanism };
+    return { .response = { out, len }, .selected_mechanism = selected_mechanism };
 }
 
 inline StepResult SaslClientConnection::step(std::string_view server_response)
@@ -191,7 +165,7 @@ inline StepResult SaslClientConnection::step(std::string_view server_response)
 
     detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return {.completness = static_cast<AuthCompletness>(res), .response = { clientout, clientout_len }};
+    return { .completness = static_cast<AuthCompletness>(res), .response = { clientout, clientout_len } };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslClientConnection::conn() const
