@@ -68,8 +68,8 @@ struct Chat
 
 }
 
-const melon::Users users;
-const melon::Messages messages;
+const melon::Users Users;
+const melon::Messages Messages;
 const melon::Chats chats;
 
 static auto config_melondb()
@@ -88,7 +88,7 @@ static auto config_melondb()
 static std::vector<std::string> get_online_users_names(mysql::connection& db)
 {
     std::vector<std::string> online_users_names;
-    for (const auto& row : db(select(users.username).from(users).where(users.status == 1)))
+    for (const auto& row : db(select(Users.username).from(Users).where(Users.status == 1)))
     {
         online_users_names.emplace_back(std::move(row.username));
     }
@@ -98,7 +98,7 @@ static std::vector<std::string> get_online_users_names(mysql::connection& db)
 static std::vector<melon::core::User> get_online_users(mysql::connection& db)
 {
     std::vector<melon::core::User> online_users;
-    for (const auto& row : db(select(all_of(users)).from(users).where(users.status == 1)))
+    for (const auto& row : db(select(all_of(Users)).from(Users).where(Users.status == 1)))
     {
         melon::core::User user;
         user.userid = row.userId;
@@ -111,25 +111,25 @@ static std::vector<melon::core::User> get_online_users(mysql::connection& db)
 
 static void add_user(mysql::connection& db, melon::core::User user)
 {
-    db(insert_into(users).set(users.username = user.username, users.status = 0));
+    db(insert_into(Users).set(Users.username = user.username, Users.status = 0));
 }
 
 static void make_user_online(mysql::connection& db, melon::core::User user)
 {
-    db(update(users).set(users.status = 1).where(users.username == user.username));
+    db(update(Users).set(Users.status = 1).where(Users.username == user.username));
 }
 
 static void make_user_offline(mysql::connection& db, melon::core::User user)
 {
-    db(update(users).set(users.status = 0).where(users.username == user.username));
+    db(update(Users).set(Users.status = 0).where(Users.username == user.username));
 }
 
 /* Messages */
 
 static void add_message(mysql::connection& db, melon::core::Message message)
 {
-    db(insert_into(messages).set(messages.text = message.text, messages.timesend = message.timestamp, messages.status = 0,
-            messages.seen = 0, messages.userId = message.user_id, messages.chatId = message.chat_id));
+    db(insert_into(Messages).set(Messages.text = message.text, Messages.timesend = message.timestamp, Messages.status = 0,
+            Messages.seen = 0, Messages.userId = message.user_id, Messages.chatId = message.chat_id));
 }
 
 /* Chat */
@@ -142,7 +142,7 @@ static void add_chat(mysql::connection& db, melon::core::Chat chat)
 static std::vector<melon::core::Message> get_messages_for_chat(mysql::connection& db, melon::core::Chat chat)
 {
     std::vector<melon::core::Message> messages_in_chat;
-    for (const auto& row : db(select(all_of(messages)).from(messages).where(messages.chatId == chat.chatid)))
+    for (const auto& row : db(select(all_of(Messages)).from(Messages).where(Messages.chatId == chat.chatid)))
     {
         melon::core::Message message;
         message.text = row.text;
