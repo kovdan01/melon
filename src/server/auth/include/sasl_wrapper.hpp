@@ -76,7 +76,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     auto* params = static_cast<Credentials*>(context);
     // std::cerr << "Setting pass to " << params->password << std::endl;
 
-    // There is no additional byte allocated, as sasl_secret_t already contains a single bite for password
+    // There is no additional byte allocated, as sasl_secret_t already contains a single byte for password
     static auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
     if (secret == nullptr)
         return SASL_NOMEM;
@@ -91,17 +91,17 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 
 }  // namespace detail
 
-class SaslServer
+class SaslServerConnection
 {
 public:
-    SaslServer(std::string service)
+    SaslServerConnection(std::string service)
         : m_service(std::move(service))
     {
         sasl_res res = sasl_server_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
         detail::check_sasl_result(res, "server new");
     }
 
-    ~SaslServer()
+    ~SaslServerConnection()
     {
         sasl_dispose(&m_conn);
     }
@@ -162,6 +162,13 @@ private:
 class SaslServerSingleton
 {
 public:
+    static SaslServerSingleton& get_instance()
+    {
+        static SaslServerSingleton instance;
+        return instance;
+    }
+
+private:
     SaslServerSingleton()
     {
         sasl_res res = sasl_server_init(nullptr, "localserver");
@@ -173,21 +180,24 @@ public:
         sasl_server_done();
     }
 
-private:
-    static SaslServerSingleton* g_instance;
+    SaslServerSingleton(const SaslServerSingleton& root) = delete;
+    SaslServerSingleton& operator=(const SaslServerSingleton&) = delete;
+    SaslServerSingleton(SaslServerSingleton&& root) = delete;
+    SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
+
 };
 
-class SaslClient
+class SaslClientConnection
 {
 public:
-    SaslClient(std::string service)
+    SaslClientConnection(std::string service)
         : m_service(std::move(service))
     {
         sasl_res res = sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
         detail::check_sasl_result(res, "client new");
     }
 
-    ~SaslClient()
+    ~SaslClientConnection()
     {
         sasl_dispose(&m_conn);
     }
@@ -237,13 +247,14 @@ private:
     sasl_conn_t* m_conn;
 };
 
-class SaslCientSingleton
+class SaslClientSingleton
 {
 public:
-    SaslCientSingleton()
+
+    static SaslClientSingleton& get_instance()
     {
-        sasl_res res = sasl_client_init(m_callbacks.data());
-        detail::check_sasl_result(res, "client init");
+        static SaslClientSingleton instance;
+        return instance;
     }
 
     void set_credentials(Credentials* credentials)
@@ -253,12 +264,24 @@ public:
         m_callbacks[2].context = credentials;
     }
 
-    ~SaslCientSingleton()
+private:
+
+    SaslClientSingleton()
+    {
+        sasl_res res = sasl_client_init(m_callbacks.data());
+        detail::check_sasl_result(res, "client init");
+    }
+
+    ~SaslClientSingleton()
     {
         sasl_server_done();
     }
 
-private:
+    SaslClientSingleton(const SaslClientSingleton& root) = delete;
+    SaslClientSingleton& operator=(const SaslClientSingleton&) = delete;
+    SaslClientSingleton(SaslClientSingleton&& root) = delete;
+    SaslClientSingleton& operator=(SaslClientSingleton&&) = delete;
+
     std::array<sasl_callback_t, 4> m_callbacks =
     {
         sasl_callback_t{ .id = SASL_CB_USER,     .proc = reinterpret_cast<sasl_callback_ft>(&detail::callbacks::get_username), .context = nullptr },
