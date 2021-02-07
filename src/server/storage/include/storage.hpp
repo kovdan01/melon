@@ -11,9 +11,9 @@
 
 namespace mysql = sqlpp::mysql;
 
-const melon::Users g_Users;
-const melon::Messages g_Messages;
-const melon::Chats g_Chats;
+const melon::Users g_users;
+const melon::Messages g_messages;
+const melon::Chats g_chats;
 
 /* User:
 *
@@ -25,7 +25,7 @@ const melon::Chats g_Chats;
 
 struct User
 {
-    std::uint32_t userid;
+    std::uint64_t userid;
     std::string username;
     std::uint8_t status;
 };
@@ -52,7 +52,7 @@ struct Message
     std::uint8_t status;
     bool seen;
     std::chrono::high_resolution_clock::time_point timestamp;
-    std::uint32_t user_id;
+    std::uint64_t user_id;
     std::uint32_t chat_id;
 };
 
