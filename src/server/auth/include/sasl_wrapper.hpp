@@ -34,13 +34,13 @@ struct StepResult
 namespace detail
 {
 
-inline void check_sasl_result(sasl_res res, std::string_view function_name);
+void check_sasl_result(sasl_res res, std::string_view function_name);
 
 namespace callbacks
 {
 
-inline sasl_res get_username(void* context, int id, const char** result, unsigned* len);
-inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t** psecret);
+sasl_res get_username(void* context, int id, const char** result, unsigned* len);
+sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t** psecret);
 
 }  // namespace callbacks
 
@@ -105,7 +105,7 @@ private:
 class SaslClientSingleton
 {
 public:
-    static inline SaslClientSingleton& get_instance();
+    static SaslClientSingleton& get_instance();
 
     SaslClientSingleton(const SaslClientSingleton& root) = delete;
     SaslClientSingleton& operator=(const SaslClientSingleton&) = delete;
