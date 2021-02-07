@@ -13,6 +13,7 @@ namespace melon::server::auth
 {
 
 using sasl_res = int;
+
 struct Credentials
 {
     const std::string username;
@@ -34,13 +35,13 @@ struct StepResult
 namespace detail
 {
 
-void check_sasl_result(sasl_res res, std::string_view function_name);
+inline void check_sasl_result(sasl_res res, std::string_view function_name);
 
 namespace callbacks
 {
 
-sasl_res get_username(void* context, int id, const char** result, unsigned* len);
-sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t** psecret);
+inline sasl_res get_username(void* context, int id, const char** result, unsigned* len);
+inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t** psecret);
 
 }  // namespace callbacks
 
