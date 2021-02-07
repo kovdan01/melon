@@ -75,7 +75,7 @@ inline SaslServerConnection::~SaslServerConnection()
     sasl_dispose(&m_conn);
 }
 
-inline const std::string_view SaslServerConnection::list_mechanisms()
+inline std::string_view SaslServerConnection::list_mechanisms() const
 {
     const char* data;
     unsigned plen;
@@ -95,7 +95,7 @@ inline StepResult SaslServerConnection::start(std::string_view chosen_mechanism,
 
     detail::check_sasl_result(res, "server start");
 
-    return { .completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len } };
+    return { .response = { serverout, serverout_len }, .completness = static_cast<AuthCompletness>(res) };
 }
 
 
@@ -108,7 +108,7 @@ inline StepResult SaslServerConnection::step(std::string_view client_response)
 
     detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return { .completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len } };
+    return { .response = { serverout, serverout_len }, .completness = static_cast<AuthCompletness>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslServerConnection::conn() const
@@ -170,7 +170,7 @@ inline StepResult SaslClientConnection::step(std::string_view server_response)
 
     detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return { .completness = static_cast<AuthCompletness>(res), .response = { clientout, clientout_len } };
+    return { .response = { clientout, clientout_len }, .completness = static_cast<AuthCompletness>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslClientConnection::conn() const
@@ -206,7 +206,5 @@ inline SaslClientSingleton::~SaslClientSingleton()
 {
     sasl_server_done();
 }
-
-
 
 }  // namespace melon::server::auth

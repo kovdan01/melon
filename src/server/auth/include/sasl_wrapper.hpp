@@ -28,9 +28,10 @@ enum class AuthCompletness
 
 struct StepResult
 {
-    AuthCompletness completness;
     std::string_view response;
+    AuthCompletness completness;
 };
+
 
 namespace detail
 {
@@ -53,7 +54,7 @@ public:
     SaslServerConnection(std::string service);
     ~SaslServerConnection();
 
-    const std::string_view list_mechanisms();
+    std::string_view list_mechanisms() const;
     StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
     StepResult step(std::string_view client_response);
     [[nodiscard]] const sasl_conn_t* conn() const;

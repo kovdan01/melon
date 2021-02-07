@@ -21,10 +21,10 @@ int main() try
     if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
         throw std::runtime_error("Wanted machanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
 
-    auto [client_response, selected_mechanism] = client.start(wanted_mechanism);
+    auto [client_response,  selected_mechanism] = client.start(wanted_mechanism);
     assert(selected_mechanism == wanted_mechanism);
 
-    auto [server_completness, server_response] = server.start(selected_mechanism, client_response);
+    auto [server_response, server_completness] = server.start(selected_mechanism, client_response);
 
     while (server_completness == msa::AuthCompletness::INCOMPLETE)
     {
