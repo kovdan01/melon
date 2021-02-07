@@ -50,7 +50,8 @@ set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set(HEADERS
-    include/melon/storage.hpp
+    include/storage.hpp
+    include/melondb.h
 )
 
 set(SOURCES
@@ -73,7 +74,7 @@ set(SOURCES
 
 #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp DESTINATION include)
 
-include_directories("melondb.h")
+#include_directories("melondb.h")
 
 add_executable(${PROJECT_NAME}
     ${HEADERS}
@@ -93,7 +94,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp-mysql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-ntc_target(${PROJECT_NAME}
-    ALIAS_NAME melon::server
-    HEADER_PREFIX melon/server/storage
-)
+ntc_target(${PROJECT_NAME})
