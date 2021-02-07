@@ -79,8 +79,7 @@ inline const std::string_view SaslServerConnection::list_mechanisms()
 {
     const char* data;
     unsigned plen;
-    int pcount;
-    sasl_res res = sasl_listmech(m_conn, nullptr, nullptr, " ", nullptr, &data, &plen, &pcount);
+    sasl_res res = sasl_listmech(m_conn, nullptr, nullptr, " ", nullptr, &data, &plen, nullptr);
 
     detail::check_sasl_result(res, "listmech");
 
@@ -96,7 +95,7 @@ inline StepResult SaslServerConnection::start(std::string_view chosen_mechanism,
 
     detail::check_sasl_result(res, "server start");
 
-    return {.completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len }};
+    return { .completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len } };
 }
 
 
@@ -109,7 +108,7 @@ inline StepResult SaslServerConnection::step(std::string_view client_response)
 
     detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return {.completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len }};
+    return { .completness = static_cast<AuthCompletness>(res), .response = { serverout, serverout_len } };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslServerConnection::conn() const
@@ -120,6 +119,12 @@ inline StepResult SaslServerConnection::step(std::string_view client_response)
 [[nodiscard]] inline sasl_conn_t* SaslServerConnection::conn()
 {
     return m_conn;
+}
+
+inline SaslServerSingleton& SaslServerSingleton::get_instance()
+{
+    static SaslServerSingleton instance;
+    return instance;
 }
 
 inline SaslServerSingleton::SaslServerSingleton()
@@ -178,6 +183,12 @@ inline StepResult SaslClientConnection::step(std::string_view server_response)
     return m_conn;
 }
 
+inline SaslClientSingleton& SaslClientSingleton::get_instance()
+{
+    static SaslClientSingleton instance;
+    return instance;
+}
+
 inline void SaslClientSingleton::set_credentials(Credentials* credentials)
 {
     m_callbacks[0].context = credentials;
@@ -195,5 +206,7 @@ inline SaslClientSingleton::~SaslClientSingleton()
 {
     sasl_server_done();
 }
+
+
 
 }  // namespace melon::server::auth

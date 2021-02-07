@@ -18,11 +18,13 @@ struct Credentials
     const std::string username;
     const std::string password;
 };
+
 enum class AuthCompletness
 {
     COMPLETE = SASL_OK,
     INCOMPLETE = SASL_CONTINUE,
 };
+
 struct StepResult
 {
     AuthCompletness completness;
@@ -55,6 +57,7 @@ public:
     StepResult step(std::string_view client_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
+
 private:
     const std::string m_service;
     std::size_t m_step_count = 0;
@@ -64,11 +67,7 @@ private:
 class SaslServerSingleton
 {
 public:
-    static SaslServerSingleton& get_instance()
-    {
-        static SaslServerSingleton instance;
-        return instance;
-    }
+    static SaslServerSingleton& get_instance();
 
     SaslServerSingleton(const SaslServerSingleton& root) = delete;
     SaslServerSingleton& operator=(const SaslServerSingleton&) = delete;
@@ -96,6 +95,7 @@ public:
     StepResult step(std::string_view server_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
+
 private:
     const std::string m_service;
     std::size_t m_step_count = 0;
@@ -105,12 +105,7 @@ private:
 class SaslClientSingleton
 {
 public:
-
-    static inline SaslClientSingleton& get_instance()
-    {
-        static SaslClientSingleton instance;
-        return instance;
-    }
+    static inline SaslClientSingleton& get_instance();
 
     SaslClientSingleton(const SaslClientSingleton& root) = delete;
     SaslClientSingleton& operator=(const SaslClientSingleton&) = delete;
@@ -118,6 +113,7 @@ public:
     SaslClientSingleton& operator=(SaslClientSingleton&&) = delete;
 
     void set_credentials(Credentials* credentials);
+
 private:
     SaslClientSingleton();
     ~SaslClientSingleton();
