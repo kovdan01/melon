@@ -23,7 +23,7 @@ public:
     ChatWidget(QWidget* parent = nullptr);
     ~ChatWidget() override = default;
 
-public slots:
+public slots:  // NOLINT (readability-redundant-access-specifiers)
     void update(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
 
 private slots:
