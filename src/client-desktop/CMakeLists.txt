@@ -31,17 +31,14 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
     include/chat_widget.hpp
-    include/chat_widget_model.hpp
     include/main_window.hpp
     include/ram_storage.hpp
 )
 
 set(SOURCES
     src/chat_widget.cpp
-    src/chat_widget_model.cpp
     src/main.cpp
     src/main_window.cpp
-    src/ram_storage.cpp
 )
 
 set(UI_FILES

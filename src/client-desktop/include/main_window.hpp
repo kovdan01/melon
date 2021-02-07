@@ -1,10 +1,12 @@
 #ifndef MELON_CLIENT_DESKTOP_MAIN_WINDOW_HPP_
 #define MELON_CLIENT_DESKTOP_MAIN_WINDOW_HPP_
 
-#include "ui_main_window.h"
+#include <ui_main_window.h>
+
+#include <chat_widget.hpp>
 
 #include <QMainWindow>
-#include <memory>
+#include <QSpacerItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui  // NOLINT (readability-identifier-naming)
@@ -34,7 +36,11 @@ private slots:
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::MainWindow> m_ui;
-    // ChatWidgetModel* m_chat_model;
+    ChatWidget* m_chat_widget = nullptr;
+    QSpacerItem* m_spacer = nullptr;
+
+    void set_spacer();
+    void set_chat_widget();
 };
 
 }  // namespace melon::client_desktop

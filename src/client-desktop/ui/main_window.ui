@@ -111,11 +111,6 @@
          <property name="resizeMode">
           <enum>QListView::Fixed</enum>
          </property>
-         <item>
-          <property name="text">
-           <string>UserMelon</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -135,7 +130,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="ChatPlace"/>
+     <layout class="QVBoxLayout" name="ChatPlace"/>
     </item>
    </layout>
   </widget>
@@ -145,7 +140,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>39</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSettings">
