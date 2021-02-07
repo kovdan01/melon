@@ -1,6 +1,6 @@
-#include "ui_chat_widget.h"
+#include <ui_chat_widget.h>
 
-#include "chat_widget.hpp"
+#include <chat_widget.hpp>
 
 namespace melon::client_desktop
 {

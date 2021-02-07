@@ -34,7 +34,7 @@ private slots:
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::MainWindow> m_ui;
-    ChatWidgetModel* chat_model;
+    // ChatWidgetModel* m_chat_model;
 };
 
 }  // namespace melon::client_desktop

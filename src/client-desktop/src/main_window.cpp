@@ -1,6 +1,6 @@
-#include "chat_widget.hpp"
-#include "chat_widget_model.hpp"
-#include "main_window.hpp"
+#include <chat_widget.hpp>
+#include <chat_widget_model.hpp>
+#include <main_window.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -14,15 +14,12 @@ constexpr int MAX_NAME_CHAT_SIZE = 20;
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
     , m_ui{new Ui::MainWindow}
-    , chat_model{new ChatWidgetModel{this}}
 {
     m_ui->setupUi(this);
     m_ui->ChatList->setContextMenuPolicy(Qt::CustomContextMenu);
     m_ui->ChatPlace->addWidget(new ChatWidget);
     m_ui->ChatList->setCurrentRow(0);
     connect(m_ui->AddChatButton, &QPushButton::clicked, this, &MainWindow::add_chat);
-//    connect(m_ui->ChatList, &QListWidget::currentRowChanged,
-//            m_ui->ChatsWidgetStack, &QStackedWidget::setCurrentIndex);
     connect(m_ui->ChatList, &QWidget::customContextMenuRequested,
             this, &MainWindow::provide_chat_context_menu);
 }
