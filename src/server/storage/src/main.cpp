@@ -1,11 +1,14 @@
 #include <iostream>
 
 #include "storage.hpp"
+#include "melon/storage_class.hpp"
 
 
 int main() try
 {
+
     namespace mss = melon::server::storage;
+    namespace mc = melon::core;
 
     mysql::connection db(mss::config_melondb());
     db.execute(R"(DROP TABLE IF EXISTS messages)");
@@ -40,44 +43,31 @@ int main() try
 
     //check that time in mariadb
 
-    User user;
-    user.username = "h3ll0kitt1";
+    mc::User user("h3ll0kitt1");
     mss::add_user(db, user);
 
-    Chat chat;
-    chat.chatid = 1;
-    chat.chatname = "secret_chat";
+    mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
 
-    Message message;
-    message.text = "Let's protest";
-    message.seen = 1;
-    message.status = 1;
-    message.timestamp = std::chrono::system_clock::now();
-    message.user_id = 1;
-    message.chat_id = 1;
+    mc::Message message("Let's protest", 1, 1, 1, 1);
+//    message.timestamp = std::chrono::system_clock::now();
     mss::add_message(db, message);
 
-    message.text = "or go to OVD";
-    message.seen = 0;
-    message.status = 0;
-    message.timestamp = std::chrono::system_clock::now();
-    message.user_id = 1;
-    message.chat_id = 1;
-    mss::add_message(db, message);
+    mc::Message message2("or go to OVD", 0, 0, 1, 1);
+    mss::add_message(db, message2);
 
-    std::vector<Message> chat_message = mss::get_messages_for_chat(db, chat);
+    std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
     std::cout << "Messages of chat: " << std::endl;
     for (const auto& a: chat_message)
     {
-        std:: cout << "message id: " << a.messageid << "\ntext: " << a.text << std::endl;
+        std:: cout << "text: " << a.text() << std::endl;
     }
 
-    std::vector<User> online_users = mss::get_online_users(db);
+    std::vector<mc::User> online_users = mss::get_online_users(db);
     std::cout << "Online users: " << std::endl;
     for (auto& a: online_users)
     {
-        std:: cout << a.userid << " : " << a.username << std::endl;
+        std:: cout << a.userid() << " : " << a.username() << std::endl;
     }
 
     std::cout << "Change status for online" << std::endl;
