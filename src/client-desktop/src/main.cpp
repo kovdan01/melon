@@ -1,10 +1,6 @@
-#include "main_window.hpp"
+#include <main_window.hpp>
 
 #include <QApplication>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
-#include <QtWidgets/QMessageBox>
 
 namespace mc = melon::client_desktop;
 
