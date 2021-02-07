@@ -54,7 +54,7 @@ public:
     SaslServerConnection(std::string service);
     ~SaslServerConnection();
 
-    std::string_view list_mechanisms() const;
+    [[nodiscard]] std::string_view list_mechanisms() const;
     StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
     StepResult step(std::string_view client_response);
     [[nodiscard]] const sasl_conn_t* conn() const;

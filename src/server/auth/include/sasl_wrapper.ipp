@@ -75,7 +75,7 @@ inline SaslServerConnection::~SaslServerConnection()
     sasl_dispose(&m_conn);
 }
 
-inline std::string_view SaslServerConnection::list_mechanisms() const
+[[nodiscard]] inline std::string_view SaslServerConnection::list_mechanisms() const
 {
     const char* data;
     unsigned plen;
