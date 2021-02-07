@@ -16,6 +16,8 @@ QT_END_NAMESPACE
 namespace melon::client_desktop
 {
 
+class ChatWidgetModel;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -31,8 +33,8 @@ private slots:
     void rename_chat();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    QScopedPointer<Ui::MainWindow> m_ui;  // NOLINT (modernize-use-default-member-init)
-                                          // Not sure is it necessary to fix this warning ^
+    QScopedPointer<Ui::MainWindow> m_ui;
+    ChatWidgetModel* chat_model;
 };
 
 }  // namespace melon::client_desktop

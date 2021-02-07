@@ -44,7 +44,7 @@
      <height>500</height>
     </size>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,5">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,0">
     <item>
      <widget class="QWidget" name="ChatsMenuLayout" native="true">
       <property name="enabled">
@@ -111,6 +111,11 @@
          <property name="resizeMode">
           <enum>QListView::Fixed</enum>
          </property>
+         <item>
+          <property name="text">
+           <string>UserMelon</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
@@ -130,7 +135,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QStackedWidget" name="ChatsWidgetStack"/>
+     <layout class="QHBoxLayout" name="ChatPlace"/>
     </item>
    </layout>
   </widget>
