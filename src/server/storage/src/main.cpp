@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "storage.hpp"
-#include <melon/core.hpp>
 
 
 int main() try
@@ -9,8 +8,6 @@ int main() try
 
     namespace mss = melon::server::storage;
     namespace mc = melon::core;
-
-    mc::hello();
 
     mysql::connection db(mss::config_melondb());
     db.execute(R"(DROP TABLE IF EXISTS messages)");

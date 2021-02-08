@@ -1,6 +1,8 @@
 #ifndef MELON_CORE_MELON_STORAGE_CLASS_HPP_
 #define MELON_CORE_MELON_STORAGE_CLASS_HPP_
 
+#include <melon/core/export.h>
+
 #include <iostream>
 #include <chrono>
 
