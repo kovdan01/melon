@@ -5,7 +5,7 @@
 #ifndef MELON_CORE_JNI_TESTS_HPP
 #define MELON_CORE_JNI_TESTS_HPP
 
-#include <cstring>
+#include <string>
 #include <cstdint>
 
 int int_test_sum(int a, int b);
