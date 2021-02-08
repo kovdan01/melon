@@ -23,7 +23,7 @@ class MELON_CORE_EXPORT User
 public:
     User(std::uint64_t userid, std::string username, std::uint8_t status);
     User(std::string username);
-    ~User(){}
+    ~User() = default;
     [[nodiscard]] std::uint64_t userid();
     [[nodiscard]] const std::string username() const;
     [[nodiscard]] std::uint8_t status();
@@ -55,7 +55,7 @@ public:
     Message(std::uint64_t messageid, std::string text, std::uint8_t status, bool seen,
             std::uint64_t user_id, std::uint32_t chat_id);
     Message(std::string text, std::uint8_t status, bool seen, std::uint64_t user_id, std::uint32_t chat_id);
-    ~Message(){}
+    ~Message() = default;
     [[nodiscard]] std::uint64_t messageid();
     [[nodiscard]] const std::string text() const;
     [[nodiscard]] std::uint8_t status();
@@ -86,7 +86,7 @@ class MELON_CORE_EXPORT Chat
 public:
     Chat(std::uint32_t chatid, std::string chatname);
     Chat(std::string chatname);
-    ~Chat(){}
+    ~Chat() = default;
     [[nodiscard]] const std::uint32_t chatid() const;
     [[nodiscard]] const std::string chatname() const;
 

@@ -48,11 +48,11 @@ int main() try
     mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
 
-    mc::Message message("Let's protest", 1, 1, 1, 1);
+    mc::Message message("Let's protest", 1, true, 1, 1);
 //    message.timestamp = std::chrono::system_clock::now();
     mss::add_message(db, message);
 
-    mc::Message message2("or go to OVD", 0, 0, 1, 1);
+    mc::Message message2("or go to OVD", 0, false, 1, 1);
     mss::add_message(db, message2);
 
     std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);

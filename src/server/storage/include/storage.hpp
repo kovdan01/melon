@@ -13,9 +13,9 @@
 namespace mysql = sqlpp::mysql;
 namespace mc = melon::core;
 
-const melon::Users g_users;
-const melon::Messages g_messages;
-const melon::Chats g_chats;
+const melon::Users G_USERS;
+const melon::Messages G_MESSAGES;
+const melon::Chats G_CHATS;
 
 namespace melon::server::storage
 {

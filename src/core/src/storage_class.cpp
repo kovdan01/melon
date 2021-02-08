@@ -7,13 +7,13 @@ namespace melon::core
 
 
 User::User(std::uint64_t userid, std::string username, std::uint8_t status)
-    :m_userid((std::move(userid))), m_username((std::move(username))), m_status((std::move(status)))
+    :m_userid(std::move(userid)), m_username(std::move(username)), m_status(std::move(status))
 {
     std::cout << m_userid << ":" << m_username << ":" << m_status <<std::endl;
 }
 
 User::User(std::string username)
-    :m_username((std::move(username)))
+    :m_username(std::move(username))
 {
 }
 
@@ -34,15 +34,15 @@ User::User(std::string username)
 
 Message::Message(std::uint64_t messageid, std::string text, std::uint8_t status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
-    :m_messageid((std::move(messageid))), m_text((std::move(text))), m_status(((std::move(status)))), m_seen((std::move(seen))),
-      m_user_id((std::move(user_id))), m_chat_id((std::move(chat_id)))
+    :m_messageid(std::move(messageid)), m_text(std::move(text)), m_status(std::move(status)), m_seen(std::move(seen)),
+      m_user_id(std::move(user_id)), m_chat_id(std::move(chat_id))
 {
 }
 
 Message::Message(std::string text, std::uint8_t status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
-    : m_text((std::move(text))), m_status(((std::move(status)))), m_seen((std::move(seen))),
-      m_user_id((std::move(user_id))), m_chat_id((std::move(chat_id)))
+    : m_text(std::move(text)), m_status(std::move(status)), m_seen(std::move(seen)),
+      m_user_id(std::move(user_id)), m_chat_id(std::move(chat_id))
 {
 }
 
@@ -87,7 +87,7 @@ Chat::Chat(std::uint32_t chatid, std::string chatname)
 }
 
 Chat::Chat(std::string chatname)
-    :m_chatname((std::move(chatname)))
+    :m_chatname(std::move(chatname))
 {
 }
 

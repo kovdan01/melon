@@ -29,7 +29,7 @@ std::shared_ptr<mysql::connection_config> config_melondb()
 
 void add_user(mysql::connection& db, const mc::User& user)
 {
-    db(insert_into(g_users).set(g_users.username = user.username(), g_users.status = 0));
+    db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.status = 0));
 }
 
 /* Users */
@@ -37,7 +37,7 @@ void add_user(mysql::connection& db, const mc::User& user)
 std::vector<std::string> get_online_users_names(mysql::connection& db)
 {
     std::vector<std::string> online_users_names;
-    for (const auto& row : db(select(g_users.username).from(g_users).where(g_users.status == 1)))
+    for (const auto& row : db(select(G_USERS.username).from(G_USERS).where(G_USERS.status == 1)))
     {
         online_users_names.emplace_back(row.username);
     }
@@ -47,7 +47,7 @@ std::vector<std::string> get_online_users_names(mysql::connection& db)
 std::vector<mc::User> get_online_users(mysql::connection& db)
 {
     std::vector<mc::User> online_users;
-    for (const auto& row : db(select(all_of(g_users)).from(g_users).where(g_users.status == 1)))
+    for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == 1)))
     {
         mc::User user(row.userId, row.username, row.status);
         online_users.emplace_back(std::move(user));
@@ -59,33 +59,33 @@ std::vector<mc::User> get_online_users(mysql::connection& db)
 
 void make_user_online(mysql::connection& db, const mc::User& user)
 {
-    db(update(g_users).set(g_users.status = 1).where(g_users.username == user.username()));
+    db(update(G_USERS).set(G_USERS.status = 1).where(G_USERS.username == user.username()));
 }
 
 void make_user_offline(mysql::connection& db, const mc::User& user)
 {
-    db(update(g_users).set(g_users.status = 0).where(g_users.username == user.username()));
+    db(update(G_USERS).set(G_USERS.status = 0).where(G_USERS.username == user.username()));
 }
 
 /* Messages */
 
 void add_message(mysql::connection& db, const mc::Message& message)
 {
-    db(insert_into(g_messages).set(g_messages.text = message.text(), g_messages.timesend = message.timestamp(), g_messages.status = 0,
-            g_messages.seen = 0, g_messages.userId = message.user_id(), g_messages.chatId = message.chat_id()));
+    db(insert_into(G_MESSAGES).set(G_MESSAGES.text = message.text(), G_MESSAGES.timesend = message.timestamp(), G_MESSAGES.status = 0,
+            G_MESSAGES.seen = 0, G_MESSAGES.userId = message.user_id(), G_MESSAGES.chatId = message.chat_id()));
 }
 
 /* Chat */
 
 void add_chat(mysql::connection& db, const mc::Chat& chat)
 {
-    db(insert_into(g_chats).set(g_chats.chatname = chat.chatname()));
+    db(insert_into(G_CHATS).set(G_CHATS.chatname = chat.chatname()));
 }
 
 std::vector<mc::Message> get_messages_for_chat(mysql::connection& db, const mc::Chat& chat)
 {
     std::vector<mc::Message> messages_in_chat;
-    for (const auto& row : db(select(all_of(g_messages)).from(g_messages).where(g_messages.chatId == chat.chatid())))
+    for (const auto& row : db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == chat.chatid())))
     {
         mc::Message message(row.messageId, row.text, row.status, row.seen, row.userId, row.chatId);
         messages_in_chat.emplace_back(std::move(message));
