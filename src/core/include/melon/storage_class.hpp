@@ -16,7 +16,7 @@ namespace melon::core
 * by sqlpp11)
 */
 
-class User
+class MELON_CORE_EXPORT User
 {
 public:
     User(std::uint64_t userid, std::string username, std::uint8_t status);
@@ -47,7 +47,7 @@ private:
 * Chat (chat_id)
 */
 
-class Message
+class MELON_CORE_EXPORT Message
 {
 public:
     Message(std::uint64_t messageid, std::string text, std::uint8_t status, bool seen,
@@ -79,7 +79,7 @@ private:
 *
 */
 
-class Chat
+class MELON_CORE_EXPORT Chat
 {
 public:
     Chat(std::uint32_t chatid, std::string chatname);
