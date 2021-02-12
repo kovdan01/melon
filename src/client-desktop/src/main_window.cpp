@@ -86,7 +86,7 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             set_chat_widget();
 
-        auto new_chat = new QListWidgetItem(text);
+        auto* new_chat = new QListWidgetItem(text);
 
         m_ui->ChatList->addItem(new_chat);
 
@@ -96,11 +96,9 @@ void MainWindow::add_chat()
 
         QVariant pointer_to_chat;
         pointer_to_chat.setValue(added_chat);
-
         new_chat->setData(Qt::UserRole, pointer_to_chat);
 
         m_ui->ChatList->setCurrentItem(new_chat);
-
 
         ++counter;
     }
