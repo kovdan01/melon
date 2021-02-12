@@ -94,11 +94,10 @@ public:
     using id_t = std::size_t;
     using message_handle_t = std::list<Message>::iterator;
 
-    Chat(QString name, id_t id, QListWidgetItem* chat_list_item)
-        : m_incomplete_message(/* from */ QLatin1String(""), /* text */ QLatin1String(""), /* attachments */ {}, /* timestamp */ {})
+    Chat(QString name, id_t id)
+        : m_incomplete_message(/* from */ QLatin1String(""), /* text */ QStringLiteral(""), /* attachments */ {}, /* timestamp */ {})
         , m_name(std::move(name))
         , m_id(id)
-        , m_chat_list_item(chat_list_item)
     {
     }
 
@@ -118,7 +117,7 @@ public:
         return m_incomplete_message;
     }
 
-    [[nodiscard]] double scrolling_position() const
+    [[nodiscard]] int scrolling_position() const
     {
         return m_scrolling_position;
     }
@@ -128,7 +127,7 @@ public:
         return m_name;
     }
 
-    void name(QString name)
+    void set_name(QString name)
     {
         m_name = std::move(name);
     }
@@ -136,11 +135,6 @@ public:
     [[nodiscard]] id_t id() const noexcept
     {
         return m_id;
-    }
-
-    [[nodiscard]] const QListWidgetItem* chat_list_item() const noexcept
-    {
-        return m_chat_list_item;
     }
 
     message_handle_t add_message(Message message)
@@ -154,14 +148,22 @@ public:
         return m_messages.erase(message_handle);
     }
 
+    void set_incomplete_message(Message incomplete_m)
+    {
+        m_incomplete_message = incomplete_m;
+    }
+
+    void set_scrolling_position(int scrollbar)
+    {
+        m_scrolling_position = scrollbar;
+    }
+
 private:
     std::list<Message> m_messages = {};
     Message m_incomplete_message;
-    double m_scrolling_position = 0;
+    int m_scrolling_position = 0;
     QString m_name;
     id_t m_id;
-
-    QListWidgetItem* m_chat_list_item;
 };
 
 

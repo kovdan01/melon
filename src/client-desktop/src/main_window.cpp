@@ -92,7 +92,7 @@ void MainWindow::add_chat()
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
 
-        auto added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter), new_chat));
+        auto added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
 
         QVariant pointer_to_chat;
         pointer_to_chat.setValue(added_chat);
@@ -151,7 +151,7 @@ void MainWindow::rename_chat()
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
         auto it = ram_storage.chat_by_qlistitem(item);
-        it->name(text);
+        it->set_name(text);
 
         item->setText(text);
     }

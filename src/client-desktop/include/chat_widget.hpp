@@ -1,6 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
+#include <ram_storage.hpp>
+
 #include <ui_chat_widget.h>
 
 #include <QWidget>
@@ -25,6 +27,9 @@ public:
 
 public slots:  // NOLINT (readability-redundant-access-specifiers)
     void update(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
+    Message capture_incomplete_message();
+    void load_incomplete_message(RAMStorageSingletone::chat_handle_t it);
+    QListWidgetItem* load_message_into_item(Message msg);
 
 private slots:
     void send_message();
