@@ -8,7 +8,6 @@
 #include <QWidget>
 
 #include <stdexcept>
-#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -87,7 +86,7 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             set_chat_widget();
 
-        QListWidgetItem* new_chat = new QListWidgetItem(text);
+        auto new_chat = new QListWidgetItem(text);
 
         m_ui->ChatList->addItem(new_chat);
 
