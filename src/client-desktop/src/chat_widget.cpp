@@ -25,7 +25,9 @@ void ChatWidget::send_message()
         return;
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
+
     auto it = ram_storage.chat_by_qlistitem(m_current_chat);
+
     it->add_message(Message(QLatin1String("Me"), msg_text, {}, std::chrono::high_resolution_clock::now()));
 
     auto* msg_item = new QListWidgetItem();

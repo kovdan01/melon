@@ -8,6 +8,7 @@
 #include <QWidget>
 
 #include <stdexcept>
+#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -86,12 +87,21 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             set_chat_widget();
 
-        m_ui->ChatList->addItem(text);
+        QListWidgetItem* new_chat = new QListWidgetItem(text);
+
+        m_ui->ChatList->addItem(new_chat);
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
-        ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter), m_ui->ChatList->item(m_ui->ChatList->count() - 1)));
 
-        m_ui->ChatList->setCurrentRow(m_ui->ChatList->count() - 1);
+        auto added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter), new_chat));
+
+        QVariant pointer_to_chat;
+        pointer_to_chat.setValue(added_chat);
+
+        new_chat->setData(Qt::UserRole, pointer_to_chat);
+
+        m_ui->ChatList->setCurrentItem(new_chat);
+
 
         ++counter;
     }
@@ -117,6 +127,7 @@ void MainWindow::delete_chat()
     QListWidgetItem* item = m_ui->ChatList->takeItem(m_ui->ChatList->currentRow());
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
+
     auto it = ram_storage.chat_by_qlistitem(item);
     ram_storage.delete_chat(it);
 

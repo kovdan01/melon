@@ -8,6 +8,7 @@
 #include <list>
 #include <utility>
 #include <vector>
+#include <unordered_set>
 
 namespace melon::client_desktop
 {
@@ -163,6 +164,7 @@ private:
     QListWidgetItem* m_chat_list_item;
 };
 
+
 class RAMStorageSingletone
 {
 public:
@@ -203,20 +205,16 @@ public:
 
     [[nodiscard]] const_chat_handle_t chat_by_qlistitem(QListWidgetItem* item) const
     {
-        // horrible piece of shit
-        // search with O(n) in std::list
-        return std::find_if(m_chats.begin(), m_chats.end(), [item](const Chat& e)
-        {
-            return e.chat_list_item() == item;
-        });
+        QVariant v = item->data(Qt::UserRole);
+        auto it = v.value<std::list<Chat>::iterator>();
+        return it;
     }
 
     [[nodiscard]] chat_handle_t chat_by_qlistitem(QListWidgetItem* item)
     {
-        return std::find_if(m_chats.begin(), m_chats.end(), [item](const Chat& e)
-        {
-            return e.chat_list_item() == item;
-        });
+        QVariant v = item->data(Qt::UserRole);
+        auto it = v.value<std::list<Chat>::iterator>();
+        return it;
     }
 
 private:
@@ -227,5 +225,7 @@ private:
 };
 
 }  // namespace melon::client_desktop
+
+Q_DECLARE_METATYPE(std::list<melon::client_desktop::Chat>::iterator)
 
 #endif // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
