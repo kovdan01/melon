@@ -45,7 +45,7 @@ void ChatWidget::send_message()
         return;
     }
 
-    Chat::message_handle_t it_msg = m_current_chat_it->add_message(Message(QLatin1String("Me"),
+    auto it_msg = m_current_chat_it->add_message(Message(QLatin1String("Me"),
                                                                            msg_text,
                                                                            {},
                                                                            std::chrono::high_resolution_clock::now()));
