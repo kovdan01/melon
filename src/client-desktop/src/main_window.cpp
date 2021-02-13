@@ -95,10 +95,10 @@ void MainWindow::add_chat()
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
 
-        RAMStorageSingletone::chat_handle_t added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
+        auto it_added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
 
         QVariant pointer_to_chat;
-        pointer_to_chat.setValue(added_chat);
+        pointer_to_chat.setValue(it_added_chat);
         new_chat->setData(Qt::UserRole, pointer_to_chat);
 
         m_ui->ChatList->setCurrentItem(new_chat);

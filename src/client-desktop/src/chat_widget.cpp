@@ -37,9 +37,9 @@ void ChatWidget::send_message()
     if (m_edit_mode)
     {
         m_edit_item->setText(msg_text);
-        Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(m_edit_item);
+        auto it_msg = m_current_chat_it->msg_by_qlistitem(m_edit_item);
         it_msg->set_text(msg_text);
-        m_edit_mode = 0;
+        m_edit_mode = false;
         m_edit_item = nullptr;
         m_ui->MsgEdit->clear();
         return;
@@ -66,7 +66,7 @@ void ChatWidget::receive_message()
 {
     QString msg_text = QStringLiteral("I wish I could hear you.");
 
-    Chat::message_handle_t it_msg = m_current_chat_it->add_message(Message(QLatin1String("Some Sender"),
+    auto it_msg = m_current_chat_it->add_message(Message(QLatin1String("Some Sender"),
                                                                            msg_text,
                                                                            {},
                                                                            std::chrono::high_resolution_clock::now()));
@@ -167,7 +167,7 @@ void ChatWidget::provide_chat_context_menu(const QPoint& pos)
 void ChatWidget::delete_msg()
 {
     QListWidgetItem* item_msg = m_ui->MsgList->takeItem(m_ui->MsgList->currentRow());
-    Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(item_msg);
+    auto it_msg = m_current_chat_it->msg_by_qlistitem(item_msg);
     m_current_chat_it->delete_message(it_msg);
 
     delete item_msg;
@@ -176,10 +176,10 @@ void ChatWidget::delete_msg()
 void ChatWidget::edit_msg()
 {
     QListWidgetItem* item = m_ui->MsgList->currentItem();
-    Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(item);
+    auto it_msg = m_current_chat_it->msg_by_qlistitem(item);
 
     load_message_to_editor(*it_msg);
-    m_edit_mode = 1;
+    m_edit_mode = true;
     m_edit_item = item;
 }
 

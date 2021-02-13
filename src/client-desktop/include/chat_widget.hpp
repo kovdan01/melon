@@ -57,7 +57,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::ChatWidget> m_ui;
     QListWidgetItem* m_current_chat_item = nullptr;
     RAMStorageSingletone::chat_handle_t m_current_chat_it;
-    bool m_edit_mode = 0;
+    bool m_edit_mode = false;
     QListWidgetItem* m_edit_item = nullptr;
 };
 
