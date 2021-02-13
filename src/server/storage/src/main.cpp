@@ -2,12 +2,11 @@
 
 #include "storage.hpp"
 
-
 int main() try
 {
-
     namespace mss = melon::server::storage;
     namespace mc = melon::core;
+
 
     mysql::connection db(mss::config_melondb());
     db.execute(R"(DROP TABLE IF EXISTS messages)");
@@ -40,19 +39,23 @@ int main() try
         PRIMARY KEY (message_id)
         ))");
 
-    //check that time in mariadb
-
     mc::User user("h3ll0kitt1");
     mss::add_user(db, user);
+
 
     mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
 
-    mc::Message message("Let's protest", 1, true, 1, 1);
-//    message.timestamp = std::chrono::system_clock::now();
+//    //wrong time from db
+//    for (const auto& row : db(select(::sqlpp::value(std::chrono::system_clock::now()).as(now))))
+//    {
+//        std::cout << row.now << std::endl;
+//    }
+
+    mc::Message message("Let's protest", mc::Message::Status::SENT, true, 1, 1);
     mss::add_message(db, message);
 
-    mc::Message message2("or go to OVD", 0, false, 1, 1);
+    mc::Message message2("or go to OVD", mc::Message::Status::RECIEVED, false, 1, 1);
     mss::add_message(db, message2);
 
     std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
@@ -92,6 +95,6 @@ int main() try
 }
 catch (const sqlpp::exception& e)
 {
-    std::cerr << "For testing, you'll need to create a database melon for user melon on localhost with password melonpass" << std::endl;
+    std::cerr << "For testing, you'll need to create a database melon for user 'melon' on localhost with password 'melonpass'" << std::endl;
     std::cerr << e.what() << std::endl;
 }

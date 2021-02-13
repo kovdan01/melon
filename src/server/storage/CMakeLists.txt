@@ -51,7 +51,6 @@ find_package(Threads REQUIRED)
 
 set(HEADERS
     include/storage.hpp
-    include/melondb.h
 )
 
 set(SOURCES
@@ -59,27 +58,23 @@ set(SOURCES
     src/main.cpp
 )
 
-#message(STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
-#message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
-#find_package(PythonInterp REQUIRED)
-
-#add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/melondb.h"
-#    COMMAND "${PYTHON_EXECUTABLE}" /home/user/Downloads/sqlpp11/scripts/ddl2cpp" --argument
-#    DEPENDS some_target)
-
-
-##add_custom_target(generate_header ALL
-##    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp")
-
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp DESTINATION include)
-
-#include_directories("melondb.h")
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb.h
+    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp script/melondb.sql ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb  melon
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS script/ddl2cpp
+)
 
 add_executable(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
 )
+
+target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb.h)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

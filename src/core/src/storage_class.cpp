@@ -6,10 +6,9 @@ namespace melon::core
 {
 
 
-User::User(std::uint64_t userid, std::string username, std::uint8_t status)
+User::User(std::uint64_t userid, std::string username, Status status)
     :m_userid(std::move(userid)), m_username(std::move(username)), m_status(std::move(status))
 {
-    std::cout << m_userid << ":" << m_username << ":" << m_status <<std::endl;
 }
 
 User::User(std::string username)
@@ -17,12 +16,12 @@ User::User(std::string username)
 {
 }
 
-[[nodiscard]] std::uint8_t User::status()
+[[nodiscard]] User::Status User::status() const
 {
     return m_status;
 }
 
-[[nodiscard]] std::uint64_t User::userid()
+[[nodiscard]] std::uint64_t User::userid() const
 {
     return m_userid;
 }
@@ -32,21 +31,21 @@ User::User(std::string username)
     return m_username;
 }
 
-Message::Message(std::uint64_t messageid, std::string text, std::uint8_t status, bool seen,
+Message::Message(std::uint64_t messageid, std::string text, Message::Status status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
     :m_messageid(std::move(messageid)), m_text(std::move(text)), m_status(std::move(status)), m_seen(std::move(seen)),
       m_user_id(std::move(user_id)), m_chat_id(std::move(chat_id))
 {
 }
 
-Message::Message(std::string text, std::uint8_t status, bool seen,
+Message::Message(std::string text, Message::Status status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
     : m_text(std::move(text)), m_status(std::move(status)), m_seen(std::move(seen)),
       m_user_id(std::move(user_id)), m_chat_id(std::move(chat_id))
 {
 }
 
-[[nodiscard]] std::uint64_t Message::messageid()
+[[nodiscard]] std::uint64_t Message::messageid() const
 {
     return m_messageid;
 }
@@ -56,12 +55,12 @@ Message::Message(std::string text, std::uint8_t status, bool seen,
     return m_text;
 }
 
-[[nodiscard]] std::uint8_t Message::status()
+[[nodiscard]] Message::Status Message::status() const
 {
     return m_status;
 }
 
-[[nodiscard]] bool Message::seen()
+[[nodiscard]] bool Message::seen() const
 {
     return m_seen;
 }
@@ -71,18 +70,18 @@ Message::Message(std::string text, std::uint8_t status, bool seen,
     return m_timestamp;
 }
 
-[[nodiscard]] const std::uint64_t Message::user_id() const
+[[nodiscard]] std::uint64_t Message::user_id() const
 {
     return m_user_id;
 }
 
-[[nodiscard]] const std::uint32_t Message::chat_id() const
+[[nodiscard]] std::uint32_t Message::chat_id() const
 {
     return m_chat_id;
 }
 
 Chat::Chat(std::uint32_t chatid, std::string chatname)
-    :m_chatid((std::move(chatid))), m_chatname((std::move(chatname)))
+    :m_chatid(std::move(chatid)), m_chatname(std::move(chatname))
 {
 }
 
@@ -91,7 +90,7 @@ Chat::Chat(std::string chatname)
 {
 }
 
-[[nodiscard]] const std::uint32_t Chat::chatid() const
+[[nodiscard]] std::uint32_t Chat::chatid() const
 {
     return m_chatid;
 }

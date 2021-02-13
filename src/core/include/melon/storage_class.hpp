@@ -21,18 +21,24 @@ namespace melon::core
 class MELON_CORE_EXPORT User
 {
 public:
-    User(std::uint64_t userid, std::string username, std::uint8_t status);
+    enum class Status: std::uint8_t
+    {
+        OFFLINE, ONLINE, CHILL
+    };
+    User(std::uint64_t userid, std::string username, Status status);
     User(std::string username);
     ~User() = default;
-    [[nodiscard]] std::uint64_t userid();
+    [[nodiscard]] std::uint64_t userid() const;
     [[nodiscard]] const std::string username() const;
-    [[nodiscard]] std::uint8_t status();
+    [[nodiscard]] Status status() const;
+
 
 private:
     std::uint64_t m_userid;
     std::string m_username;
-    std::uint8_t m_status;
+    Status m_status;
 };
+
 
 
 /* Message:
@@ -52,22 +58,26 @@ private:
 class MELON_CORE_EXPORT Message
 {
 public:
-    Message(std::uint64_t messageid, std::string text, std::uint8_t status, bool seen,
+    enum class Status: std::uint8_t
+    {
+        FAIL, SENT, RECIEVED
+    };
+    Message(std::uint64_t messageid, std::string text, Status status, bool seen,
             std::uint64_t user_id, std::uint32_t chat_id);
-    Message(std::string text, std::uint8_t status, bool seen, std::uint64_t user_id, std::uint32_t chat_id);
+    Message(std::string text, Status status, bool seen, std::uint64_t user_id, std::uint32_t chat_id);
     ~Message() = default;
-    [[nodiscard]] std::uint64_t messageid();
+    [[nodiscard]] std::uint64_t messageid() const;
     [[nodiscard]] const std::string text() const;
-    [[nodiscard]] std::uint8_t status();
-    [[nodiscard]] bool seen();
+    [[nodiscard]] Status status() const;
+    [[nodiscard]] bool seen() const;
     [[nodiscard]] const std::chrono::high_resolution_clock::time_point timestamp() const;
-    [[nodiscard]] const std::uint64_t user_id() const;
-    [[nodiscard]] const std::uint32_t chat_id() const;
+    [[nodiscard]] std::uint64_t user_id() const;
+    [[nodiscard]] std::uint32_t chat_id() const;
 
 private:
     std::uint64_t m_messageid;
     std::string m_text;
-    std::uint8_t m_status;
+    Status m_status;
     bool m_seen;
     std::chrono::high_resolution_clock::time_point m_timestamp;
     std::uint64_t m_user_id;
@@ -87,7 +97,7 @@ public:
     Chat(std::uint32_t chatid, std::string chatname);
     Chat(std::string chatname);
     ~Chat() = default;
-    [[nodiscard]] const std::uint32_t chatid() const;
+    [[nodiscard]] std::uint32_t chatid() const;
     [[nodiscard]] const std::string chatname() const;
 
 private:
