@@ -100,7 +100,7 @@ void ChatWidget::load_incomplete_message(RAMStorageSingletone::chat_handle_t it)
     m_ui->MsgEdit->setText(it->incomplete_message().text());
 }
 
-QListWidgetItem* ChatWidget::load_message_into_item(Message msg)
+QListWidgetItem* ChatWidget::load_message_into_item(const Message& msg)
 {
     auto* msg_item = new QListWidgetItem();
     msg_item->setText(msg.text());

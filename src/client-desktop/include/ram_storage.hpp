@@ -150,7 +150,7 @@ public:
 
     void set_incomplete_message(Message incomplete_m)
     {
-        m_incomplete_message = incomplete_m;
+        m_incomplete_message = std::move(incomplete_m);
     }
 
     void set_scrolling_position(int scrollbar)

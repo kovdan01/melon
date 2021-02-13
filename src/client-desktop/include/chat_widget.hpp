@@ -29,7 +29,7 @@ public slots:  // NOLINT (readability-redundant-access-specifiers)
     void update(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
     Message capture_incomplete_message();
     void load_incomplete_message(RAMStorageSingletone::chat_handle_t it);
-    QListWidgetItem* load_message_into_item(Message msg);
+    QListWidgetItem* load_message_into_item(const Message& msg);
 
 private slots:
     void send_message();
