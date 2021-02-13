@@ -21,23 +21,44 @@ class ChatWidget : public QWidget
 {
     Q_OBJECT
 
+    using chat_handle_t = RAMStorageSingletone::chat_handle_t;
+    using const_chat_handle_t = RAMStorageSingletone::const_chat_handle_t;
+
 public:
     ChatWidget(QWidget* parent = nullptr);
     ~ChatWidget() override = default;
 
+
+    void set_current_chat_it(chat_handle_t it) noexcept
+    {
+        m_current_chat_it = it;
+    }
+
+    [[nodiscard]] chat_handle_t chat_by_qlistitem(QListWidgetItem* item)
+    {
+        QVariant v = item->data(Qt::UserRole);
+        return v.value<chat_handle_t>();
+    }
+
 public slots:  // NOLINT (readability-redundant-access-specifiers)
-    void update(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
-    Message capture_incomplete_message();
-    void load_incomplete_message(RAMStorageSingletone::chat_handle_t it);
+    void change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
+    Message capture_message_from_editor();
+    void load_message_to_editor(const Message& msg);
     QListWidgetItem* load_message_into_item(const Message& msg);
 
 private slots:
     void send_message();
     void receive_message();
+    void provide_chat_context_menu(const QPoint& pos);
+    void delete_msg();
+    void edit_msg();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::ChatWidget> m_ui;
-    QListWidgetItem* m_current_chat = nullptr;
+    QListWidgetItem* m_current_chat_item = nullptr;
+    RAMStorageSingletone::chat_handle_t m_current_chat_it;
+    bool m_edit_mode = 0;
+    QListWidgetItem* m_edit_item = nullptr;
 };
 
 namespace rgba_receive

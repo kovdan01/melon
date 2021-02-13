@@ -81,6 +81,11 @@ public:
         return m_from;
     }
 
+    void set_text(const QString& text)
+    {
+        m_text = text;
+    }
+
 private:
     std::list<Attachment> m_attachments;
     timestamp_t m_timestamp;
@@ -95,7 +100,10 @@ public:
     using message_handle_t = std::list<Message>::iterator;
 
     Chat(QString name, id_t id)
-        : m_incomplete_message(/* from */ QLatin1String(""), /* text */ QStringLiteral(""), /* attachments */ {}, /* timestamp */ {})
+        : m_incomplete_message(/* from */ QLatin1String(""),
+                               /* text */ QStringLiteral(""),
+                               /* attachments */ {},
+                               /* timestamp */ {})
         , m_name(std::move(name))
         , m_id(id)
     {
@@ -112,17 +120,22 @@ public:
         return m_messages;
     }
 
-    [[nodiscard]] const Message& incomplete_message() const
+    [[nodiscard]] std::list<Message>& messages() noexcept
+    {
+        return m_messages;
+    }
+
+    [[nodiscard]] const Message& incomplete_message() const noexcept
     {
         return m_incomplete_message;
     }
 
-    [[nodiscard]] int scrolling_position() const
+    [[nodiscard]] int scrolling_position() const noexcept
     {
         return m_scrolling_position;
     }
 
-    [[nodiscard]] const QString& name() const
+    [[nodiscard]] const QString& name() const noexcept
     {
         return m_name;
     }
@@ -153,9 +166,15 @@ public:
         m_incomplete_message = std::move(incomplete_m);
     }
 
-    void set_scrolling_position(int scrollbar)
+    void set_scrolling_position(int scrollbar) noexcept
     {
         m_scrolling_position = scrollbar;
+    }
+
+    [[nodiscard]] message_handle_t msg_by_qlistitem(QListWidgetItem* item)
+    {
+        QVariant v = item->data(Qt::UserRole);
+        return v.value<message_handle_t>();
     }
 
 private:
@@ -205,20 +224,6 @@ public:
         return m_chats;
     }
 
-    [[nodiscard]] const_chat_handle_t chat_by_qlistitem(QListWidgetItem* item) const
-    {
-        QVariant v = item->data(Qt::UserRole);
-        auto it = v.value<std::list<Chat>::iterator>();
-        return it;
-    }
-
-    [[nodiscard]] chat_handle_t chat_by_qlistitem(QListWidgetItem* item)
-    {
-        QVariant v = item->data(Qt::UserRole);
-        auto it = v.value<std::list<Chat>::iterator>();
-        return it;
-    }
-
 private:
     std::list<Chat> m_chats;
 
@@ -228,6 +233,7 @@ private:
 
 }  // namespace melon::client_desktop
 
-Q_DECLARE_METATYPE(std::list<melon::client_desktop::Chat>::iterator)
+Q_DECLARE_METATYPE(melon::client_desktop::RAMStorageSingletone::chat_handle_t)
+Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
 
 #endif // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_

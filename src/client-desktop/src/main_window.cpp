@@ -21,7 +21,7 @@ void MainWindow::set_spacer()
         disconnect(m_ui->ChatList,
                    &QListWidget::currentItemChanged,
                    m_chat_widget,
-                   &ChatWidget::update);
+                   &ChatWidget::change_chat);
 
         m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
@@ -44,7 +44,7 @@ void MainWindow::set_chat_widget()
     connect(m_ui->ChatList,
             &QListWidget::currentItemChanged,
             m_chat_widget,
-            &ChatWidget::update);
+            &ChatWidget::change_chat);
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -95,7 +95,7 @@ void MainWindow::add_chat()
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
 
-        auto added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
+        RAMStorageSingletone::chat_handle_t added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
 
         QVariant pointer_to_chat;
         pointer_to_chat.setValue(added_chat);
@@ -128,7 +128,9 @@ void MainWindow::delete_chat()
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
 
-    auto it = ram_storage.chat_by_qlistitem(item);
+    QVariant v = item->data(Qt::UserRole);
+    auto it = v.value<std::list<Chat>::iterator>();
+
     ram_storage.delete_chat(it);
 
     delete item;
@@ -155,8 +157,9 @@ void MainWindow::rename_chat()
         if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
             throw std::runtime_error("Name is incorrect");
 
-        auto& ram_storage = RAMStorageSingletone::get_instance();
-        auto it = ram_storage.chat_by_qlistitem(item);
+        QVariant v = item->data(Qt::UserRole);
+        auto it = v.value<std::list<Chat>::iterator>();
+
         it->set_name(text);
 
         item->setText(text);

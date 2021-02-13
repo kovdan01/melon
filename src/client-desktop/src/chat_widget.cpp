@@ -5,9 +5,9 @@
 #include <chat_widget.hpp>
 
 #include <QScrollBar>
+#include<QMenuBar>
 
 #include <chrono>
-#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -19,22 +19,44 @@ ChatWidget::ChatWidget(QWidget* parent)
     m_ui->setupUi(this);
     connect(m_ui->SendButton, &QPushButton::clicked, this, &ChatWidget::send_message);
     connect(m_ui->ReceiveButton, &QPushButton::clicked, this, &ChatWidget::receive_message);
+
+    m_ui->MsgList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_ui->MsgList,
+            &QWidget::customContextMenuRequested,
+            this,
+            &ChatWidget::provide_chat_context_menu);
 }
 
 void ChatWidget::send_message()
 {
+
     QString msg_text = m_ui->MsgEdit->toPlainText();
     if (msg_text.isEmpty())
         return;
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    if (m_edit_mode)
+    {
+        m_edit_item->setText(msg_text);
+        Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(m_edit_item);
+        it_msg->set_text(msg_text);
+        m_edit_mode = 0;
+        m_edit_item = nullptr;
+        m_ui->MsgEdit->clear();
+        return;
+    }
 
-    auto it = ram_storage.chat_by_qlistitem(m_current_chat);
-
-    it->add_message(Message(QLatin1String("Me"), msg_text, {}, std::chrono::high_resolution_clock::now()));
+    Chat::message_handle_t it_msg = m_current_chat_it->add_message(Message(QLatin1String("Me"),
+                                                                           msg_text,
+                                                                           {},
+                                                                           std::chrono::high_resolution_clock::now()));
 
     auto* msg_item = new QListWidgetItem();
     msg_item->setText(msg_text);
+
+    QVariant pointer_to_msg;
+    pointer_to_msg.setValue(it_msg);
+    msg_item->setData(Qt::UserRole, pointer_to_msg);
+
     m_ui->MsgEdit->clear();
     m_ui->MsgList->addItem(msg_item);
     m_ui->MsgList->scrollToBottom();
@@ -44,9 +66,10 @@ void ChatWidget::receive_message()
 {
     QString msg_text = QStringLiteral("I wish I could hear you.");
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
-    auto it = ram_storage.chat_by_qlistitem(m_current_chat);
-    it->add_message(Message(QLatin1String("Some Sender"), msg_text, {}, std::chrono::high_resolution_clock::now()));
+    Chat::message_handle_t it_msg = m_current_chat_it->add_message(Message(QLatin1String("Some Sender"),
+                                                                           msg_text,
+                                                                           {},
+                                                                           std::chrono::high_resolution_clock::now()));
 
     auto* msg_item = new QListWidgetItem();
     msg_item->setText(msg_text);
@@ -54,39 +77,52 @@ void ChatWidget::receive_message()
     QColor background_color(rgba_receive::R, rgba_receive::G,
                             rgba_receive::B, rgba_receive::A);
     msg_item->setBackground(background_color);
+
+    QVariant pointer_to_msg;
+    pointer_to_msg.setValue(it_msg);
+    msg_item->setData(Qt::UserRole, pointer_to_msg);
+
     m_ui->MsgList->addItem(msg_item);
     m_ui->MsgList->scrollToBottom();
 }
 
-void ChatWidget::update(QListWidgetItem* current_chat, QListWidgetItem* previous_chat)
+void ChatWidget::change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat)
 {
-    m_current_chat = current_chat;
-    if (m_current_chat == nullptr)
+    m_current_chat_item = current_chat;
+    if (m_current_chat_item == nullptr)
         return;
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    set_current_chat_it(chat_by_qlistitem(m_current_chat_item));
 
     if (previous_chat != nullptr)
     {
-        auto it_previous = ram_storage.chat_by_qlistitem(previous_chat);
-        it_previous->set_incomplete_message(capture_incomplete_message());
+        auto it_previous = chat_by_qlistitem(previous_chat);
+        it_previous->set_incomplete_message(capture_message_from_editor());
         it_previous->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
     }
 
-    auto it_current = ram_storage.chat_by_qlistitem(m_current_chat);
-
     m_ui->MsgList->clear();
 
-    for (const Message& message : it_current->messages())
-        m_ui->MsgList->addItem(load_message_into_item(message));
+    std::list<Message>& messages = m_current_chat_it->messages();
 
-    load_incomplete_message(it_current);
-    int my_scroll_pos = it_current->scrolling_position();
+    for (auto it_msg = messages.begin(); it_msg != messages.end(); ++it_msg)
+    {
+        QListWidgetItem* new_msg_item = load_message_into_item(*it_msg);
+
+        m_ui->MsgList->addItem(new_msg_item);
+
+        QVariant pointer_to_msg;
+        pointer_to_msg.setValue(it_msg);
+        new_msg_item->setData(Qt::UserRole, pointer_to_msg);
+    }
+
+    load_message_to_editor(m_current_chat_it->incomplete_message());
+    int my_scroll_pos = m_current_chat_it->scrolling_position();
     m_ui->MsgList->verticalScrollBar()->setMaximum(my_scroll_pos);
     m_ui->MsgList->verticalScrollBar()->setValue(my_scroll_pos);
 }
 
-Message ChatWidget::capture_incomplete_message()
+Message ChatWidget::capture_message_from_editor()
 {
     QString msg_text = m_ui->MsgEdit->toPlainText();
     if (msg_text.isEmpty())
@@ -95,9 +131,9 @@ Message ChatWidget::capture_incomplete_message()
     return Message(QLatin1String("Me"), msg_text, {}, std::chrono::high_resolution_clock::now());
 }
 
-void ChatWidget::load_incomplete_message(RAMStorageSingletone::chat_handle_t it)
+void ChatWidget::load_message_to_editor(const Message& msg)
 {
-    m_ui->MsgEdit->setText(it->incomplete_message().text());
+    m_ui->MsgEdit->setText(msg.text());
 }
 
 QListWidgetItem* ChatWidget::load_message_into_item(const Message& msg)
@@ -112,6 +148,39 @@ QListWidgetItem* ChatWidget::load_message_into_item(const Message& msg)
         msg_item->setBackground(background_color);
     }
     return msg_item;
+}
+
+void ChatWidget::provide_chat_context_menu(const QPoint& pos)
+{
+    QPoint item = m_ui->MsgList->mapToGlobal(pos);
+    auto* submenu = new QMenu(this);
+    QListWidgetItem* cur_item = m_ui->MsgList->currentItem();
+
+    if (m_current_chat_it->msg_by_qlistitem(cur_item)->from() == QStringLiteral("Me") )
+    {
+        submenu->addAction(tr("Edit"), this, SLOT(edit_msg()));
+    }
+    submenu->addAction(tr("Delete"), this, SLOT(delete_msg()));
+    submenu->popup(item);
+}
+
+void ChatWidget::delete_msg()
+{
+    QListWidgetItem* item_msg = m_ui->MsgList->takeItem(m_ui->MsgList->currentRow());
+    Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(item_msg);
+    m_current_chat_it->delete_message(it_msg);
+
+    delete item_msg;
+}
+
+void ChatWidget::edit_msg()
+{
+    QListWidgetItem* item = m_ui->MsgList->currentItem();
+    Chat::message_handle_t it_msg = m_current_chat_it->msg_by_qlistitem(item);
+
+    load_message_to_editor(*it_msg);
+    m_edit_mode = 1;
+    m_edit_item = item;
 }
 
 
