@@ -80,8 +80,14 @@ void MainWindow::add_chat()
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              tr("NewChat") + QString::number(counter), &ok);
 
-        if (!(ok && !text.isEmpty() && text.size() <= MAX_NAME_CHAT_SIZE))
+        if (!ok)
+        {
+            return;
+        }
+        else if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
+        {
             throw std::runtime_error("Name is incorrect");
+        }
 
         if (m_spacer != nullptr)
             set_chat_widget();
@@ -146,8 +152,14 @@ void MainWindow::rename_chat()
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              old_name, &ok);
 
-        if (!(ok && !text.isEmpty() && text.size() <= MAX_NAME_CHAT_SIZE))
+        if (!ok)
+        {
+            return;
+        }
+        else if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
+        {
             throw std::runtime_error("Name is incorrect");
+        }
 
         auto& ram_storage = RAMStorageSingletone::get_instance();
         auto it = ram_storage.chat_by_qlistitem(item);
