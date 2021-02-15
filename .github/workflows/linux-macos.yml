@@ -335,7 +335,7 @@ jobs:
         key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
 
     - name: SQLPP11
-      if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' }}
+      if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
