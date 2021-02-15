@@ -2,7 +2,6 @@
 
 #include "storage.hpp"
 
-SQLPP_ALIAS_PROVIDER(now)
 
 int main() try
 {
@@ -19,13 +18,6 @@ int main() try
 
     mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
-
-
-    // for GMT time; in Mysql is like SELECT UTC_TIMESTAMP();
-    for (const auto& row : db(select(::sqlpp::value(std::chrono::system_clock::now()).as(now))))
-    {
-        std::cout << row.now << std::endl;
-    }
 
     mc::Message message("Let's protest", mc::Message::Status::SENT, true, 1, 1);
     mss::add_message(db, message);

@@ -58,14 +58,15 @@ set(SOURCES
     src/main.cpp
 )
 
+find_package(PythonInterp REQUIRED)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb.h
-    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp script/melondb.sql ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb  melon
+    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp.py script/melondb.sql ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb  melon
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS script/ddl2cpp
+    DEPENDS script/ddl2cpp.py
 )
 
 add_executable(${PROJECT_NAME}
