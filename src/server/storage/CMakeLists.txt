@@ -58,6 +58,7 @@ set(SOURCES
     src/main.cpp
 )
 
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 add_custom_command(

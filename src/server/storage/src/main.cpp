@@ -2,6 +2,8 @@
 
 #include "storage.hpp"
 
+SQLPP_ALIAS_PROVIDER(now)
+
 int main() try
 {
     namespace mss = melon::server::storage;
@@ -9,35 +11,6 @@ int main() try
 
 
     mysql::connection db(mss::config_melondb());
-    db.execute(R"(DROP TABLE IF EXISTS messages)");
-    db.execute(R"(DROP TABLE IF EXISTS users)");
-    db.execute(R"(DROP TABLE IF EXISTS chats)");
-
-    db.execute(R"(CREATE TABLE users (
-        user_id  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        username varchar(255) NOT NULL,
-        status TINYINT UNSIGNED NOT NULL DEFAULT 0,
-        PRIMARY KEY (user_id)
-        ))");
-
-    db.execute(R"(CREATE TABLE chats (
-        chat_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        chatname varchar(255) NOT NULL,
-        PRIMARY KEY (chat_id)
-        ))");
-
-    db.execute(R"(CREATE TABLE messages (
-        message_id BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
-        text varchar(1024) NOT NULL,
-        status TINYINT UNSIGNED  NOT NULL DEFAULT 0,
-        seen BOOLEAN NOT NULL DEFAULT 0,
-        timesend DATETIME NOT NULL,
-        user_id BIGINT UNSIGNED  NOT NULL,
-        chat_id INT UNSIGNED  NOT NULL,
-        FOREIGN KEY (chat_id)  REFERENCES chats (chat_id),
-        FOREIGN KEY (user_id)  REFERENCES users (user_id),
-        PRIMARY KEY (message_id)
-        ))");
 
     mc::User user("h3ll0kitt1");
     mss::add_user(db, user);
@@ -46,11 +19,12 @@ int main() try
     mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
 
-//    //wrong time from db
-//    for (const auto& row : db(select(::sqlpp::value(std::chrono::system_clock::now()).as(now))))
-//    {
-//        std::cout << row.now << std::endl;
-//    }
+
+    // for GMT time; in Mysql is like SELECT UTC_TIMESTAMP();
+    for (const auto& row : db(select(::sqlpp::value(std::chrono::system_clock::now()).as(now))))
+    {
+        std::cout << row.now << std::endl;
+    }
 
     mc::Message message("Let's protest", mc::Message::Status::SENT, true, 1, 1);
     mss::add_message(db, message);

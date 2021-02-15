@@ -22,14 +22,14 @@ std::shared_ptr<mysql::connection_config> config_melondb()
     config->database = "melon";
     config->host = "localhost";
     config->password = "melonpass";
-    //config->debug = true;
+    config->debug = true;
     return config;
 }
 
 
 void add_user(mysql::connection& db, const mc::User& user)
 {
-    db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.status = static_cast<int>(mc::User::Status::OFFLINE)));
+    db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.status = static_cast<std::uint8_t>(mc::User::Status::OFFLINE)));
 }
 
 /* Users */
@@ -52,7 +52,7 @@ std::vector<mc::User> get_online_users(mysql::connection& db)
     for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(mc::User::Status::ONLINE))))
     {
         std::uint8_t tmp = row.status;
-        mc::User::Status status = static_cast<mc::User::Status>(tmp);
+        auto status = static_cast<mc::User::Status>(tmp);
         mc::User user(row.userId, row.username, status);
         online_users.emplace_back(std::move(user));
 
@@ -93,7 +93,7 @@ std::vector<mc::Message> get_messages_for_chat(mysql::connection& db, const mc::
     for (const auto& row : db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == chat.chatid())))
     {
         std::uint8_t tmp = row.status;
-        mc::Message::Status status = static_cast<mc::Message::Status>(tmp);
+        auto status = static_cast<mc::Message::Status>(tmp);
         mc::Message message(row.messageId, row.text, status, row.seen, row.userId, row.chatId);
         messages_in_chat.emplace_back(std::move(message));
     }
