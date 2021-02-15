@@ -6,13 +6,15 @@ namespace melon::core
 {
 
 
-User::User(std::uint64_t userid, std::string username, Status status)
-    :m_userid(userid), m_username(std::move(username)), m_status(status)
+User::User(std::uint64_t user_id, std::string username, Status status)
+    : m_user_id(user_id)
+    , m_username(std::move(username))
+    , m_status(status)
 {
 }
 
 User::User(std::string username)
-    :m_username(std::move(username))
+    : m_username(std::move(username))
 {
 }
 
@@ -21,34 +23,43 @@ User::User(std::string username)
     return m_status;
 }
 
-[[nodiscard]] std::uint64_t User::userid() const
+[[nodiscard]] std::uint64_t User::user_id() const
 {
-    return m_userid;
+    return m_user_id;
 }
 
-[[nodiscard]] const std::string User::username() const
+[[nodiscard]] const std::string& User::username() const
 {
     return m_username;
 }
 
-Message::Message(std::uint64_t messageid, std::string text, Message::Status status, bool seen,
+Message::Message(std::uint64_t message_id, std::string text, Message::Status status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
-    :m_messageid(messageid), m_text(std::move(text)), m_status(status), m_seen(seen), m_user_id(user_id), m_chat_id(chat_id)
+    : m_message_id(message_id)
+    , m_text(std::move(text))
+    , m_user_id(user_id)
+    , m_chat_id(chat_id)
+    , m_status(status)
+    , m_seen(seen)
 {
 }
 
 Message::Message(std::string text, Message::Status status, bool seen,
                  std::uint64_t user_id, std::uint32_t chat_id)
-    : m_text(std::move(text)), m_status(status), m_seen(seen), m_user_id(user_id), m_chat_id(chat_id)
+    : m_text(std::move(text))
+    , m_user_id(user_id)
+    , m_chat_id(chat_id)
+    , m_status(status)
+    , m_seen(seen)
 {
 }
 
-[[nodiscard]] std::uint64_t Message::messageid() const
+[[nodiscard]] std::uint64_t Message::message_id() const
 {
-    return m_messageid;
+    return m_message_id;
 }
 
-[[nodiscard]] const std::string Message::text() const
+[[nodiscard]] const std::string& Message::text() const
 {
     return m_text;
 }
@@ -78,8 +89,9 @@ Message::Message(std::string text, Message::Status status, bool seen,
     return m_chat_id;
 }
 
-Chat::Chat(std::uint32_t chatid, std::string chatname)
-    :m_chatid(chatid), m_chatname(std::move(chatname))
+Chat::Chat(std::uint32_t chat_id, std::string chatname)
+    : m_chat_id(chat_id)
+    , m_chatname(std::move(chatname))
 {
 }
 
@@ -88,9 +100,9 @@ Chat::Chat(std::string chatname)
 {
 }
 
-[[nodiscard]] std::uint32_t Chat::chatid() const
+[[nodiscard]] std::uint32_t Chat::chat_id() const
 {
-    return m_chatid;
+    return m_chat_id;
 }
 [[nodiscard]] const std::string Chat::chatname() const
 {

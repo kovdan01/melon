@@ -54,7 +54,7 @@ set(HEADERS
 )
 
 set(SOURCES
-    src/melon_storage.cpp
+    src/storage.cpp
     src/main.cpp
 )
 

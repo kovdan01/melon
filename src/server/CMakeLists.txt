@@ -12,9 +12,9 @@ add_subdirectory(auth)
 add_subdirectory(messaging)
 
 # TODO: configure MariaDB for macOS
-if(NOT ${APPLE})
-    add_subdirectory(storage)
-endif()
-
+#if(NOT ${APPLE})
+#    add_subdirectory(storage)
+#endif()
+add_subdirectory(storage)
 add_subdirectory(client-server)
 add_subdirectory(server-server)

@@ -8,6 +8,7 @@ int main() try
 {
     namespace mss = melon::server::storage;
     namespace mc = melon::core;
+    namespace mysql = sqlpp::mysql;
 
 
     mysql::connection db(mss::config_melondb());
@@ -29,7 +30,7 @@ int main() try
     mc::Message message("Let's protest", mc::Message::Status::SENT, true, 1, 1);
     mss::add_message(db, message);
 
-    mc::Message message2("or go to OVD", mc::Message::Status::RECIEVED, false, 1, 1);
+    mc::Message message2("or go to OVD", mc::Message::Status::RECEIVED, false, 1, 1);
     mss::add_message(db, message2);
 
     std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
@@ -43,7 +44,7 @@ int main() try
     std::cout << "Online users: " << std::endl;
     for (auto& a: online_users)
     {
-        std:: cout << a.userid() << " : " << a.username() << std::endl;
+        std:: cout << a.user_id() << " : " << a.username() << std::endl;
     }
 
     std::cout << "Change status for online" << std::endl;

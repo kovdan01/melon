@@ -21,20 +21,22 @@ namespace melon::core
 class MELON_CORE_EXPORT User
 {
 public:
-    enum class Status: std::uint8_t
+    enum class Status : std::uint8_t
     {
-        OFFLINE, ONLINE, CHILL
+        OFFLINE,
+        ONLINE,
+        CHILL
     };
-    User(std::uint64_t userid, std::string username, Status status);
+    User(std::uint64_t user_id, std::string username, Status status);
     User(std::string username);
     ~User() = default;
-    [[nodiscard]] std::uint64_t userid() const;
-    [[nodiscard]] const std::string username() const;
+    [[nodiscard]] std::uint64_t user_id() const;
+    [[nodiscard]] const std::string& username() const;
     [[nodiscard]] Status status() const;
 
 
 private:
-    std::uint64_t m_userid;
+    std::uint64_t m_user_id;
     std::string m_username;
     Status m_status;
 };
@@ -58,16 +60,18 @@ private:
 class MELON_CORE_EXPORT Message
 {
 public:
-    enum class Status: std::uint8_t
+    enum class Status : std::uint8_t
     {
-        FAIL, SENT, RECIEVED
+        FAIL,
+        SENT,
+        RECEIVED
     };
-    Message(std::uint64_t messageid, std::string text, Status status, bool seen,
+    Message(std::uint64_t message_id, std::string text, Status status, bool seen,
             std::uint64_t user_id, std::uint32_t chat_id);
     Message(std::string text, Status status, bool seen, std::uint64_t user_id, std::uint32_t chat_id);
     ~Message() = default;
-    [[nodiscard]] std::uint64_t messageid() const;
-    [[nodiscard]] const std::string text() const;
+    [[nodiscard]] std::uint64_t message_id() const;
+    [[nodiscard]] const std::string& text() const;
     [[nodiscard]] Status status() const;
     [[nodiscard]] bool seen() const;
     [[nodiscard]] const std::chrono::high_resolution_clock::time_point timestamp() const;
@@ -75,13 +79,13 @@ public:
     [[nodiscard]] std::uint32_t chat_id() const;
 
 private:
-    std::uint64_t m_messageid;
+    std::uint64_t m_message_id;
     std::string m_text;
-    Status m_status;
-    bool m_seen;
     std::chrono::high_resolution_clock::time_point m_timestamp;
     std::uint64_t m_user_id;
     std::uint32_t m_chat_id;
+    Status m_status;
+    bool m_seen;
 };
 
 /* Chat:
@@ -94,14 +98,14 @@ private:
 class MELON_CORE_EXPORT Chat
 {
 public:
-    Chat(std::uint32_t chatid, std::string chatname);
+    Chat(std::uint32_t chat_id, std::string chatname);
     Chat(std::string chatname);
     ~Chat() = default;
-    [[nodiscard]] std::uint32_t chatid() const;
+    [[nodiscard]] std::uint32_t chat_id() const;
     [[nodiscard]] const std::string chatname() const;
 
 private:
-    std::uint32_t m_chatid;
+    std::uint32_t m_chat_id;
     std::string m_chatname;
 };
 

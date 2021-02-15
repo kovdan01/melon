@@ -10,7 +10,6 @@
 #include "melondb.h"
 #include <melon/storage_class.hpp>
 
-namespace mysql = sqlpp::mysql;
 namespace mc = melon::core;
 
 const melon::Users G_USERS;
@@ -22,24 +21,24 @@ namespace melon::server::storage
 
 /* Init and connect to db */
 
-std::shared_ptr<mysql::connection_config> config_melondb();
+std::shared_ptr<sqlpp::mysql::connection_config> config_melondb();
 
 /* Users */
 
-void add_user(mysql::connection& db, const mc::User& user);
-std::vector<std::string> get_online_users_names(mysql::connection& db);
-std::vector<mc::User> get_online_users(mysql::connection& db);
-void make_user_online(mysql::connection& db, const mc::User& user);
-void make_user_offline(mysql::connection& db, const mc::User& user);
+void add_user(sqlpp::mysql::connection& db, const mc::User& user);
+std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db);
+std::vector<mc::User> get_online_users(sqlpp::mysql::connection& db);
+void make_user_online(sqlpp::mysql::connection& db, const mc::User& user);
+void make_user_offline(sqlpp::mysql::connection& db, const mc::User& user);
 
 /* Messages */
 
-void add_message(mysql::connection& db, const mc::Message& message);
+void add_message(sqlpp::mysql::connection& db, const mc::Message& message);
 
 /* Chat */
 
-void add_chat(mysql::connection& db, const mc::Chat& chat);
-std::vector<mc::Message> get_messages_for_chat(mysql::connection& db, const mc::Chat& chat);
+void add_chat(sqlpp::mysql::connection& db, const mc::Chat& chat);
+std::vector<mc::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const mc::Chat& chat);
 
 
 }  // namespace melon::server::storage
