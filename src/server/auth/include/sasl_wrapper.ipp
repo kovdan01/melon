@@ -32,9 +32,9 @@ inline sasl_res get_username(void* context, int id, const char** result, unsigne
     {
     case SASL_CB_USER:
     case SASL_CB_AUTHNAME:
-        *result = params->username.c_str();
+        *result = params->username().c_str();
         if (len != nullptr)
-            *len = static_cast<unsigned>(params->username.size());
+            *len = static_cast<unsigned>(params->username().size());
         break;
     default:
         return SASL_BADPARAM;
@@ -47,15 +47,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     if (id != SASL_CB_PASS)
         return SASL_BADPARAM;
     auto* params = static_cast<Credentials*>(context);
-
-    // There is no additional byte allocated, as sasl_secret_t already contains a single byte for password
-    auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
-    if (secret == nullptr)
-        return SASL_NOMEM;
-    secret->len = params->password.size();
-    std::memcpy(secret->data, params->password.c_str(), secret->len + 1);
-    *psecret = secret;
-
+    *psecret = params->secret();
     return SASL_OK;
 }
 

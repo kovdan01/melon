@@ -6,6 +6,9 @@
 #include <sasl/saslplug.h>
 
 #include <array>
+#include <cstring>
+#include <memory>
+#include <new> // std::bad_alloc
 #include <string>
 #include <string_view>
 
@@ -14,10 +17,31 @@ namespace melon::server::auth
 
 using sasl_res = int;
 
-struct Credentials
+class Credentials
 {
-    const std::string username;
-    const std::string password;
+private:
+    constexpr static auto free_deleter = [](void* p){ std::free(p); };
+
+    std::string username_;
+    std::unique_ptr<sasl_secret_t,decltype(free_deleter)> password_;
+public:
+    Credentials(std::string username,std::string_view password)
+        : username_{std::move(username)},
+          password_{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t)+password.size()))}
+    {
+        if(!password_)
+            throw std::bad_alloc{};
+        std::memcpy(password_->data,password.data(),password.size());
+        password_->data[password.size()] = '\0';
+        password_->len = password.size();
+    }
+
+    const std::string& username() const noexcept { return username_; }
+    std::string_view password() const noexcept
+    {
+        return {reinterpret_cast<const char*>(password_->data),password_->len};
+    }
+    sasl_secret_t* secret() const noexcept { return password_.get(); }
 };
 
 enum class AuthCompletness
