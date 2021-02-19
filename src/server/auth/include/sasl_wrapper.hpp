@@ -8,7 +8,7 @@
 #include <array>
 #include <cstring>
 #include <memory>
-#include <new> // std::bad_alloc
+#include <new>
 #include <string>
 #include <string_view>
 
@@ -19,29 +19,31 @@ using sasl_res = int;
 
 class Credentials
 {
-private:
-    constexpr static auto free_deleter = [](void* p){ std::free(p); };
-
-    std::string username_;
-    std::unique_ptr<sasl_secret_t,decltype(free_deleter)> password_;
 public:
     Credentials(std::string username,std::string_view password)
-        : username_{std::move(username)},
-          password_{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t)+password.size()))}
+        : m_username{std::move(username)}
+        // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
+        , m_password{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + password.size()))}
     {
-        if(!password_)
+        if (m_password == nullptr)
             throw std::bad_alloc{};
-        std::memcpy(password_->data,password.data(),password.size());
-        password_->data[password.size()] = '\0';
-        password_->len = password.size();
+        std::memcpy(m_password->data,password.data(), password.size());
+        m_password->data[password.size()] = '\0';
+        m_password->len = password.size();
     }
 
-    const std::string& username() const noexcept { return username_; }
-    std::string_view password() const noexcept
+    [[nodiscard]] const std::string& username() const noexcept { return m_username; }
+    [[nodiscard]] std::string_view password() const noexcept
     {
-        return {reinterpret_cast<const char*>(password_->data),password_->len};
+        return { reinterpret_cast<const char*>(m_password->data), m_password->len };
     }
-    sasl_secret_t* secret() const noexcept { return password_.get(); }
+    [[nodiscard]] sasl_secret_t* secret() const noexcept { return m_password.get(); }
+
+private:
+    constexpr static auto g_free_deleter = [](void* p){ std::free(p); };
+
+    std::string m_username;
+    std::unique_ptr<sasl_secret_t, decltype(g_free_deleter)> m_password;
 };
 
 enum class AuthCompletness
