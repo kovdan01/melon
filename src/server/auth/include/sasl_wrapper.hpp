@@ -20,30 +20,17 @@ using sasl_res = int;
 class Credentials
 {
 public:
-    Credentials(std::string username,std::string_view password)
-        : m_username{std::move(username)}
-        // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
-        , m_password{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + password.size()))}
-    {
-        if (m_password == nullptr)
-            throw std::bad_alloc{};
-        std::memcpy(m_password->data,password.data(), password.size());
-        m_password->data[password.size()] = '\0';
-        m_password->len = password.size();
-    }
+    Credentials(std::string username,std::string_view password);
 
-    [[nodiscard]] const std::string& username() const noexcept { return m_username; }
-    [[nodiscard]] std::string_view password() const noexcept
-    {
-        return { reinterpret_cast<const char*>(m_password->data), m_password->len };
-    }
-    [[nodiscard]] sasl_secret_t* secret() const noexcept { return m_password.get(); }
+    [[nodiscard]] const std::string& username() const noexcept;
+    [[nodiscard]] std::string_view password() const noexcept;
+    [[nodiscard]] sasl_secret_t* secret() const noexcept;
 
 private:
-    constexpr static auto g_free_deleter = [](void* p){ std::free(p); };
+    constexpr static auto FREE_DELETER = [](void* p){ std::free(p); };  // NOLINT cppcoreguidelines-no-malloc
 
     std::string m_username;
-    std::unique_ptr<sasl_secret_t, decltype(g_free_deleter)> m_password;
+    std::unique_ptr<sasl_secret_t, decltype(FREE_DELETER)> m_password;
 };
 
 enum class AuthCompletness

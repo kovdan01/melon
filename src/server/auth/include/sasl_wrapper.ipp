@@ -10,6 +10,33 @@
 namespace melon::server::auth
 {
 
+inline Credentials::Credentials(std::string username,std::string_view password)
+    : m_username{std::move(username)}
+    // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
+    , m_password{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + password.size()))}  // NOLINT cppcoreguidelines-no-malloc
+{
+    if (m_password == nullptr)
+        throw std::bad_alloc{};
+    std::memcpy(m_password->data,password.data(), password.size());
+    m_password->data[password.size()] = '\0';
+    m_password->len = password.size();
+}
+
+[[nodiscard]] inline const std::string& Credentials::username() const noexcept
+{
+    return m_username;
+}
+
+[[nodiscard]] inline std::string_view Credentials::password() const noexcept
+{
+    return { reinterpret_cast<const char*>(m_password->data), m_password->len };
+}
+
+[[nodiscard]] inline sasl_secret_t* Credentials::secret() const noexcept
+{
+    return m_password.get();
+}
+
 namespace detail
 {
 
