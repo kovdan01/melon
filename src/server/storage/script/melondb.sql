@@ -40,7 +40,6 @@ CREATE TABLE `messages` (
   `message_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `text` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `seen` tinyint(1) NOT NULL DEFAULT 0,
   `timesend` datetime NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   `chat_id` int(10) unsigned NOT NULL,
@@ -49,7 +48,7 @@ CREATE TABLE `messages` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`),
   CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,4 +75,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-07 14:58:11
+-- Dump completed on 2021-02-20 21:30:45

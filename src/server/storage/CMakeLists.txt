@@ -43,7 +43,6 @@ set(SQLPP11_MYSQL_CONNECTOR_LIB
     "Path to the directory containing libsqlpp-mysql.a"
 )
 
-set(SQLPP11_)
 
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)

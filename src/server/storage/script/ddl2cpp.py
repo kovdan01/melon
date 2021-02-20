@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 
-##
  # Copyright (c) 2013-2015, Roland Bock
  # All rights reserved.
  #

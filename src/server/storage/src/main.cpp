@@ -5,6 +5,7 @@
 
 int main() try
 {
+
     namespace mss = melon::server::storage;
     namespace mc = melon::core;
     namespace mysql = sqlpp::mysql;
@@ -12,17 +13,16 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
-    mc::User user("h3ll0kitt1");
+    mc::User user(0, "h3ll0kitt1", mc::User::Status::ONLINE);
     mss::add_user(db, user);
-
 
     mc::Chat chat(1,"secret_chat");
     mss::add_chat(db, chat);
 
-    mc::Message message("Let's protest", mc::Message::Status::SENT, true, 1, 1);
+    mc::Message message(0, 1, 1, "Let's protest", mc::Message::Status::SENT);
     mss::add_message(db, message);
 
-    mc::Message message2("or go to OVD", mc::Message::Status::RECEIVED, false, 1, 1);
+    mc::Message message2(0, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
     mss::add_message(db, message2);
 
     std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
