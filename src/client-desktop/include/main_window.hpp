@@ -1,10 +1,12 @@
 #ifndef MELON_CLIENT_DESKTOP_MAIN_WINDOW_HPP_
 #define MELON_CLIENT_DESKTOP_MAIN_WINDOW_HPP_
 
-#include "ui_main_window.h"
+#include <ui_main_window.h>
+
+#include <chat_widget.hpp>
 
 #include <QMainWindow>
-#include <memory>
+#include <QSpacerItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui  // NOLINT (readability-identifier-naming)
@@ -15,6 +17,8 @@ QT_END_NAMESPACE
 
 namespace melon::client_desktop
 {
+
+class ChatWidgetModel;
 
 class MainWindow : public QMainWindow
 {
@@ -31,8 +35,12 @@ private slots:
     void rename_chat();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    QScopedPointer<Ui::MainWindow> m_ui;  // NOLINT (modernize-use-default-member-init)
-                                          // Not sure is it necessary to fix this warning ^
+    QScopedPointer<Ui::MainWindow> m_ui;
+    ChatWidget* m_chat_widget = nullptr;
+    QSpacerItem* m_spacer = nullptr;
+
+    void replace_chat_widget_with_spacer();
+    void replace_spacer_with_chat_widget();
 };
 
 }  // namespace melon::client_desktop

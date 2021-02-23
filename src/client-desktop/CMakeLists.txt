@@ -30,14 +30,15 @@ find_package(
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
-    include/main_window.hpp
     include/chat_widget.hpp
+    include/main_window.hpp
+    include/ram_storage.hpp
 )
 
 set(SOURCES
+    src/chat_widget.cpp
     src/main.cpp
     src/main_window.cpp
-    src/chat_widget.cpp
 )
 
 set(UI_FILES

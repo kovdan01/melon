@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>800</width>
-    <height>300</height>
+    <height>600</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -44,7 +44,7 @@
      <height>500</height>
     </size>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,5">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,0">
     <item>
      <widget class="QWidget" name="ChatsMenuLayout" native="true">
       <property name="enabled">
@@ -68,12 +68,18 @@
         <height>16777208</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,20,2">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,5,2">
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
        <item>
         <widget class="QLabel" name="UserName">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
          <property name="text">
           <string>__UserMelon__</string>
          </property>
@@ -99,14 +105,26 @@
            <height>300</height>
           </size>
          </property>
+         <property name="mouseTracking">
+          <bool>false</bool>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
+         </property>
          <property name="contextMenuPolicy">
-          <enum>Qt::CustomContextMenu</enum>
+          <enum>Qt::PreventContextMenu</enum>
          </property>
          <property name="autoFillBackground">
           <bool>true</bool>
          </property>
          <property name="sizeAdjustPolicy">
           <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <property name="verticalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
          </property>
          <property name="resizeMode">
           <enum>QListView::Fixed</enum>
@@ -130,7 +148,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QStackedWidget" name="ChatsWidgetStack"/>
+     <layout class="QVBoxLayout" name="ChatPlace"/>
     </item>
    </layout>
   </widget>
