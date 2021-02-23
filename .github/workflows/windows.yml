@@ -63,6 +63,7 @@ jobs:
     - name: Install required python modules (MinGW64)
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
+        mingw-w64-x86_64-python-pip
         pip install pyparsing
         
     - name: Ninja and CMake cache
