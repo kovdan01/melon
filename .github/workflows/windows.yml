@@ -59,7 +59,7 @@ jobs:
     - name: Install required python modules
       run: |
         pip install requests
-        pip install pyparse
+        pip install pyparsing
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
