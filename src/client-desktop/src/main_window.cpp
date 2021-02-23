@@ -115,14 +115,6 @@ void MainWindow::add_chat()
     m_ui->ChatList->scrollToBottom();
 }
 
-void MainWindow::mousePressEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::RightButton)
-    {
-        emit customContextMenuRequested(event->pos());
-
-    }
-}
 
 void MainWindow::provide_chat_context_menu(const QPoint& pos)
 {

@@ -28,9 +28,6 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
-protected:
-    void mousePressEvent(QMouseEvent* event) override;
-
 private slots:
     void add_chat();
     void provide_chat_context_menu(const QPoint& pos);
