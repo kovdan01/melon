@@ -57,10 +57,10 @@
         <cursorShape>ArrowCursor</cursorShape>
        </property>
        <property name="mouseTracking">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::StrongFocus</enum>
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>

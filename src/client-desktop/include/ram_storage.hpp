@@ -161,9 +161,9 @@ public:
         return m_messages.erase(message_handle);
     }
 
-    void set_incomplete_message(Message incomplete_m)
+    void set_incomplete_message(Message incomplete_message)
     {
-        m_incomplete_message = std::move(incomplete_m);
+        m_incomplete_message = std::move(incomplete_message);
     }
 
     void set_scrolling_position(int scrollbar) noexcept
@@ -171,18 +171,12 @@ public:
         m_scrolling_position = scrollbar;
     }
 
-    [[nodiscard]] message_handle_t msg_by_qlistitem(QListWidgetItem* item)
-    {
-        QVariant v = item->data(Qt::UserRole);
-        return v.value<message_handle_t>();
-    }
-
 private:
     std::list<Message> m_messages = {};
     Message m_incomplete_message;
-    int m_scrolling_position = 0;
     QString m_name;
     id_t m_id;
+    int m_scrolling_position = 0;
 };
 
 
@@ -236,4 +230,4 @@ private:
 Q_DECLARE_METATYPE(melon::client_desktop::RAMStorageSingletone::chat_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
 
-#endif // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
+#endif  // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_

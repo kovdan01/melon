@@ -6,15 +6,17 @@
 #include <QMessageBox>
 #include <QSpacerItem>
 #include <QWidget>
+#include <QMouseEvent>
 
 #include <stdexcept>
+#include <iostream>
 
 namespace melon::client_desktop
 {
 
 constexpr int MAX_NAME_CHAT_SIZE = 64;
 
-void MainWindow::set_spacer()
+void MainWindow::replace_chat_widget_with_spacer()
 {
     if (m_chat_widget != nullptr)
     {
@@ -32,7 +34,7 @@ void MainWindow::set_spacer()
     m_ui->ChatPlace->addSpacerItem(m_spacer);
 }
 
-void MainWindow::set_chat_widget()
+void MainWindow::replace_spacer_with_chat_widget()
 {
     m_ui->ChatPlace->removeItem(m_spacer);
     delete m_spacer;
@@ -55,7 +57,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->ChatList->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    set_spacer();
+    replace_chat_widget_with_spacer();
 
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
@@ -87,7 +89,7 @@ void MainWindow::add_chat()
             throw std::runtime_error("Name is incorrect");
 
         if (m_spacer != nullptr)
-            set_chat_widget();
+            replace_spacer_with_chat_widget();
 
         auto* new_chat = new QListWidgetItem(text);
 
@@ -113,13 +115,24 @@ void MainWindow::add_chat()
     m_ui->ChatList->scrollToBottom();
 }
 
+void MainWindow::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::RightButton)
+    {
+        emit customContextMenuRequested(event->pos());
+
+    }
+}
+
 void MainWindow::provide_chat_context_menu(const QPoint& pos)
 {
-    QPoint item = m_ui->ChatList->mapToGlobal(pos);
+    if (m_ui->ChatList->itemAt(pos) == nullptr)
+        return;
+
     auto* submenu = new QMenu(this);
     submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
     submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
-    submenu->popup(item);
+    submenu->popup(m_ui->ChatList->mapToGlobal(pos));
 }
 
 void MainWindow::delete_chat()
@@ -128,20 +141,20 @@ void MainWindow::delete_chat()
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
 
-    QVariant v = item->data(Qt::UserRole);
-    auto it = v.value<std::list<Chat>::iterator>();
+    auto it = item->data(Qt::UserRole).value<std::list<Chat>::iterator>();
 
     ram_storage.delete_chat(it);
 
     delete item;
 
     if (m_ui->ChatList->count() == 0)
-        set_spacer();
+        replace_chat_widget_with_spacer();
 }
 
 void MainWindow::rename_chat()
 {
     QListWidgetItem* item = m_ui->ChatList->currentItem();
+
     QString old_name = item->text();
     bool ok;
 
@@ -150,15 +163,13 @@ void MainWindow::rename_chat()
         QString text = QInputDialog::getText(this, tr("Type new name"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              old_name, &ok);
-
         if (!ok)
             return;
 
         if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
             throw std::runtime_error("Name is incorrect");
 
-        QVariant v = item->data(Qt::UserRole);
-        auto it = v.value<std::list<Chat>::iterator>();
+        auto it = item->data(Qt::UserRole).value<std::list<Chat>::iterator>();
 
         it->set_name(text);
 

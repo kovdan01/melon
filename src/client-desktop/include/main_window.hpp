@@ -28,6 +28,9 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
+protected:
+    void mousePressEvent(QMouseEvent* event) override;
+
 private slots:
     void add_chat();
     void provide_chat_context_menu(const QPoint& pos);
@@ -39,8 +42,8 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
 
-    void set_spacer();
-    void set_chat_widget();
+    void replace_chat_widget_with_spacer();
+    void replace_spacer_with_chat_widget();
 };
 
 }  // namespace melon::client_desktop
