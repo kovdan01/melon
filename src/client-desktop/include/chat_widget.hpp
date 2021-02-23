@@ -40,9 +40,6 @@ public:
         return item->data(Qt::UserRole).value<ItType>();
     }
 
-protected:
-    void mousePressEvent(QMouseEvent* event) override;
-
 public slots:  // NOLINT (readability-redundant-access-specifiers)
     void change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
     Message capture_message_from_editor();
@@ -60,6 +57,8 @@ private slots:
 private:  // NOLINT (readability-redundant-access-specifiers)
     QListWidgetItem* m_current_chat_item = nullptr;
     QListWidgetItem* m_edit_item = nullptr;
+    QMenu* m_submenu_sended_messages;
+    QMenu* m_submenu_received_messages;
     QScopedPointer<Ui::ChatWidget> m_ui;
     chat_handle_t m_current_chat_it;
     bool m_edit_mode = false;

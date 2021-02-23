@@ -68,6 +68,10 @@ MainWindow::MainWindow(QWidget* parent)
             &QWidget::customContextMenuRequested,
             this,
             &MainWindow::provide_chat_context_menu);
+
+    m_submenu = new QMenu(this);
+    m_submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
+    m_submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
 }
 
 
@@ -121,10 +125,7 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
     if (m_ui->ChatList->itemAt(pos) == nullptr)
         return;
 
-    auto* submenu = new QMenu(this);
-    submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
-    submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
-    submenu->popup(m_ui->ChatList->mapToGlobal(pos));
+    m_submenu->popup(m_ui->ChatList->mapToGlobal(pos));
 }
 
 void MainWindow::delete_chat()

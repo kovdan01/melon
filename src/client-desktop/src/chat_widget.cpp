@@ -23,10 +23,17 @@ ChatWidget::ChatWidget(QWidget* parent)
     connect(m_ui->ReceiveButton, &QPushButton::clicked, this, &ChatWidget::receive_message);
 
     m_ui->MsgList->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(m_ui->MsgList,
             &QWidget::customContextMenuRequested,
             this,
             &ChatWidget::provide_message_context_menu);
+
+    m_submenu_received_messages = new QMenu(this);
+    m_submenu_sended_messages = new QMenu(this);
+    m_submenu_sended_messages->addAction(tr("Edit"), this, SLOT(edit_message()));
+    m_submenu_sended_messages->addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_received_messages->addAction(tr("Delete"), this, SLOT(delete_message()));
 }
 
 void ChatWidget::send_message()
@@ -154,25 +161,20 @@ QListWidgetItem* ChatWidget::load_message_into_item(const Message& message)
     return message_item;
 }
 
-void ChatWidget::mousePressEvent(QMouseEvent* event)
-{
-    event->accept();
-}
-
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
 {
     QListWidgetItem* cur_item = m_ui->MsgList->currentItem();
     if (cur_item == nullptr)
         return;
 
-    auto* submenu = new QMenu(this);
-
     if (this->it_by_qlistitem<message_handle_t>(cur_item)->from() == QStringLiteral("Me"))
     {
-        submenu->addAction(tr("Edit"), this, SLOT(edit_message()));
+         m_submenu_sended_messages->popup(m_ui->MsgList->mapToGlobal(pos));
     }
-    submenu->addAction(tr("Delete"), this, SLOT(delete_message()));
-    submenu->popup(m_ui->MsgList->mapToGlobal(pos));
+    else
+    {
+         m_submenu_received_messages->popup(m_ui->MsgList->mapToGlobal(pos));
+    }
 }
 
 void ChatWidget::delete_message()

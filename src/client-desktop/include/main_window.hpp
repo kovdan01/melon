@@ -38,6 +38,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::MainWindow> m_ui;
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
+    QMenu* m_submenu;
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();
