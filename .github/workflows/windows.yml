@@ -57,7 +57,9 @@ jobs:
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
 
     - name: Install required python modules
-      run: pip install requests
+      run: |
+        pip install requests
+        pip install pyparse
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
