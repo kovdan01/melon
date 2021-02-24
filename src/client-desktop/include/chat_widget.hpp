@@ -48,7 +48,7 @@ public slots:  // NOLINT (readability-redundant-access-specifiers)
     QListWidgetItem* load_message_into_item(const Message& message);
 
 protected:
-    bool eventFilter(QObject *object, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 private slots:
     void receive_message();

@@ -46,8 +46,8 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
 
     if (event->type() == QEvent::KeyPress)
     {
-        QKeyEvent* eventKey = static_cast<QKeyEvent*>(event);
-        int key = eventKey->key();
+        auto* event_key = static_cast<QKeyEvent*>(event);
+        int key = event_key->key();
         m_pressed_keys += key;
 
         if ( (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
@@ -56,7 +56,8 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
             m_ui->MsgEdit->append(QString());
             return true;
         }
-        else if (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
+
+        if (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
         {
             ChatWidget::send_message();
             return true;
@@ -64,8 +65,8 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
     }
     else if (event->type() == QEvent::KeyRelease)
     {
-        QKeyEvent* eventKey = static_cast<QKeyEvent*>(event);
-        int key = eventKey->key();
+        auto* event_key = static_cast<QKeyEvent*>(event);
+        int key = event_key->key();
         m_pressed_keys -= key;
         return true;
     }

@@ -125,13 +125,13 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
     if (m_ui->ChatList->itemAt(pos) == nullptr)
         return;
 
-    requested_menu_position = pos;
+    m_requested_menu_position = pos;
     m_submenu.popup(m_ui->ChatList->mapToGlobal(pos));
 }
 
 void MainWindow::delete_chat()
 {
-    QListWidgetItem* item_by_pos = m_ui->ChatList->itemAt(requested_menu_position);
+    QListWidgetItem* item_by_pos = m_ui->ChatList->itemAt(m_requested_menu_position);
     QListWidgetItem* item = m_ui->ChatList->takeItem(m_ui->ChatList->row(item_by_pos));
 
 
@@ -149,7 +149,7 @@ void MainWindow::delete_chat()
 
 void MainWindow::rename_chat()
 {
-    QListWidgetItem* item = m_ui->ChatList->itemAt(requested_menu_position);
+    QListWidgetItem* item = m_ui->ChatList->itemAt(m_requested_menu_position);
 
     QString old_name = item->text();
     bool ok;
