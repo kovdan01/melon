@@ -4,6 +4,7 @@
 #include <ui_main_window.h>
 
 #include <chat_widget.hpp>
+#include <chat_list_widget.hpp>
 
 #include <QMainWindow>
 #include <QSpacerItem>
@@ -17,8 +18,6 @@ QT_END_NAMESPACE
 
 namespace melon::client_desktop
 {
-
-class ChatWidgetModel;
 
 class MainWindow : public QMainWindow
 {
@@ -35,10 +34,11 @@ private slots:
     void rename_chat();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
+    QMenu m_submenu;
     QScopedPointer<Ui::MainWindow> m_ui;
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
-    QMenu* m_submenu;
+    QPoint requested_menu_position;
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();
