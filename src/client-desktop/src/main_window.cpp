@@ -5,10 +5,10 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSpacerItem>
-#include <QWidget>
 #include <QMouseEvent>
+#include <QSpacerItem>
 #include <QSplitter>
+#include <QWidget>
 
 #include <stdexcept>
 #include <iostream>
@@ -27,7 +27,7 @@ void MainWindow::replace_chat_widget_with_spacer()
                    m_chat_widget,
                    &ChatWidget::change_chat);
 
-        //m_ui->ChatPlace->removeWidget(m_chat_widget);
+        m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
         m_chat_widget = nullptr;
     }

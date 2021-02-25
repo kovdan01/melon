@@ -58,7 +58,7 @@ private slots:
     void edit_message();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    const QColor m_receive_color = QColor(250, 224, 180, 127);
+    constexpr static QColor m_receive_color{250, 224, 180, 127};
     QListWidgetItem* m_current_chat_item = nullptr;
     QListWidgetItem* m_edit_item = nullptr;
     QMenu m_submenu_sended_messages;

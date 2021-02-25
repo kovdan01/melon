@@ -16,8 +16,8 @@ namespace melon::client_desktop
 
 ChatWidget::ChatWidget(QWidget* parent)
     : QWidget{parent}
-    , m_submenu_sended_messages(QMenu(this))
-    , m_submenu_received_messages(QMenu(this))
+    , m_submenu_sended_messages{QMenu(this)}
+    , m_submenu_received_messages{QMenu(this)}
     , m_ui{new Ui::ChatWidget}
 {
     m_ui->setupUi(this);
@@ -203,11 +203,11 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 
     if (this->it_by_qlistitem<message_handle_t>(cur_item)->from() == QStringLiteral("Me"))
     {
-         m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+        m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }
     else
     {
-         m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+        m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }
 }
 

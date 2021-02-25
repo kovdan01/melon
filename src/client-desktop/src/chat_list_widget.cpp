@@ -11,7 +11,7 @@ ChatListWidget::ChatListWidget(QWidget* parent)
 
 void ChatListWidget::mousePressEvent(QMouseEvent* event)
 {
-    if(event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton)
     {
         emit customContextMenuRequested(event->pos());
     }
