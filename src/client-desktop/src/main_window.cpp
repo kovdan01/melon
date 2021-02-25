@@ -1,12 +1,14 @@
 #include <chat_widget.hpp>
+#include <chat_list_widget.hpp>
 #include <main_window.hpp>
 #include <ram_storage.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSpacerItem>
-#include <QWidget>
 #include <QMouseEvent>
+#include <QSpacerItem>
+#include <QSplitter>
+#include <QWidget>
 
 #include <stdexcept>
 #include <iostream>
@@ -51,11 +53,10 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
+    , m_submenu(QMenu(this))
     , m_ui{new Ui::MainWindow}
 {
     m_ui->setupUi(this);
-
-    m_ui->ChatList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     replace_chat_widget_with_spacer();
 
@@ -68,6 +69,9 @@ MainWindow::MainWindow(QWidget* parent)
             &QWidget::customContextMenuRequested,
             this,
             &MainWindow::provide_chat_context_menu);
+
+    m_submenu.addAction(tr("Rename"), this, SLOT(rename_chat()));
+    m_submenu.addAction(tr("Delete"), this, SLOT(delete_chat()));
 }
 
 
@@ -121,15 +125,15 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
     if (m_ui->ChatList->itemAt(pos) == nullptr)
         return;
 
-    auto* submenu = new QMenu(this);
-    submenu->addAction(tr("Rename"), this, SLOT(rename_chat()));
-    submenu->addAction(tr("Delete"), this, SLOT(delete_chat()));
-    submenu->popup(m_ui->ChatList->mapToGlobal(pos));
+    m_requested_menu_position = pos;
+    m_submenu.popup(m_ui->ChatList->mapToGlobal(pos));
 }
 
 void MainWindow::delete_chat()
 {
-    QListWidgetItem* item = m_ui->ChatList->takeItem(m_ui->ChatList->currentRow());
+    QListWidgetItem* item_by_pos = m_ui->ChatList->itemAt(m_requested_menu_position);
+    QListWidgetItem* item = m_ui->ChatList->takeItem(m_ui->ChatList->row(item_by_pos));
+
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
 
@@ -145,7 +149,7 @@ void MainWindow::delete_chat()
 
 void MainWindow::rename_chat()
 {
-    QListWidgetItem* item = m_ui->ChatList->currentItem();
+    QListWidgetItem* item = m_ui->ChatList->itemAt(m_requested_menu_position);
 
     QString old_name = item->text();
     bool ok;

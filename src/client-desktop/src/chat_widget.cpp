@@ -23,16 +23,60 @@ ChatWidget::ChatWidget(QWidget* parent)
     connect(m_ui->ReceiveButton, &QPushButton::clicked, this, &ChatWidget::receive_message);
 
     m_ui->MsgList->setContextMenuPolicy(Qt::CustomContextMenu);
+
     connect(m_ui->MsgList,
             &QWidget::customContextMenuRequested,
             this,
             &ChatWidget::provide_message_context_menu);
+
+    m_submenu_sended_messages.addAction(tr("Edit"), this, SLOT(edit_message()));
+    m_submenu_sended_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_received_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
+
+    m_ui->MsgEdit->installEventFilter(this);
+}
+
+
+bool ChatWidget::eventFilter(QObject *object, QEvent *event)
+{
+    if (object != m_ui->MsgEdit)
+        return object->eventFilter(object, event);
+
+    if (event->type() == QEvent::KeyPress)
+    {
+        auto* event_key = static_cast<QKeyEvent*>(event);
+        int key = event_key->key();
+        m_pressed_keys += key;
+
+        if ( (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
+              && m_pressed_keys.contains(Qt::Key_Shift) )
+        {
+            m_ui->MsgEdit->append(QString());
+            return true;
+        }
+
+        if (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
+        {
+            ChatWidget::send_message();
+            return true;
+        }
+    }
+    else if (event->type() == QEvent::KeyRelease)
+    {
+        auto* event_key = static_cast<QKeyEvent*>(event);
+        int key = event_key->key();
+        m_pressed_keys -= key;
+        return true;
+    }
+
+    return object->eventFilter(object, event);
 }
 
 void ChatWidget::send_message()
 {
-
     QString message_text = m_ui->MsgEdit->toPlainText();
+    message_text = message_text.trimmed();
+
     if (message_text.isEmpty())
         return;
 
@@ -78,9 +122,7 @@ void ChatWidget::receive_message()
     auto* message_item = new QListWidgetItem();
     message_item->setText(message_text);
     message_item->setTextAlignment(Qt::AlignLeft);
-    QColor background_color(rgba_receive::R, rgba_receive::G,
-                            rgba_receive::B, rgba_receive::A);
-    message_item->setBackground(background_color);
+    message_item->setBackground(M_RECEIVE_COLOR);
 
     QVariant pointer_to_message;
     pointer_to_message.setValue(it_message);
@@ -146,17 +188,9 @@ QListWidgetItem* ChatWidget::load_message_into_item(const Message& message)
     message_item->setText(message.text());
 
     if (message.from() != QStringLiteral("Me"))
-    {
-        QColor background_color(rgba_receive::R, rgba_receive::G,
-                                rgba_receive::B, rgba_receive::A);
-        message_item->setBackground(background_color);
-    }
-    return message_item;
-}
+        message_item->setBackground(M_RECEIVE_COLOR);
 
-void ChatWidget::mousePressEvent(QMouseEvent* event)
-{
-    event->accept();
+    return message_item;
 }
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
@@ -165,14 +199,14 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
     if (cur_item == nullptr)
         return;
 
-    auto* submenu = new QMenu(this);
-
     if (this->it_by_qlistitem<message_handle_t>(cur_item)->from() == QStringLiteral("Me"))
     {
-        submenu->addAction(tr("Edit"), this, SLOT(edit_message()));
+        m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }
-    submenu->addAction(tr("Delete"), this, SLOT(delete_message()));
-    submenu->popup(m_ui->MsgList->mapToGlobal(pos));
+    else
+    {
+        m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+    }
 }
 
 void ChatWidget::delete_message()
