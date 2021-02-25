@@ -16,8 +16,6 @@ namespace melon::client_desktop
 
 ChatWidget::ChatWidget(QWidget* parent)
     : QWidget{parent}
-    , m_submenu_sended_messages{QMenu(this)}
-    , m_submenu_received_messages{QMenu(this)}
     , m_ui{new Ui::ChatWidget}
 {
     m_ui->setupUi(this);
@@ -124,7 +122,7 @@ void ChatWidget::receive_message()
     auto* message_item = new QListWidgetItem();
     message_item->setText(message_text);
     message_item->setTextAlignment(Qt::AlignLeft);
-    message_item->setBackground(m_receive_color);
+    message_item->setBackground(M_RECEIVE_COLOR);
 
     QVariant pointer_to_message;
     pointer_to_message.setValue(it_message);
@@ -190,7 +188,7 @@ QListWidgetItem* ChatWidget::load_message_into_item(const Message& message)
     message_item->setText(message.text());
 
     if (message.from() != QStringLiteral("Me"))
-        message_item->setBackground(m_receive_color);
+        message_item->setBackground(M_RECEIVE_COLOR);
 
     return message_item;
 }
