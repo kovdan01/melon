@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "storage.hpp"
+#include <storage.hpp>
 
 
 int main() try
@@ -16,7 +16,7 @@ int main() try
     mc::User user(0, "h3ll0kitt1", mc::User::Status::ONLINE);
     mss::add_user(db, user);
 
-    mc::Chat chat(1,"secret_chat");
+    mc::Chat chat(0,"secret_chat");
     mss::add_chat(db, chat);
 
     mc::Message message(0, 1, 1, "Let's protest", mc::Message::Status::SENT);
