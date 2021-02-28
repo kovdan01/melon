@@ -12,7 +12,7 @@ int main() try
     [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
 
     auto& client_singletone = msa::SaslClientSingleton::get_instance();
-    msa::Credentials credentials = { .username = "john", .password = "doe" };
+    msa::Credentials credentials = { "john", "doe" };
     client_singletone.set_credentials(&credentials);
 
     msa::SaslServerConnection server("melon");

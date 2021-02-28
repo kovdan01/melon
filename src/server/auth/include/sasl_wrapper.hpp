@@ -8,13 +8,14 @@
 #include <sasl/saslplug.h>
 
 #include <array>
+#include <cstring>
+#include <memory>
+#include <new>
 #include <string>
 #include <string_view>
 
 namespace melon::server::auth
 {
-
-using namespace melon::core::auth;
 
 class SaslServerConnection
 {
