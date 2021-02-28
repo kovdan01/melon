@@ -4,59 +4,44 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 
 ### Configuration example for Arch Linux:
 
-**1. Install MariaDB for server:**
-
+#### 1. Install MariaDB for server:
+`sudo pacman -S mariadb/sudo pacman -S mysql`
    
-     `sudo pacman -S mariadb`
-     
-     / `sudo pacman -S mysql`
+#### 2. Start MariaDB:
+`sudo systemctl start mysqld`
    
-**2. Start MariaDB:**
-   
-     `sudo systemctl start mysqld`
-   
-**3. Securing MariaDB Installation:**
+#### 3. Securing MariaDB Installation:
+`sudo mysql_secure_installation`
+ 
+#### 4. Verify your root credentials by loggin on MariaDB:
+`mysql -u root -p`
 
-     `sudo mysql_secure_installation`
+or if you skipped secure installation (shame on you): `sudo mysql -u root`
  
-**4. Verify your root credentials by loggin on MariaDB:**
- 
-      `mysql -u root -p`
- 
-      or if you skipped secure installation (shame on you):
-      `sudo mysql -u root`
- 
-**5. Enter/copy-paste sql commands:**
- 
-     ```sql
-     CREATE DATABASE melon;
-     CREATE USER 'melon'@'localhost' IDENTIFIED BY 'melonpass';
-     GRANT ALL PRIVILEGES ON melon.* TO 'melon'@'localhost'; 
-     ```
-     ```
-     quit;
-     ```
+#### 5. Enter/copy-paste sql commands:
+```sql
+CREATE DATABASE melon;
+CREATE USER 'melon'@'localhost' IDENTIFIED BY 'melonpass';
+GRANT ALL PRIVILEGES ON melon.* TO 'melon'@'localhost'; 
+```
+`quit;`
 
-**6. Log as created user with created password:**
+#### 6. Log as created user with created password:
+```
+mysql -u melon -p
+(enter melonpass)
+```
 
-     ```
-     mysql -u melon -p
-     (enter melonpass)
-     ```
-
-**7. Check that there is `melon` database:**
-
-     ```
-     sql
-     SHOW DATABASES LIKE 'melon';
-     ```
-     `quit;`
+#### 7. Check that there is `melon` database:
+```sql
+SHOW DATABASES LIKE 'melon';
+```
+`quit;`
  
-**8. Create tables in `melon` database from melondb.sql:**
- 
-     ```bash
-     mysql -u melon -p melon < script/melondb.sql 
-     ```
+#### 8. Create tables in `melon` database from melondb.sql:
+```bash
+mysql -u melon -p melon < script/melondb.sql 
+```
      
  ### Current Database Scheme Details
 
