@@ -28,6 +28,8 @@ set(HEADERS
     include/melon/core.hpp
     include/melon/core/exception.hpp
     include/melon/core/yaml_config.hpp
+    include/melon/core/auth.hpp
+    include/melon/core/auth.ipp
 )
 
 set(SOURCES

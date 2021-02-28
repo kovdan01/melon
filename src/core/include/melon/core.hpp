@@ -1,6 +1,7 @@
 #ifndef MELON_CORE_MELON_CORE_HPP_
 #define MELON_CORE_MELON_CORE_HPP_
 
+#include <melon/core/auth.hpp>
 #include <melon/core/export.h>
 #include <melon/core/yaml_config.hpp>
 

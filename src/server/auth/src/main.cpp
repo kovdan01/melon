@@ -1,3 +1,5 @@
+#include <melon/core.hpp>
+
 #include <sasl_wrapper.hpp>
 
 #include <cassert>
