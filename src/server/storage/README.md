@@ -51,19 +51,25 @@ mysql -u melon -p melon < script/melondb.sql
 
 `user_id` :
 
-**type:** `std::uint64_t`
+**MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
+
+**C++ type:** `std::uint64_t`
 
 **aim:** unique and auto-increment value to identify user on server locally
 
 `username` :
 
-**type:** `std::string`
+**MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+
+**C++ type:** `std::string`
 
 **aim:**  unique name of user to identify user on server locally
 
 `status` : 
 
-**type:**  `enum class` value of type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
+**MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
+
+**C++ type:**  `enum class` value of type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
 
 **aim:** expresses user's desire to communicate
 
@@ -72,52 +78,68 @@ mysql -u melon -p melon < script/melondb.sql
 
 `message_id` :
 
-**type:** `std::uint64_t`
+**MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
+
+**C++ type:** `std::uint64_t`
 
 **aim:** unique and auto-increment value to identify message on server locally
 
 `chat_id` :
 
-**type:** `std::uint64_t`
+**MariaDB type:** `INT UNSIGNED NOT NULL`
+
+**C++ type:** `std::uint64_t`
 
 **aim:** value to identify message's relation to chat on server locally
 
 
 `user_id` :
 
-**type:** `std::uint64_t`
+**MariaDB type:** `BIGINT UNSIGNED NOT NULL`
+
+**C++ type:** `std::uint64_t`
 
 **aim:** value to identify author of message on server locally
 
 `text` :
 
-**type:** `std::string`
+**MariaDB type:** `VARCHAR(1024) COLLATE utf8mb4_unicode_ci NOT NULL`
+
+**C++ type:** `std::string`
 
 **aim:** stores text of message
 
 `status` : 
 
-**type:**  `enum class` value of type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
+**MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
+
+**C++ type:**  `enum class` value of type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
 
 **aim:** shows status of message
 
 `time` :
 
-**type:**  `std::chrono::high_resolution_clock::time_point`
+**MariaDB type:** `DATETIME NOT NULL`
+
+**C++ type:**  `std::chrono::high_resolution_clock::time_point`
 
 **aim:** stores timestamp
 
 #### Chat
 
-`message_id` :
+`chat_id` :
 
-**type:** `std::uint32_t`
+**MariaDB type:** `INT UNSIGNED NOT NULL AUTO_INCREMENT`
+
+**C++ type:** `std::uint32_t`
 
 **aim:** unique and auto-increment value to identify chat on server locally
 
 `chatname` :
 
-**type:** `std::string`
+**MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+
+**C++ type:** `std::string`
 
 **aim:**  NOT unique chatname
 
