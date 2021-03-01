@@ -86,9 +86,9 @@ mysql -u melon -p melon < script/melondb.sql
 
    * `chat_id` :
 
-      * **MariaDB type:** `INT UNSIGNED NOT NULL`
+      * **MariaDB type:** `BIGINT UNSIGNED NOT NULL`
 
-      * **C++ type:** `std::uint32_t`
+      * **C++ type:** `std::uint64_t`
 
       * **aim:** value to identify message's relation to chat on server locally
 
@@ -129,9 +129,9 @@ mysql -u melon -p melon < script/melondb.sql
 
    * `chat_id` :
 
-      * **MariaDB type:** `INT UNSIGNED NOT NULL AUTO_INCREMENT`
+      * **MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
 
-      * **C++ type:** `std::uint32_t`
+      * **C++ type:** `std::uint64_t`
 
       * **aim:** unique and auto-increment value to identify chat on server locally
 
