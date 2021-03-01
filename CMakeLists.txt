@@ -5,6 +5,7 @@ project(melon
         LANGUAGES CXX
 )
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/ntc")
 
 # Include ntc-dev-build to disable find_package(ntc-cmake)
