@@ -69,7 +69,7 @@ mysql -u melon -p melon < script/melondb.sql
 
       * **MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
 
-      * **C++ type:**  `enum class` value of type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
+      * **C++ type:**  `enum class` value with underlying type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
 
       * **aim:** expresses user's desire to communicate
 
@@ -103,7 +103,7 @@ mysql -u melon -p melon < script/melondb.sql
 
    * `text` :
 
-      * **MariaDB type:** `VARCHAR(1024) COLLATE utf8mb4_unicode_ci NOT NULL`
+      * **MariaDB type:** `TEXT COLLATE utf8mb4_unicode_ci NOT NULL`
 
       * **C++ type:** `std::string`
 
@@ -113,7 +113,7 @@ mysql -u melon -p melon < script/melondb.sql
 
       * **MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
 
-      * **C++ type:**  `enum class` value of type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
+      * **C++ type:**  `enum class` value with underlying type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
 
       * **aim:** shows status of message
 
