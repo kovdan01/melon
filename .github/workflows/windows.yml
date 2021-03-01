@@ -11,21 +11,25 @@ jobs:
     name: ${{ format('Windows {0} {1}', matrix.config.build_type, matrix.config.suffix) }}
     runs-on: ${{ matrix.config.os }}
     env:
-      CMAKE_TOOL_VERSION: 3.19.1
-      CMAKE_TOOL_PATH: cmake-tool
-      NINJA_TOOL_VERSION: 1.10.2
-      NINJA_TOOL_PATH: ninja-tool
+      CMAKE_TOOL_VERSION: "3.19.1"
+      CMAKE_TOOL_PATH: "cmake-tool"
+      NINJA_TOOL_VERSION: "1.10.2"
+      NINJA_TOOL_PATH: "ninja-tool"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
-      BOOST_INSTALL_PATH: boost-install
-      MINGW64_CACHE_VERSION: 11  # increment when need to update mingw64 packages
+      BOOST_INSTALL_PATH: "boost-install"
+      SQLPP11_VERSION: "0.60"
+      SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
+      CHRONO_DATE_VERSION: "3.0.0"
+      SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      MINGW64_CACHE_VERSION: 12  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
         config:
         - {
-            os: windows-latest,
+            os: "windows-latest",
             prefix: "Windows",
             suffix: "",
             artifact: "all-release-windows-mingw64",
@@ -48,13 +52,20 @@ jobs:
         cmake_tool_path = os.environ['CMAKE_TOOL_PATH']
 
         with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "\\\\")))
-          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "\\\\")))
-          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "\\\\")))
+          env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "/")))
+          env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "/")))
+          env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
 
     - name: Install required python modules
-      run: pip install requests
+      run: |
+        pip install requests
 
+    - name: Install required python modules (MinGW64)
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-python-pip
+        pip install pyparsing
+        
     - name: Ninja and CMake cache
       uses: actions/cache@v2
       id: cache_ninja_and_cmake
@@ -112,7 +123,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_boost
       with:
-        path: ${{ env.ROOT_PATH }}/boost-install
+        path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
         key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
 
     - name: Boost
@@ -139,7 +150,7 @@ jobs:
         boost_build = os.environ['BOOST_BUILD']
 
         boost_source_dir  = os.path.normpath(os.path.join(root, "boost_{}_{}_{}".format(boost_major, boost_minor, boost_build)))
-        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}"))
+        boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(boost_install_dir)
 
         boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
@@ -154,7 +165,7 @@ jobs:
         cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, "../boost-install"))
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}"'.format(toolset, boost_install_dir))
         execute_command(cmd_prefix + '"./b2"')
         execute_command(cmd_prefix + '"./b2 install"')
 
@@ -201,6 +212,18 @@ jobs:
           C:/msys64/mingw64/lib/pkgconfig/yaml-cpp.pc
           C:/msys64/mingw64/lib/yaml-cpp.dll.a
           C:/msys64/mingw64/share/licenses/yaml-cpp/
+
+          C:/msys64/mingw64/bin/libmariadb.dll
+          C:/msys64/mingw64/bin/mariadb_config.exe
+          C:/msys64/mingw64/include/mariadb/
+          C:/msys64/mingw64/include/mysql/
+          C:/msys64/mingw64/lib/libmariadb.dll.a
+          C:/msys64/mingw64/lib/libmariadbclient.a
+          C:/msys64/mingw64/lib/libmysqlclient.a
+          C:/msys64/mingw64/lib/libmysqlclient.dll.a
+          C:/msys64/mingw64/lib/libmysqlclient_r.a
+          C:/msys64/mingw64/lib/libmysqlclient_r.dll.a
+          C:/msys64/mingw64/lib/pkgconfig/libmariadb.pc
 
           C:/msys64/mingw64/bin/assimp.exe
           C:/msys64/mingw64/bin/assimp_viewer.exe
@@ -357,12 +380,12 @@ jobs:
           C:/msys64/mingw64/bin/genrb.exe
           C:/msys64/mingw64/bin/icu-config
           C:/msys64/mingw64/bin/icuinfo.exe
-          C:/msys64/mingw64/bin/libicudt67.dll
-          C:/msys64/mingw64/bin/libicuin67.dll
-          C:/msys64/mingw64/bin/libicuio67.dll
-          C:/msys64/mingw64/bin/libicutest67.dll
-          C:/msys64/mingw64/bin/libicutu67.dll
-          C:/msys64/mingw64/bin/libicuuc67.dll
+          C:/msys64/mingw64/bin/libicudt68.dll
+          C:/msys64/mingw64/bin/libicuin68.dll
+          C:/msys64/mingw64/bin/libicuio68.dll
+          C:/msys64/mingw64/bin/libicutest68.dll
+          C:/msys64/mingw64/bin/libicutu68.dll
+          C:/msys64/mingw64/bin/libicuuc68.dll
           C:/msys64/mingw64/bin/makeconv.exe
           C:/msys64/mingw64/bin/pkgdata.exe
           C:/msys64/mingw64/bin/uconv.exe
@@ -706,11 +729,112 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
 
+    - name: MariaDB
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-libmariadbclient
+
     - name: Qt5
       if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
+
+    - name: SQLPP11 cache
+      uses: actions/cache@v2
+      id: cache_sqlpp11
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+
+    - name: SQLPP11
+      if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        def execute_msys_command(cmd):
+          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          execute_command(cmd_prefix + '"{}"'.format(cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        ninja_binary = os.path.join(root, ninja_tool_path, "ninja").replace("\\", "/")
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+        cmake_binary = os.path.join(cmake_tool_binary_path, "cmake").replace("\\", "/")
+
+        # sqlpp11 itself
+        os.chdir(root)
+
+        sqlpp11_version = os.environ['SQLPP11_VERSION']
+        sqlpp11_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-{}".format(sqlpp11_version)))
+        sqlpp11_install_dir = os.path.normpath(os.path.join(root, "${{ env.SQLPP11_INSTALL_PATH }}")).replace("\\", "/")
+        os.mkdir(sqlpp11_install_dir)
+
+        sqlpp11_url = "https://github.com/rbock/sqlpp11/archive/{}.zip".format(sqlpp11_version)
+        open("sqlpp11.zip", "wb").write(requests.get(sqlpp11_url, allow_redirects=True).content)
+        execute_command("7z x sqlpp11.zip")
+
+        os.chdir(sqlpp11_source_dir)
+
+        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release " +
+                              "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
+                              ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
+                                          root + "/" + os.environ['BOOST_INSTALL_PATH']))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
+
+        # chrono date (sqlpp11 connector mysql dependency)
+        os.chdir(root)
+
+        chrono_date_version = os.environ['CHRONO_DATE_VERSION']
+        chrono_date_source_dir  = os.path.normpath(os.path.join(root, "date-{}".format(chrono_date_version)))
+
+        chrono_date_url = "https://github.com/HowardHinnant/date/archive/v{}.zip".format(chrono_date_version)
+        open("chrono_date.zip", "wb").write(requests.get(chrono_date_url, allow_redirects=True).content)
+        execute_command("7z x chrono_date.zip")
+
+        os.chdir(chrono_date_source_dir)
+
+        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
+                              "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} " +
+                              ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
+
+        # sqlpp11 connector mysql
+        os.chdir(root)
+
+        sqlpp11_conn_version = os.environ['SQLPP11_CONNECTOR_MYSQL_VERSION']
+        sqlpp11_conn_source_dir  = os.path.normpath(os.path.join(root, "sqlpp11-connector-mysql-{}".format(sqlpp11_conn_version)))
+
+        sqlpp11_conn_url = "https://github.com/rbock/sqlpp11-connector-mysql/archive/{}.zip".format(sqlpp11_conn_version)
+        open("sqlpp11_conn.zip", "wb").write(requests.get(sqlpp11_conn_url, allow_redirects=True).content)
+        execute_command("7z x sqlpp11_conn.zip")
+
+        os.chdir(sqlpp11_conn_source_dir)
+
+        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
+                              "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE " +
+                              "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include " +
+                              ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
+                                          sqlpp11_install_dir, sqlpp11_install_dir))
+        execute_msys_command("{} --build . --target all".format(cmake_binary))
+        execute_msys_command("{} --build . --target install".format(cmake_binary))
+
+        os.chdir(repo)
 
     - name: Configure
       if: ${{ runner.os == 'Windows' }}
@@ -731,8 +855,10 @@ jobs:
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
+        -D SQLPP11_MYSQL_CONNECTOR_PREFIX="${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_PREFIX_PATH=\
-        ${{ env.ROOT_PATH }}\\${{ env.BOOST_INSTALL_PATH }} \
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
@@ -750,15 +876,16 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\libstdc++-6.dll"            install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libgcc_s_seh-1.dll"         install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libwinpthread-1.dll"        install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libmariadb.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Core.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Gui.dll"                 install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Widgets.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuin67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicuin68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libdouble-conversion.dll"   install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuuc67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicuuc68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libzstd.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libpcre2-16-0.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicudt67.dll"             install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\libicudt68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libharfbuzz-0.dll"          install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libpng16-16.dll"            install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libgraphite2.dll"           install\\bin
