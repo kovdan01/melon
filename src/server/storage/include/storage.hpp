@@ -33,7 +33,6 @@ void add_message(sqlpp::mysql::connection& db, const melon::core::Message& messa
 void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 
-
 }  // namespace melon::server::storage
 
 #endif  // MELON_SERVER_STORAGE_HPP_
