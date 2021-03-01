@@ -50,7 +50,7 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
     std::vector<melon::core::User> online_users;
     for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(melon::core::User::Status::ONLINE))))
     {
-        unsigned long tmp = row.status;
+        unsigned long tmp = row.status;  // NOLINT (google-runtime-int)
         auto status = static_cast<melon::core::User::Status>(tmp);
         melon::core::User user(row.userId, row.username, status);
         online_users.emplace_back(std::move(user));
@@ -91,7 +91,7 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
     std::vector<melon::core::Message> messages_in_chat;
     for (const auto& row : db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == chat.chat_id())))
     {
-        unsigned long tmp = row.status;
+        unsigned long tmp = row.status;  // NOLINT (google-runtime-int)
         auto status = static_cast<melon::core::Message::Status>(tmp);
         melon::core::Message message(row.messageId, row.userId, row.chatId, row.text, status);
         messages_in_chat.emplace_back(std::move(message));
