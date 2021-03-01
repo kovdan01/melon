@@ -24,7 +24,7 @@ function(ntc_target TARGET_NAME)
     endif()
 
     get_target_property(project_type ${TARGET_NAME} TYPE)
-    get_filename_component(generated_header_path "${args_HEADER_PREFIX}x" DIRECTORY)
+    get_filename_component(generated_header_path "${args_HEADER_PREFIX}" DIRECTORY)
 
     if(project_type STREQUAL OBJECT_LIBRARY)
         message(FATAL_ERROR "ntc_setup doesn't support object libraries")
@@ -86,6 +86,24 @@ function(ntc_target TARGET_NAME)
         )
     endif()
 
+    # GCC needs -fcoroutines even with -std=c++20, check for it and apply.
+    # We only check compile features, not CXX_STANDARD, which is not properly
+    # inherited.
+    get_target_property(_features ${TARGET_NAME} COMPILE_FEATURES)
+    get_target_property(_interface_features ${TARGET_NAME} INTERFACE_COMPILE_FEATURES)
+    if(cxx_std_20 IN_LIST _features OR cxx_std_20 IN_LIST _interface_features)
+        include(ntc-checks)
+        ntc_check_cxx_compiler_flag(-fcoroutines)
+        if(HAVE_FCOROUTINES)
+            if(cxx_std_20 IN_LIST _features)
+                target_compile_options(${TARGET_NAME} PRIVATE -fcoroutines)
+            endif()
+            if(cxx_std_20 IN_LIST _interface_features)
+                target_compile_options(${TARGET_NAME} INTERFACE -fcoroutines)
+            endif()
+        endif()
+    endif()
+
     # Activate AUTO{MOC,UIC,RCC},WIN32_EXECUTABLE automatically if
     # relevant deps are found, also add NTC_{BOOST,QT}_DEFINITIONS if
     # set by ntc-dev-build.
@@ -132,7 +150,6 @@ function(ntc_target TARGET_NAME)
         endif()
         if(qt5_widgets)
             set_target_properties(${TARGET_NAME} PROPERTIES WIN32_EXECUTABLE ON)
-            set_target_properties(${TARGET_NAME} PROPERTIES MACOSX_BUNDLE ON)
         endif()
     endif()
     if(NTC_DEV_BUILD)
@@ -189,12 +206,10 @@ function(ntc_target TARGET_NAME)
         )
     endif()
 
-    # Set our output properties.
+    # Set common output properties.
     set_target_properties(${TARGET_NAME} PROPERTIES
         # We don't want any language extensions.
         CXX_EXTENSIONS OFF
-        # Set EXPORT_NAME once for export/install(EXPORT).
-        EXPORT_NAME "${args_ALIAS_NAME}"
     )
 
     if(NTC_DEV_BUILD)
@@ -210,6 +225,43 @@ function(ntc_target TARGET_NAME)
             set_target_properties(${TARGET_NAME} PROPERTIES
                 UNITY_BUILD ON
             )
+        endif()
+        # Make build directory relocatable.
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            BUILD_RPATH_USE_ORIGIN ON
+        )
+        # INSTALL_RPATH_USE_LINK_PATH adds linker paths of linked in libraries
+        # to runtime linker path (rpath), but doesn't add lib subdirectory of the
+        # install prefix itself. If we're processing an executable/shared library and
+        # the prefix is not standard, add its lib subdirectory to rpath manually,
+        # in relative form, if supported. Do that only if we're linking to any
+        # non-imported shared libraries.
+        get_target_property(irulp ${TARGET_NAME} INSTALL_RPATH_USE_LINK_PATH)
+        list(FIND CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" syslib)
+        if(project_type MATCHES "EXECUTABLE|(MODULE|SHARED)_LIBRARY" AND
+                NOT CMAKE_SKIP_RPATH AND NOT CMAKE_SKIP_INSTALL_RPATH AND irulp AND syslib LESS 0)
+            get_target_property(link_libraries ${TARGET_NAME} LINK_LIBRARIES)
+            foreach(ll IN LISTS link_libraries)
+                if(TARGET "${ll}")
+                    get_target_property(ll_imported "${ll}" IMPORTED)
+                    get_target_property(ll_type "${ll}" TYPE)
+                    if(NOT ll_imported AND ll_type MATCHES "(MODULE|SHARED)_LIBRARY")
+                        set(needs_rpath ON)
+                        break()
+                    endif()
+                endif()
+            endforeach()
+            if(needs_rpath)
+                if(CMAKE_SHARED_LIBRARY_RPATH_ORIGIN_TOKEN)
+                    file(RELATIVE_PATH rpath
+                        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
+                        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+                    set(rpath "${CMAKE_SHARED_LIBRARY_RPATH_ORIGIN_TOKEN}/${rpath}")
+                else()
+                    set(rpath "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+                endif()
+                set_property(TARGET ${TARGET_NAME} APPEND PROPERTY INSTALL_RPATH "${rpath}")
+            endif()
         endif()
     endif()
 
@@ -244,6 +296,11 @@ function(ntc_target TARGET_NAME)
 
     # Export targets if there is a package file.
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_NAME}-config.cmake.in)
+        # Set EXPORT_NAME once for export/install(EXPORT).
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            EXPORT_NAME "${args_ALIAS_NAME}"
+        )
+
         include(CMakePackageConfigHelpers)
 
         if(project_type STREQUAL INTERFACE_LIBRARY)
