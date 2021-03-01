@@ -47,101 +47,101 @@ mysql -u melon -p melon < script/melondb.sql
 
 ![](melondb.jpg)
 
-#### User
+* #### User
 
-`user_id` :
+   * `user_id` :
 
-**MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
+      * **MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
 
-**C++ type:** `std::uint64_t`
+      * **C++ type:** `std::uint64_t`
 
-**aim:** unique and auto-increment value to identify user on server locally
+      * **aim:** unique and auto-increment value to identify user on server locally
 
-`username` :
+   * `username` :
 
-**MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+      * **MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
 
-**C++ type:** `std::string`
+      * **C++ type:** `std::string`
 
-**aim:**  unique name of user to identify user on server locally
+      * **aim:**  unique name of user to identify user on server locally
 
-`status` : 
+   * `status` : 
 
-**MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
+      * **MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
 
-**C++ type:**  `enum class` value of type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
+      * **C++ type:**  `enum class` value of type `std::unint8_t` (ONLINE, OFFLINE, CHILL)
 
-**aim:** expresses user's desire to communicate
-
-
-#### Message
-
-`message_id` :
-
-**MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
-
-**C++ type:** `std::uint64_t`
-
-**aim:** unique and auto-increment value to identify message on server locally
-
-`chat_id` :
-
-**MariaDB type:** `INT UNSIGNED NOT NULL`
-
-**C++ type:** `std::uint64_t`
-
-**aim:** value to identify message's relation to chat on server locally
+      * **aim:** expresses user's desire to communicate
 
 
-`user_id` :
+* #### Message
 
-**MariaDB type:** `BIGINT UNSIGNED NOT NULL`
+   * `message_id` :
 
-**C++ type:** `std::uint64_t`
+      * **MariaDB type:** `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
 
-**aim:** value to identify author of message on server locally
+      * **C++ type:** `std::uint64_t`
 
-`text` :
+      * **aim:** unique and auto-increment value to identify message on server locally
 
-**MariaDB type:** `VARCHAR(1024) COLLATE utf8mb4_unicode_ci NOT NULL`
+   * `chat_id` :
 
-**C++ type:** `std::string`
+      * **MariaDB type:** `INT UNSIGNED NOT NULL`
 
-**aim:** stores text of message
+      * **C++ type:** `std::uint32_t`
 
-`status` : 
+      * **aim:** value to identify message's relation to chat on server locally
 
-**MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
 
-**C++ type:**  `enum class` value of type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
+   * `user_id` :
 
-**aim:** shows status of message
+      * **MariaDB type:** `BIGINT UNSIGNED NOT NULL`
 
-`time` :
+      * **C++ type:** `std::uint64_t`
 
-**MariaDB type:** `DATETIME NOT NULL`
+      * **aim:** value to identify author of message on server locally
 
-**C++ type:**  `std::chrono::high_resolution_clock::time_point`
+   * `text` :
 
-**aim:** stores timestamp
+      * **MariaDB type:** `VARCHAR(1024) COLLATE utf8mb4_unicode_ci NOT NULL`
 
-#### Chat
+      * **C++ type:** `std::string`
 
-`chat_id` :
+      * **aim:** stores text of message
 
-**MariaDB type:** `INT UNSIGNED NOT NULL AUTO_INCREMENT`
+   * `status` : 
 
-**C++ type:** `std::uint32_t`
+      * **MariaDB type:** `TINYINT UNSIGNED DEFAULT 0`
 
-**aim:** unique and auto-increment value to identify chat on server locally
+      * **C++ type:**  `enum class` value of type `std::unint8_t` (SENT, FAIL, RECEIVED, SEEN)
 
-`chatname` :
+      * **aim:** shows status of message
 
-**MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+   * `time` :
 
-**C++ type:** `std::string`
+      * **MariaDB type:** `DATETIME NOT NULL`
 
-**aim:**  NOT unique chatname
+      * **C++ type:**  `std::chrono::high_resolution_clock::time_point`
+
+      * **aim:** stores timestamp
+
+* #### Chat
+
+   * `chat_id` :
+
+      * **MariaDB type:** `INT UNSIGNED NOT NULL AUTO_INCREMENT`
+
+      * **C++ type:** `std::uint32_t`
+
+      * **aim:** unique and auto-increment value to identify chat on server locally
+
+   * `chatname` :
+
+      * **MariaDB type:** `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+
+      * **C++ type:** `std::string`
+
+      * **aim:**  NOT unique chatname
 
 
 
