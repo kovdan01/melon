@@ -7,17 +7,17 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 1. Install MariaDB for server:
    ```bash
    sudo pacman -S mariadb
-   sudo pacman -S mysql
+   sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
    ```
 
 2. Start MariaDB:
    ```bash
-   sudo systemctl start mysqld`
+   sudo systemctl start mariadb
    ```
 
 3. Secure MariaDB Installation:
    ```bash
-   sudo mysql_secure_installation`
+   sudo mysql_secure_installation
    ```
 
 4. Verify your root credentials by loggin on MariaDB:
