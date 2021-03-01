@@ -12,7 +12,7 @@ namespace melon::core
 class MELON_CORE_EXPORT User
 {
 public:
-    enum class Status : std::uint8_t
+    enum class Status : unsigned long
     {
         OFFLINE,
         ONLINE,
@@ -50,7 +50,7 @@ private:
 class MELON_CORE_EXPORT Message
 {
 public:
-    enum class Status
+    enum class Status : unsigned long
     {
         FAIL,
         SENT,

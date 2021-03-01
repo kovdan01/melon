@@ -5,41 +5,54 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 ### Configuration example for Arch Linux:
 
 1. Install MariaDB for server:
-
    ```bash
    sudo pacman -S mariadb
    sudo pacman -S mysql
    ```
 
-2. Start MariaDB: `sudo systemctl start mysqld`
+2. Start MariaDB:
+   ```bash
+   sudo systemctl start mysqld`
+   ```
 
-3. Secure MariaDB Installation: `sudo mysql_secure_installation`
+3. Secure MariaDB Installation:
+   ```bash
+   sudo mysql_secure_installation`
+   ```
 
-4. Verify your root credentials by loggin on MariaDB: `mysql -u root -p` or if you skipped secure installation (shame on you): `sudo mysql -u root`
+4. Verify your root credentials by loggin on MariaDB:
+   ```bash
+   mysql -u root -p
+   ```
+   If you skipped secure installation (shame on you):
+   ```bash
+   sudo mysql -u root
+   ```
 
 5. Enter the following sql commands:
+   ```sql
+   CREATE DATABASE melon;
+   CREATE USER 'melon'@'localhost' IDENTIFIED BY 'melonpass';
+   GRANT ALL PRIVILEGES ON melon.* TO 'melon'@'localhost';
+   quit;
+   ```
 
-```sql
-CREATE DATABASE melon;
-CREATE USER 'melon'@'localhost' IDENTIFIED BY 'melonpass';
-GRANT ALL PRIVILEGES ON melon.* TO 'melon'@'localhost';
-quit;
-```
-
-6. Log as created user with created password: `mysql -u melon -p`. You will be prompted to enter a password, enter `melonpass`.
+6. Log as created user with created password:
+   ```bash
+   mysql -u melon -p
+   ```
+   You will be prompted to enter a password, enter `melonpass`.
 
 7. Check that there is `melon` database:
-
-```sql
-SHOW DATABASES LIKE 'melon';
-quit;
-```
+   ```sql
+   SHOW DATABASES LIKE 'melon';
+   quit;
+   ```
 
 8. Create tables in `melon` database from melondb.sql:
-
-```bash
-mysql -u melon -p melon < script/melondb.sql
-```
+   ```bash
+   mysql -u melon -p melon < script/melondb.sql
+   ```
 
 ### Current Database Scheme Details
 
