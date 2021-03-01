@@ -3,12 +3,11 @@
 
 #include <melon/core/export.h>
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 namespace melon::core
 {
-
 
 class MELON_CORE_EXPORT User
 {
@@ -17,14 +16,15 @@ public:
     {
         OFFLINE,
         ONLINE,
-        CHILL
+        CHILL,
     };
+
     User(std::uint64_t user_id, std::string username, Status status);
     ~User() = default;
+
     [[nodiscard]] std::uint64_t user_id() const;
     [[nodiscard]] const std::string& username() const;
     [[nodiscard]] Status status() const;
-
 
 private:
     std::uint64_t m_user_id;
@@ -47,19 +47,20 @@ private:
     return m_username;
 }
 
-
 class MELON_CORE_EXPORT Message
 {
 public:
-    enum class Status : std::uint8_t
+    enum class Status
     {
         FAIL,
         SENT,
         RECEIVED,
-        SEEN
+        SEEN,
     };
+
     Message(std::uint64_t message_id, std::uint64_t user_id, std::uint64_t chat_id, std::string text, Status status);
     ~Message() = default;
+
     [[nodiscard]] std::uint64_t message_id() const;
     [[nodiscard]] const std::string& text() const;
     [[nodiscard]] Status status() const;
@@ -106,12 +107,12 @@ private:
     return m_chat_id;
 }
 
-
 class MELON_CORE_EXPORT Chat
 {
 public:
     Chat(std::uint64_t chat_id, std::string chatname);
     ~Chat() = default;
+
     [[nodiscard]] std::uint64_t chat_id() const;
     [[nodiscard]] const std::string& chatname() const;
 

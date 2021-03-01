@@ -1,16 +1,21 @@
+#include <melon/db_scheme.h>
+#include <storage.hpp>
+
 #include <sqlpp11/mysql/mysql.h>
-#include <sqlpp11/sqlpp11.h>
-#include <sqlpp11/select.h>
-#include <sqlpp11/update.h>
 #include <sqlpp11/remove.h>
+#include <sqlpp11/select.h>
+#include <sqlpp11/sqlpp11.h>
+#include <sqlpp11/update.h>
 
 #include <iostream>
 #include <vector>
 
-#include <storage.hpp>
-
 namespace melon::server::storage
 {
+
+const melon::Users G_USERS;
+const melon::Messages G_MESSAGES;
+const melon::Chats G_CHATS;
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 {
@@ -23,13 +28,12 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
     return config;
 }
 
+/* Users */
 
 void add_user(sqlpp::mysql::connection& db, const melon::core::User& user)
 {
     db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.status = static_cast<std::uint8_t>(melon::core::User::Status::OFFLINE)));
 }
-
-/* Users */
 
 std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
 {
@@ -41,8 +45,6 @@ std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
     return online_users_names;
 }
 
-
-
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 {
     std::vector<melon::core::User> online_users;
@@ -52,12 +54,9 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
         auto status = static_cast<melon::core::User::Status>(tmp);
         melon::core::User user(row.userId, row.username, status);
         online_users.emplace_back(std::move(user));
-
     }
     return online_users;
 }
-
-
 
 void make_user_online(sqlpp::mysql::connection& db, const melon::core::User& user)
 {
@@ -73,11 +72,14 @@ void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& us
 
 void add_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
 {
-    db(insert_into(G_MESSAGES).set(G_MESSAGES.text = message.text(), G_MESSAGES.timesend = message.timestamp(), G_MESSAGES.status = static_cast<std::uint8_t>(melon::core::Message::Status::SENT),
-                                   G_MESSAGES.userId = message.user_id(), G_MESSAGES.chatId = message.chat_id()));
+    db(insert_into(G_MESSAGES).set(G_MESSAGES.text = message.text(),
+                                   G_MESSAGES.timesend = message.timestamp(),
+                                   G_MESSAGES.status = static_cast<std::uint8_t>(melon::core::Message::Status::SENT),
+                                   G_MESSAGES.userId = message.user_id(),
+                                   G_MESSAGES.chatId = message.chat_id()));
 }
 
-/* Chat */
+/* Chats */
 
 void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {

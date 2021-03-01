@@ -1,4 +1,4 @@
-#include <melon/storage_class.hpp>
+#include <melon/core/storage_class.hpp>
 
 #include <iostream>
 
@@ -27,6 +27,5 @@ Chat::Chat(std::uint64_t chat_id, std::string chatname)
     , m_chatname(std::move(chatname))
 {
 }
-
 
 }  // namespace melon::core

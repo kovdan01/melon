@@ -29,6 +29,18 @@ find_package(Sqlpp11ConnectorMysql REQUIRED)
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# python
+find_package(PythonInterp REQUIRED)
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/melon/db_scheme.h)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h
+    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp.py sql/db_scheme_dump.sql ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme melon
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS script/ddl2cpp.py
+)
+
 set(HEADERS
     include/storage.hpp
 )
@@ -38,24 +50,13 @@ set(SOURCES
     src/main.cpp
 )
 
-find_package(PythonInterp REQUIRED)
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb.h
-    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp.py script/melondb.sql ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb  melon
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS script/ddl2cpp.py
-)
-
 add_executable(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
 )
 
-target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/melondb.h)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
+target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
