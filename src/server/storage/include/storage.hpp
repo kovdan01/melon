@@ -1,18 +1,13 @@
 #ifndef MELON_SERVER_STORAGE_HPP_
 #define MELON_SERVER_STORAGE_HPP_
 
+#include <melon/core/storage_class.hpp>
+
 #include <sqlpp11/mysql/mysql.h>
 #include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/select.h>
 #include <sqlpp11/update.h>
 #include <sqlpp11/remove.h>
-
-#include "melondb.h"
-#include <melon/storage_class.hpp>
-
-const melon::Users G_USERS;
-const melon::Messages G_MESSAGES;
-const melon::Chats G_CHATS;
 
 namespace melon::server::storage
 {
@@ -37,7 +32,6 @@ void add_message(sqlpp::mysql::connection& db, const melon::core::Message& messa
 
 void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
-
 
 }  // namespace melon::server::storage
 
