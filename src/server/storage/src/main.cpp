@@ -13,6 +13,8 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
+
+
     mc::User user(0, "h3ll0kitt1", mc::User::Status::ONLINE);
     mss::add_user(db, user);
 
