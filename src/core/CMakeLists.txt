@@ -27,6 +27,8 @@ find_package(yaml-cpp REQUIRED)
 set(HEADERS
     include/melon/core.hpp
     include/melon/core/exception.hpp
+    include/melon/core/storage_class.hpp
+    include/melon/core/storage_class.ipp
     include/melon/core/yaml_config.hpp
     include/melon/core/auth.hpp
     include/melon/core/auth.ipp
@@ -36,6 +38,7 @@ set(SOURCES
     src/melon_core.cpp
     src/exception.cpp
     src/yaml_config.cpp
+    src/storage_class.cpp
 )
 
 add_library(${PROJECT_NAME}
