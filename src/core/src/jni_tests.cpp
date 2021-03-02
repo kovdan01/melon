@@ -2,7 +2,7 @@
 // Created by r.anchugov on 08.02.2021.
 //
 
-#include <melon/jni_tests.hpp>
+#include <melon/core/jni_tests.hpp>
 
 int int_test_sum(int a, int b)
 {
