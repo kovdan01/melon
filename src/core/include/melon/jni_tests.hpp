@@ -2,8 +2,8 @@
 // Created by r.anchugov on 08.02.2021.
 //
 
-#ifndef MELON_CORE_JNI_TESTS_HPP
-#define MELON_CORE_JNI_TESTS_HPP
+#ifndef MELON_CORE_JNI_TESTS_HPP_
+#define MELON_CORE_JNI_TESTS_HPP_
 
 #include <string>
 #include <cstdint>
@@ -19,4 +19,4 @@ std::string string_test();
 const char* buff_test();
 
 
-#endif //MELON_CORE_JNI_TESTS_HPP
+#endif  // MELON_CORE_JNI_TESTS_HPP
