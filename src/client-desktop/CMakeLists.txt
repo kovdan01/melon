@@ -13,7 +13,7 @@ find_package(melon-core REQUIRED)
 
 # boost asio
 find_package(
-    Boost 1.74.0 REQUIRED
+    Boost 1.75.0 REQUIRED
     COMPONENTS system
 )
 
@@ -30,14 +30,17 @@ find_package(
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
-    include/main_window.hpp
     include/chat_widget.hpp
+    include/main_window.hpp
+    include/ram_storage.hpp
+    include/chat_list_widget.hpp
 )
 
 set(SOURCES
+    src/chat_widget.cpp
     src/main.cpp
     src/main_window.cpp
-    src/chat_widget.cpp
+    src/chat_list_widget.cpp
 )
 
 set(UI_FILES

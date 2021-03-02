@@ -27,15 +27,19 @@ find_package(yaml-cpp REQUIRED)
 set(HEADERS
     include/melon/core.hpp
     include/melon/core/exception.hpp
+    include/melon/core/jni_tests.hpp
+    include/melon/core/storage_class.hpp
+    include/melon/core/storage_class.ipp
     include/melon/core/yaml_config.hpp
-        include/melon/jni_tests.hpp
 )
 
 set(SOURCES
-    src/melon_core.cpp
     src/exception.cpp
+    src/jni_tests.cpp
+    src/melon_core.cpp
+    src/storage_class.cpp
     src/yaml_config.cpp
-        src/jni_tests.cpp)
+)
 
 add_library(${PROJECT_NAME}
     ${HEADERS}

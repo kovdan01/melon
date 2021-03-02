@@ -10,6 +10,11 @@ include(ntc-dev-build)
 
 add_subdirectory(auth)
 add_subdirectory(messaging)
-add_subdirectory(storage)
+
+# TODO: configure MariaDB for macOS
+if(NOT APPLE)
+    add_subdirectory(storage)
+endif()
+
 add_subdirectory(client-server)
 add_subdirectory(server-server)
