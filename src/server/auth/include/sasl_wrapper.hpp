@@ -6,6 +6,9 @@
 #include <sasl/saslplug.h>
 
 #include <array>
+#include <cstring>
+#include <memory>
+#include <new>
 #include <string>
 #include <string_view>
 
@@ -14,10 +17,20 @@ namespace melon::server::auth
 
 using sasl_res = int;
 
-struct Credentials
+class Credentials
 {
-    const std::string username;
-    const std::string password;
+public:
+    Credentials(std::string username,std::string_view password);
+
+    [[nodiscard]] const std::string& username() const noexcept;
+    [[nodiscard]] std::string_view password() const noexcept;
+    [[nodiscard]] sasl_secret_t* secret() const noexcept;
+
+private:
+    constexpr static auto FREE_DELETER = [](void* p){ std::free(p); };  // NOLINT cppcoreguidelines-no-malloc
+
+    std::string m_username;
+    std::unique_ptr<sasl_secret_t, decltype(FREE_DELETER)> m_password;
 };
 
 enum class AuthCompletness

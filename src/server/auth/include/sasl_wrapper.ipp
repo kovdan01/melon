@@ -10,6 +10,33 @@
 namespace melon::server::auth
 {
 
+inline Credentials::Credentials(std::string username,std::string_view password)
+    : m_username{std::move(username)}
+    // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
+    , m_password{static_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + password.size()))}  // NOLINT cppcoreguidelines-no-malloc
+{
+    if (m_password == nullptr)
+        throw std::bad_alloc{};
+    std::memcpy(m_password->data,password.data(), password.size());
+    m_password->data[password.size()] = '\0';
+    m_password->len = password.size();
+}
+
+[[nodiscard]] inline const std::string& Credentials::username() const noexcept
+{
+    return m_username;
+}
+
+[[nodiscard]] inline std::string_view Credentials::password() const noexcept
+{
+    return { reinterpret_cast<const char*>(m_password->data), m_password->len };
+}
+
+[[nodiscard]] inline sasl_secret_t* Credentials::secret() const noexcept
+{
+    return m_password.get();
+}
+
 namespace detail
 {
 
@@ -32,9 +59,9 @@ inline sasl_res get_username(void* context, int id, const char** result, unsigne
     {
     case SASL_CB_USER:
     case SASL_CB_AUTHNAME:
-        *result = params->username.c_str();
+        *result = params->username().c_str();
         if (len != nullptr)
-            *len = static_cast<unsigned>(params->username.size());
+            *len = static_cast<unsigned>(params->username().size());
         break;
     default:
         return SASL_BADPARAM;
@@ -47,15 +74,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
     if (id != SASL_CB_PASS)
         return SASL_BADPARAM;
     auto* params = static_cast<Credentials*>(context);
-
-    // There is no additional byte allocated, as sasl_secret_t already contains a single byte for password
-    auto* secret = reinterpret_cast<sasl_secret_t*>(std::malloc(sizeof(sasl_secret_t) + params->password.size()));  // NOLINT cppcoreguidelines-no-malloc
-    if (secret == nullptr)
-        return SASL_NOMEM;
-    secret->len = params->password.size();
-    std::memcpy(secret->data, params->password.c_str(), secret->len + 1);
-    *psecret = secret;
-
+    *psecret = params->secret();
     return SASL_OK;
 }
 
