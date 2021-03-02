@@ -31,7 +31,7 @@ set(HEADERS
     include/melon/core/storage_class.hpp
     include/melon/core/storage_class.ipp
     include/melon/core/yaml_config.hpp
-    include/melon/jni_tests.hpp
+    include/melon/core/jni_tests.hpp
 )
 
 set(SOURCES
