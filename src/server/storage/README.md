@@ -136,6 +136,6 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *aim:* unique domain name
   - `external`:
     - *MariaDB type:* `BOOLEAN NOT NULL DEFAULT 0`
-    - *C++ type:* bool
+    - *C++ type:* `bool`
     - *aim:* flag to distinguish affiliation of domains
 
