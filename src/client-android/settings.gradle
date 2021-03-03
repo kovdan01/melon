@@ -1,3 +1,4 @@
+include ':jniwrapper'
 include ':feature_chat_content'
 include ':feature_chats_list'
 include ':app'

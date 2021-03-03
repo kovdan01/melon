@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: develop
 
+env:
+  CORE_ARM_RELEASE_ARTIFACT: "core-arm-release-android"
+
 jobs:
   build-core-arm:
     name: ${{ format('{0} {1} {2}', matrix.config.prefix, matrix.config.build_type, matrix.config.suffix) }}
@@ -18,7 +21,6 @@ jobs:
             os: ubuntu-20.04,
             prefix: "Android Core ARM64",
             suffix: "",
-            artifact: "core-arm-release-android",
             build_type: "Release",
           }
 
@@ -38,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         path: ./install.tar
-        name: ${{ matrix.config.artifact }}
+        name: ${{ env.CORE_ARM_RELEASE_ARTIFACT }}
 
   build-android:
     name: Android App Debug
@@ -49,6 +51,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Download pre-built core library from artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ env.CORE_ARM_RELEASE_ARTIFACT }}
+
+    - name: Copy core library to NDK toolchains
+      run: |
+        tar -xvf install.tar
+        sudo cp -r install/* $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2
