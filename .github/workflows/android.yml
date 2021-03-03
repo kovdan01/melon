@@ -25,6 +25,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: List NDK dir
+      run: |
+        echo AAA
+        ls -al $ANDROID_NDK_LATEST_HOME
+        echo BBB
+        ls -al $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt
+        echo CCC
+        ls -al $ANDROID_NDK_HOME
+
     - name: Build
       run: |
         docker build -f build-config/android/Dockerfile . -t build-android
