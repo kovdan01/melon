@@ -27,10 +27,16 @@ public:
     [[nodiscard]] sasl_secret_t* secret() const noexcept;
 
 private:
-    constexpr static auto FREE_DELETER = [](void* p){ std::free(p); };  // NOLINT cppcoreguidelines-no-malloc
+    struct FreeDeleter
+    {
+        void operator()(void* p) const noexcept
+        {
+            std::free(p);  // NOLINT (cppcoreguidelines-no-malloc)
+        }
+    };
 
     std::string m_username;
-    std::unique_ptr<sasl_secret_t, decltype(FREE_DELETER)> m_password;
+    std::unique_ptr<sasl_secret_t, FreeDeleter> m_password;
 };
 
 enum class AuthCompletness
