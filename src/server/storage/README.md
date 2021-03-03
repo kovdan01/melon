@@ -49,14 +49,14 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
    quit;
    ```
 
-8. Create tables in `melon` database from melondb.sql:
+8. Create tables in `melon` database from db_scheme_dump.sql:
    ```bash
-   mysql -u melon -p melon < script/melondb.sql
+   mysql -u melon -p melon < sql/db_scheme_dump.sql
    ```
 
 ### Current Database Scheme Details
 
-//![](docs/db_scheme_2.jpg)
+![](docs/db_scheme.jpg)
 
 - **User**
   - `user_id`:
@@ -71,21 +71,25 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *MariaDB type:* `TINYINT UNSIGNED DEFAULT 0`
     - *C++ type:*  `enum class` value with underlying type `std::uint8_t` (ONLINE, OFFLINE, CHILL)
     - *aim:* expresses user's desire to communicate
-  - `hostname`: 
+  - `domain_id`: 
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
     - *aim:* is used to create unique index in pair with `username` to uniquely identify user globally  
 
 - **Message**
-  - `message_id` + `hostname` - unique value to identify message globally
+  - `message_id` + `chat_id` + `domain_id` - unique value to identify affiliation of message to chat globally
   - `message_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-increment value to identify message on server locally
-  - `hostname`: 
-    - *aim:* shows where message is stored 
+  - `domain_id`: 
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
+    - *aim:* shows  which chat message relates to
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* value to identify message's relation to chat on server locally
+    - *aim:* shows which chat message relates to
   - `user_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -104,12 +108,14 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *aim:* stores timestamp
 
 - **Chat**
-  - `chat_id` + `hostname` - unique value to identify chat globally
+  - `chat_id` + `domain_id` - unique value to identify chat globally
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-increment value to identify chat on server locally
-  - `hostname`: 
+  - `domain_id`: 
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
     - *aim:* shows where chat is stored 
   - `chatname`:
     - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
@@ -117,13 +123,19 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *aim:* NOT unique chatname
 
 - **Chat_User**
-    - **aim**: match chats with participants 
-    - `chat_id` + `hostname`
-    - `user_id`
+    - **aim**: matchs chats with participants 
       
 - **Domain**
+  - `domain_id`:
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
+    - *aim:* unique and auto-incremented value to identify domain name on server locally
   - `hostname`:
-    - *aim:* stores value that is used to globally identify chats, messages, users
+    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+    - *C++ type:* `std::string`
+    - *aim:* unique domain name
   - `external`:
+    - *MariaDB type:* `BOOLEAN NOT NULL DEFAULT 0`
+    - *C++ type:* bool
     - *aim:* flag to distinguish affiliation of domains
 
