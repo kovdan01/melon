@@ -46,7 +46,6 @@ public slots:  // NOLINT (readability-redundant-access-specifiers)
     void change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
     Message capture_message_from_editor();
     void load_message_to_editor(const Message& message);
-    QListWidgetItem* load_message_into_item(const Message& message);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
@@ -59,15 +58,14 @@ private slots:
     void edit_message();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
-    MessageListModel* m_model_message_list;
-    QListWidgetItem* m_current_chat_item = nullptr;
-    QListWidgetItem* m_edit_item = nullptr;
     QMenu m_submenu_sended_messages{this};
     QMenu m_submenu_received_messages{this};
+    MessageListModel* m_model_message_list = new MessageListModel{this};
+    QListWidgetItem* m_current_chat_item = nullptr;
     QScopedPointer<Ui::ChatWidget> m_ui;
     chat_handle_t m_current_chat_it;
     QSet<int> m_pressed_keys;
+    int m_edit_row;
     bool m_edit_mode = false;
 };
 

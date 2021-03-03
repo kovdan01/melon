@@ -1,9 +1,11 @@
 #ifndef MELON_CLIENT_DESKTOP_MESSAGE_LIST_MODEL_HPP_
 #define MELON_CLIENT_DESKTOP_MESSAGE_LIST_MODEL_HPP_
 
+#include <ram_storage.hpp>
+
 #include <QAbstractListModel>
 
-#include <ram_storage.hpp>
+#include <vector>
 
 namespace melon::client_desktop
 {
@@ -14,16 +16,23 @@ class MessageListModel : public QAbstractListModel
 public:
     explicit MessageListModel(QObject* parent = nullptr);
 
-    int rowCount(const QModelIndex& index = {}) const override;
-    Qt::ItemFlags flags(const QModelIndex&) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    using message_handle_t = Chat::message_handle_t;
+    using chat_handle_t = RAMStorageSingletone::chat_handle_t;
+
+    [[nodiscard]] int rowCount(const QModelIndex& index = {}) const override;
+    [[nodiscard]] Qt::ItemFlags flags(const QModelIndex&) const override;
+    [[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
-    void add_message(Message message, const QModelIndex& parent = QModelIndex());
+    void add_message(message_handle_t it_message, const QModelIndex& parent = QModelIndex());
+    void delete_message(chat_handle_t it_chat, const QModelIndex& index, const QModelIndex& parent = QModelIndex());
+    void set_external_message(const QModelIndex& index, const QString& message);
     void clear();
 
 private:
-    QVector<QString> m_text;
+    constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
+    QVector<QString> m_text_messages;
+    std::vector<message_handle_t> m_it_messages;
 };
 
 }  // namespace melon::client_desktop
