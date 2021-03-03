@@ -56,7 +56,7 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 
 ### Current Database Scheme Details
 
-![](docs/db_scheme.jpg)
+![](docs/db_scheme_2.jpg)
 
 - **User**
   - `user_id`:
@@ -71,12 +71,17 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *MariaDB type:* `TINYINT UNSIGNED DEFAULT 0`
     - *C++ type:*  `enum class` value with underlying type `std::uint8_t` (ONLINE, OFFLINE, CHILL)
     - *aim:* expresses user's desire to communicate
+  - `hostname`: 
+    - *aim:* is used to create unique index in pair with `username` to uniquely identify user globally  
 
 - **Message**
+  - `message_id` + `hostname` - unique value to identify message globally
   - `message_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-increment value to identify message on server locally
+  - `hostname`: 
+    - *aim:* shows where message is stored 
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -99,11 +104,26 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *aim:* stores timestamp
 
 - **Chat**
+  - `chat_id` + `hostname` - unique value to identify chat globally
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-increment value to identify chat on server locally
+  - `hostname`: 
+    - *aim:* shows where chat is stored 
   - `chatname`:
     - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
     - *C++ type:* `std::string`
     - *aim:* NOT unique chatname
+
+- **Chat_User**
+    - **aim**: match chats with participants 
+    - `chat_id` + `hostname`
+    - `user_id`
+      
+- **Domain**
+  - `hostname`:
+    - *aim:* stores value that is used to globally identify chats, messages, users
+  - `external`:
+    - *aim:* flag to distinguish affiliation of domains
+
