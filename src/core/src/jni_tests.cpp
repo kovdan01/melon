@@ -4,6 +4,9 @@
 
 #include <melon/core/jni_tests.hpp>
 
+namespace melon::core
+{
+
 int int_test_sum(int a, int b)
 {
     return a + b;
@@ -24,3 +27,5 @@ std::string string_test()
     std::string s1 = "Poook";
     return s1;
 }
+
+}  // namespace melon::core

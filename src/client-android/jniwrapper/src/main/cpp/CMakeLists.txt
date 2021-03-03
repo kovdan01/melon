@@ -5,8 +5,8 @@ add_library(hello-jni SHARED
     hello-jni.cpp)
 
 target_link_libraries(
-        hello-jni
-        PRIVATE
-        android
-        melon-core
+    hello-jni
+    PRIVATE
+    android
+    melon-core
 )
