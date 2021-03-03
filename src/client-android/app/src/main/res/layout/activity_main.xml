@@ -12,4 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:navGraph="@navigation/nav_graph" />
+
+    <TextView
+        android:id="@+id/testTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        android:textColor="@color/white"
+        android:text="lol che"/>
 </FrameLayout>
