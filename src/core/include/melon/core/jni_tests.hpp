@@ -5,8 +5,11 @@
 #ifndef MELON_CORE_JNI_TESTS_HPP_
 #define MELON_CORE_JNI_TESTS_HPP_
 
-#include <string>
 #include <cstdint>
+#include <string>
+
+namespace melon::core
+{
 
 int int_test_sum(int a, int b);
 
@@ -16,7 +19,6 @@ std::uint64_t std_test_sum(std::uint64_t a, std::uint64_t b);
 
 std::string string_test();
 
-const char* buff_test();
+}  // namespace melon::core
 
-
-#endif  // MELON_CORE_JNI_TESTS_HPP
+#endif  // MELON_CORE_JNI_TESTS_HPP_
