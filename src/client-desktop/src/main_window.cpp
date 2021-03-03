@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
-    replace_chat_widget_with_spacer();
+    this->replace_chat_widget_with_spacer();
 
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,

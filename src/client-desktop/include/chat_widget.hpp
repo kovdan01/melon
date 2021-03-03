@@ -2,6 +2,7 @@
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
 #include <ram_storage.hpp>
+#include <message_list_model.hpp>
 
 #include <ui_chat_widget.h>
 
@@ -59,6 +60,7 @@ private slots:
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
+    MessageListModel* m_model_message_list;
     QListWidgetItem* m_current_chat_item = nullptr;
     QListWidgetItem* m_edit_item = nullptr;
     QMenu m_submenu_sended_messages{this};

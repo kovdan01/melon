@@ -3,6 +3,7 @@
 #include <ui_chat_widget.h>
 
 #include <chat_widget.hpp>
+#include <message_list_model.hpp>
 
 #include <QScrollBar>
 #include<QMenuBar>
@@ -16,18 +17,19 @@ namespace melon::client_desktop
 
 ChatWidget::ChatWidget(QWidget* parent)
     : QWidget{parent}
+    , m_model_message_list{new MessageListModel{this}}
     , m_ui{new Ui::ChatWidget}
 {
     m_ui->setupUi(this);
-    connect(m_ui->SendButton, &QPushButton::clicked, this, &ChatWidget::send_message);
+    //connect(m_ui->SendButton, &QPushButton::clicked, this, &ChatWidget::send_message);
     connect(m_ui->ReceiveButton, &QPushButton::clicked, this, &ChatWidget::receive_message);
 
-    m_ui->MsgList->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_ui->MsgList->setModel(m_model_message_list);
 
-    connect(m_ui->MsgList,
-            &QWidget::customContextMenuRequested,
-            this,
-            &ChatWidget::provide_message_context_menu);
+//    connect(m_ui->MsgList,
+//            &QWidget::customContextMenuRequested,
+//            this,
+//            &ChatWidget::provide_message_context_menu);
 
     m_submenu_sended_messages.addAction(tr("Edit"), this, SLOT(edit_message()));
     m_submenu_sended_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
@@ -57,7 +59,7 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
 
         if (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
         {
-            ChatWidget::send_message();
+            //ChatWidget::send_message();
             return true;
         }
     }
@@ -74,61 +76,56 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
 
 void ChatWidget::send_message()
 {
-    QString message_text = m_ui->MsgEdit->toPlainText();
-    message_text = message_text.trimmed();
+//    QString message_text = m_ui->MsgEdit->toPlainText();
+//    message_text = message_text.trimmed();
 
-    if (message_text.isEmpty())
-        return;
+//    if (message_text.isEmpty())
+//        return;
 
-    if (m_edit_mode)
-    {
-        m_edit_item->setText(message_text);
-        auto it_message = this->it_by_qlistitem<message_handle_t>(m_edit_item);
-        it_message->set_text(message_text);
-        m_edit_mode = false;
-        m_edit_item = nullptr;
-        m_ui->MsgEdit->clear();
-        m_ui->ReceiveButton->setVisible(true);
-        m_ui->SendButton->setText(QStringLiteral("Send"));
-        return;
-    }
+//    if (m_edit_mode)
+//    {
+//        m_edit_item->setText(message_text);
+//        auto it_message = this->it_by_qlistitem<message_handle_t>(m_edit_item);
+//        it_message->set_text(message_text);
+//        m_edit_mode = false;
+//        m_edit_item = nullptr;
+//        m_ui->MsgEdit->clear();
+//        m_ui->ReceiveButton->setVisible(true);
+//        m_ui->SendButton->setText(QStringLiteral("Send"));
+//        return;
+//    }
 
-    auto it_message = m_current_chat_it->add_message(Message(QLatin1String("Me"),
-                                                             message_text,
-                                                             {},
-                                                             std::chrono::high_resolution_clock::now()));
+//    auto it_message = m_current_chat_it->add_message(Message(QLatin1String("Me"),
+//                                                             message_text,
+//                                                             {},
+//                                                             std::chrono::high_resolution_clock::now()));
 
-    auto* message_item = new QListWidgetItem();
-    message_item->setText(message_text);
+//    auto* message_item = new QListWidgetItem();
+//    message_item->setText(message_text);
 
-    QVariant pointer_to_message;
-    pointer_to_message.setValue(it_message);
-    message_item->setData(Qt::UserRole, pointer_to_message);
+//    QVariant pointer_to_message;
+//    pointer_to_message.setValue(it_message);
+//    message_item->setData(Qt::UserRole, pointer_to_message);
 
-    m_ui->MsgEdit->clear();
-    m_ui->MsgList->addItem(message_item);
-    m_ui->MsgList->scrollToBottom();
+//    m_ui->MsgEdit->clear();
+//    m_ui->MsgList->addItem(message_item);
+//    m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::receive_message()
 {
-    QString message_text = QStringLiteral("I wish I could hear you.");
+    Message msg(QLatin1String("Some Sender"),
+                QStringLiteral("I wish I could hear you."),
+                {},
+                std::chrono::high_resolution_clock::now());
 
-    auto it_message = m_current_chat_it->add_message(Message(QLatin1String("Some Sender"),
-                                                             message_text,
-                                                             {},
-                                                             std::chrono::high_resolution_clock::now()));
+    m_current_chat_it->add_message(msg);
 
-    auto* message_item = new QListWidgetItem();
-    message_item->setText(message_text);
-    message_item->setTextAlignment(Qt::AlignLeft);
-    message_item->setBackground(M_RECEIVE_COLOR);
+    QVariant new_message;
+    new_message.setValue(msg);
 
-    QVariant pointer_to_message;
-    pointer_to_message.setValue(it_message);
-    message_item->setData(Qt::UserRole, pointer_to_message);
+    m_model_message_list->add_message(msg);
 
-    m_ui->MsgList->addItem(message_item);
     m_ui->MsgList->scrollToBottom();
 }
 
@@ -147,19 +144,13 @@ void ChatWidget::change_chat(QListWidgetItem* current_chat, QListWidgetItem* pre
         it_previous->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
     }
 
-    m_ui->MsgList->clear();
+    m_model_message_list->clear();
 
     std::list<Message>& messages = m_current_chat_it->messages();
 
     for (auto it_message = messages.begin(); it_message != messages.end(); ++it_message)
     {
-        QListWidgetItem* new_message_item = this->load_message_into_item(*it_message);
-
-        m_ui->MsgList->addItem(new_message_item);
-
-        QVariant pointer_to_message;
-        pointer_to_message.setValue(it_message);
-        new_message_item->setData(Qt::UserRole, pointer_to_message);
+        m_model_message_list->add_message(*it_message);
     }
 
     this->load_message_to_editor(m_current_chat_it->incomplete_message());
@@ -195,40 +186,40 @@ QListWidgetItem* ChatWidget::load_message_into_item(const Message& message)
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
 {
-    QListWidgetItem* cur_item = m_ui->MsgList->currentItem();
-    if (cur_item == nullptr)
-        return;
+//    QListWidgetItem* cur_item = m_ui->MsgList->currentItem();
+//    if (cur_item == nullptr)
+//        return;
 
-    if (this->it_by_qlistitem<message_handle_t>(cur_item)->from() == QStringLiteral("Me"))
-    {
-        m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
-    }
-    else
-    {
-        m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
-    }
+//    if (this->it_by_qlistitem<message_handle_t>(cur_item)->from() == QStringLiteral("Me"))
+//    {
+//        m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+//    }
+//    else
+//    {
+//        m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+//    }
 }
 
 void ChatWidget::delete_message()
 {
-    QListWidgetItem* item_message = m_ui->MsgList->takeItem(m_ui->MsgList->currentRow());
-    auto it_message = this->it_by_qlistitem<message_handle_t>(item_message);
-    m_current_chat_it->delete_message(it_message);
+//    QListWidgetItem* item_message = m_ui->MsgList->takeItem(m_ui->MsgList->currentRow());
+//    auto it_message = this->it_by_qlistitem<message_handle_t>(item_message);
+//    m_current_chat_it->delete_message(it_message);
 
-    delete item_message;
+//    delete item_message;
 }
 
 void ChatWidget::edit_message()
 {
-    QListWidgetItem* item = m_ui->MsgList->currentItem();
-    auto it_message =this->it_by_qlistitem<message_handle_t>(item);
+//    QListWidgetItem* item = m_ui->MsgList->currentItem();
+//    auto it_message =this->it_by_qlistitem<message_handle_t>(item);
 
-    this->load_message_to_editor(*it_message);
-    m_edit_mode = true;
-    m_edit_item = item;
+//    this->load_message_to_editor(*it_message);
+//    m_edit_mode = true;
+//    m_edit_item = item;
 
-    m_ui->ReceiveButton->setVisible(false);
-    m_ui->SendButton->setText(QStringLiteral("Done"));
+//    m_ui->ReceiveButton->setVisible(false);
+//    m_ui->SendButton->setText(QStringLiteral("Done"));
 }
 
 }  // namespace melon::client_desktop

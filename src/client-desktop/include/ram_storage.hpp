@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include <unordered_set>
+#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -45,7 +46,7 @@ public:
 
     using timestamp_t = std::chrono::high_resolution_clock::time_point;
 
-    Message() = delete;
+    Message() = default;
     Message(const Message&) = default;
     Message& operator=(const Message&) = default;
     Message(Message&&) = default;
@@ -229,5 +230,7 @@ private:
 
 Q_DECLARE_METATYPE(melon::client_desktop::RAMStorageSingletone::chat_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
+Q_DECLARE_METATYPE(melon::client_desktop::Message)
+
 
 #endif  // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
