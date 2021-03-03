@@ -31,7 +31,7 @@ private:
     {
         void operator()(void* p) const noexcept
         {
-            std::free(p);
+            std::free(p);  // NOLINT (cppcoreguidelines-no-malloc)
         }
     };
 
