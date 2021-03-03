@@ -30,7 +30,7 @@ jobs:
         echo AAA
         ls -al $ANDROID_NDK_LATEST_HOME
         echo BBB
-        ls -al $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt
+        ls -al $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr
         echo CCC
         ls -al $ANDROID_NDK_HOME
 
@@ -58,6 +58,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Download pre-built core library from artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ matrix.config.artifact }}
+
+    - name: Copy core library to NDK toolchains
+      run: |
+        tar -xvf install.tar
+        sudo cp -r install/* $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2
