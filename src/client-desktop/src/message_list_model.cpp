@@ -61,7 +61,7 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
 
 void MessageListModel::add_message(message_handle_t message, const QModelIndex& parent)
 {
-    int row = this->rowCount() + 1;
+    int row = this->rowCount(QModelIndex()) + 1;
 
     this->beginInsertRows(parent, row, row);
     m_text_messages.append(message->text());
