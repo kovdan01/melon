@@ -62,10 +62,11 @@ jobs:
     - name: Download pre-built core library from artifacts
       uses: actions/download-artifact@v2
       with:
-        name: ${{ matrix.config.artifact }}
+        name: core-arm-release-android
 
     - name: Copy core library to NDK toolchains
       run: |
+        ls -al
         tar -xvf install.tar
         sudo cp -r install/* $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
