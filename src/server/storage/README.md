@@ -77,7 +77,7 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *aim:* is used to create unique index in pair with `username` to uniquely identify user globally  
 
 - **Message**
-  - `message_id` + `chat_id` + `domain_id` - unique value to identify affiliation of message to chat globally
+  - `message_id` + `chat_id` + `domain_id` - unique value to identify message globally
   - `message_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
     - *C++ type:* `std::uint64_t`
@@ -85,7 +85,7 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
   - `domain_id`: 
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* shows  which chat message relates to
+    - *aim:* shows where the chat is created to which message relates to
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -116,14 +116,14 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
   - `domain_id`: 
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* shows where chat is stored 
+    - *aim:* shows where chat is created
   - `chatname`:
     - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
     - *C++ type:* `std::string`
     - *aim:* NOT unique chatname
 
 - **Chat_User**
-    - **aim**: matchs chats with participants 
+  - *aim*: matchs chats with participants (many-to-many relationship) 
       
 - **Domain**
   - `domain_id`:
