@@ -56,7 +56,7 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 
 ### Current Database Scheme Details
 
-![](docs/db_scheme_2.jpg)
+//![](docs/db_scheme_2.jpg)
 
 - **User**
   - `user_id`:
