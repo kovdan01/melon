@@ -1,15 +1,15 @@
-#include <chat_list_widget.hpp>
+#include <chat_list_view.hpp>
 
 #include <QMouseEvent>
 
 namespace melon::client_desktop
 {
 
-ChatListWidget::ChatListWidget(QWidget* parent)
-    : QListWidget{parent}
+ChatListView::ChatListView(QWidget* parent)
+    : QListView{parent}
 {}
 
-void ChatListWidget::mousePressEvent(QMouseEvent* event)
+void ChatListView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::RightButton)
     {

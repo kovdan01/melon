@@ -1,14 +1,13 @@
 #ifndef MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 #define MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 
-#include <QListWidget>
 #include <QString>
+#include <QMetaType>
 
 #include <chrono>
 #include <list>
 #include <utility>
 #include <vector>
-#include <unordered_set>
 
 namespace melon::client_desktop
 {
@@ -45,7 +44,7 @@ public:
 
     using timestamp_t = std::chrono::high_resolution_clock::time_point;
 
-    Message() = delete;
+    Message() = default;  // for QVariant
     Message(const Message&) = default;
     Message& operator=(const Message&) = default;
     Message(Message&&) = default;
@@ -81,9 +80,9 @@ public:
         return m_from;
     }
 
-    void set_text(const QString& text)
+    void set_text(QString text)
     {
-        m_text = text;
+        m_text = std::move(text);
     }
 
 private:
@@ -229,5 +228,7 @@ private:
 
 Q_DECLARE_METATYPE(melon::client_desktop::RAMStorageSingletone::chat_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
+Q_DECLARE_METATYPE(melon::client_desktop::Message)
+
 
 #endif  // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_

@@ -1,7 +1,5 @@
 #include <chat_widget.hpp>
-#include <chat_list_widget.hpp>
 #include <main_window.hpp>
-#include <ram_storage.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -10,22 +8,22 @@
 #include <QSplitter>
 #include <QWidget>
 
+#include <cassert>
 #include <stdexcept>
-#include <iostream>
 
 namespace melon::client_desktop
 {
 
-constexpr int MAX_NAME_CHAT_SIZE = 64;
+constexpr int MAX_CHAT_NAME_SIZE = 64;
 
 void MainWindow::replace_chat_widget_with_spacer()
 {
     if (m_chat_widget != nullptr)
     {
-        disconnect(m_ui->ChatList,
-                   &QListWidget::currentItemChanged,
-                   m_chat_widget,
-                   &ChatWidget::change_chat);
+        disconnect(m_ui->ChatList->selectionModel(),
+                   &QItemSelectionModel::currentChanged,
+                   this,
+                   &MainWindow::change_chat);
 
         m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
@@ -45,20 +43,19 @@ void MainWindow::replace_spacer_with_chat_widget()
     m_chat_widget = new ChatWidget();
     m_ui->ChatPlace->addWidget(m_chat_widget);
 
-    connect(m_ui->ChatList,
-            &QListWidget::currentItemChanged,
-            m_chat_widget,
-            &ChatWidget::change_chat);
+    connect(m_ui->ChatList->selectionModel(),
+            &QItemSelectionModel::currentChanged,
+            this,
+            &MainWindow::change_chat);
 }
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
-    , m_submenu(QMenu(this))
     , m_ui{new Ui::MainWindow}
 {
     m_ui->setupUi(this);
 
-    replace_chat_widget_with_spacer();
+    this->replace_chat_widget_with_spacer();
 
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
@@ -72,8 +69,22 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_submenu.addAction(tr("Rename"), this, SLOT(rename_chat()));
     m_submenu.addAction(tr("Delete"), this, SLOT(delete_chat()));
+
+    m_ui->ChatList->setModel(m_model_chat_list);
 }
 
+class ChatNameException : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+    using std::runtime_error::operator=;
+};
+
+static void check_chat_name(const QString& text)
+{
+    if (text.isEmpty() || text.size() > MAX_CHAT_NAME_SIZE)
+        throw ChatNameException("Name is incorrect");
+}
 
 void MainWindow::add_chat()
 {
@@ -89,29 +100,21 @@ void MainWindow::add_chat()
         if (!ok)
             return;
 
-        if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
-            throw std::runtime_error("Name is incorrect");
+        check_chat_name(text);
 
         if (m_spacer != nullptr)
-            replace_spacer_with_chat_widget();
+            this->replace_spacer_with_chat_widget();
 
-        auto* new_chat = new QListWidgetItem(text);
+        Chat chat(text, static_cast<Chat::id_t>(counter));
 
-        m_ui->ChatList->addItem(new_chat);
-
-        auto& ram_storage = RAMStorageSingletone::get_instance();
-
-        auto it_added_chat = ram_storage.add_chat(Chat(text, static_cast<Chat::id_t>(counter)));
-
-        QVariant pointer_to_chat;
-        pointer_to_chat.setValue(it_added_chat);
-        new_chat->setData(Qt::UserRole, pointer_to_chat);
-
-        m_ui->ChatList->setCurrentItem(new_chat);
+        m_model_chat_list->add_chat(chat);
+        int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
+        QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);
+        m_ui->ChatList->setCurrentIndex(cur_index);
 
         ++counter;
     }
-    catch (const std::exception& e)
+    catch (const ChatNameException& e)
     {
         QMessageBox::critical(this, tr("Oops!"), QLatin1String(e.what()));
     }
@@ -122,7 +125,8 @@ void MainWindow::add_chat()
 
 void MainWindow::provide_chat_context_menu(const QPoint& pos)
 {
-    if (m_ui->ChatList->itemAt(pos) == nullptr)
+    QModelIndex cur_index = m_ui->ChatList->indexAt(pos);
+    if (!cur_index.isValid())
         return;
 
     m_requested_menu_position = pos;
@@ -131,50 +135,55 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
 
 void MainWindow::delete_chat()
 {
-    QListWidgetItem* item_by_pos = m_ui->ChatList->itemAt(m_requested_menu_position);
-    QListWidgetItem* item = m_ui->ChatList->takeItem(m_ui->ChatList->row(item_by_pos));
+    QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
+    assert(cur_index.isValid());
 
+    m_model_chat_list->delete_chat(cur_index);
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
-
-    auto it = item->data(Qt::UserRole).value<std::list<Chat>::iterator>();
-
-    ram_storage.delete_chat(it);
-
-    delete item;
-
-    if (m_ui->ChatList->count() == 0)
-        replace_chat_widget_with_spacer();
+    if (m_model_chat_list->rowCount(QModelIndex()) == 0)
+        this->replace_chat_widget_with_spacer();
 }
 
 void MainWindow::rename_chat()
 {
-    QListWidgetItem* item = m_ui->ChatList->itemAt(m_requested_menu_position);
-
-    QString old_name = item->text();
-    bool ok;
-
     try
     {
+        bool ok;
+        QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
+
+        QString old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
+
         QString text = QInputDialog::getText(this, tr("Type new name"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              old_name, &ok);
         if (!ok)
             return;
 
-        if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
-            throw std::runtime_error("Name is incorrect");
+        check_chat_name(text);
 
-        auto it = item->data(Qt::UserRole).value<std::list<Chat>::iterator>();
-
-        it->set_name(text);
-
-        item->setText(text);
+        m_model_chat_list->setData(cur_index, text, Qt::DisplayRole);
     }
-    catch (const std::exception& e)
+    catch (const ChatNameException& e)
     {
         QMessageBox::critical(this, tr("Oops!"), QLatin1String(e.what()));
     }
+}
+
+void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat)
+{
+    if (!current_chat.isValid())
+        return;
+
+    auto current_it = m_model_chat_list->chat_it_by_index(current_chat);
+
+    if (!previous_chat.isValid())
+    {
+        m_chat_widget->change_chat(current_it);
+        return;
+    }
+
+    auto previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
+    m_chat_widget->change_chat(current_it, previous_it);
 }
 
 }  // namespace melon::client_desktop
