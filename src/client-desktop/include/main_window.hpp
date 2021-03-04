@@ -44,7 +44,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
     QPoint m_requested_menu_position;
-    ChatListModel* m_model_chat_list = nullptr;
+    ChatListModel* m_model_chat_list = new ChatListModel{this};
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();

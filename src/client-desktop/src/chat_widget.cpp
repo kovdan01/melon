@@ -118,15 +118,9 @@ void ChatWidget::receive_message()
     m_ui->MsgList->scrollToBottom();
 }
 
-void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it, bool has_previous)
+void ChatWidget::change_chat(chat_handle_t current_it)
 {
     this->set_current_chat_it(current_it);
-
-    if (has_previous)
-    {
-        previous_it->set_incomplete_message(capture_message_from_editor());
-        previous_it->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
-    }
 
     m_model_message_list->clear();
 
@@ -141,6 +135,14 @@ void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it
     int my_scroll_pos = m_current_chat_it->scrolling_position();
     m_ui->MsgList->verticalScrollBar()->setMaximum(my_scroll_pos);
     m_ui->MsgList->verticalScrollBar()->setValue(my_scroll_pos);
+}
+
+void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)
+{
+    previous_it->set_incomplete_message(capture_message_from_editor());
+    previous_it->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
+
+    this->change_chat(current_it);
 }
 
 Message ChatWidget::capture_message_from_editor()

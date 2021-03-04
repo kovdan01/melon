@@ -55,7 +55,6 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
     , m_submenu{QMenu(this)}
     , m_ui{new Ui::MainWindow}
-    , m_model_chat_list{new ChatListModel{this}}
 {
     m_ui->setupUi(this);
 
@@ -141,6 +140,11 @@ void MainWindow::delete_chat()
 {
     QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
 
+    if (!cur_index.isValid())
+    {
+        std::cout << "In deleting invalid index!" << std::endl;
+    }
+
     m_model_chat_list->delete_chat(cur_index);
 
     if (m_model_chat_list->rowCount(QModelIndex()) == 0)
@@ -172,7 +176,7 @@ void MainWindow::rename_chat()
     }
 }
 
-void MainWindow::change_chat(const QModelIndex &current_chat, const QModelIndex &previous_chat)
+void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat)
 {
     if (!current_chat.isValid())
         return;
@@ -181,13 +185,12 @@ void MainWindow::change_chat(const QModelIndex &current_chat, const QModelIndex 
 
     if (!previous_chat.isValid())
     {
-        m_chat_widget->change_chat(current_it, current_it, false);
+        m_chat_widget->change_chat(current_it);
         return;
     }
 
     chat_handle_t previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
-
-    m_chat_widget->change_chat(current_it, previous_it, true);
+    m_chat_widget->change_chat(current_it, previous_it);
 }
 
 }  // namespace melon::client_desktop
