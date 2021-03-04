@@ -16,16 +16,16 @@
 namespace melon::client_desktop
 {
 
-constexpr int MAX_NAME_CHAT_SIZE = 64;
+constexpr int MAX_CHAT_NAME_SIZE = 64;
 
 void MainWindow::replace_chat_widget_with_spacer()
 {
     if (m_chat_widget != nullptr)
     {
         disconnect(m_ui->ChatList->selectionModel(),
-                &QItemSelectionModel::currentChanged,
-                this,
-                &MainWindow::change_chat);
+                   &QItemSelectionModel::currentChanged,
+                   this,
+                   &MainWindow::change_chat);
 
         m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
@@ -77,6 +77,18 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->ChatList->setModel(m_model_chat_list);
 }
 
+class ChatNameException : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+    using std::runtime_error::operator=;
+};
+
+static void check_chat_name(const QString& text)
+{
+    if (text.isEmpty() || text.size() > MAX_CHAT_NAME_SIZE)
+        throw ChatNameException("Name is incorrect");
+}
 
 void MainWindow::add_chat()
 {
@@ -92,8 +104,7 @@ void MainWindow::add_chat()
         if (!ok)
             return;
 
-        if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
-            throw std::runtime_error("Name is incorrect");
+        check_chat_name(text);
 
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
@@ -107,7 +118,7 @@ void MainWindow::add_chat()
 
         ++counter;
     }
-    catch (const std::exception& e)
+    catch (const ChatNameException& e)
     {
         QMessageBox::critical(this, tr("Oops!"), QLatin1String(e.what()));
     }
@@ -138,26 +149,24 @@ void MainWindow::delete_chat()
 
 void MainWindow::rename_chat()
 {
-    QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
-
-    auto old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
-    bool ok;
-
     try
     {
+        bool ok;
+        QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
+
+        QString old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
+
         QString text = QInputDialog::getText(this, tr("Type new name"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              old_name, &ok);
         if (!ok)
             return;
 
-        if (text.isEmpty() && text.size() > MAX_NAME_CHAT_SIZE)
-            throw std::runtime_error("Name is incorrect");
+        check_chat_name(text);
 
         m_model_chat_list->setData(cur_index, text, Qt::DisplayRole);
-        m_model_chat_list->set_external_chat(cur_index, text);
     }
-    catch (const std::exception& e)
+    catch (const ChatNameException& e)
     {
         QMessageBox::critical(this, tr("Oops!"), QLatin1String(e.what()));
     }

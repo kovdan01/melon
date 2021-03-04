@@ -11,7 +11,7 @@ ChatListModel::ChatListModel(QObject* parent)
 
 int ChatListModel::rowCount(const QModelIndex& index) const
 {
-    return index.isValid() ? 0 : m_names_chats.count();
+    return index.isValid() ? 0 : static_cast<int>(m_it_chats.size());
 }
 
 QVariant ChatListModel::data(const QModelIndex& index, int role) const
@@ -23,10 +23,7 @@ QVariant ChatListModel::data(const QModelIndex& index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_names_chats[index.row()]);
-            break;
-        case Qt::UserRole:
-            data.setValue(m_it_chats[index.row()]);
+            data.setValue(m_it_chats[index.row()]->name());
             break;
         default:
             break;
@@ -47,7 +44,7 @@ bool ChatListModel::setData(const QModelIndex& index, const QVariant& value, int
         switch(role)
         {
         case Qt::DisplayRole:
-            m_names_chats[index.row()] = value.toString();
+            this->set_chat_name_in_ram_storage(index, value.toString());
             emit dataChanged(index, index);
             return true;
         default:
@@ -66,9 +63,8 @@ void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
     chat_handle_t it_added_chat = ram_storage.add_chat(chat);
 
     this->beginInsertRows(parent, row, row);
-    m_names_chats.append(it_added_chat->name());
-    this->endInsertRows();
     m_it_chats.emplace_back(it_added_chat);
+    this->endInsertRows();
 }
 
 void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& parent)
@@ -80,12 +76,11 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
     ram_storage.delete_chat(it_chat);
 
     this->beginRemoveRows(parent, row, row);
-    m_names_chats.remove(row);
-    this->endRemoveRows();
     m_it_chats.erase(m_it_chats.begin() + row);
+    this->endRemoveRows();
 }
 
-void ChatListModel::set_external_chat(const QModelIndex& index, const QString& name)
+void ChatListModel::set_chat_name_in_ram_storage(const QModelIndex &index, const QString &name)
 {
     chat_handle_t it_msg = m_it_chats[index.row()];
     it_msg->set_name(name);
@@ -96,6 +91,5 @@ ChatListModel::chat_handle_t ChatListModel::chat_it_by_index(const QModelIndex &
     int row = index.row();
     return m_it_chats[row];
 }
-
 
 }  // namespace melon::client_desktop

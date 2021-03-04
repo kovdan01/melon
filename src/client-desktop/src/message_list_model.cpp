@@ -12,7 +12,7 @@ MessageListModel::MessageListModel(QObject* parent)
 
 int MessageListModel::rowCount(const QModelIndex& index) const
 {
-    return index.isValid() ? 0 : m_text_messages.count();
+    return index.isValid() ? 0 : static_cast<int>(m_it_messages.size());
 }
 
 QVariant MessageListModel::data(const QModelIndex& index, int role) const
@@ -24,9 +24,9 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_text_messages[index.row()]);
+            data.setValue(m_it_messages[index.row()]->text());
             break;
-        case Qt::UserRole:
+        case MyRoles::MessageHandleRole:
             data.setValue(m_it_messages[index.row()]);
             break;
         case Qt::BackgroundRole:
@@ -47,50 +47,61 @@ Qt::ItemFlags MessageListModel::flags(const QModelIndex& index) const
 
 bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    if(index.isValid())
-        switch(role)
+    if (index.isValid())
+    {
+        switch (role)
         {
-            case Qt::DisplayRole:
-                m_text_messages[index.row()] = value.toString();
-                emit dataChanged(index, index);
-                return true;
-            default:
-                break;
+        case Qt::DisplayRole:
+            this->set_message_in_ram_storage(index, value.toString());
+            emit dataChanged(index, index);
+            return true;
+        default:
+            break;
         }
-
+    }
     return false;
 }
 
-void MessageListModel::add_message(message_handle_t it_message, const QModelIndex& parent)
+void MessageListModel::add_message(chat_handle_t it_chat, const Message& message)
 {
     int row = this->rowCount(QModelIndex()) + 1;
 
-    this->beginInsertRows(parent, row, row);
-    m_text_messages.append(it_message->text());
-    this->endInsertRows();
+    auto it_message = this->add_message_to_ram_storage(it_chat, message);
+
+    this->beginInsertRows(QModelIndex(), row, row);
     m_it_messages.emplace_back(it_message);
+    this->endInsertRows();
+
 }
+
+void MessageListModel::load_message(message_handle_t it_message)
+{
+    int row = this->rowCount(QModelIndex()) + 1;
+
+    this->beginInsertRows(QModelIndex(), row, row);
+    m_it_messages.emplace_back(it_message);
+    this->endInsertRows();
+}
+
 
 void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex &index, const QModelIndex& parent)
 {
     int row = index.row();
 
-    this->beginRemoveRows(parent, row, row);
-    m_text_messages.remove(row);
-    this->endRemoveRows();
-
     message_handle_t it_message = m_it_messages[row];
     it_chat->delete_message(it_message);
 
+    this->beginRemoveRows(parent, row, row);
     m_it_messages.erase(m_it_messages.begin() + row);
+    this->endRemoveRows();
 }
 
-MessageListModel::message_handle_t MessageListModel::add_external_message(chat_handle_t it_chat, const Message& message)
+MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(chat_handle_t it_chat, const Message& message)
 {
     return it_chat->add_message(message);
 }
 
-void MessageListModel::set_external_message(const QModelIndex& index, const QString& message)
+void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, const QString& message)
 {
     message_handle_t it_msg = m_it_messages[index.row()];
     it_msg->set_text(message);
@@ -98,10 +109,9 @@ void MessageListModel::set_external_message(const QModelIndex& index, const QStr
 
 void MessageListModel::clear()
 {
-    this->beginRemoveRows(QModelIndex(), 1, m_text_messages.count());
-    m_text_messages.clear();
-    this->endRemoveRows();
+    this->beginRemoveRows(QModelIndex(), 1, static_cast<int>(m_it_messages.size()));
     m_it_messages.clear();
+    this->endRemoveRows();
 }
 
 }  // namespace melon::client_desktop

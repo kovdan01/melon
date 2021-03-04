@@ -16,8 +16,7 @@ namespace melon::client_desktop
 {
 
 ChatWidget::ChatWidget(QWidget* parent)
-    : QWidget{parent}    
-    , m_model_message_list{new MessageListModel{this}}
+    : QWidget{parent}
     , m_ui{new Ui::ChatWidget}
 {
     m_ui->setupUi(this);
@@ -85,13 +84,15 @@ void ChatWidget::send_message()
     if (m_edit_mode)
     {
         QModelIndex index = m_model_message_list->index(m_edit_row);
+        std::cout << "Before setData!" << std::endl;
         m_model_message_list->setData(index, message_text, Qt::DisplayRole);
-        m_model_message_list->set_external_message(index, message_text);
+        std::cout << "After setData!" << std::endl;
 
         m_edit_mode = false;
         m_ui->MsgEdit->clear();
         m_ui->ReceiveButton->setVisible(true);
         m_ui->SendButton->setText(QStringLiteral("Send"));
+        std::cout << "Before return!" << std::endl;
         return;
     }
 
@@ -101,8 +102,7 @@ void ChatWidget::send_message()
                         std::chrono::high_resolution_clock::now());
 
     m_ui->MsgEdit->clear();
-    message_handle_t it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
-    m_model_message_list->add_message(it_message);
+    m_model_message_list->add_message(m_current_chat_it, new_message);
     m_ui->MsgList->scrollToBottom();
 }
 
@@ -113,8 +113,7 @@ void ChatWidget::receive_message()
                         {},
                         std::chrono::high_resolution_clock::now());
 
-    message_handle_t it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
-    m_model_message_list->add_message(it_message);
+    m_model_message_list->add_message(m_current_chat_it, new_message);
 
     m_ui->MsgList->scrollToBottom();
 }
@@ -135,7 +134,7 @@ void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it
 
     for (auto it_message = messages.begin(); it_message != messages.end(); ++it_message)
     {
-        m_model_message_list->add_message(it_message);
+        m_model_message_list->load_message(it_message);
     }
 
     this->load_message_to_editor(m_current_chat_it->incomplete_message());
@@ -164,7 +163,7 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    auto it_message = this->m_model_message_list->data(index, Qt::UserRole).value<message_handle_t>();
+    auto it_message = this->m_model_message_list->data(index, MessageListModel::MyRoles::MessageHandleRole).value<message_handle_t>();
 
     if (it_message->from() == QStringLiteral("Me"))
     {

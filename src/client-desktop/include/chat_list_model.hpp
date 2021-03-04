@@ -24,12 +24,12 @@ public:
 
     void add_chat(const Chat& chat, const QModelIndex& parent = QModelIndex());
     void delete_chat(const QModelIndex& index, const QModelIndex& parent = QModelIndex());
-    void set_external_chat(const QModelIndex& index, const QString& name);
 
     chat_handle_t chat_it_by_index(const QModelIndex& index);
 
 private:
-    QVector<QString> m_names_chats;
+    void set_chat_name_in_ram_storage(const QModelIndex& index, const QString& name);
+
     std::vector<chat_handle_t> m_it_chats;
 };
 

@@ -24,16 +24,22 @@ public:
     [[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
-    void add_message(message_handle_t it_message, const QModelIndex& parent = QModelIndex());
+    void add_message(chat_handle_t it_chat, const Message& message);
+    void load_message(message_handle_t it_message);
     void delete_message(chat_handle_t it_chat, const QModelIndex& index, const QModelIndex& parent = QModelIndex());
 
-    message_handle_t add_external_message(chat_handle_t it_chat, const Message& message);
-    void set_external_message(const QModelIndex& index, const QString& message);
     void clear();
 
+    enum MyRoles
+    {
+        MessageHandleRole = Qt::UserRole + 0,
+    };
+
 private:
+    message_handle_t add_message_to_ram_storage(chat_handle_t it_chat, const Message& message);
+    void set_message_in_ram_storage(const QModelIndex& index, const QString& message);
+
     constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
-    QVector<QString> m_text_messages;
     std::vector<message_handle_t> m_it_messages;
 };
 

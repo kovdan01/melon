@@ -46,7 +46,7 @@ public:
 
     using timestamp_t = std::chrono::high_resolution_clock::time_point;
 
-    Message() = default;
+    Message() = default;  // for QVariant
     Message(const Message&) = default;
     Message& operator=(const Message&) = default;
     Message(Message&&) = default;
@@ -82,9 +82,9 @@ public:
         return m_from;
     }
 
-    void set_text(const QString& text)
+    void set_text(QString text)
     {
-        m_text = text;
+        m_text = std::move(text);
     }
 
 private:
