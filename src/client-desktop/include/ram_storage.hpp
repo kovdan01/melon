@@ -1,15 +1,13 @@
 #ifndef MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 #define MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 
-#include <QListWidget>
 #include <QString>
+#include <QMetaType>
 
 #include <chrono>
 #include <list>
 #include <utility>
 #include <vector>
-#include <unordered_set>
-#include <iostream>
 
 namespace melon::client_desktop
 {

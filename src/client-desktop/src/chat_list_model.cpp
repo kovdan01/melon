@@ -69,15 +69,16 @@ void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
 
 void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& parent)
 {
-    auto& ram_storage = RAMStorageSingletone::get_instance();
     int row = index.row();
 
     chat_handle_t it_chat = m_it_chats[row];
-    ram_storage.delete_chat(it_chat);
 
     this->beginRemoveRows(parent, row, row);
     m_it_chats.erase(m_it_chats.begin() + row);
     this->endRemoveRows();
+
+    auto& ram_storage = RAMStorageSingletone::get_instance();
+    ram_storage.delete_chat(it_chat);
 }
 
 void ChatListModel::set_chat_name_in_ram_storage(const QModelIndex &index, const QString &name)

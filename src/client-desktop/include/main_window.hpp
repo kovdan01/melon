@@ -4,7 +4,7 @@
 #include <ui_main_window.h>
 
 #include <chat_widget.hpp>
-#include <chat_list_widget.hpp>
+#include <chat_list_view.hpp>
 #include <chat_list_model.hpp>
 
 #include <QMainWindow>

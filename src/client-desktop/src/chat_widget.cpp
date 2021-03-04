@@ -5,12 +5,11 @@
 #include <chat_widget.hpp>
 #include <message_list_model.hpp>
 
-#include <QScrollBar>
-#include<QMenuBar>
+#include <QMenuBar>
 #include <QMouseEvent>
+#include <QScrollBar>
 
 #include <chrono>
-#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -84,15 +83,12 @@ void ChatWidget::send_message()
     if (m_edit_mode)
     {
         QModelIndex index = m_model_message_list->index(m_edit_row);
-        std::cout << "Before setData!" << std::endl;
         m_model_message_list->setData(index, message_text, Qt::DisplayRole);
-        std::cout << "After setData!" << std::endl;
 
         m_edit_mode = false;
         m_ui->MsgEdit->clear();
         m_ui->ReceiveButton->setVisible(true);
         m_ui->SendButton->setText(QStringLiteral("Send"));
-        std::cout << "Before return!" << std::endl;
         return;
     }
 

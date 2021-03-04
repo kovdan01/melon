@@ -89,11 +89,12 @@ void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex &
     int row = index.row();
 
     message_handle_t it_message = m_it_messages[row];
-    it_chat->delete_message(it_message);
 
     this->beginRemoveRows(parent, row, row);
     m_it_messages.erase(m_it_messages.begin() + row);
     this->endRemoveRows();
+
+    it_chat->delete_message(it_message);
 }
 
 MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(chat_handle_t it_chat, const Message& message)

@@ -1,7 +1,5 @@
 #include <chat_widget.hpp>
-#include <chat_list_widget.hpp>
 #include <main_window.hpp>
-#include <ram_storage.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -10,8 +8,8 @@
 #include <QSplitter>
 #include <QWidget>
 
+#include <cassert>
 #include <stdexcept>
-#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -139,11 +137,7 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
 void MainWindow::delete_chat()
 {
     QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
-
-    if (!cur_index.isValid())
-    {
-        std::cout << "In deleting invalid index!" << std::endl;
-    }
+    assert(cur_index.isValid());
 
     m_model_chat_list->delete_chat(cur_index);
 

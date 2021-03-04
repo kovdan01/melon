@@ -2,6 +2,8 @@
 
 #include <QApplication>
 
+#include <iostream>
+
 namespace mc = melon::client_desktop;
 
 int main(int argc, char* argv[]) try

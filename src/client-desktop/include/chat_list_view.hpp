@@ -1,5 +1,5 @@
-#ifndef MELON_CLIENT_DESKTOP_CHAT_LIST_HPP_
-#define MELON_CLIENT_DESKTOP_CHAT_LIST_HPP_
+#ifndef MELON_CLIENT_DESKTOP_CHAT_LIST_VIEW_HPP_
+#define MELON_CLIENT_DESKTOP_CHAT_LIST_VIEW_HPP_
 
 #include <QListView>
 
@@ -20,5 +20,5 @@ protected:
 
 }  // namespace melon::client_desktop
 
-#endif  // MELON_CLIENT_DESKTOP_CHAT_LIST_HPP_
+#endif  // MELON_CLIENT_DESKTOP_CHAT_LIST_VIEW_HPP_
 

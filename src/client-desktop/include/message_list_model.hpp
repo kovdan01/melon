@@ -4,6 +4,7 @@
 #include <ram_storage.hpp>
 
 #include <QAbstractListModel>
+#include <QColor>
 
 #include <vector>
 

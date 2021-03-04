@@ -1,4 +1,4 @@
-#include <chat_list_widget.hpp>
+#include <chat_list_view.hpp>
 
 #include <QMouseEvent>
 
