@@ -98,40 +98,35 @@ void ChatWidget::send_message()
                         message_text,
                         {},
                         std::chrono::high_resolution_clock::now());
-    auto it_message = m_current_chat_it->add_message(new_message);
 
     m_ui->MsgEdit->clear();
+    auto it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
     m_model_message_list->add_message(it_message);
     m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::receive_message()
 {
-    Message msg(QLatin1String("Some Sender"),
+    Message new_message(QLatin1String("Some Sender"),
                 QStringLiteral("I wish I could hear you."),
                 {},
                 std::chrono::high_resolution_clock::now());
 
-    auto it_message = m_current_chat_it->add_message(msg);
-
+    auto it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
     m_model_message_list->add_message(it_message);
 
     m_ui->MsgList->scrollToBottom();
 }
 
-void ChatWidget::change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat)
-{
-    m_current_chat_item = current_chat;
-    if (m_current_chat_item == nullptr)
-        return;
+void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it, bool has_previous)
+{    
+    std::cerr << "In ChatWidget change_chat" << std::endl;
+    set_current_chat_it(current_it);
 
-    set_current_chat_it(it_by_qlistitem<chat_handle_t>(m_current_chat_item));
-
-    if (previous_chat != nullptr)
+    if (has_previous)
     {
-        auto it_previous = it_by_qlistitem<chat_handle_t>(previous_chat);
-        it_previous->set_incomplete_message(capture_message_from_editor());
-        it_previous->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
+        previous_it->set_incomplete_message(capture_message_from_editor());
+        previous_it->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
     }
 
     m_model_message_list->clear();

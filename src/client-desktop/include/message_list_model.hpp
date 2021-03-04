@@ -26,6 +26,8 @@ public:
 
     void add_message(message_handle_t it_message, const QModelIndex& parent = QModelIndex());
     void delete_message(chat_handle_t it_chat, const QModelIndex& index, const QModelIndex& parent = QModelIndex());
+
+    message_handle_t add_external_message(chat_handle_t it_chat, const Message& message);
     void set_external_message(const QModelIndex& index, const QString& message);
     void clear();
 

@@ -35,6 +35,7 @@ set(HEADERS
     include/ram_storage.hpp
     include/chat_list_widget.hpp
     include/message_list_model.hpp
+    include/chat_list_model.hpp
 )
 
 set(SOURCES
@@ -43,6 +44,7 @@ set(SOURCES
     src/main_window.cpp
     src/chat_list_widget.cpp
     src/message_list_model.cpp
+    src/chat_list_model.cpp
 )
 
 set(UI_FILES

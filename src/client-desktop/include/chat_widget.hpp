@@ -43,7 +43,7 @@ public:
     }
 
 public slots:  // NOLINT (readability-redundant-access-specifiers)
-    void change_chat(QListWidgetItem* current_chat, QListWidgetItem* previous_chat);
+    void change_chat(chat_handle_t current_it, chat_handle_t previous_it, bool has_previous);
     Message capture_message_from_editor();
     void load_message_to_editor(const Message& message);
 
@@ -61,7 +61,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu_sended_messages{this};
     QMenu m_submenu_received_messages{this};
     MessageListModel* m_model_message_list = new MessageListModel{this};
-    QListWidgetItem* m_current_chat_item = nullptr;
+    int m_current_chat_row = 0;
     QScopedPointer<Ui::ChatWidget> m_ui;
     chat_handle_t m_current_chat_it;
     QSet<int> m_pressed_keys;

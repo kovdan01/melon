@@ -74,7 +74,7 @@
         </widget>
        </item>
        <item>
-        <widget class="melon::client_desktop::ChatListWidget" name="ChatList">
+        <widget class="melon::client_desktop::ChatListView" name="ChatList">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
@@ -101,6 +101,9 @@
          </property>
          <property name="sizeAdjustPolicy">
           <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
          </property>
          <property name="verticalScrollMode">
           <enum>QAbstractItemView::ScrollPerPixel</enum>
@@ -201,7 +204,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>melon::client_desktop::ChatListWidget</class>
+   <class>melon::client_desktop::ChatListView</class>
    <extends>QListWidget</extends>
    <header location="global">chat_list_widget.hpp</header>
   </customwidget>

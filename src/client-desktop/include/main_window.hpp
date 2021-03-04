@@ -5,6 +5,7 @@
 
 #include <chat_widget.hpp>
 #include <chat_list_widget.hpp>
+#include <chat_list_model.hpp>
 
 #include <QMainWindow>
 #include <QSpacerItem>
@@ -33,12 +34,15 @@ private slots:
     void delete_chat();
     void rename_chat();
 
+    void change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat);
+
 private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu;
     QScopedPointer<Ui::MainWindow> m_ui;
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
     QPoint m_requested_menu_position;
+    ChatListModel* m_model_chat_list = new ChatListModel{this};
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();

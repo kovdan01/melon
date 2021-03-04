@@ -5,11 +5,11 @@
 namespace melon::client_desktop
 {
 
-ChatListWidget::ChatListWidget(QWidget* parent)
-    : QListWidget{parent}
+ChatListView::ChatListView(QWidget* parent)
+    : QListView{parent}
 {}
 
-void ChatListWidget::mousePressEvent(QMouseEvent* event)
+void ChatListView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::RightButton)
     {

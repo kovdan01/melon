@@ -59,14 +59,14 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
     return false;
 }
 
-void MessageListModel::add_message(message_handle_t message, const QModelIndex& parent)
+void MessageListModel::add_message(message_handle_t it_message, const QModelIndex& parent)
 {
     int row = this->rowCount(QModelIndex()) + 1;
 
     this->beginInsertRows(parent, row, row);
-    m_text_messages.append(message->text());
+    m_text_messages.append(it_message->text());
     this->endInsertRows();
-    m_it_messages.emplace_back(message);
+    m_it_messages.emplace_back(it_message);
 }
 
 void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex &index, const QModelIndex& parent)
@@ -81,6 +81,11 @@ void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex &
     it_chat->delete_message(it_message);
 
     m_it_messages.erase(m_it_messages.begin() + row);
+}
+
+MessageListModel::message_handle_t MessageListModel::add_external_message(chat_handle_t it_chat, const Message& message)
+{
+    return it_chat->add_message(message);
 }
 
 void MessageListModel::set_external_message(const QModelIndex& index, const QString& message)
