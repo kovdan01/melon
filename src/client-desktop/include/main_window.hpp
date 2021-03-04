@@ -39,7 +39,7 @@ private slots:
     void change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat);
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    QMenu m_submenu;
+    QMenu m_submenu{this};
     QScopedPointer<Ui::MainWindow> m_ui;
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;

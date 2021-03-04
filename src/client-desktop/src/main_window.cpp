@@ -51,7 +51,6 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
-    , m_submenu{QMenu(this)}
     , m_ui{new Ui::MainWindow}
 {
     m_ui->setupUi(this);
@@ -175,7 +174,7 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
     if (!current_chat.isValid())
         return;
 
-    chat_handle_t current_it = m_model_chat_list->chat_it_by_index(current_chat);
+    auto current_it = m_model_chat_list->chat_it_by_index(current_chat);
 
     if (!previous_chat.isValid())
     {
@@ -183,7 +182,7 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
         return;
     }
 
-    chat_handle_t previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
+    auto previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
     m_chat_widget->change_chat(current_it, previous_it);
 }
 
