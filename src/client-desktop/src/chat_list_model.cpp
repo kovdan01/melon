@@ -11,45 +11,49 @@ ChatListModel::ChatListModel(QObject* parent)
 
 int ChatListModel::rowCount(const QModelIndex& index) const
 {
-    return index.isValid()?0:m_names_chats.count();
+    return index.isValid() ? 0 : m_names_chats.count();
 }
 
 QVariant ChatListModel::data(const QModelIndex& index, int role) const
 {
     QVariant data;
 
-    if(index.isValid())
-        switch(role)
+    if (index.isValid())
+    {
+        switch (role)
         {
-            case Qt::DisplayRole:
-                data.setValue(m_names_chats[index.row()]);
-                break;
-            case Qt::UserRole:
-                data.setValue(m_it_chats[index.row()]);
-                break;
-            default:
-                break;
+        case Qt::DisplayRole:
+            data.setValue(m_names_chats[index.row()]);
+            break;
+        case Qt::UserRole:
+            data.setValue(m_it_chats[index.row()]);
+            break;
+        default:
+            break;
         }
+    }
     return data;
 }
 
 Qt::ItemFlags ChatListModel::flags(const QModelIndex& index) const
 {
-    return index.isValid()?Qt::ItemIsEnabled|Qt::ItemIsSelectable:Qt::ItemFlags();
+    return index.isValid() ? Qt::ItemIsEnabled | Qt::ItemIsSelectable : Qt::ItemFlags();
 }
 
 bool ChatListModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    if(index.isValid())
+    if (index.isValid())
+    {
         switch(role)
         {
-            case Qt::DisplayRole:
-                m_names_chats[index.row()] = value.toString();
-                emit dataChanged(index, index);
-                return true;
-            default:
-                break;
+        case Qt::DisplayRole:
+            m_names_chats[index.row()] = value.toString();
+            emit dataChanged(index, index);
+            return true;
+        default:
+            break;
         }
+    }
     return false;
 }
 
@@ -59,7 +63,7 @@ void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
 
     auto& ram_storage = RAMStorageSingletone::get_instance();
 
-    auto it_added_chat = ram_storage.add_chat(chat);
+    chat_handle_t it_added_chat = ram_storage.add_chat(chat);
 
     this->beginInsertRows(parent, row, row);
     m_names_chats.append(it_added_chat->name());
@@ -72,7 +76,7 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
     auto& ram_storage = RAMStorageSingletone::get_instance();
     int row = index.row();
 
-    auto it_chat = m_it_chats[row];
+    chat_handle_t it_chat = m_it_chats[row];
     ram_storage.delete_chat(it_chat);
 
     this->beginRemoveRows(parent, row, row);
@@ -83,7 +87,7 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
 
 void ChatListModel::set_external_chat(const QModelIndex& index, const QString& name)
 {
-    auto it_msg = m_it_chats[index.row()];
+    chat_handle_t it_msg = m_it_chats[index.row()];
     it_msg->set_name(name);
 }
 

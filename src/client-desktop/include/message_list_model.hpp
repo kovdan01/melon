@@ -39,4 +39,4 @@ private:
 
 }  // namespace melon::client_desktop
 
-#endif // MELON_CLIENT_DESKTOP_MESSAGE_LIST_MODEL_HPP_
+#endif  // MELON_CLIENT_DESKTOP_MESSAGE_LIST_MODEL_HPP_

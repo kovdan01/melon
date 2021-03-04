@@ -28,6 +28,8 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
+    using chat_handle_t = std::list<Chat>::iterator;
+
 private slots:
     void add_chat();
     void provide_chat_context_menu(const QPoint& pos);
@@ -42,7 +44,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     ChatWidget* m_chat_widget = nullptr;
     QSpacerItem* m_spacer = nullptr;
     QPoint m_requested_menu_position;
-    ChatListModel* m_model_chat_list = new ChatListModel{this};
+    ChatListModel* m_model_chat_list = nullptr;
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();

@@ -22,10 +22,10 @@ void MainWindow::replace_chat_widget_with_spacer()
 {
     if (m_chat_widget != nullptr)
     {
-//        disconnect(m_ui->ChatList,
-//                   &m_ui->ChatList->selectionModel()->currentChanged(),
-//                   m_chat_widget,
-//                   &ChatWidget::change_chat);
+        disconnect(m_ui->ChatList->selectionModel(),
+                &QItemSelectionModel::currentChanged,
+                this,
+                &MainWindow::change_chat);
 
         m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
@@ -53,8 +53,9 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
-    , m_submenu(QMenu(this))
+    , m_submenu{QMenu(this)}
     , m_ui{new Ui::MainWindow}
+    , m_model_chat_list{new ChatListModel{this}}
 {
     m_ui->setupUi(this);
 
@@ -95,13 +96,13 @@ void MainWindow::add_chat()
             throw std::runtime_error("Name is incorrect");
 
         if (m_spacer != nullptr)
-            replace_spacer_with_chat_widget();
+            this->replace_spacer_with_chat_widget();
 
         Chat chat(text, static_cast<Chat::id_t>(counter));
 
         m_model_chat_list->add_chat(chat);
-        auto cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
-        auto cur_index = m_model_chat_list->index(cur_chat_row);
+        int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
+        QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);
         m_ui->ChatList->setCurrentIndex(cur_index);
 
         ++counter;
@@ -117,7 +118,7 @@ void MainWindow::add_chat()
 
 void MainWindow::provide_chat_context_menu(const QPoint& pos)
 {
-    auto cur_index = m_ui->ChatList->indexAt(pos);
+    QModelIndex cur_index = m_ui->ChatList->indexAt(pos);
     if (!cur_index.isValid())
         return;
 
@@ -127,19 +128,19 @@ void MainWindow::provide_chat_context_menu(const QPoint& pos)
 
 void MainWindow::delete_chat()
 {
-    auto cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
+    QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
 
     m_model_chat_list->delete_chat(cur_index);
 
     if (m_model_chat_list->rowCount(QModelIndex()) == 0)
-        replace_chat_widget_with_spacer();
+        this->replace_chat_widget_with_spacer();
 }
 
 void MainWindow::rename_chat()
 {
-    auto cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
+    QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
 
-    QString old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
+    auto old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
     bool ok;
 
     try
@@ -167,7 +168,7 @@ void MainWindow::change_chat(const QModelIndex &current_chat, const QModelIndex 
     if (!current_chat.isValid())
         return;
 
-    auto current_it = m_model_chat_list->chat_it_by_index(current_chat);
+    chat_handle_t current_it = m_model_chat_list->chat_it_by_index(current_chat);
 
     if (!previous_chat.isValid())
     {
@@ -175,7 +176,7 @@ void MainWindow::change_chat(const QModelIndex &current_chat, const QModelIndex 
         return;
     }
 
-    auto previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
+    chat_handle_t previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
 
     m_chat_widget->change_chat(current_it, previous_it, true);
 }

@@ -1,8 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
-#include <ram_storage.hpp>
 #include <message_list_model.hpp>
+#include <ram_storage.hpp>
 
 #include <ui_chat_widget.h>
 
@@ -34,12 +34,6 @@ public:
     void set_current_chat_it(chat_handle_t it)
     {
         m_current_chat_it = it;
-    }
-
-    template<typename ItType>
-    [[nodiscard]] ItType it_by_qlistitem(QListWidgetItem* item)
-    {
-        return item->data(Qt::UserRole).value<ItType>();
     }
 
 public slots:  // NOLINT (readability-redundant-access-specifiers)

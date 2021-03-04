@@ -16,7 +16,8 @@ namespace melon::client_desktop
 {
 
 ChatWidget::ChatWidget(QWidget* parent)
-    : QWidget{parent}
+    : QWidget{parent}    
+    , m_model_message_list{new MessageListModel{this}}
     , m_ui{new Ui::ChatWidget}
 {
     m_ui->setupUi(this);
@@ -83,7 +84,7 @@ void ChatWidget::send_message()
 
     if (m_edit_mode)
     {
-        auto index = m_model_message_list->index(m_edit_row);
+        QModelIndex index = m_model_message_list->index(m_edit_row);
         m_model_message_list->setData(index, message_text, Qt::DisplayRole);
         m_model_message_list->set_external_message(index, message_text);
 
@@ -100,7 +101,7 @@ void ChatWidget::send_message()
                         std::chrono::high_resolution_clock::now());
 
     m_ui->MsgEdit->clear();
-    auto it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
+    message_handle_t it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
     m_model_message_list->add_message(it_message);
     m_ui->MsgList->scrollToBottom();
 }
@@ -108,20 +109,19 @@ void ChatWidget::send_message()
 void ChatWidget::receive_message()
 {
     Message new_message(QLatin1String("Some Sender"),
-                QStringLiteral("I wish I could hear you."),
-                {},
-                std::chrono::high_resolution_clock::now());
+                        QStringLiteral("I wish I could hear you."),
+                        {},
+                        std::chrono::high_resolution_clock::now());
 
-    auto it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
+    message_handle_t it_message = m_model_message_list->add_external_message(m_current_chat_it, new_message);
     m_model_message_list->add_message(it_message);
 
     m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it, bool has_previous)
-{    
-    std::cerr << "In ChatWidget change_chat" << std::endl;
-    set_current_chat_it(current_it);
+{
+    this->set_current_chat_it(current_it);
 
     if (has_previous)
     {
@@ -160,11 +160,13 @@ void ChatWidget::load_message_to_editor(const Message& message)
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
 {
-    auto index = m_ui->MsgList->selectionModel()->currentIndex();
+    QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
     if (!index.isValid())
         return;
 
-    if (this->m_model_message_list->data(index, Qt::DisplayRole) != QStringLiteral("I wish I could hear you."))
+    auto it_message = this->m_model_message_list->data(index, Qt::UserRole).value<message_handle_t>();
+
+    if (it_message->from() == QStringLiteral("Me"))
     {
         m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }
@@ -176,21 +178,21 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 
 void ChatWidget::delete_message()
 {
-    auto index = m_ui->MsgList->selectionModel()->currentIndex();
+    QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
 
     m_model_message_list->delete_message(m_current_chat_it, index);
 }
 
 void ChatWidget::edit_message()
 {
-    auto index = m_ui->MsgList->selectionModel()->currentIndex();
+    QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
 
     m_edit_mode = true;
     m_edit_row = index.row();
 
-    auto message_text = m_model_message_list->data(index, Qt::DisplayRole);
+    auto message_text = m_model_message_list->data(index, Qt::DisplayRole).toString();
 
-    m_ui->MsgEdit->setText(message_text.toString());
+    m_ui->MsgEdit->setText(message_text);
 
     m_ui->ReceiveButton->setVisible(false);
     m_ui->SendButton->setText(QStringLiteral("Done"));
