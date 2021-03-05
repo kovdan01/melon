@@ -20,7 +20,7 @@ fi
 TRIPLE="$(${GXX} -dumpmachine)"
 if [ ! -f "${LIBSTDCXX_INCLUDES}/${TRIPLE}/bits/c++config.h" ] ; then
     echo 'Cannot find bits/c++config.h under triple subdir!'
-    exit 2
+    # exit 2
 fi
 LIBSTDCXX_INCLUDES="${LIBSTDCXX_INCLUDES};${LIBSTDCXX_INCLUDES}/${TRIPLE}"
 cmake -G Ninja \
@@ -49,4 +49,4 @@ cmake -G Ninja \
       -DLIBCXX_INCLUDE_DOCS=OFF \
       -DLIBCXX_INCLUDE_TESTS=OFF \
       "$@"
-  
+
