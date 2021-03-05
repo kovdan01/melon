@@ -5,7 +5,7 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
 ### Configuration example for Arch Linux:
 
 1. Install MariaDB for server:
-2. ```bash
+   ```bash
    sudo pacman -S mariadb
    sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
    ```
