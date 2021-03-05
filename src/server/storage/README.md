@@ -1,11 +1,11 @@
 # Storage Service Configuration guide
 
-Storage service uses  MariaDB (community-developed fork of the MySQL relational database management system).
+Storage service uses MariaDB (community-developed fork of the MySQL relational database management system).
 
 ### Configuration example for Arch Linux:
 
 1. Install MariaDB for server:
-   ```bash
+2. ```bash
    sudo pacman -S mariadb
    sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
    ```
@@ -58,6 +58,20 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
 
 ![](docs/db_scheme.jpg)
 
+- **Domain**
+  - `domain_id`:
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
+    - *aim:* unique and auto-incremented value to identify domain name on server locally
+  - `hostname`:
+    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+    - *C++ type:* `std::string`
+    - *aim:* unique domain name
+  - `external`:
+    - *MariaDB type:* `BOOLEAN NOT NULL DEFAULT 0`
+    - *C++ type:* `bool`
+    - *aim:* flag to distinguish affiliation of domains
+
 - **User**
   - `user_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
@@ -76,6 +90,25 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *C++ type:* `std::uint64_t`
     - *aim:* is used to create unique index in pair with `username` to uniquely identify user globally  
 
+- **Chat**
+  - `chat_id` + `domain_id` - unique value to identify chat globally
+  - `chat_id`:
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
+    - *C++ type:* `std::uint64_t`
+    - *aim:* unique and auto-increment value to identify chat on server locally
+  - `domain_id`: 
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *C++ type:* `std::uint64_t`
+    - *aim:* shows where chat is created
+  - `chatname`:
+    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+    - *C++ type:* `std::string`
+    - *aim:* NOT unique chatname
+
+
+- **Chat_User**
+  - *aim*: matchs chats with participants (many-to-many relationship) 
+
 - **Message**
   - `message_id` + `chat_id` + `domain_id` - unique value to identify message globally
   - `message_id`:
@@ -85,7 +118,7 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
   - `domain_id`: 
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* shows where the chat is created to which message relates to
+    - *aim:* shows where the chat which message relates to is created
   - `chat_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -107,35 +140,4 @@ Storage service uses  MariaDB (community-developed fork of the MySQL relational 
     - *C++ type:* `std::chrono::high_resolution_clock::time_point`
     - *aim:* stores timestamp
 
-- **Chat**
-  - `chat_id` + `domain_id` - unique value to identify chat globally
-  - `chat_id`:
-    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`
-    - *C++ type:* `std::uint64_t`
-    - *aim:* unique and auto-increment value to identify chat on server locally
-  - `domain_id`: 
-    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
-    - *C++ type:* `std::uint64_t`
-    - *aim:* shows where chat is created
-  - `chatname`:
-    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
-    - *C++ type:* `std::string`
-    - *aim:* NOT unique chatname
-
-- **Chat_User**
-  - *aim*: matchs chats with participants (many-to-many relationship) 
-      
-- **Domain**
-  - `domain_id`:
-    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
-    - *C++ type:* `std::uint64_t`
-    - *aim:* unique and auto-incremented value to identify domain name on server locally
-  - `hostname`:
-    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
-    - *C++ type:* `std::string`
-    - *aim:* unique domain name
-  - `external`:
-    - *MariaDB type:* `BOOLEAN NOT NULL DEFAULT 0`
-    - *C++ type:* `bool`
-    - *aim:* flag to distinguish affiliation of domains
 
