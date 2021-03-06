@@ -11,14 +11,14 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
-//    std::string domain1 = "Bonnie server";
-//    std::string domain2 = "Clyde server";
+    std::string domain1 = "Bonnie server";
+    std::string domain2 = "Clyde server";
 
 //    /* Domains */
 
-//    mc::Domain domain(0, domain1, 0);
-//    mss::add_domain(db, domain);
-//    mss::add_domain(db, domain);
+    mc::Domain domain(0, domain1, 0);
+    mss::add_domain(db, domain);
+    mss::add_domain(db, domain);
 //    mss::find_domain_id(db, domain1);
 
 //    mss::find_domain_id(db, domain2);

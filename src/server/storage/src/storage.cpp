@@ -33,6 +33,8 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 
 /* Domains */
 
+
+// maybe exists function from sqlpp11 should read more and definetely change
 std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_hostname)
 {
     for (const auto& row : db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == searched_hostname)))
@@ -47,8 +49,7 @@ std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_
     return 0;
 }
 
-// strange that if add twice the the same hostname - it does not throw any error (though it is unique key in db) - try to find why
-
+// add only unique domains
 void add_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
 {
     db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = domain.hostname()));
@@ -65,10 +66,27 @@ void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& doma
 /* Users */
 
 
+// List of all users in database
+
+std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
+{
+    std::vector<std::string> all_users_on_server;
+    for (const auto& row : db(select(G_USERS.username).from(G_USERS).unconditionally()))
+    {
+        all_users_on_server.emplace_back(row.username);
+    }
+    return all_users_on_server;
+}
+
 void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, std::string searched_hostname)
 {
     std::uint64_t domain_id = find_domain_id(db, searched_hostname);
     db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.domainId = domain_id,  G_USERS.status = static_cast<std::uint8_t>(melon::core::User::Status::OFFLINE)));
+}
+
+void remove_user(sqlpp::mysql::connection& db, const melon::core::User& user)
+{
+    db(remove_from(G_USERS).where(G_USERS.userId == user.user_id()));
 }
 
 std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
@@ -115,6 +133,11 @@ void add_message(sqlpp::mysql::connection& db, const melon::core::Message& messa
                                    G_MESSAGES.chatId = message.chat_id()));
 }
 
+void update_text(sqlpp::mysql::connection& db, std::string new_text, const melon::core::Message& message)
+{
+    db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == message.message_id()));
+}
+
 void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
 {
     db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == message.message_id()));
@@ -145,9 +168,9 @@ void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
     db(remove_from(G_CHATS).where(G_CHATS.chatId == chat.chat_id()));
 }
 
-//void update_chatname(sqlpp::mysql::connection& db, std::string new_chatname)
-//{
-//    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname));
-//}
+void update_chatname(sqlpp::mysql::connection& db, std::string new_chatname, const melon::core::Chat& chat)
+{
+    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_MESSAGES.chatId == chat.chat_id()));
+}
 
 }  // namespace melon::server::storage
