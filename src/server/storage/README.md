@@ -64,7 +64,7 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-incremented value to identify domain name on server locally
   - `hostname`:
-    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL`
+    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL` UNIQUE KEY 
     - *C++ type:* `std::string`
     - *aim:* unique domain name
   - `external`:
