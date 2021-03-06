@@ -47,8 +47,7 @@ std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_
     return 0;
 }
 
-// strange that if add twice the the same hostname - it does not throw any error (though it is unique key in db) - try to find why
-
+// add only unique hostnames
 void add_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
 {
     db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = domain.hostname()));
