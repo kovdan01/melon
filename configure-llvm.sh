@@ -7,22 +7,17 @@ LIBSTDCXX_INCLUDES=$(
          |  sed '1d;$d' \
          |  while read ; do
                 DIR="$(realpath $(echo "$REPLY" | sed -e 's/ *//'))"
-                if [ -f "${DIR}/cxxabi.h" ] ; then
+                if [ -f "${DIR}/cxxabi.h" -o -f "${DIR}/bits/c++config.h" ] ; then
                     echo "${DIR}"
-                    break
                 fi
             done
 )
-if [ -z LIBSTDCXX_INCLUDES ] ; then
-    echo 'Cannot find cxxabi.h in g++ includes!'
+LIBSTDCXX_INCLUDES="${LIBSTDCXX_INCLUDES/$'\n'/;}"
+DELIMS="${LIBSTDCXX_INCLUDES//[^;]}"
+if [ ${#DELIMS} != 1 ] ; then
+    echo "Couldn't determine two directories with needed includes!"
     exit 1
 fi
-TRIPLE="$(${GXX} -dumpmachine)"
-if [ ! -f "${LIBSTDCXX_INCLUDES}/${TRIPLE}/bits/c++config.h" ] ; then
-    echo 'Cannot find bits/c++config.h under triple subdir!'
-    # exit 2
-fi
-LIBSTDCXX_INCLUDES="${LIBSTDCXX_INCLUDES};${LIBSTDCXX_INCLUDES}/${TRIPLE}"
 cmake -G Ninja \
       -DCMAKE_C_COMPILER="$(${GXX} -print-prog-name=gcc)" \
       -DCMAKE_CXX_COMPILER="${GXX}" \
@@ -49,4 +44,3 @@ cmake -G Ninja \
       -DLIBCXX_INCLUDE_DOCS=OFF \
       -DLIBCXX_INCLUDE_TESTS=OFF \
       "$@"
-
