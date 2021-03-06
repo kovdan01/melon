@@ -6,7 +6,7 @@
 namespace melon::server::auth
 {
 
-using namespace melon::core::auth;
+namespace mca = melon::core::auth;
 
 class SaslServerConnection
 {
@@ -15,8 +15,8 @@ public:
     ~SaslServerConnection();
 
     [[nodiscard]] std::string_view list_mechanisms() const;
-    StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
-    StepResult step(std::string_view client_response);
+    mca::StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
+    mca::StepResult step(std::string_view client_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
 
