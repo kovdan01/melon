@@ -14,40 +14,59 @@ int main() try
     std::string domain1 = "Bonnie server";
     std::string domain2 = "Clyde server";
 
-//    /* Domains */
+    /* Domains */
 
     mc::Domain domain(0, domain1, 0);
-    mss::add_domain(db, domain);
-    mss::add_domain(db, domain);
-//    mss::find_domain_id(db, domain1);
-
-//    mss::find_domain_id(db, domain2);
-
-
+//    mss::add_domain(db, domain);
 //    mss::remove_domain(db, domain);
-//    mss::find_domain_id(db, domain1);
+    mss::find_domain_id(db, domain1);
 
-//    /* Users */
+    /* Users */
 
-//    mc::User user(0, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
-//    mss::add_user(db, user, domain1);
-//    mss::add_user(db, user, domain2);
+    mc::User user(0, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
+    mss::add_user(db, user, domain1);
 
-//    /* Chats */
+    mc::User user2(0, 0, "Bey Hakim", mc::User::Status::OFFLINE);
+    mss::add_user(db, user, domain2);
 
-//    mc::Chat chat(0, 0, "secret_chat");
-//    mss::add_chat(db, chat, domain1);
+    std::cout << "Get all usernames\n";
+    std::vector<std::string> all_usernames = mss::get_names_of_all_users(db);
+    for (const auto& a : all_usernames)
+    {
+        std::cout << a << '\n';
+    }
+
+    mss::count_users(db);
+
+    mss::remove_user(db, user2);
+    std::cout << "Get all usernames\n";
+    for (const auto& a : all_usernames)
+    {
+        std::cout << a << '\n';
+    }
+
+    /* Chats */
+
+    mc::Chat chat(1, 0, "secret_chat");
+    mss::add_chat(db, chat, domain1);
+        //should add extra details to FK to dump to update or delete
+//    mss::update_chatname(db, "FBIchat", chat);
+//    mss::remove_chat(db, chat);
 
 
     /* Messages */
 
     // at what moment determine chat_id ?
 
-//    mc::Message message(0, 0, 1, 1, "Let's protest", mc::Message::Status::SENT);
-//    mss::add_message(db, message);
+    mc::Message message(0, 8, 1, 1, "Let's protest", mc::Message::Status::SENT);
+    mss::add_message(db, message);
 
-//    mc::Message message2(0, 0, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
-//    mss::add_message(db, message2);
+    mss::count_number_recieved_messages(db);
+
+    mc::Message message2(0, 8, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
+    mss::add_message(db, message2);
+
+    mss::count_number_recieved_messages(db);
 
 
 

@@ -26,7 +26,7 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
     config->database = "melon";
     config->host = "localhost";
     config->password = "melonpass";
-    //config->debug = true;
+    config->debug = true;
     return config;
 }
 
@@ -67,8 +67,15 @@ void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& doma
 /* Users */
 
 
-// List of all users in database
+void count_users(sqlpp::mysql::connection& db)
+{
+    for (const auto& row : db(select(count(G_USERS.userId)).from(G_USERS).unconditionally()))
+    {
+       std::cout << "Number of users : " <<  row.count << std::endl;
+    }
+}
 
+// List of all users in database
 std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
 {
     std::vector<std::string> all_users_on_server;
@@ -124,11 +131,23 @@ void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& us
 
 /* Messages */
 
+
+// all recieved messages for all users
+void count_number_recieved_messages (sqlpp::mysql::connection& db)
+{
+    for (const auto& row : db(select(count(G_MESSAGES.messageId)).from(G_MESSAGES)
+                              .where(G_MESSAGES.status == static_cast<std::uint8_t>(melon::core::Message::Status::RECEIVED))))
+    {
+       std::cout << "Number of messagers : " <<  row.count << std::endl;
+    }
+
+}
+
 void add_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
 {
     db(insert_into(G_MESSAGES).set(G_MESSAGES.text = message.text(),
                                    G_MESSAGES.timesend = message.timestamp(),
-                                   G_MESSAGES.status = static_cast<std::uint8_t>(melon::core::Message::Status::SENT),
+                                   G_MESSAGES.status = static_cast<std::uint8_t>(message.status()),
                                    G_MESSAGES.domainId = message.domain_id(),
                                    G_MESSAGES.userId = message.user_id(),
                                    G_MESSAGES.chatId = message.chat_id()));
@@ -137,6 +156,11 @@ void add_message(sqlpp::mysql::connection& db, const melon::core::Message& messa
 void update_text(sqlpp::mysql::connection& db, std::string new_text, const melon::core::Message& message)
 {
     db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == message.message_id()));
+}
+
+void update_status_for_seen(sqlpp::mysql::connection& db, const melon::core::Message& message)
+{
+    db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(melon::core::Message::Status::SEEN)).where(G_MESSAGES.messageId == message.message_id()));
 }
 
 void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
@@ -171,7 +195,7 @@ void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 
 void update_chatname(sqlpp::mysql::connection& db, std::string new_chatname, const melon::core::Chat& chat)
 {
-    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_MESSAGES.chatId == chat.chat_id()));
+    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == chat.chat_id()));
 }
 
 }  // namespace melon::server::storage

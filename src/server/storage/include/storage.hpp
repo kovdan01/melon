@@ -14,14 +14,10 @@ namespace melon::server::storage
 
 /*
  *
- * 3. deleting functions (check that FK are ok when delete)
+ * 3. deleting functions (check that FK are not ok now when delete)
  * 5. make arrayy of users in chat
- * 8. check that user exists globally
- * 12. check that databse allow ionly unique pair domain_id+user_id (hostname + username)
+ * 12. check that databse allow only unique pair domain_id+user_id (hostname + username)
  * 13. change status of message for sent->recieved->seen
- *
- * All users count
- * All not seen messagers count
  * sets last_login time to the current timestamp
  * sorted messengers of chat
  *
@@ -41,6 +37,7 @@ void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& doma
 
 /* Users */
 
+void count_users(sqlpp::mysql::connection& db);
 std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db);
 void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, std::string searched_hostname);
 void remove_user(sqlpp::mysql::connection& db, const melon::core::User& user);
@@ -51,8 +48,10 @@ void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& us
 
 /* Messages */
 
+void count_number_recieved_messages (sqlpp::mysql::connection& db);
 void add_message(sqlpp::mysql::connection& db, const melon::core::Message& message);
 void update_text(sqlpp::mysql::connection& db, std::string new_text, const melon::core::Message& message);
+void update_status_for_seen(sqlpp::mysql::connection& db, const melon::core::Message& message);
 void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& message);
 
 /* Chat */
