@@ -85,4 +85,4 @@ inline SaslServerSingleton::~SaslServerSingleton()
     sasl_server_done();
 }
 
-}
+}  // namespace melon::server::auth

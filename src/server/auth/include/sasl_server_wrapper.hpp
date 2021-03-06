@@ -40,7 +40,8 @@ private:
     SaslServerSingleton();
     ~SaslServerSingleton();
 };
-}
+
+}  // namespace melon::server::auth
 
 #include "sasl_server_wrapper.ipp"
 
