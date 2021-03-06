@@ -224,9 +224,9 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/P1956.patch".format(repo))
 
         execute_command("chmod +x {}/configure-llvm.sh".format(repo))
-        execute_command("{}/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
-        execute_command("cmake --build build --target all")
-        execute_command("cmake --build build --target install")
+        execute_command("sudo {}/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
+        execute_command("sudo cmake --build build --target all")
+        execute_command("sudo cmake --build build --target install")
 
         os.chdir(repo)
 
