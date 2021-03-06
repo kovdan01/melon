@@ -277,12 +277,13 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
+        os.environ['CXX']='/usr/bin/clang++'
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
-        execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset=clang --prefix={}".format(boost_install_dir))
-        execute_command("./b2 clean")
-        execute_command('./b2 toolset=clang cxxflags="-std=c++20 -stdlib=libc++" linkflags="-stdlib=libc++" --prefix={} stage release'.format(boost_install_dir))
-        execute_command('./b2 install toolset=clang cxxflags="-std=c++20 -stdlib=libc++" linkflags="-stdlib=libc++" --prefix={}'.format(boost_install_dir))
+
+        execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset=clang")
+        execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
