@@ -1,6 +1,21 @@
 namespace melon::core
 {
 
+[[nodiscard]] inline std::uint64_t Domain::domain_id() const
+{
+    return m_domain_id;
+}
+
+[[nodiscard]] inline const std::string& Domain::hostname() const
+{
+    return m_hostname;
+}
+
+[[nodiscard]] inline bool Domain::external() const
+{
+    return m_external;
+}
+
 [[nodiscard]] inline User::Status User::status() const
 {
     return m_status;
@@ -11,6 +26,11 @@ namespace melon::core
     return m_user_id;
 }
 
+[[nodiscard]] inline std::uint64_t User::domain_id() const
+{
+    return m_domain_id;
+}
+
 [[nodiscard]] inline const std::string& User::username() const
 {
     return m_username;
@@ -19,6 +39,11 @@ namespace melon::core
 [[nodiscard]] inline std::uint64_t Message::message_id() const
 {
     return m_message_id;
+}
+
+[[nodiscard]] inline std::uint64_t Message::domain_id() const
+{
+    return m_domain_id;
 }
 
 [[nodiscard]] inline const std::string& Message::text() const
@@ -50,6 +75,12 @@ namespace melon::core
 {
     return m_chat_id;
 }
+
+[[nodiscard]] inline std::uint64_t Chat::domain_id() const
+{
+    return m_domain_id;
+}
+
 [[nodiscard]] inline const std::string& Chat::chatname() const
 {
     return m_chatname;
