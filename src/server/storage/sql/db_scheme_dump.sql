@@ -106,6 +106,7 @@ CREATE TABLE `users` (
   `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `domain_id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`user_id`),
+  UNIQUE KEY `unique_pair_username_domain_id` (`username`,`domain_id`),
   KEY `domain_id` (`domain_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -120,4 +121,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-06 21:44:44
+-- Dump completed on 2021-03-07  1:18:12

@@ -14,7 +14,7 @@ namespace melon::server::storage
 
 /*
  *
- * 3. deleting functions (check that FK are not ok now when delete)
+ * 3. deleting functions (FK are not ok now when delete)
  * 5. make arrayy of users in chat
  * 12. check that databse allow only unique pair domain_id+user_id (hostname + username)
  * 13. change status of message for sent->recieved->seen
@@ -45,6 +45,7 @@ std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db);
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db);
 void make_user_online(sqlpp::mysql::connection& db, const melon::core::User& user);
 void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& user);
+
 
 /* Messages */
 

@@ -17,17 +17,28 @@ int main() try
     /* Domains */
 
     mc::Domain domain(0, domain1, 0);
-//    mss::add_domain(db, domain);
+    //same hostnames are not allowed:
+    //mss::add_domain(db, domain);
+    //mss::add_domain(db, domain);
+
+
 //    mss::remove_domain(db, domain);
+
+    //add find hostname, if not exists add
     mss::find_domain_id(db, domain1);
 
     /* Users */
 
-    mc::User user(0, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
+    mc::User user(3, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
     mss::add_user(db, user, domain1);
 
-    mc::User user2(0, 0, "Bey Hakim", mc::User::Status::OFFLINE);
-    mss::add_user(db, user, domain2);
+    mc::User user2(2, 0, "Bey Hakim", mc::User::Status::OFFLINE);
+    mss::add_user(db, user2, domain2);
+
+    //same domain_id + username are not allowed
+    //mss::add_user(db, user, domain1);
+
+
 
     std::cout << "Get all usernames\n";
     std::vector<std::string> all_usernames = mss::get_names_of_all_users(db);
@@ -39,6 +50,7 @@ int main() try
     mss::count_users(db);
 
     mss::remove_user(db, user2);
+    mss::remove_user(db, user);
     std::cout << "Get all usernames\n";
     for (const auto& a : all_usernames)
     {
@@ -47,10 +59,10 @@ int main() try
 
     /* Chats */
 
-    mc::Chat chat(1, 0, "secret_chat");
+    mc::Chat chat(2, 0, "secret_chat");
     mss::add_chat(db, chat, domain1);
         //should add extra details to FK to dump to update or delete
-//    mss::update_chatname(db, "FBIchat", chat);
+    mss::update_chatname(db, "FBIchat", chat);
 //    mss::remove_chat(db, chat);
 
 
@@ -63,8 +75,9 @@ int main() try
 
     mss::count_number_recieved_messages(db);
 
-    mc::Message message2(0, 8, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
+    mc::Message message2(14, 8, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
     mss::add_message(db, message2);
+    mss::update_text(db, "You better watch yourself", message2);
 
     mss::count_number_recieved_messages(db);
 
