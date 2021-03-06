@@ -1,4 +1,4 @@
-#include <sasl_wrapper.hpp>
+#include <sasl_server_wrapper.hpp>
 
 #include <cassert>
 #include <iostream>

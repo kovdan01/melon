@@ -28,6 +28,7 @@ set(HEADERS
     include/melon/core.hpp
     include/melon/core/exception.hpp
     include/melon/core/jni_tests.hpp
+    include/melon/core/sasl_client_wrapper.hpp
     include/melon/core/storage_class.hpp
     include/melon/core/storage_class.ipp
     include/melon/core/yaml_config.hpp

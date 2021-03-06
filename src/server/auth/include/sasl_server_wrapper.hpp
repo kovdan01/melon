@@ -150,6 +150,6 @@ private:
 
 }  // namespace melon::server::auth
 
-#include "sasl_wrapper.ipp"
+#include "sasl_server_wrapper.ipp"
 
 #endif  // MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
