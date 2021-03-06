@@ -13,10 +13,7 @@ namespace melon::server::storage
 {
 
 /*
- *
- * 3. deleting functions (FK are not ok now when delete)
  * 5. make arrayy of users in chat
- * 12. check that databse allow only unique pair domain_id+user_id (hostname + username)
  * 13. change status of message for sent->recieved->seen
  * sets last_login time to the current timestamp
  * sorted messengers of chat

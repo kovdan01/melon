@@ -188,6 +188,7 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
     return messages_in_chat;
 }
 
+//delete chat -> delete messages from chats, all info in Chats_Users concearnig this chat
 void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
     db(remove_from(G_CHATS).where(G_CHATS.chatId == chat.chat_id()));

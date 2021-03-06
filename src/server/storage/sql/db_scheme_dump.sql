@@ -46,9 +46,9 @@ CREATE TABLE `chats_users` (
   PRIMARY KEY (`user_id`,`chat_id`,`domain_id`),
   KEY `domain_id` (`domain_id`),
   KEY `chat_id` (`chat_id`),
-  CONSTRAINT `chats_users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`),
+  CONSTRAINT `chats_users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE,
   CONSTRAINT `chats_users_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `chats_users_ibfk_3` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`)
+  CONSTRAINT `chats_users_ibfk_3` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -87,9 +87,9 @@ CREATE TABLE `messages` (
   KEY `chat_id` (`chat_id`),
   KEY `user_id` (`user_id`),
   KEY `domain_id` (`domain_id`),
-  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`),
+  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`) ON DELETE CASCADE,
   CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`)
+  CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -121,4 +121,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-07  1:18:12
+-- Dump completed on 2021-03-07  2:29:29

@@ -29,7 +29,7 @@ int main() try
 
     /* Users */
 
-    mc::User user(3, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
+    mc::User user(1, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
     mss::add_user(db, user, domain1);
 
     mc::User user2(2, 0, "Bey Hakim", mc::User::Status::OFFLINE);
@@ -38,6 +38,8 @@ int main() try
     //same domain_id + username are not allowed
     //mss::add_user(db, user, domain1);
 
+    mc::User user3(3, 0, "Anna Maria", mc::User::Status::OFFLINE);
+    mss::add_user(db, user3, domain1);
 
 
     std::cout << "Get all usernames\n";
@@ -49,8 +51,8 @@ int main() try
 
     mss::count_users(db);
 
-    mss::remove_user(db, user2);
-    mss::remove_user(db, user);
+//    mss::remove_user(db, user2);
+//    mss::remove_user(db, user);
     std::cout << "Get all usernames\n";
     for (const auto& a : all_usernames)
     {
@@ -59,27 +61,29 @@ int main() try
 
     /* Chats */
 
-    mc::Chat chat(2, 0, "secret_chat");
+    mc::Chat chat(1, 0, "secret_chat");
     mss::add_chat(db, chat, domain1);
-        //should add extra details to FK to dump to update or delete
-    mss::update_chatname(db, "FBIchat", chat);
 //    mss::remove_chat(db, chat);
 
+    mc::Chat chat2(2, 0, "secret_chat");
+    mss::update_chatname(db, "party time", chat2);
 
     /* Messages */
 
-    // at what moment determine chat_id ?
-
-    mc::Message message(0, 8, 1, 1, "Let's protest", mc::Message::Status::SENT);
-    mss::add_message(db, message);
+    mc::Message message(0, 1, 1, 2, "Let's protest", mc::Message::Status::SENT);
+//    mss::add_message(db, message);
 
     mss::count_number_recieved_messages(db);
 
-    mc::Message message2(14, 8, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
-    mss::add_message(db, message2);
+    mc::Message message2(2, 2, 2, 1, "or go to OVD", mc::Message::Status::RECEIVED);
+//    mss::add_message(db, message2);
     mss::update_text(db, "You better watch yourself", message2);
 
     mss::count_number_recieved_messages(db);
+
+    //Should I delete all chats if hostname is deleted ??
+    mss::remove_chat(db, chat2);
+
 
 
 
