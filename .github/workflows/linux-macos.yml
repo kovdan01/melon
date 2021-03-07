@@ -86,7 +86,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Tar all system
-      run: sudo tar -czf target.tar.gz /
+      run: sudo tar -czf target.tar.gz /etc/ /var/ /usr/
 
     - name: Upload archive
       uses: actions/upload-artifact@v2
