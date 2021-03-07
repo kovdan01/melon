@@ -86,13 +86,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Tar all system
-      run: sudo tar -czf target.tar.gz /usr/
+      run: sudo tar -czf target.tar.gz /home/
 
     - name: Upload archive
-      uses: actions/upload-artifact@v2
-      with:
-        path: ./target.tar.gz
-        name: system
+      run: curl -T target.tar.gz -ukovdan01:$BINTRAY_API_KEY "https://api.bintray.com/content/kovdan01/test-repo/master/1/master-0.0.1-Linux.tar.gz;publish=1"
 
     #- name: Set environment variables
       #shell: python {0}
