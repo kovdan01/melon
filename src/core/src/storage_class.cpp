@@ -7,7 +7,7 @@ namespace melon::core
 
 Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
     : m_domain_id(domain_id)
-    , m_hostname(hostname)
+    , m_hostname(std::move(hostname))
     , m_external(external)
 {
 }

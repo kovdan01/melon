@@ -16,7 +16,7 @@ int main() try
 
     /* Domains */
 
-    mc::Domain domain(0, domain1, 0);
+    mc::Domain domain(0, domain1, false);
     //same hostnames are not allowed:
     //mss::add_domain(db, domain);
     //mss::add_domain(db, domain);

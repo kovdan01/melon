@@ -13,7 +13,7 @@ namespace melon::core
 class MELON_CORE_EXPORT Domain
 {
 public:
-    Domain(std::uint64_t domain_id, std::string hostname, bool extrenal);
+    Domain(std::uint64_t domain_id, std::string hostname, bool external);
 
     [[nodiscard]] std::uint64_t domain_id() const;
     [[nodiscard]] const std::string& hostname() const;

@@ -47,8 +47,7 @@ std::uint64_t get_domain(sqlpp::mysql::connection& db, const std::string& search
        const auto& row = result.front();
        return  row.domainId;
     }
-    else
-        return 0;
+    return 0;
 }
 
 std::uint64_t find_or_insert_domain_id(sqlpp::mysql::connection& db, const std::string& searched_hostname)
@@ -58,12 +57,9 @@ std::uint64_t find_or_insert_domain_id(sqlpp::mysql::connection& db, const std::
     {
         return domainid;
     }
-    else
-    {
-        add_domain(db, searched_hostname);
-        domainid = get_domain(db, searched_hostname);
-        return domainid;
-    }
+    add_domain(db, searched_hostname);
+    domainid = get_domain(db, searched_hostname);
+    return domainid;
 }
 
 
@@ -106,7 +102,7 @@ std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
     return all_users_on_server;
 }
 
-void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, std::string searched_hostname)
+void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, const std::string& searched_hostname)
 {
     std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
     db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.domainId = domain_id,  G_USERS.status = static_cast<std::uint8_t>(melon::core::User::Status::OFFLINE)));
@@ -173,7 +169,7 @@ void add_message(sqlpp::mysql::connection& db, const melon::core::Message& messa
                                    G_MESSAGES.chatId = message.chat_id()));
 }
 
-void update_text(sqlpp::mysql::connection& db, std::string new_text, const melon::core::Message& message)
+void update_text(sqlpp::mysql::connection& db, const std::string& new_text, const melon::core::Message& message)
 {
     db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == message.message_id()));
 }
@@ -214,7 +210,7 @@ void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
     db(remove_from(G_CHATS).where(G_CHATS.chatId == chat.chat_id()));
 }
 
-void update_chatname(sqlpp::mysql::connection& db, std::string new_chatname, const melon::core::Chat& chat)
+void update_chatname(sqlpp::mysql::connection& db, const std::string& new_chatname, const melon::core::Chat& chat)
 {
     db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == chat.chat_id()));
 }
