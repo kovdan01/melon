@@ -186,7 +186,7 @@ void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& me
 
 /* Chats */
 
-void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, std::string searched_hostname)
+void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, const std::string& searched_hostname)
 {
     std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
     db(insert_into(G_CHATS).set(G_CHATS.domainId = domain_id, G_CHATS.chatname = chat.chatname()));

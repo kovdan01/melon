@@ -57,7 +57,7 @@ void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& me
 
 /* Chat */
 
-void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, std::string searched_hostname);
+void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, const std::string& searched_hostname);
 void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 void update_chatname(sqlpp::mysql::connection& db, const std::string& new_chatname, const melon::core::Chat& chat);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
