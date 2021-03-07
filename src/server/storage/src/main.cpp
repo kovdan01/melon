@@ -25,7 +25,10 @@ int main() try
 //    mss::remove_domain(db, domain);
 
     //add find hostname, if not exists add
-    mss::find_domain_id(db, domain1);
+    mss::find_or_insert_domain_id(db, domain1);
+    mss::find_or_insert_domain_id(db, "someserver");
+
+
 
     /* Users */
 

@@ -33,21 +33,40 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 
 /* Domains */
 
-
-// maybe exists function from sqlpp11 should read more and definetely change
-std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_hostname)
+// hostname to function as std::string
+void add_domain(sqlpp::mysql::connection& db, const std::string& searched_hostname)
 {
-    for (const auto& row : db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == searched_hostname)))
-    {
-        return row.domainId;
-    }
     db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = searched_hostname));
-    for (const auto& row : db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == searched_hostname)))
-    {
-        return row.domainId;
-    }
-    return 0;
 }
+
+std::uint64_t get_domain(sqlpp::mysql::connection& db, const std::string& searched_hostname)
+{
+    auto result = db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == searched_hostname));
+    if(!result.empty())
+    {
+       const auto& row = result.front();
+       return  row.domainId;
+    }
+    else
+        return 0;
+}
+
+std::uint64_t find_or_insert_domain_id(sqlpp::mysql::connection& db, const std::string& searched_hostname)
+{
+    std::uint64_t domainid = get_domain(db, searched_hostname);
+    if (domainid != 0)
+    {
+        return domainid;
+    }
+    else
+    {
+        add_domain(db, searched_hostname);
+        domainid = get_domain(db, searched_hostname);
+        return domainid;
+    }
+}
+
+
 
 
 // add only unique hostnames
@@ -56,6 +75,7 @@ void add_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
     db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = domain.hostname()));
 }
 
+//now you cannot, should think what i should delete or not from db
 void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
 {
     db(remove_from(G_DOMAINS).where(G_DOMAINS.hostname == domain.hostname()));
@@ -88,7 +108,7 @@ std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
 
 void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, std::string searched_hostname)
 {
-    std::uint64_t domain_id = find_domain_id(db, searched_hostname);
+    std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
     db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.domainId = domain_id,  G_USERS.status = static_cast<std::uint8_t>(melon::core::User::Status::OFFLINE)));
 }
 
@@ -132,7 +152,7 @@ void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& us
 /* Messages */
 
 
-// all recieved messages for all users
+// all recieved messages for all users (should be changes for specific user)
 void count_number_recieved_messages (sqlpp::mysql::connection& db)
 {
     for (const auto& row : db(select(count(G_MESSAGES.messageId)).from(G_MESSAGES)
@@ -172,7 +192,7 @@ void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& me
 
 void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, std::string searched_hostname)
 {
-    std::uint64_t domain_id = find_domain_id(db, searched_hostname);
+    std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
     db(insert_into(G_CHATS).set(G_CHATS.domainId = domain_id, G_CHATS.chatname = chat.chatname()));
 }
 
@@ -188,7 +208,7 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
     return messages_in_chat;
 }
 
-//delete chat -> delete messages from chats, all info in Chats_Users concearnig this chat
+//deletes chat -> deletes messages from chat, all info in Chats_Users concearnig this chat
 void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
     db(remove_from(G_CHATS).where(G_CHATS.chatId == chat.chat_id()));

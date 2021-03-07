@@ -27,8 +27,11 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb();
 
 /* Domains */
 
+void add_domain(sqlpp::mysql::connection& db, const std::string& searched_hostname);
 void add_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain);
-std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_hostname);
+std::uint64_t get_domain(sqlpp::mysql::connection& db, const std::string& searched_hostname);
+std::uint64_t find_or_insert_domain_id(sqlpp::mysql::connection& db, const std::string& searched_hostname);
+//std::uint64_t find_domain_id(sqlpp::mysql::connection& db, std::string searched_hostname);
 void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain);
 
 
@@ -58,6 +61,9 @@ void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, std::
 void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 void update_chatname(sqlpp::mysql::connection& db, std::string new_chatname, const melon::core::Chat& chat);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
+
+
+void find(sqlpp::mysql::connection& db, std::string searched_hostname);
 
 }  // namespace melon::server::storage
 
