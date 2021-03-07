@@ -89,6 +89,8 @@ jobs:
       run: sudo tar -czf /target.tar.gz /home/
 
     - name: Upload archive
+      env:
+        BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
       run: curl -T /target.tar.gz -ukovdan01:$BINTRAY_API_KEY "https://api.bintray.com/content/kovdan01/test-repo/master/4/master-0.0.4-Linux.tar.gz;publish=1"
 
     #- name: Set environment variables
