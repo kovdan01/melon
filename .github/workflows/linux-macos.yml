@@ -87,14 +87,14 @@ jobs:
 
     - name: Tar all system
       run: |
-        sudo tar -czf /target.tar.gz /usr/include
+        sudo tar -czf /target.tar.gz /usr/local
         ls -al /
 
     - name: Upload archive
       uses: actions/upload-artifact@v2
       with:
         path: /target.tar.gz
-        name: include
+        name: local
 
     #- name: Set environment variables
       #shell: python {0}
