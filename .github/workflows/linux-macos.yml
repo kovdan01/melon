@@ -87,8 +87,8 @@ jobs:
 
     - name: Tar all system
       run: |
-        sudo tar -czf /target.tar.gz /usr/local/lib/
-        ls -al /
+        # sudo tar -czf /target.tar.gz /usr/local/lib/
+        ls -al /usr/local/lib
 
     - name: Upload archive
       uses: actions/upload-artifact@v2
