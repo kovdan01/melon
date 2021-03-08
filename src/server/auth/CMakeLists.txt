@@ -15,6 +15,7 @@ find_package(melon-core REQUIRED)
 find_package(
     Boost 1.74.0 REQUIRED
     COMPONENTS program_options system
+    chrono container context log thread ## from PA's files
 )
 
 # thread support
@@ -68,7 +69,7 @@ add_executable(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils) ## PA utils
-target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-main)  ## PA main
+#target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-main)  ## PA main
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)

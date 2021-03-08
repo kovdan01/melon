@@ -1,6 +1,5 @@
 #include <sasl_server_wrapper.hpp>
 
-#include <ce/asio-main.hpp>
 #include <ce/charconv.hpp>
 #include <ce/format.hpp>
 #include <ce/io_context_signal_interrupter.hpp>
@@ -18,6 +17,16 @@
 #include <boost/asio/write.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+
+
+//from PA's asio-main
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
+
+
 
 #include <exception>
 #include <memory>
@@ -110,17 +119,37 @@ namespace ce
             }
         };
     }
+}
 
-    int main(std::span<const char* const> args)
+int main(int argc, char* argv[]) try
+{
+    // Setup logging and failsafe exception handlers.
+    std::ios_base::sync_with_stdio(false);
+    namespace bl = boost::log;
+    bl::add_console_log(std::cerr,
+                        bl::keywords::format = (
+                bl::expressions::stream
+                << bl::expressions::format_date_time<boost::posix_time::ptime>(
+                    "TimeStamp","%Y-%m-%d %H:%M:%S.%f"
+                )
+                << " [" << bl::trivial::severity << "] T"
+                << bl::expressions::attr<bl::attributes::current_thread_id::value_type>("ThreadID")
+                << " @" << ce::remote
+                << " : " << bl::expressions::smessage
+                ),
+                        bl::keywords::auto_flush = true
+            );
+    bl::add_common_attributes();
+    try  // main logic
     {
-        if(args.size()<2||args.size()>3)
-            throw std::runtime_error(format("Usage: ",args[0]," <listen-port> [threads]"));
-        auto port = from_chars<std::uint16_t>(args[1]);
+        if(argc<2||argc>3)
+            throw std::runtime_error(ce::format("Usage: ",argv[0]," <listen-port> [threads]"));
+        auto port = ce::from_chars<std::uint16_t>(argv[1]);
         if(!port||!*port)
             throw std::runtime_error("Port must be in [1;65535]");
         unsigned threads;
-        if(args.size()==3){
-            auto t = from_chars<unsigned>(args[2]);
+        if(argc==3){
+            auto t = ce::from_chars<unsigned>(argv[2]);
             if(!t||!*t)
                 throw std::runtime_error("Threads must be a non-zero unsigned integer");
             threads = *t;
@@ -128,21 +157,29 @@ namespace ce
             threads = std::thread::hardware_concurrency();
         using namespace boost::log::trivial;
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
-        ba::io_context ctx{int(threads)};
-        io_context_signal_interrupter iosi{ctx};
-        tcp_listener<my_sasl_session,ba::io_context::executor_type> tl{ctx.get_executor(),*port};
-        ba::static_thread_pool tp{threads-1};
+        ce::ba::io_context ctx{int(threads)};
+        ce::io_context_signal_interrupter iosi{ctx};
+        ce::tcp_listener<ce::my_sasl_session, ce::ba::io_context::executor_type> tl{ctx.get_executor(),*port};
+        ce::ba::static_thread_pool tp{threads-1};
 
         namespace msa = melon::server::auth;
         [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
 
         for(unsigned i=1;i<threads;++i)
-            bae::execute(tp.get_executor(),[&]{
+            ce::bae::execute(tp.get_executor(),[&]{
                 ctx.run();
             });
         ctx.run();
         return 0;
     }
+    catch(...){
+        BOOST_LOG_TRIVIAL(fatal) << boost::current_exception_diagnostic_information();
+        return 1;
+    }
+}
+catch(...){
+    std::cerr << '\n' << boost::current_exception_diagnostic_information() << '\n';
+    return 1;
 }
 
 
