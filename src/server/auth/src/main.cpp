@@ -66,10 +66,14 @@ namespace ce
                 // alive. Capturing this allows us to omit s-> before accessing
                 // any session content at the cost of one additional pointer of state.
                 spawn(this->executor(),[this,s=shared_from_this()](auto yc){
-                    using namespace boost::log::trivial;          
+                    using namespace boost::log::trivial;
+
+                    namespace mca = melon::core::auth;
+                    namespace msa = melon::server::auth;
+
                     for(;;){
                         boost::system::error_code ec;
-                        melon::server::auth::SaslServerConnection server("melon");
+                        msa::SaslServerConnection server("melon");
                         std::string_view supported_mechanisms = server.list_mechanisms();
                         out_buf_ = std::string(supported_mechanisms) + '\n';
                         stream_.expires_after(time_limit_);
@@ -87,18 +91,33 @@ namespace ce
                         std::string wanted_mechanism = read_buffered_string(n);
                         if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                             throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-                        out_buf_ = wanted_mechanism;
-                        //async_write(stream_,ba::buffer(out_buf_),yc);
-                        /*std::size_t n = async_read_until(stream_,
-                            ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
-
+                        out_buf_ = wanted_mechanism + '\n';
+                        stream_.expires_after(time_limit_);
+                        async_write(stream_,ba::buffer(out_buf_),yc);
                         stream_.expires_after(time_limit_);
                         n = async_read_until(stream_,
-                            ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc);
-
-
+                                                    ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                        std::string client_response = read_buffered_string(n);
+                        auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+                        out_buf_ = std::string(server_response) + '\n';
                         stream_.expires_after(time_limit_);
-                        async_write(stream_,ba::buffer(out_buf_),yc);*/
+                        async_write(stream_,ba::buffer(out_buf_),yc);
+                        while (server_completness == mca::AuthCompletness::INCOMPLETE)
+                        {
+                            stream_.expires_after(time_limit_);
+                            n = async_read_until(stream_,
+                                                        ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                            client_response = read_buffered_string(n);
+                            mca::StepResult server_step_res = server.step(client_response);
+                            server_response = server_step_res.response;
+                            out_buf_ = std::string(server_response) + '\n';
+                            stream_.expires_after(time_limit_);
+                            async_write(stream_,ba::buffer(out_buf_),yc);
+                            server_completness = server_step_res.completness;
+                        }
+                        out_buf_ = "Okay, Mr. Client, here's your token...";
+                        stream_.expires_after(time_limit_);
+                        async_write(stream_,ba::buffer(out_buf_),yc);
                     }
                 },{},ba::bind_executor(this->cont_executor(),[](std::exception_ptr e){
                     // We're executing on the executor that properly logs
