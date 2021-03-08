@@ -69,4 +69,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
+# melon-auth executable
+
+add_executable(melon-test-cli
+    ${HEADERS}
+    src/test_client.cpp
+)
+
+target_link_libraries(melon-test-cli PRIVATE melon::core)
+target_link_libraries(melon-test-cli PRIVATE Boost::program_options)
+target_link_libraries(melon-test-cli PRIVATE Boost::system)
+target_link_libraries(melon-test-cli PRIVATE Threads::Threads)
+target_link_libraries(melon-test-cli PRIVATE melon::sasl_wrappers)
+
+
 ntc_target(${PROJECT_NAME})
