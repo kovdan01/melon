@@ -56,12 +56,19 @@ set(SOURCES
     src/main.cpp
 )
 
+
+add_subdirectory(utils) ## utils
+add_subdirectory(asio-utils) ## utils
+
 add_executable(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils) ## PA utils
+target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-main)  ## PA main
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
