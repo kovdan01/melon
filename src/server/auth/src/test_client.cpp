@@ -6,7 +6,7 @@
 std::string get_cli_response(const std::string serv_response, melon::core::auth::SaslClientConnection& conn, int counter)
 {
    std::string res;
-   if(counter == 1)
+   if(counter == 0)
    {
        auto step_res = conn.start(serv_response);
        res = step_res.response;
