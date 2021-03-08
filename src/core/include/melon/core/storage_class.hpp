@@ -7,6 +7,9 @@
 #include <cstdint>
 #include <string>
 
+//delete, this is for checking
+#include <iostream>
+
 namespace melon::core
 {
 
@@ -69,6 +72,11 @@ public:
     [[nodiscard]] std::chrono::high_resolution_clock::time_point timestamp() const;
     [[nodiscard]] std::uint64_t user_id() const;
     [[nodiscard]] std::uint64_t chat_id() const;
+
+    virtual void update_text(const std::string& new_text)
+    {
+        m_text = new_text;
+    }
 
 private:
     std::uint64_t m_message_id;

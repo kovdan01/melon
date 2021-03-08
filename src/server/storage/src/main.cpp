@@ -11,81 +11,84 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
-    std::string domain1 = "Bonnie server";
-    std::string domain2 = "Clyde server";
-
-    /* Domains */
-
-    mc::Domain domain(0, domain1, false);
-    //same hostnames are not allowed:
-    //mss::add_domain(db, domain);
-    //mss::add_domain(db, domain);
 
 
-//    mss::remove_domain(db, domain);
+//    std::string domain1 = "Bonnie server";
+//    std::string domain2 = "Clyde server";
 
-    //add find hostname, if not exists add
-    mss::find_or_insert_domain_id(db, domain1);
-    mss::find_or_insert_domain_id(db, "someserver");
+//    /* Domains */
 
-
-
-    /* Users */
-
-    mc::User user(1, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
-    mss::add_user(db, user, domain1);
-
-    mc::User user2(2, 0, "Bey Hakim", mc::User::Status::OFFLINE);
-    mss::add_user(db, user2, domain2);
-
-    //same domain_id + username are not allowed
-    //mss::add_user(db, user, domain1);
-
-    mc::User user3(3, 0, "Anna Maria", mc::User::Status::OFFLINE);
-    mss::add_user(db, user3, domain1);
+//    mc::Domain domain(0, domain1, false);
+//    //same hostnames are not allowed:
+//    //mss::add_domain(db, domain);
+//    //mss::add_domain(db, domain);
 
 
-    std::cout << "Get all usernames\n";
-    std::vector<std::string> all_usernames = mss::get_names_of_all_users(db);
-    for (const auto& a : all_usernames)
-    {
-        std::cout << a << '\n';
-    }
+////    mss::remove_domain(db, domain);
 
-    mss::count_users(db);
+//    //add find hostname, if not exists add
+//    mss::find_or_insert_domain_id(db, domain1);
+//    mss::find_or_insert_domain_id(db, "someserver");
 
-//    mss::remove_user(db, user2);
-//    mss::remove_user(db, user);
-    std::cout << "Get all usernames\n";
-    for (const auto& a : all_usernames)
-    {
-        std::cout << a << '\n';
-    }
 
-    /* Chats */
 
-    mc::Chat chat(1, 0, "secret_chat");
-    mss::add_chat(db, chat, domain1);
-//    mss::remove_chat(db, chat);
+//    /* Users */
 
-    mc::Chat chat2(2, 0, "secret_chat");
-    mss::update_chatname(db, "party time", chat2);
+//    mc::User user(1, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
+//    mss::add_user(db, user, domain1);
 
-    /* Messages */
+//    mc::User user2(2, 0, "Bey Hakim", mc::User::Status::OFFLINE);
+//    mss::add_user(db, user2, domain2);
 
-    mc::Message message(0, 1, 1, 2, "Let's protest", mc::Message::Status::SENT);
-//    mss::add_message(db, message);
+//    //same domain_id + username are not allowed
+//    //mss::add_user(db, user, domain1);
 
-    mss::count_number_recieved_messages(db);
+//    mc::User user3(3, 0, "Anna Maria", mc::User::Status::OFFLINE);
+//    mss::add_user(db, user3, domain1);
 
-    mc::Message message2(2, 2, 2, 1, "or go to OVD", mc::Message::Status::RECEIVED);
-//    mss::add_message(db, message2);
-    mss::update_text(db, "You better watch yourself", message2);
 
-    mss::count_number_recieved_messages(db);
+//    std::cout << "Get all usernames\n";
+//    std::vector<std::string> all_usernames = mss::get_names_of_all_users(db);
+//    for (const auto& a : all_usernames)
+//    {
+//        std::cout << a << '\n';
+//    }
 
-    //Should I delete all chats if hostname is deleted ??
-    mss::remove_chat(db, chat2);
+////    mss::remove_user(db, user2);
+////    mss::remove_user(db, user);
+//    std::cout << "Get all usernames\n";
+//    for (const auto& a : all_usernames)
+//    {
+//        std::cout << a << '\n';
+//    }
+
+//    /* Chats */
+
+//    mc::Chat chat(1, 0, "secret_chat");
+//    mss::add_chat(db, chat, domain1);
+////    mss::remove_chat(db, chat);
+
+//    mc::Chat chat2(2, 0, "secret_chat");
+//    mss::update_chatname(db, "party time", chat2);
+
+//    /* Messages */
+
+//    mc::Message message(0, 1, 1, 2, "Let's protest", mc::Message::Status::SENT);
+
+    mss::Message message(db, 1, 1, 1, 1, "Let's protest", mc::Message::Status::SENT);
+    //mss::add_message(db, message);
+    message.update_text("This is smth new");
+
+//    mss::count_number_recieved_messages(db);
+
+//    mc::Message message2(2, 2, 2, 1, "or go to OVD", mc::Message::Status::RECEIVED);
+////    mss::add_message(db, message2);
+//    //mss::update_text(db, "You better watch yourself", message2);
+
+//    mss::count_number_recieved_messages(db);
+
+//    //Should I delete all chats if hostname is deleted ??
+//    mss::remove_chat(db, chat2);
 
 
 

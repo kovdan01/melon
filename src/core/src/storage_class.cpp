@@ -31,6 +31,7 @@ Message::Message(std::uint64_t message_id, std::uint64_t domain_id, std::uint64_
 {
 }
 
+
 Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
     : m_chat_id(chat_id)
     , m_domain_id(domain_id)
