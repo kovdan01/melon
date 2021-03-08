@@ -13,14 +13,18 @@ int main() try
 
 
 
-//    std::string domain1 = "Bonnie server";
-//    std::string domain2 = "Clyde server";
+    std::string domain1 = "Erick3 server";
+ //   std::string domain2 = "Clyde server";
 
 //    /* Domains */
 
-//    mc::Domain domain(0, domain1, false);
+   // mc::Domain domain(0, domain1, true);
 //    //same hostnames are not allowed:
-//    //mss::add_domain(db, domain);
+    mss::Domain domain(db, 0, domain1, true);
+
+    mss::User user(db, 1, 1, "kitt1", mc::User::Status::ONLINE);
+    user.add_user(domain1);
+    user.change_status(mc::User::Status::OFFLINE);
 //    //mss::add_domain(db, domain);
 
 
@@ -75,9 +79,9 @@ int main() try
 
 //    mc::Message message(0, 1, 1, 2, "Let's protest", mc::Message::Status::SENT);
 
-    mss::Message message(db, 1, 1, 1, 1, "Let's protest", mc::Message::Status::SENT);
-    //mss::add_message(db, message);
-    message.update_text("This is smth new");
+//    mss::Message message(db, 1, 1, 1, 1, "Let's protest", mc::Message::Status::SENT);
+//    //mss::add_message(db, message);
+//    message.update_text("This is smth new");
 
 //    mss::count_number_recieved_messages(db);
 

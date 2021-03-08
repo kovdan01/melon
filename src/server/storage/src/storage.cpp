@@ -19,15 +19,104 @@ const melon::Domains G_DOMAINS;
 const melon::Chats G_CHATS;
 
 
-/* class */
+/* class Domain */
+
+// Add only unique hostnames
+Domain::Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string hostname, bool external)
+     : melon::core::Domain(domain_id, hostname, external), m_db(db)
+{
+    // [check] In mariadb it is bool, but it is not bool in sqlpp11 why? should change then to std::uint8_t but that strange
+    // author says that bool IS supported]
+    m_db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = this->hostname(), G_DOMAINS.external = static_cast<std::uint8_t>(this->external())));
+    std::uint64_t t_domain_id = get_domain_id_by_hostname(db, hostname);
+    melon::core::Domain::set_domain_id(t_domain_id);
+}
+
+// [check] That I do not delete useful information from messages - now it deletes to much maybe
+void Domain::remove_domain()
+{
+    m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
+}
+
+
+/* class Message */
 
 void Message::update_text(const std::string& new_text)
 {
     melon::core::Message::update_text(new_text);
     m_db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == this->message_id()));
-
 }
 
+void Message::remove_message()
+{
+    m_db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == this->message_id()));
+}
+
+void Message::change_status(Status new_status)
+{
+    m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(new_status)).where(G_MESSAGES.messageId == this->message_id()));
+}
+
+
+
+
+/* class Chat */
+
+void Chat::update_chatname(const std::string& new_chatname)
+{
+    melon::core::Chat::update_chatname(new_chatname);
+    m_db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == this->chat_id()));
+}
+
+//Deletes chat -> deletes messages from chat, all info in Chats_Users concearnig this chat
+void Chat::remove_chat()
+{
+    m_db(remove_from(G_CHATS).where(G_CHATS.chatId == this->chat_id()));
+}
+
+
+
+
+void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, const std::string& searched_hostname)
+{
+    std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
+    db(insert_into(G_CHATS).set(G_CHATS.domainId = domain_id, G_CHATS.chatname = chat.chatname()));
+}
+
+
+
+
+
+
+/* class User */
+
+void User::remove_user()
+{
+    m_db(remove_from(G_USERS).where(G_USERS.userId == this->user_id()));
+}
+
+void User::change_status(Status new_status)
+{
+    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
+}
+
+void User::add_user(const std::string& hostname)
+{
+    std::uint64_t domain_id = find_or_insert_domain_id(m_db, hostname);
+    melon::core::User::set_user_domain_id(domain_id);
+    m_db(insert_into(G_USERS).set(G_USERS.username = this->username(), G_USERS.domainId = domain_id,
+                                G_USERS.status = static_cast<int>(this->status())));
+}
+
+//All recieved (this is like not read - maybe should change name for it) messages for specific user
+std::uint64_t User::count_number_of_recieved_messages()
+{
+    for (const auto& row : m_db(select(count(G_MESSAGES.messageId)).from(G_MESSAGES)
+                              .where(G_MESSAGES.status == static_cast<std::uint8_t>(melon::core::Message::Status::RECEIVED) and G_MESSAGES.userId == this->user_id())))
+    {
+        return row.count;
+    }
+}
 
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
@@ -42,19 +131,12 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 }
 
 
-
 /* Domains */
-
-//Add only unique hostnames
-//void add_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
-//{
-//    db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = domain.hostname(), G_DOMAINS.external = domain.external()));
-//}
 
 //Pass hostname to function as std::string, default value for external 'false'. Now this type is used in get_domain_id_by_hostname - should be changed
 void add_domain(sqlpp::mysql::connection& db, const std::string& hostname)
 {
-    db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = hostname));
+    db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = hostname, G_DOMAINS.external = static_cast<std::uint8_t>(true)));
 }
 
 std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& searched_hostname)
@@ -80,11 +162,7 @@ std::uint64_t find_or_insert_domain_id(sqlpp::mysql::connection& db, const std::
     return domain_id;
 }
 
-// add delete casacede to dump!!
-void remove_domain(sqlpp::mysql::connection& db, const melon::core::Domain& domain)
-{
-    db(remove_from(G_DOMAINS).where(G_DOMAINS.hostname == domain.hostname()));
-}
+
 
 
 /* Users */
@@ -100,17 +178,7 @@ std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
     return all_users_on_server;
 }
 
-void add_user(sqlpp::mysql::connection& db, const melon::core::User& user, const std::string& hostname)
-{
-    std::uint64_t domain_id = find_or_insert_domain_id(db, hostname);
-    db(insert_into(G_USERS).set(G_USERS.username = user.username(), G_USERS.domainId = domain_id, G_USERS.status = static_cast<std::uint8_t>(melon::core::User::Status::OFFLINE)));
-}
-
-void remove_user(sqlpp::mysql::connection& db, const melon::core::User& user)
-{
-    db(remove_from(G_USERS).where(G_USERS.userId == user.user_id()));
-}
-
+//List of usernames of online users in database
 std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
 {
     std::vector<std::string> online_users_names;
@@ -121,6 +189,7 @@ std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
     return online_users_names;
 }
 
+//List of online mc::Users in database
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 {
     std::vector<melon::core::User> online_users;
@@ -133,28 +202,8 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
     return online_users;
 }
 
-void make_user_online(sqlpp::mysql::connection& db, const melon::core::User& user)
-{
-    db(update(G_USERS).set(G_USERS.status = static_cast<int>(melon::core::User::Status::ONLINE)).where(G_USERS.username == user.username()));
-}
-
-void make_user_offline(sqlpp::mysql::connection& db, const melon::core::User& user)
-{
-    db(update(G_USERS).set(G_USERS.status = static_cast<int>(melon::core::User::Status::OFFLINE)).where(G_USERS.username == user.username()));
-}
-
 
 /* Messages */
-
-//All recieved messages for specific user
-void count_number_recieved_messages(sqlpp::mysql::connection& db, const melon::core::User& user)
-{
-    for (const auto& row : db(select(count(G_MESSAGES.messageId)).from(G_MESSAGES)
-                              .where(G_MESSAGES.status == static_cast<std::uint8_t>(melon::core::Message::Status::RECEIVED) and G_MESSAGES.userId == user.user_id())))
-    {
-       std::cout << "Number of messagers: " << row.count << std::endl;
-    }
-}
 
 void add_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
 {
@@ -176,31 +225,8 @@ void add_message(sqlpp::mysql::connection& db, const Message& message)
                                    G_MESSAGES.chatId = message.chat_id()));
 }
 
-//Make as member-function of class Message
-//void update_message_text(sqlpp::mysql::connection& db, const std::string& new_text, const melon::core::Message& message)
-//{
-//    db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == message.message_id()));
-//}
-
-//void update_message_status(sqlpp::mysql::connection& db, const melon::core::Message& message, melon::core::Message::Status new_status)
-//{
-//    //db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(melon::core::Message::Status::SEEN)).where(G_MESSAGES.messageId == message.message_id()));
-//    db(update(G_MESSAGES).set(G_MESSAGES.status = new_status).where(G_MESSAGES.messageId == message.message_id()));
-//}
-
-void remove_message(sqlpp::mysql::connection& db, const melon::core::Message& message)
-{
-    db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == message.message_id()));
-}
-
 
 /* Chats */
-
-void add_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat, const std::string& searched_hostname)
-{
-    std::uint64_t domain_id = find_or_insert_domain_id(db, searched_hostname);
-    db(insert_into(G_CHATS).set(G_CHATS.domainId = domain_id, G_CHATS.chatname = chat.chatname()));
-}
 
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
@@ -212,26 +238,6 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
         messages_in_chat.emplace_back(std::move(message));
     }
     return messages_in_chat;
-}
-
-//Deletes chat -> deletes messages from chat, all info in Chats_Users concearnig this chat
-void remove_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
-{
-    db(remove_from(G_CHATS).where(G_CHATS.chatId == chat.chat_id()));
-}
-
-
-
-void cl_update_chatname(sqlpp::mysql::connection& db, const std::string& new_chatname, const melon::core::Chat& chat)
-{
-    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == chat.chat_id()));
-}
-
-
-
-void update_chatname(sqlpp::mysql::connection& db, const std::string& new_chatname, const melon::core::Chat& chat)
-{
-    db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == chat.chat_id()));
 }
 
 }  // namespace melon::server::storage
