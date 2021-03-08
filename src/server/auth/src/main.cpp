@@ -32,7 +32,7 @@
 #include <memory>
 #include <stdexcept>
 #include <thread>
-//////////////////////////////////Add to class: function that takes client output and processes it, with counter
+
 namespace ce
 {
     namespace
