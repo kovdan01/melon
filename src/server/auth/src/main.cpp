@@ -16,17 +16,12 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
-
-
-//from PA's asio-main
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
-
-
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include <exception>
 #include <memory>
@@ -49,8 +44,7 @@ namespace ce
         {
             constexpr static std::size_t number_limit_ = 1024,
                                          bytes_per_second_limit = 1024;
-            constexpr static boost::asio::steady_timer::duration time_limit_ =
-                std::chrono::seconds(15);
+            constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
         public:
             my_sasl_session(ba::io_context::executor_type ex)
                 : socket_session<my_sasl_session,tcp_stream>{std::move(ex)}
@@ -60,68 +54,69 @@ namespace ce
 
             void start_protocol()
             {            
-
+                [[maybe_unused]] auto& server_singletone = melon::server::auth::SaslServerSingleton::get_instance();
                 // This captures the pointer to session twice: non-owning as this,
                 // and owning as s. We need the owning capture to keep the session
                 // alive. Capturing this allows us to omit s-> before accessing
                 // any session content at the cost of one additional pointer of state.
-                spawn(this->executor(),[this,s=shared_from_this()](auto yc){
+                spawn(this->executor(),[this,s=shared_from_this()](auto yc)
+                {
                     using namespace boost::log::trivial;
 
                     namespace mca = melon::core::auth;
                     namespace msa = melon::server::auth;
 
-                    for(;;){
-                        boost::system::error_code ec;
-                        msa::SaslServerConnection server("melon");
-                        std::string_view supported_mechanisms = server.list_mechanisms();
-                        out_buf_ = std::string(supported_mechanisms) + '\n';
+                    msa::SaslServerConnection server("melon");
+
+                    boost::system::error_code ec;
+
+                    std::string_view supported_mechanisms = server.list_mechanisms();
+                    out_buf_ = std::string(supported_mechanisms) + '\n';
+                    stream_.expires_after(time_limit_);
+                    async_write(stream_,ba::buffer(out_buf_),yc);
+                    stream_.expires_after(time_limit_);
+                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                    if(ec)
+                    {
+                        if(ec!=boost::asio::error::eof)
+                            throw boost::system::system_error{ec};
+                        BOOST_LOG_SEV(log(),info) << "Connection closed";
+                        return;
+                    }
+                    std::string wanted_mechanism = read_buffered_string(n);
+                    if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
+                        throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
+                    out_buf_ = wanted_mechanism + '\n';
+                    stream_.expires_after(time_limit_);
+                    async_write(stream_,ba::buffer(out_buf_),yc);
+
+                    stream_.expires_after(time_limit_);
+                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                    std::string client_response = read_buffered_string(n);
+                    BOOST_LOG_SEV(log(),info) << "Readstr ::"<< client_response <<"::";
+                    auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+                    out_buf_ = std::string(server_response) + '\n';
+                    stream_.expires_after(time_limit_);
+                    async_write(stream_,ba::buffer(out_buf_),yc);
+                    while (server_completness == mca::AuthCompletness::INCOMPLETE)
+                    {
                         stream_.expires_after(time_limit_);
-                        async_write(stream_,ba::buffer(out_buf_),yc);
-                        stream_.expires_after(time_limit_);
-                        std::size_t n = async_read_until(stream_,
-                                                    ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
-                        if(ec)
-                        {
-                            if(ec!=boost::asio::error::eof)
-                                throw boost::system::system_error{ec};
-                            BOOST_LOG_SEV(log(),info) << "Connection closed";
-                            return;
-                        }
-                        std::string wanted_mechanism = read_buffered_string(n);
-                        if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
-                            throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-                        out_buf_ = wanted_mechanism + '\n';
-                        stream_.expires_after(time_limit_);
-                        async_write(stream_,ba::buffer(out_buf_),yc);
-                        stream_.expires_after(time_limit_);
-                        n = async_read_until(stream_,
-                                                    ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
-                        std::string client_response = read_buffered_string(n);
-                        auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                        client_response = read_buffered_string(n);
+                        mca::StepResult server_step_res = server.step(client_response);
+                        server_response = server_step_res.response;
                         out_buf_ = std::string(server_response) + '\n';
                         stream_.expires_after(time_limit_);
                         async_write(stream_,ba::buffer(out_buf_),yc);
-                        while (server_completness == mca::AuthCompletness::INCOMPLETE)
-                        {
-                            stream_.expires_after(time_limit_);
-                            n = async_read_until(stream_,
-                                                        ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
-                            client_response = read_buffered_string(n);
-                            mca::StepResult server_step_res = server.step(client_response);
-                            server_response = server_step_res.response;
-                            out_buf_ = std::string(server_response) + '\n';
-                            stream_.expires_after(time_limit_);
-                            async_write(stream_,ba::buffer(out_buf_),yc);
-                            server_completness = server_step_res.completness;
-                        }
-                        out_buf_ = "Okay, Mr. Client, here's your token...";
-                        stream_.expires_after(time_limit_);
-                        async_write(stream_,ba::buffer(out_buf_),yc);
+                        server_completness = server_step_res.completness;
                     }
-                },{},ba::bind_executor(this->cont_executor(),[](std::exception_ptr e){
-                    // We're executing on the executor that properly logs
-                    // unhandled exceptions, so just rethrow.
+
+                    out_buf_ = "Okay, Mr. Client, here's your token...\n";
+                    stream_.expires_after(time_limit_);
+                    async_write(stream_,ba::buffer(out_buf_),yc);
+
+                },{},ba::bind_executor(this->cont_executor(),[](std::exception_ptr e)
+                {
                     if(e)
                         std::rethrow_exception(e);
                 }));
@@ -159,7 +154,7 @@ int main(int argc, char* argv[]) try
                         bl::keywords::auto_flush = true
             );
     bl::add_common_attributes();
-    try  // main logic
+    try
     {
         if(argc<2||argc>3)
             throw std::runtime_error(ce::format("Usage: ",argv[0]," <listen-port> [threads]"));
@@ -181,9 +176,6 @@ int main(int argc, char* argv[]) try
         ce::tcp_listener<ce::my_sasl_session, ce::ba::io_context::executor_type> tl{ctx.get_executor(),*port};
         ce::ba::static_thread_pool tp{threads-1};
 
-        namespace msa = melon::server::auth;
-        [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
-
         for(unsigned i=1;i<threads;++i)
             ce::bae::execute(tp.get_executor(),[&]{
                 ctx.run();
@@ -200,48 +192,3 @@ catch(...){
     std::cerr << '\n' << boost::current_exception_diagnostic_information() << '\n';
     return 1;
 }
-
-
-/*#include <cassert>
-#include <iostream>
-
-int main() try
-{
-    namespace mca = melon::core::auth;
-    namespace msa = melon::server::auth;
-
-    [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
-
-    auto& client_singletone = mca::SaslClientSingleton::get_instance();
-    mca::Credentials credentials = { "john", "doe" };
-    client_singletone.set_credentials(&credentials);
-
-    msa::SaslServerConnection server("melon");
-    std::string_view supported_mechanisms = server.list_mechanisms();
-
-    mca::SaslClientConnection client("melon");
-    const std::string wanted_mechanism = "SCRAM-SHA-256";
-    if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
-        throw std::runtime_error("Wanted machanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-
-    auto [client_response,  selected_mechanism] = client.start(wanted_mechanism);
-    assert(selected_mechanism == wanted_mechanism);
-
-    auto [server_response, server_completness] = server.start(selected_mechanism, client_response);
-
-    while (server_completness == mca::AuthCompletness::INCOMPLETE)
-    {
-        std::cout << "Performing extra auth step..." << std::endl;
-        mca::StepResult client_step_res = client.step(server_response);
-        mca::StepResult server_step_res = server.step(client_step_res.response);
-        server_response = server_step_res.response;
-        server_completness = server_step_res.completness;
-    }
-
-    return 0;
-}
-catch (const std::exception& e)
-{
-    std::cerr << e.what() << '\n';
-}
-*/
