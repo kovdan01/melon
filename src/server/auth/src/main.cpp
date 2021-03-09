@@ -71,7 +71,7 @@ namespace ce
                     boost::system::error_code ec;
 
                     std::string_view supported_mechanisms = server.list_mechanisms();
-                    out_buf_ = std::string(supported_mechanisms) + '\n';
+                    out_buf_ = std::string(supported_mechanisms) + "\n";
                     stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
                     stream_.expires_after(time_limit_);
@@ -86,23 +86,26 @@ namespace ce
                     std::string wanted_mechanism = read_buffered_string(n);
                     if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                         throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-                    out_buf_ = wanted_mechanism + '\n';
+                    out_buf_ = wanted_mechanism + "\n";
                     stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
 
                     stream_.expires_after(time_limit_);
                     n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
                     std::string client_response = read_buffered_string(n);
-                    BOOST_LOG_SEV(log(),info) << "Readstr ::"<< client_response <<"::";
+                    //BOOST_LOG_SEV(log(),info) << "Readstr ::"<< client_response <<"::";
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-                    out_buf_ = std::string(server_response) + '\n';
+                            BOOST_LOG_SEV(log(),info) << "I WANTED TO SENT " << server_response <<"::";
+                    out_buf_ = std::string(server_response) + "\n";
                     stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
                     while (server_completness == mca::AuthCompletness::INCOMPLETE)
                     {
                         stream_.expires_after(time_limit_);
                         n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_,number_limit_},'\n',yc[ec]);
+                        //BOOST_LOG_SEV(log(),info) << "INBUF " << in_buf_ <<"::";
                         client_response = read_buffered_string(n);
+                        //BOOST_LOG_SEV(log(),info) << "I GOT " << client_response <<"::";
                         mca::StepResult server_step_res = server.step(client_response);
                         server_response = server_step_res.response;
                         out_buf_ = std::string(server_response) + '\n';
@@ -125,7 +128,6 @@ namespace ce
             std::string in_buf_,out_buf_;
             std::string read_buffered_string(std::size_t n)
             {
-                in_buf_[n-1] = '\0';
                 std::string x{in_buf_};
                 x = x.substr(0, x.size()-1);
                 in_buf_.erase(0,n);

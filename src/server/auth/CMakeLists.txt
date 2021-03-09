@@ -15,7 +15,7 @@ find_package(melon-core REQUIRED)
 find_package(
     Boost 1.74.0 REQUIRED
     COMPONENTS program_options system
-    chrono container context log thread ## from PA's files
+    context log thread
 )
 
 # thread support

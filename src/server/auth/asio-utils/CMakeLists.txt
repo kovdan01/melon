@@ -10,11 +10,10 @@ add_library(asio-utils
     src/socket_session.cpp
 )
 
-find_package(Boost 1.74 REQUIRED COMPONENTS chrono container context log thread)
+find_package(Boost 1.74 REQUIRED COMPONENTS context log thread)
 
 target_link_libraries(asio-utils PUBLIC
     ce::utils
-    Boost::chrono
     Boost::context
     Boost::log
     Boost::thread

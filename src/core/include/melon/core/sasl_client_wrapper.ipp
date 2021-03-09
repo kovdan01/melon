@@ -112,7 +112,7 @@ inline StepResult SaslClientConnection::step(std::string_view server_response)
     sasl_res res = sasl_client_step(m_conn, server_response.data(), static_cast<unsigned>(server_response.size()), nullptr,  &clientout, &clientout_len);
     ++m_step_count;
 
-    detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
+    detail::check_sasl_result(res, "client step " + std::to_string(m_step_count));
 
     return { .response = { clientout, clientout_len }, .completness = static_cast<AuthCompletness>(res) };
 }

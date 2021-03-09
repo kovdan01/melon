@@ -57,8 +57,7 @@ int main(int argc, char* argv[]) try
     std::cout << "Reply is: " << in_buf.substr(0, n) << "\n";
     in_buf.erase(0,n);
 
-    std::string wanted_mech = "SCRAM-SHA-256";
-    using namespace std; // For strlen.
+    std::string wanted_mech = "PLAIN";
     std::cout << "Enter message: ";
     std::string str = wanted_mech;
     std::cout<<"Ready to send \"" << str << "\". Proceed? [y]"; std::cin >> confirm;
@@ -87,7 +86,8 @@ int main(int argc, char* argv[]) try
             in_buf.erase(0,n);
             break;
         }
-        std::cout << "Reply is: " << in_buf.substr(0, n) << " Length is " << n << "\n";
+        in_buf = in_buf.substr(0, n);
+        std::cout << "Reply is: " << in_buf << " Length is " << in_buf.size() << "\n";
         cli_resp2 = client.step(in_buf);
         in_buf.erase(0,n);
         ++counter;
