@@ -40,16 +40,16 @@ namespace ce
             socket_executor_t,
             bb::simple_rate_policy>;
 
-        class my_sasl_session final : public socket_session<my_sasl_session,tcp_stream>
+        class MySaslSession final : public socket_session<MySaslSession,tcp_stream>
         {
-            constexpr static std::size_t number_limit_ = 1024,
-                                         bytes_per_second_limit = 1024;
+            constexpr static std::size_t NUMBER_LIMIT = 1024,
+                                         BYTES_PER_SECOND_LIMIT = 1024;
             constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
         public:
-            my_sasl_session(ba::io_context::executor_type ex)
-                : socket_session<my_sasl_session,tcp_stream>{std::move(ex)}
+            MySaslSession(ba::io_context::executor_type ex)
+                : socket_session<MySaslSession,tcp_stream>{std::move(ex)}
             {
-                stream_.rate_policy().read_limit(bytes_per_second_limit);
+                stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
             }
 
             void start_protocol()
@@ -75,7 +75,7 @@ namespace ce
                     stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
                     stream_.expires_after(time_limit_);
-                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, number_limit_},'\n',yc[ec]);
+                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                     if(ec)
                     {
                         if(ec!=boost::asio::error::eof)
@@ -91,7 +91,7 @@ namespace ce
                     async_write(stream_,ba::buffer(out_buf_), yc);
 
                     stream_.expires_after(time_limit_);
-                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, number_limit_},'\n',yc[ec]);
+                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                     std::string client_response = read_buffered_string(n);
                     //BOOST_LOG_SEV(log(),info) << "Readstr ::"<< client_response <<"::";
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
@@ -102,7 +102,7 @@ namespace ce
                     while (server_completness == mca::AuthCompletness::INCOMPLETE)
                     {
                         stream_.expires_after(time_limit_);
-                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, number_limit_},'\n',yc[ec]);
+                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                         //BOOST_LOG_SEV(log(),info) << "INBUF " << in_buf_ <<"::";
                         client_response = read_buffered_string(n);
                         //BOOST_LOG_SEV(log(),info) << "I GOT " << client_response <<"::";
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) try
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
         ce::ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
-        ce::tcp_listener<ce::my_sasl_session, ce::ba::io_context::executor_type> tl{ctx.get_executor(),*port};
+        ce::tcp_listener<ce::MySaslSession, ce::ba::io_context::executor_type> tl{ctx.get_executor(),*port};
         ce::ba::static_thread_pool tp{threads-1};
 
         for(unsigned i=1;i<threads;++i)
