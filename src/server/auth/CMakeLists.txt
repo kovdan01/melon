@@ -14,8 +14,7 @@ find_package(melon-core REQUIRED)
 # boost program options, asio
 find_package(
     Boost 1.74.0 REQUIRED
-    COMPONENTS program_options system
-    context log thread
+    COMPONENTS program_options system exception
 )
 
 # thread support
@@ -69,11 +68,11 @@ add_executable(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils) ## PA utils
-#target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-main)  ## PA main
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::exception)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
