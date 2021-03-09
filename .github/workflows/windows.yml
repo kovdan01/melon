@@ -65,6 +65,11 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-python-pip
         pip install pyparsing
+
+    - name: Install Clang
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-clang
         
     - name: Ninja and CMake cache
       uses: actions/cache@v2
