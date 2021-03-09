@@ -23,4 +23,4 @@ target_compile_features(ce-utils PUBLIC cxx_std_20)
 
 target_link_libraries(ce-utils PUBLIC Boost::headers)
 
-ntc_target(ce-utils ALIAS_NAME ce::utils HEADER_PREFIX ce/utils/)
+ntc_target(ce-utils ALIAS_NAME ce::utils HEADER_PREFIX "ce/utils/")
