@@ -236,11 +236,22 @@ jobs:
 
     - name: Utils by Pavel A. Lebedev
       run: |
+        # ntc-cmake
+        cd cmake/ntc
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
+
+        # utils and asio-utils from cosec-examples
         cd 3rd-party/lebedev-utils
         mkdir build
         mkdir prefix
         cd build
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -GNinja -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -GNinja -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
         cmake --build . --target all
         cmake --build . --target install
         cd ${{ env.REPO_PATH }}
