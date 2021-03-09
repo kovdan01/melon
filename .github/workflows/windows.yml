@@ -124,7 +124,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-context-log-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-context-exception-log-program_options-system
 
     - name: Boost
       id: boost
@@ -165,7 +165,7 @@ jobs:
         cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=context,log,program_options,system --with-toolset={} --prefix={}"'.format(toolset, boost_install_dir))
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset={} --prefix={}"'.format(toolset, boost_install_dir))
         execute_command(cmd_prefix + '"./b2"')
         execute_command(cmd_prefix + '"./b2 install"')
 
