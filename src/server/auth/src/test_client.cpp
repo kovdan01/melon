@@ -32,15 +32,6 @@ std::string read_buffered_string(std::size_t n, std::string& in_buf)
     return x;
 }
 
-void debug_output(std::string& outoput)
-{
-    for(int c : outoput)
-    {
-        std::cout << std::hex << c << " ";
-    }
-    std::cout << "\n";
-}
-
 int main(int argc, char* argv[]) try
 {
 
@@ -98,18 +89,14 @@ int main(int argc, char* argv[]) try
         size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
         reply = read_buffered_string(n, in_buf);
         std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
-        if(reply.size() == 0)
+        if(reply == "Okay, Mr. Client, here's your token...")
         {
             in_buf.erase(0,n);
             break;
         }
-        debug_output(reply);
         cli_resp2 = client.step(reply);
         ++counter;
     }
-    n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf,BUFFER_LIMIT},'\n');
-    reply = read_buffered_string(n, in_buf);
-    std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
     return 0;
 }
 catch (const std::exception& e)

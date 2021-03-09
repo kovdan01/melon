@@ -28,15 +28,6 @@
 #include <stdexcept>
 #include <thread>
 
-void debug_output(std::string_view outoput)
-{
-    for(int c : outoput)
-    {
-        std::cout << std::hex << c << " ";
-    }
-    std::cout << "\n";
-}
-
 namespace ce
 {
     namespace
@@ -81,9 +72,9 @@ namespace ce
 
                     std::string_view supported_mechanisms = server.list_mechanisms();
                     out_buf_ = std::string(supported_mechanisms) + "\n";
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                     if(ec)
                     {
@@ -96,37 +87,41 @@ namespace ce
                     if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                         throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
                     out_buf_ = wanted_mechanism + "\n";
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_), yc);
 
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                     std::string client_response = read_buffered_string(n);
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-                            debug_output(server_response);
-                    //BOOST_LOG_SEV(log(),info) << "I WANTED TO SENT " << server_response <<"::";
                     out_buf_ = std::string(server_response) + "\n";
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_), yc);
                     while (server_completness == mca::AuthCompletness::INCOMPLETE)
                     {
-                        //stream_.expires_after(time_limit_);
+                        stream_.expires_after(time_limit_);
                         n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
                         BOOST_LOG_SEV(log(),info) << "n is ::" << n <<"::";
                         client_response = read_buffered_string(n);
                         BOOST_LOG_SEV(log(),info) << "n is ::" << n <<"::";
                         mca::StepResult server_step_res = server.step(client_response);
                         server_response = server_step_res.response;
-                        out_buf_ = std::string(server_response) + '\n';
+                        server_completness = server_step_res.completness;
+                        if(server_response.data() != nullptr)
+                            out_buf_ = std::string(server_response) + '\n';
+                        else
+                            out_buf_ = "";
                         std::cout<<"here!\n";
-                        //stream_.expires_after(time_limit_);
+                        if(server_completness == mca::AuthCompletness::COMPLETE)
+                            break;
+                        stream_.expires_after(time_limit_);
                         async_write(stream_,ba::buffer(out_buf_),yc);
                         std::cout<<"here!\n";
-                        server_completness = server_step_res.completness;
+
                     }
 
                     out_buf_ = "Okay, Mr. Client, here's your token...\n";
-                    //stream_.expires_after(time_limit_);
+                    stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
 
                 },{},ba::bind_executor(this->cont_executor(),[](std::exception_ptr e)
