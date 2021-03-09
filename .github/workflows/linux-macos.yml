@@ -15,6 +15,8 @@ jobs:
       CMAKE_TOOL_PATH: "cmake-tool"
       NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: "ninja-tool"
+      LLVM_VERSION: "11.1.0"
+      LLVM_INSTALL_PATH: "/usr/local"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
@@ -178,12 +180,52 @@ jobs:
 
         os.chdir(repo)
 
+    - name: LLVM cache
+      uses: actions/cache@v2
+      id: cache_llvm
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.LLVM_INSTALL_PATH }}
+        key: ${{ runner.os }}-llvm-${{ env.LLVM_VERSION }}-patched
+
+    - name: LLVM
+      id: llvm
+      if: ${{ steps.cache_llvm.outputs.cache-hit != 'true' }}
+      shell: python {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        os.chdir(root)
+        llvm_version = os.environ['LLVM_VERSION']
+        llvm_source_dir  = os.path.normpath(os.path.join(root, "llvm-project-{}.src".format(llvm_version)))
+        llvm_install_dir = os.path.normpath(os.path.join(root, "${{ env.LLVM_INSTALL_PATH }}"))
+        llvm_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-{}/llvm-project-{}.src.tar.xz".format(llvm_version, llvm_version)
+        open("llvm.tar.xz", "wb").write(requests.get(llvm_url, allow_redirects=True).content)
+        execute_command("tar -xf llvm.tar.xz")
+        os.chdir(llvm_source_dir)
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-concepts.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-integer-comparison.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D68364.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D96926+94834.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/P1956.patch".format(repo))
+        execute_command("chmod +x {}/configure-llvm.sh".format(repo))
+        execute_command("sudo {}/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
+        execute_command("sudo cmake --build build --target all")
+        execute_command("sudo cmake --build build --target install")
+        os.chdir(repo)
+
     - name: Boost cache
       uses: actions/cache@v2
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-chrono-context-exception-log-program_options-system-thread
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-chrono-context-exception-log-program_options-system-thread-libcxx
 
     - name: Boost
       id: boost
@@ -224,7 +266,9 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
-        os.environ['CXX']='/usr/bin/clang++'
+        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
+        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
+
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
@@ -251,7 +295,7 @@ jobs:
         mkdir build
         mkdir prefix
         cd build
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -GNinja -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -GNinja -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" -DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ ..
         cmake --build . --target all
         cmake --build . --target install
         cd ${{ env.REPO_PATH }}
@@ -261,7 +305,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
+        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}-libcxx
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -296,6 +340,9 @@ jobs:
 
         os.chdir(sasl_source_dir)
 
+        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
+        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
+
         execute_command("chmod +x ./configure")
         execute_command("./configure --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
@@ -308,7 +355,7 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-libcxx
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
@@ -346,10 +393,11 @@ jobs:
         os.chdir(yaml_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
-                       "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  yaml_install_dir))
+                        "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
+                        "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   yaml_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
         os.chdir(repo)
@@ -359,7 +407,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-libcxx
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -397,11 +445,12 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release "
-                       "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir,
-                                  os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
+                        "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
+                        "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir,
+                                   os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -418,10 +467,11 @@ jobs:
         os.chdir(chrono_date_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir))
+                        "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -438,11 +488,12 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
-                       "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
+                        "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
+                        "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -453,7 +504,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-libcxx
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -489,6 +540,9 @@ jobs:
 
         os.chdir(qtbase_source_dir)
 
+        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
+        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
+
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
         execute_command("make -j2")
@@ -515,6 +569,8 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -D CMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang \
+        -D CMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ \
         -G Ninja \
         -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
