@@ -58,7 +58,6 @@ int main(int argc, char* argv[]) try
     in_buf.erase(0,n);
 
     std::string wanted_mech = "PLAIN";
-    std::cout << "Enter message: ";
     std::string str = wanted_mech;
     std::cout<<"Ready to send \"" << str << "\". Proceed? [y]"; std::cin >> confirm;
     boost::asio::write(s, boost::asio::buffer(str + '\n', str.size() + 1));
