@@ -230,7 +230,7 @@ jobs:
 
         execute_command("./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
