@@ -35,19 +35,19 @@ namespace ce
         using bigint = boost::multiprecision::cpp_int;
 
         using socket_executor_t = ba::strand<ba::io_context::executor_type>;
-        using tcp_socket = ba::basic_stream_socket<ba::ip::tcp,socket_executor_t>;
+        using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
         using tcp_stream = bb::basic_stream<ba::ip::tcp,
             socket_executor_t,
             bb::simple_rate_policy>;
 
-        class MySaslSession final : public socket_session<MySaslSession,tcp_stream>
+        class MySaslSession final : public socket_session<MySaslSession, tcp_stream>
         {
             constexpr static std::size_t NUMBER_LIMIT = 1024,
                                          BYTES_PER_SECOND_LIMIT = 1024;
             constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
         public:
             MySaslSession(ba::io_context::executor_type ex)
-                : socket_session<MySaslSession,tcp_stream>{std::move(ex)}
+                : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
             {
                 stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
             }
@@ -59,7 +59,7 @@ namespace ce
                 // and owning as s. We need the owning capture to keep the session
                 // alive. Capturing this allows us to omit s-> before accessing
                 // any session content at the cost of one additional pointer of state.
-                spawn(this->executor(),[this,s=shared_from_this()](auto yc)
+                spawn(this->executor(), [this, s=shared_from_this()](auto yc)
                 {
                     using namespace boost::log::trivial;
 
@@ -73,14 +73,14 @@ namespace ce
                     std::string_view supported_mechanisms = server.list_mechanisms();
                     out_buf_ = std::string(supported_mechanisms) + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_,ba::buffer(out_buf_),yc);
+                    async_write(stream_, ba::buffer(out_buf_), yc);
                     stream_.expires_after(time_limit_);
-                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
-                    if(ec)
+                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
+                    if (ec)
                     {
-                        if(ec!=boost::asio::error::eof)
+                        if (ec!=boost::asio::error::eof)
                             throw boost::system::system_error{ec};
-                        BOOST_LOG_SEV(log(),info) << "Connection closed";
+                        BOOST_LOG_SEV(log(), info) << "Connection closed";
                         return;
                     }
                     std::string wanted_mechanism = read_buffered_string(n);
@@ -88,54 +88,48 @@ namespace ce
                         throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
                     out_buf_ = wanted_mechanism + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_,ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(out_buf_), yc);
 
                     stream_.expires_after(time_limit_);
-                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
+                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
                     std::string client_response = read_buffered_string(n);
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
                     out_buf_ = std::string(server_response) + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_,ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(out_buf_), yc);
                     while (server_completness == mca::AuthCompletness::INCOMPLETE)
                     {
                         stream_.expires_after(time_limit_);
-                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT},'\n',yc[ec]);
-                        BOOST_LOG_SEV(log(),info) << "n is ::" << n <<"::";
+                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
                         client_response = read_buffered_string(n);
-                        BOOST_LOG_SEV(log(),info) << "n is ::" << n <<"::";
                         mca::StepResult server_step_res = server.step(client_response);
                         server_response = server_step_res.response;
                         server_completness = server_step_res.completness;
-                        if(server_response.data() != nullptr)
+                        if (server_response.data() != nullptr)
                             out_buf_ = std::string(server_response) + '\n';
                         else
                             out_buf_ = "";
-                        std::cout<<"here!\n";
-                        if(server_completness == mca::AuthCompletness::COMPLETE)
+                        if (server_completness == mca::AuthCompletness::COMPLETE)
                             break;
                         stream_.expires_after(time_limit_);
-                        async_write(stream_,ba::buffer(out_buf_),yc);
-                        std::cout<<"here!\n";
-
+                        async_write(stream_, ba::buffer(out_buf_), yc);
                     }
-
                     out_buf_ = "Okay, Mr. Client, here's your token...\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_,ba::buffer(out_buf_),yc);
-
-                },{},ba::bind_executor(this->cont_executor(),[](std::exception_ptr e)
+                    async_write(stream_, ba::buffer(out_buf_), yc);
+                    BOOST_LOG_TRIVIAL(info) << "Issued a token.";
+                }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
                 {
-                    if(e)
+                    if (e)
                         std::rethrow_exception(e);
                 }));
             }
         private:
-            std::string in_buf_,out_buf_;
+            std::string in_buf_, out_buf_;
             std::string read_buffered_string(std::size_t n)
             {
                 std::string x = in_buf_.substr(0, n-1);
-                in_buf_.erase(0,n);
+                in_buf_.erase(0, n);
                 return x;
             }
         };
@@ -151,7 +145,7 @@ int main(int argc, char* argv[]) try
                         bl::keywords::format = (
                 bl::expressions::stream
                 << bl::expressions::format_date_time<boost::posix_time::ptime>(
-                    "TimeStamp","%Y-%m-%d %H:%M:%S.%f"
+                    "TimeStamp", "%Y-%m-%d %H:%M:%S.%f"
                 )
                 << " [" << bl::trivial::severity << "] T"
                 << bl::expressions::attr<bl::attributes::current_thread_id::value_type>("ThreadID")
@@ -163,34 +157,36 @@ int main(int argc, char* argv[]) try
     bl::add_common_attributes();
     try
     {
-        if(argc<2||argc>3)
-            throw std::runtime_error(ce::format("Usage: ",argv[0]," <listen-port> [threads]"));
+        if (argc<2||argc>3)
+            throw std::runtime_error(ce::format("Usage: ", argv[0], " <listen-port> [threads]"));
         auto port = ce::from_chars<std::uint16_t>(argv[1]);
-        if(!port||!*port)
+        if (!port||!*port)
             throw std::runtime_error("Port must be in [1;65535]");
         unsigned threads;
-        if(argc==3){
+        if (argc==3){
             auto t = ce::from_chars<unsigned>(argv[2]);
-            if(!t||!*t)
+            if (!t||!*t)
                 throw std::runtime_error("Threads must be a non-zero unsigned integer");
             threads = *t;
-        }else
+        }
+        else
             threads = std::thread::hardware_concurrency();
         using namespace boost::log::trivial;
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
         ce::ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
-        ce::tcp_listener<ce::MySaslSession, ce::ba::io_context::executor_type> tl{ctx.get_executor(),*port};
+        ce::tcp_listener<ce::MySaslSession, ce::ba::io_context::executor_type> tl{ctx.get_executor(), *port};
         ce::ba::static_thread_pool tp{threads-1};
 
         for(unsigned i=1;i<threads;++i)
-            ce::bae::execute(tp.get_executor(),[&]{
+            ce::bae::execute(tp.get_executor(), [&]{
                 ctx.run();
             });
         ctx.run();
         return 0;
     }
-    catch(...){
+    catch(...)
+    {
         BOOST_LOG_TRIVIAL(fatal) << boost::current_exception_diagnostic_information();
         return 1;
     }

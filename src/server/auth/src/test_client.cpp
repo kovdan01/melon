@@ -12,12 +12,13 @@ constexpr std::size_t BUFFER_LIMIT = 3000;
 std::string get_cli_response(const std::string& serv_response, melon::core::auth::SaslClientConnection& conn, int counter)
 {
    std::string res;
-   if(counter == 0)
+   if (counter == 0)
    {
        melon::core::auth::SaslClientConnection::StartResult step_res = conn.start(serv_response);
        res = step_res.response;
    }
-   else {
+   else
+   {
        melon::core::auth::StepResult step_res = conn.step(serv_response);
        res = step_res.response;
    }
@@ -64,10 +65,10 @@ int main(int argc, char* argv[]) try
     reply = read_buffered_string(n, in_buf);
     std::cout << "Reply is: " << reply << "\n";
 
-    std::cout<<"Ready to send \"" << to_send << "\". Proceed? [y]"; std::cin >> confirm;
+    std::cout <<"Ready to send \"" << to_send << "\". Proceed? [y]"; std::cin >> confirm;
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
-    std::cout<<"Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
+    std::cout <<"Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
     reply = read_buffered_string(n, in_buf);
     std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
@@ -83,13 +84,13 @@ int main(int argc, char* argv[]) try
             to_send = cli_resp.response;
         else
             to_send = cli_resp2.response;
-        std::cout<<"Ready to send \"" << to_send << "\". Proceed? [y]"; std::cin >> confirm;
+        std::cout << "Ready to send \"" << to_send << "\". Proceed? [y]"; std::cin >> confirm;
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() +1));
-        std::cout<<"Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
+        std::cout << "Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
         size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
         reply = read_buffered_string(n, in_buf);
         std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
-        if(reply == "Okay, Mr. Client, here's your token...")
+        if (reply == "Okay, Mr. Client, here's your token...")
         {
             in_buf.erase(0,n);
             break;
