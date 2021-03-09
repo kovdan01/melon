@@ -107,12 +107,12 @@ jobs:
     - name: Install required python modules
       run: pip install requests
 
-    - name: Install Clang and MariaDB (Linux)
+    - name: Install MariaDB (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql*
-        sudo apt-get --purge remove libc++dev libc++abi-dev
+        sudo apt-get --purge remove libc++-dev libc++abi-dev
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 
     - name: Install MariaDB (macOS)
