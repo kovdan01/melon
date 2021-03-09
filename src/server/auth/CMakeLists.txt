@@ -72,7 +72,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils) ## PA utils
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::exception)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 

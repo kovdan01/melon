@@ -10,13 +10,13 @@ add_library(asio-utils
     src/socket_session.cpp
 )
 
-find_package(Boost 1.74 REQUIRED COMPONENTS context log)
+find_package(Boost 1.74 REQUIRED COMPONENTS exception context log)
 
 target_link_libraries(asio-utils PUBLIC
     ce::utils
     Boost::context
     Boost::log
-
+    Boost::exception
 )
 
 if(WIN32)
