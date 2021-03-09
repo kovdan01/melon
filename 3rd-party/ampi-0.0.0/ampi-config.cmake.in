@@ -1,0 +1,15 @@
+# Copyright 2020 Pavel A. Lebedev
+# Licensed under the Apache License, Version 2.0.
+# (See accompanying file LICENSE.txt or copy at
+#  http://www.apache.org/licenses/LICENSE-2.0)
+# SPDX-License-Identifier: Apache-2.0
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Boost 1.75 COMPONENTS container)
+
+include("${CMAKE_CURRENT_LIST_DIR}/ampi-targets.cmake")
+
+check_required_components(ampi)

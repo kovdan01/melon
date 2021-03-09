@@ -1,0 +1,2 @@
+- msgpack has strange endian handling for arm, check it it's needed and apply to parser/emitter.
+- msgpack expects struct timespec and most timestamp-96 values would overflow 64-bit nanoseconds on deserialization.
