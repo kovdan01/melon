@@ -11,7 +11,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/ntc")
 # Include ntc-dev-build to disable find_package(ntc-cmake)
 # in subprojects and establish default for BUILD_SHARED_LIBS.
 include(ntc-dev-build)
-set(Boost_USE_STATIC_LIBS, OFF)
 
 enable_testing()
 
