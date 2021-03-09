@@ -240,10 +240,10 @@ jobs:
         mkdir build
         mkdir prefix
         cd build
-        $CMAKE_TOOLS_BINARY_PATH/cmake -GNinja -DCMAKE_MAKE_PROGRAM=$ROOT_PATH/$NINJA_TOOL_PATH/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$REPO_PATH/cmake/ntc/;$ROOT_PATH/$BOOST_INSTALL_PATH" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -GNinja -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
         cmake --build . --target all
         cmake --build . --target install
-        cd $REPO_PATH
+        cd ${{ env.REPO_PATH }}
 
     - name: Cyrus SASL cache
       uses: actions/cache@v2
