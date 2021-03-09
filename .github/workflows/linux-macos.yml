@@ -226,6 +226,7 @@ jobs:
         execute_command("sudo {}/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
         execute_command("sudo cmake --build build --target all")
         execute_command("sudo cmake --build build --target install")
+        execute_command("sudo cp -r /usr/lib/x86_64-unknown-linux-gnu/c++/ /lib/x86_64-linux-gnu/")
 
         os.chdir(repo)
 
@@ -280,6 +281,7 @@ jobs:
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
         execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset=clang")
+        execute_command("ldd b2")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
