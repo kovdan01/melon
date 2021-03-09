@@ -167,7 +167,7 @@ jobs:
         execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch"'.format(repo))
         execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch"'.format(repo))
 
-        execute_command(cmd_prefix + '"CXX=\'/usr/bin/clang++\'"')
+        execute_command(cmd_prefix + '"CXX=\'/mingw64/bin/clang++\'"')
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
