@@ -6,8 +6,7 @@ cmake -G Ninja \
       -DCMAKE_CXX_COMPILER="${GXX}" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_STANDARD=17 \
-      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
-      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+      -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;libcxx;libcxxabi" \
       -DLLVM_BUILD_LLVM_DYLIB=ON \
       -DLLVM_LINK_LLVM_DYLIB=ON \
       -DLLVM_TARGETS_TO_BUILD=X86 \

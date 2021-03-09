@@ -16,7 +16,7 @@ jobs:
       NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: "ninja-tool"
       LLVM_VERSION: "11.1.0"
-      LLVM_INSTALL_PATH: "/usr"
+      LLVM_INSTALL_PATH: "/usr/local"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
@@ -104,15 +104,15 @@ jobs:
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
-    - name: Install required python modules
-      run: pip install requests
-
     - name: Install MariaDB (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql*
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+
+    - name: Install required python modules
+      run: pip install requests
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
