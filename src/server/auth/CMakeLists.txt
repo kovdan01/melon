@@ -67,7 +67,7 @@ add_executable(${PROJECT_NAME}
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils) ## PA utils
+target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
@@ -76,15 +76,15 @@ target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
 # melon-auth executable
 
-add_executable(melon-test-cli
+add_executable(melon-auth-test-client
     ${HEADERS}
     src/test_client.cpp
 )
 
-target_link_libraries(melon-test-cli PRIVATE melon::core)
-target_link_libraries(melon-test-cli PRIVATE Boost::program_options)
-target_link_libraries(melon-test-cli PRIVATE Threads::Threads)
-target_link_libraries(melon-test-cli PRIVATE melon::sasl_wrappers)
+target_link_libraries(melon-auth-test-client PRIVATE melon::core)
+target_link_libraries(melon-auth-test-client PRIVATE Boost::program_options)
+target_link_libraries(melon-auth-test-client PRIVATE Threads::Threads)
+target_link_libraries(melon-auth-test-client PRIVATE melon::sasl_wrappers)
 
 
 ntc_target(${PROJECT_NAME})
