@@ -81,6 +81,9 @@ add_executable(melon-auth-test-client
     src/test_client.cpp
 )
 
+if(WIN32)
+    target_link_libraries(melon-auth-test-client PRIVATE ws2_32 mswsock)
+endif()
 target_link_libraries(melon-auth-test-client PRIVATE melon::core)
 target_link_libraries(melon-auth-test-client PRIVATE Boost::program_options)
 target_link_libraries(melon-auth-test-client PRIVATE Threads::Threads)

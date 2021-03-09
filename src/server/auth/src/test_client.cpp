@@ -27,10 +27,18 @@ std::string get_cli_response(const std::string& serv_response, melon::core::auth
 
 std::string read_buffered_string(std::size_t n, std::string& in_buf)
 {
-    in_buf[n-1] = '\0';
-    std::string x{in_buf};
+    std::string x = in_buf.substr(0, n-1);
     in_buf.erase(0,n);
     return x;
+}
+
+void debug_output(std::string& outoput)
+{
+    for(int c : outoput)
+    {
+        std::cout << std::hex << c << " ";
+    }
+    std::cout << "\n";
 }
 
 int main(int argc, char* argv[]) try
@@ -69,6 +77,9 @@ int main(int argc, char* argv[]) try
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
     std::cout<<"Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
+    n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
+    reply = read_buffered_string(n, in_buf);
+    std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
     // confirmation of protocol
 
     auto cli_resp = client.start(wanted_mech);
@@ -84,7 +95,6 @@ int main(int argc, char* argv[]) try
         std::cout<<"Ready to send \"" << to_send << "\". Proceed? [y]"; std::cin >> confirm;
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() +1));
         std::cout<<"Ready to recieve reply. Proceed? [y]"; std::cin >> confirm;
-
         size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
         reply = read_buffered_string(n, in_buf);
         std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
@@ -93,8 +103,8 @@ int main(int argc, char* argv[]) try
             in_buf.erase(0,n);
             break;
         }
-        cli_resp2 = client.step(in_buf);
-        in_buf.erase(0,n);
+        debug_output(reply);
+        cli_resp2 = client.step(reply);
         ++counter;
     }
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf,BUFFER_LIMIT},'\n');
