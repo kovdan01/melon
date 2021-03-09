@@ -176,11 +176,10 @@ jobs:
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset=clang"')
-        execute_command(cmd_prefix + '"echo \'using clang : : /mingw64/bin/clang++ : ;\' > user-config.jam"')
-        execute_command(cmd_prefix + '"echo AAAAAAAAAAAA"')
-        execute_command(cmd_prefix + '"cat user-config.jam"')
-        execute_command(cmd_prefix + '"./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset=clang --prefix={}"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./b2 clean"')
+        execute_command(cmd_prefix + '"./b2 toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={} stage release"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./b2 install toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={}"'.format(boost_install_dir))
 
         os.chdir(repo)
 
