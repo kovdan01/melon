@@ -266,7 +266,6 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
-        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
         os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./bootstrap.sh")
@@ -274,7 +273,7 @@ jobs:
 
         execute_command("./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
