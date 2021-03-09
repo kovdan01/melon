@@ -112,7 +112,7 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql*
-        sudo apt-get install clang -y
+        sudo apt-get --purge remove libc++dev libc++abi-dev
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 
     - name: Install MariaDB (macOS)
@@ -273,7 +273,7 @@ jobs:
 
         execute_command("./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
