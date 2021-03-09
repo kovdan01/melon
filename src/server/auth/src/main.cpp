@@ -95,7 +95,7 @@ namespace ce
                     std::string client_response = read_buffered_string(n);
                     //BOOST_LOG_SEV(log(),info) << "Readstr ::"<< client_response <<"::";
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-                            BOOST_LOG_SEV(log(),info) << "I WANTED TO SENT " << server_response <<"::";
+                    //BOOST_LOG_SEV(log(),info) << "I WANTED TO SENT " << server_response <<"::";
                     out_buf_ = std::string(server_response) + "\n";
                     stream_.expires_after(time_limit_);
                     async_write(stream_,ba::buffer(out_buf_),yc);
