@@ -61,15 +61,15 @@ jobs:
             #cc: "clang",
             #cxx: "clang++",
           #}
-        - {
-            os: "ubuntu-20.04",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "ubuntu-20.04",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
         - {
             os: "macos-latest",
             prefix: "macOS",
@@ -183,7 +183,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-shared-only-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-context-exception-log-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-chrono-context-exception-log-program_options-system-thread
 
     - name: Boost
       id: boost
@@ -228,11 +228,22 @@ jobs:
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-        execute_command("./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset=clang")
+        execute_command("./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
+
+    - name: Utils by Pavel A. Lebedev
+      run: |
+        cd 3rd-party/lebedev-utils
+        mkdir build
+        mkdir prefix
+        cd build
+        $CMAKE_TOOLS_BINARY_PATH/cmake -GNinja -DCMAKE_MAKE_PROGRAM=$ROOT_PATH/$NINJA_TOOL_PATH/ninja -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$REPO_PATH/cmake/ntc/;$ROOT_PATH/$BOOST_INSTALL_PATH" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd $REPO_PATH
 
     - name: Cyrus SASL cache
       uses: actions/cache@v2
@@ -505,7 +516,8 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Initialize CodeQL

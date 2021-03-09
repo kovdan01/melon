@@ -11,10 +11,20 @@ include(ntc-dev-build)
 # own libraries
 find_package(melon-core REQUIRED)
 
+find_package(ce-utils REQUIRED)
+find_package(asio-utils REQUIRED)
+
 # boost program options, asio
 find_package(
-    Boost 1.74.0 REQUIRED
-    COMPONENTS program_options exception
+    Boost 1.75.0 REQUIRED
+    COMPONENTS
+    chrono
+    context
+    exception
+    log
+    program_options
+    system
+    thread
 )
 
 # thread support
@@ -55,10 +65,6 @@ set(HEADERS)
 set(SOURCES
     src/main.cpp
 )
-
-
-add_subdirectory(utils) ## utils
-add_subdirectory(asio-utils) ## utils
 
 add_executable(${PROJECT_NAME}
     ${HEADERS}

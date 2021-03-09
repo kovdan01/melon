@@ -176,13 +176,10 @@ jobs:
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
-        execute_command(cmd_prefix + '"echo AAAAAAAAAAAAAAAAA"')
-        execute_command(cmd_prefix + '"ls -al C:/msys64/mingw64/x86_64-w64-mingw32/include"')
-
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=context,exception,log,program_options,system --with-toolset=clang --prefix={}"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang --prefix={}"'.format(boost_install_dir))
         execute_command(cmd_prefix + '"./b2 clean"')
-        execute_command(cmd_prefix + '"./b2 toolset=clang cxxflags=\'-stdlib=libc++ -isystem C:/msys64/mingw64/include/c++/v1 -isystem C:/msys64/mingw64/x86_64-w64-mingw32/include\' linkflags=\'-stdlib=libc++\' --prefix={} stage release"'.format(boost_install_dir))
-        execute_command(cmd_prefix + '"./b2 install toolset=clang cxxflags=\'-stdlib=libc++ -isystem C:/msys64/mingw64/include/c++/v1 -isystem C:/msys64/mingw64/x86_64-w64-mingw32/include\' linkflags=\'-stdlib=libc++\' --prefix={}"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./b2 toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={} stage release"'.format(boost_install_dir))
+        execute_command(cmd_prefix + '"./b2 install toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={}"'.format(boost_install_dir))
 
         os.chdir(repo)
 
