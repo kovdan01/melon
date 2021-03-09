@@ -24,7 +24,7 @@ if(WIN32)
     target_link_libraries(asio-utils PUBLIC ws2_32 mswsock)
 endif()
 
-ntc_target(asio-utils ALIAS_NAME ce::asio-utils HEADER_PREFIX "ce/asio-utils/")
+ntc_target(asio-utils ALIAS_NAME ce::asio-utils HEADER_PREFIX ce/asio-utils/)
 
 add_library(asio-main OBJECT src/main.cpp)
 add_library(ce::asio-main ALIAS asio-main)
