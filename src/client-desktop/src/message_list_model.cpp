@@ -24,10 +24,10 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_it_messages[index.row()]->text());
-            break;
-        case MyRoles::MessageHandleRole:
             data.setValue(m_it_messages[index.row()]);
+            break;
+        case MyRoles::MessageTextRole:
+            data.setValue(m_it_messages[index.row()]->text());
             break;
         case Qt::BackgroundRole:
             if (m_it_messages[index.row()]->from() != QStringLiteral("Me"))

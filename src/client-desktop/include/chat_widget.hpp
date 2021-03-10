@@ -1,6 +1,7 @@
 #ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
+#include <message_item_delegate.hpp>
 #include <message_list_model.hpp>
 #include <ram_storage.hpp>
 
@@ -30,6 +31,7 @@ public:
     using chat_handle_t = RAMStorageSingletone::chat_handle_t;
     using const_chat_handle_t = RAMStorageSingletone::const_chat_handle_t;
     using message_handle_t = Chat::message_handle_t;
+    using MyRoles = MessageListModel::MyRoles;
 
     void set_current_chat_it(chat_handle_t it)
     {
@@ -56,6 +58,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu_sended_messages{this};
     QMenu m_submenu_received_messages{this};
     MessageListModel* m_model_message_list = new MessageListModel{this};
+    MessageItemDelegate* m_message_item_delegate;
     QScopedPointer<Ui::ChatWidget> m_ui;
     chat_handle_t m_current_chat_it;
     QSet<int> m_pressed_keys;

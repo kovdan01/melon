@@ -10,6 +10,7 @@
 #include <QScrollBar>
 
 #include <chrono>
+#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -23,6 +24,9 @@ ChatWidget::ChatWidget(QWidget* parent)
     connect(m_ui->ReceiveButton, &QPushButton::clicked, this, &ChatWidget::receive_message);
 
     m_ui->MsgList->setModel(m_model_message_list);
+
+    m_message_item_delegate = new MessageItemDelegate{m_ui->MsgList};
+    m_ui->MsgList->setItemDelegate(m_message_item_delegate);
 
     connect(m_ui->MsgList,
             &QWidget::customContextMenuRequested,
@@ -39,9 +43,6 @@ ChatWidget::ChatWidget(QWidget* parent)
 
 bool ChatWidget::eventFilter(QObject *object, QEvent *event)
 {
-    if (object != m_ui->MsgEdit)
-        return object->eventFilter(object, event);
-
     if (event->type() == QEvent::KeyPress)
     {
         auto* event_key = static_cast<QKeyEvent*>(event);
@@ -100,6 +101,8 @@ void ChatWidget::send_message()
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
     m_ui->MsgList->scrollToBottom();
+
+    m_ui->MsgEdit->setFocus();
 }
 
 void ChatWidget::receive_message()
@@ -112,6 +115,8 @@ void ChatWidget::receive_message()
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
     m_ui->MsgList->scrollToBottom();
+
+    m_ui->MsgEdit->setFocus();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it)
@@ -131,6 +136,9 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     int my_scroll_pos = m_current_chat_it->scrolling_position();
     m_ui->MsgList->verticalScrollBar()->setMaximum(my_scroll_pos);
     m_ui->MsgList->verticalScrollBar()->setValue(my_scroll_pos);
+
+    m_ui->MsgEdit->setFocus();
+    m_ui->MsgList->clearSelection();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)
@@ -161,7 +169,7 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    auto it_message = this->m_model_message_list->data(index, MessageListModel::MyRoles::MessageHandleRole).value<message_handle_t>();
+    auto it_message = this->m_model_message_list->data(index, Qt::DisplayRole).value<message_handle_t>();
 
     if (it_message->from() == QStringLiteral("Me"))
     {
@@ -187,7 +195,7 @@ void ChatWidget::edit_message()
     m_edit_mode = true;
     m_edit_row = index.row();
 
-    auto message_text = m_model_message_list->data(index, Qt::DisplayRole).toString();
+    auto message_text = m_model_message_list->data(index, MyRoles::MessageTextRole).toString();
 
     m_ui->MsgEdit->setText(message_text);
 
