@@ -85,6 +85,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: LD config
+      run: |
+        cat /etc/ld.so.conf
+        ls -al /etc/ld.so.conf.d/*.conf
+
     - name: Set environment variables
       shell: python {0}
       run: |
