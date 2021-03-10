@@ -89,6 +89,14 @@ jobs:
       run: |
         cat /etc/ld.so.conf
         ls -al /etc/ld.so.conf.d/*.conf
+        echo fakeroot
+        cat /etc/ld.so.conf.d/fakeroot-x86_64-linux-gnu.conf
+        echo x86-64
+        cat /etc/ld.so.conf.d/fakeroot-x86_64-linux-gnu.conf
+        echo libc
+        cat /etc/ld.so.conf.d/libc.conf
+        echo biarch
+        cat /etc/ld.so.conf.d/zz_i386-biarch-compat.conf
 
     - name: Set environment variables
       shell: python {0}
