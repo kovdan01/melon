@@ -233,6 +233,11 @@ jobs:
         execute_command("sudo cmake --build build --target install")
         os.chdir(repo)
 
+    - name: Remove GCC (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt --purge remove gcc
+
     - name: Boost cache
       uses: actions/cache@v2
       id: cache_boost
@@ -286,7 +291,7 @@ jobs:
 
         execute_command("./bootstrap.sh --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('LD_LIBRARY_PATH=/usr/local/lib ./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
