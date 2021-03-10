@@ -124,8 +124,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
-        sudo apt-get purge *mysql*
-        sudo apt-get --purge remove libc++-dev libc++abi-dev
+        sudo apt-get purge *mysql* -y
+        sudo apt-get --purge remove libc++-dev libc++abi-dev -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 
     - name: Install MariaDB (macOS)
@@ -236,7 +236,7 @@ jobs:
     - name: Remove GCC (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
-        sudo apt --purge remove gcc
+        sudo apt --purge remove gcc -y
 
     - name: Boost cache
       uses: actions/cache@v2
