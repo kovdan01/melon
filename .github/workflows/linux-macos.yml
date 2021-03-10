@@ -289,7 +289,7 @@ jobs:
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-        execute_command("./bootstrap.sh --with-toolset=clang")
+        execute_command("LD_LIBRARY_PATH=/usr/local/lib ./bootstrap.sh --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
         execute_command('LD_LIBRARY_PATH=/usr/local/lib ./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
