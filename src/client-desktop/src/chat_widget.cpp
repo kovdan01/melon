@@ -90,6 +90,12 @@ void ChatWidget::send_message()
         m_ui->MsgEdit->clear();
         m_ui->ReceiveButton->setVisible(true);
         m_ui->SendButton->setText(QStringLiteral("Send"));
+
+        m_ui->MsgEdit->setText(m_incomplete_message);
+        QTextCursor cursor = m_ui->MsgEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        m_ui->MsgEdit->setTextCursor(cursor);
+        m_incomplete_message.clear();
         return;
     }
 
@@ -133,6 +139,10 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     }
 
     this->load_message_to_editor(m_current_chat_it->incomplete_message());
+    QTextCursor cursor = m_ui->MsgEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    m_ui->MsgEdit->setTextCursor(cursor);
+
     int my_scroll_pos = m_current_chat_it->scrolling_position();
     m_ui->MsgList->verticalScrollBar()->setMaximum(my_scroll_pos);
     m_ui->MsgList->verticalScrollBar()->setValue(my_scroll_pos);
@@ -197,7 +207,9 @@ void ChatWidget::edit_message()
 
     auto message_text = m_model_message_list->data(index, MyRoles::MessageTextRole).toString();
 
+    m_incomplete_message = m_ui->MsgEdit->toPlainText();
     m_ui->MsgEdit->setText(message_text);
+    m_ui->MsgEdit->setFocus();
 
     m_ui->ReceiveButton->setVisible(false);
     m_ui->SendButton->setText(QStringLiteral("Done"));

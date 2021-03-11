@@ -62,6 +62,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QScopedPointer<Ui::ChatWidget> m_ui;
     chat_handle_t m_current_chat_it;
     QSet<int> m_pressed_keys;
+    QString m_incomplete_message;
     int m_current_chat_row;
     int m_edit_row;
     bool m_edit_mode = false;

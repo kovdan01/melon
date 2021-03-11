@@ -70,11 +70,6 @@ public:
         return m_timestamp;
     }
 
-    [[nodiscard]] timestamp_t timestamp() noexcept
-    {
-        return m_timestamp;
-    }
-
     [[nodiscard]] const QString& text() const noexcept
     {
         return m_text;

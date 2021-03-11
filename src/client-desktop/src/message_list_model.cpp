@@ -1,5 +1,6 @@
 #include <message_list_model.hpp>
 
+#include <iostream>
 #include <iterator>
 
 namespace melon::client_desktop
@@ -30,9 +31,15 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_messages[index.row()]->text());
             break;
         case Qt::BackgroundRole:
-            if (m_it_messages[index.row()]->from() != QStringLiteral("Me"))
+            if (m_it_messages[index.row()]->from() == QStringLiteral("Me"))
+                return M_SENDED_COLOR;
+            else
                 return M_RECEIVE_COLOR;
             break;
+        case MyRoles::IsPreviousSameSenderAndTimeRole:
+            return this->has_messages_same_sender_and_time(index.row() - 1, index.row());
+        case MyRoles::IsNextSameSenderAndTimeRole:
+            return this->has_messages_same_sender_and_time(index.row(), index.row() + 1);
         default:
             break;
         }
@@ -106,6 +113,24 @@ void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, cons
 {
     auto it_msg = m_it_messages[index.row()];
     it_msg->set_text(message);
+}
+
+bool MessageListModel::has_messages_same_sender_and_time(const int& less_row, const int& bigger_row) const
+{
+    if (less_row < 0 || bigger_row >= static_cast<int>(m_it_messages.size()))
+        return false;
+    auto message1 = m_it_messages[less_row];
+    auto message2 = m_it_messages[bigger_row];
+
+    auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message1->timestamp() - message2->timestamp());
+
+    if (message1->from() == message2->from())
+            std::cout << "Senders are same!" << std::endl;
+    if ((message1->from() == message2->from())
+         &&
+        (diff_time.count() < 2))
+        return true;
+    return false;
 }
 
 void MessageListModel::clear()
