@@ -220,12 +220,9 @@ jobs:
         execute_command("sudo cmake --build build --target install")
         os.chdir(repo)
 
-<<<<<<< HEAD
         execute_command("sudo ln -s {}/bin/clang /usr/local/bin/cc".format(llvm_install_dir))
         execute_command("sudo ln -s {}/bin/clang++ /usr/local/bin/c++".format(llvm_install_dir))
 
-=======
->>>>>>> a799ceb7176d88dfaad668a45b90db5c42459885
     - name: Remove GCC (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
@@ -281,22 +278,14 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
-<<<<<<< HEAD
         # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v'
-=======
-        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v'
->>>>>>> a799ceb7176d88dfaad668a45b90db5c42459885
 
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-<<<<<<< HEAD
         execute_command("./bootstrap.sh --with-toolset=clang")
-=======
-        execute_command("LD_LIBRARY_PATH=/usr/local/lib ./bootstrap.sh --with-toolset=clang")
->>>>>>> a799ceb7176d88dfaad668a45b90db5c42459885
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command('LD_LIBRARY_PATH=/usr/local/lib ./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
