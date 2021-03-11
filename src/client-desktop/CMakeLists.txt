@@ -33,6 +33,7 @@ set(HEADERS
     include/chat_list_model.hpp
     include/chat_list_view.hpp
     include/chat_widget.hpp
+    include/config.hpp
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp

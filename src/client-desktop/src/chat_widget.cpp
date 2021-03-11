@@ -10,7 +10,6 @@
 #include <QScrollBar>
 
 #include <chrono>
-#include <iostream>
 
 namespace melon::client_desktop
 {

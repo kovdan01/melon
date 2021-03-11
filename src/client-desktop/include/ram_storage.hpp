@@ -65,7 +65,7 @@ public:
         return m_attachments;
     }
 
-    [[nodiscard]] const timestamp_t timestamp() const noexcept
+    [[nodiscard]] timestamp_t timestamp() const noexcept
     {
         return m_timestamp;
     }

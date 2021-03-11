@@ -44,8 +44,6 @@ private:
     void set_message_in_ram_storage(const QModelIndex& index, const QString& message);
     [[nodiscard]] bool has_messages_same_sender_and_time(const int& less_row, const int& bigger_row) const;
 
-    constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
-    constexpr static QColor M_SENDED_COLOR{30, 30, 90, 30};
     std::vector<message_handle_t> m_it_messages;
 };
 
