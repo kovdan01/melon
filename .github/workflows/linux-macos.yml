@@ -16,7 +16,7 @@ jobs:
       NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: "ninja-tool"
       LLVM_VERSION: "11.1.0"
-      LLVM_INSTALL_PATH: "/usr/local"
+      LLVM_INSTALL_PATH: "llvm-install"
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
@@ -205,6 +205,9 @@ jobs:
         llvm_version = os.environ['LLVM_VERSION']
         llvm_source_dir  = os.path.normpath(os.path.join(root, "llvm-project-{}.src".format(llvm_version)))
         llvm_install_dir = os.path.normpath(os.path.join(root, "${{ env.LLVM_INSTALL_PATH }}"))
+
+        os.mkdir(llvm_install_dir)
+
         llvm_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-{}/llvm-project-{}.src.tar.xz".format(llvm_version, llvm_version)
         open("llvm.tar.xz", "wb").write(requests.get(llvm_url, allow_redirects=True).content)
         execute_command("tar -xf llvm.tar.xz")
@@ -220,8 +223,16 @@ jobs:
         execute_command("sudo cmake --build build --target install")
         os.chdir(repo)
 
+        execute_command("tar -czf target.tar.gz {}".format(llvm_install_dir))
+
         execute_command("sudo ln -s {}/bin/clang /usr/local/bin/cc".format(llvm_install_dir))
         execute_command("sudo ln -s {}/bin/clang++ /usr/local/bin/c++".format(llvm_install_dir))
+
+    - name: Upload LLVM
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./target.tar.gz
+        name: llvm
 
     - name: Remove GCC (Linux)
       if: ${{ runner.os == 'Linux' }}
