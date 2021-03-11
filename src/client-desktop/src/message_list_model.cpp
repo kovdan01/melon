@@ -1,6 +1,5 @@
 #include <message_list_model.hpp>
 
-#include <iostream>
 #include <iterator>
 
 namespace melon::client_desktop
@@ -124,13 +123,7 @@ bool MessageListModel::has_messages_same_sender_and_time(const int& less_row, co
 
     auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message1->timestamp() - message2->timestamp());
 
-    if (message1->from() == message2->from())
-            std::cout << "Senders are same!" << std::endl;
-    if ((message1->from() == message2->from())
-         &&
-        (diff_time.count() < 2))
-        return true;
-    return false;
+    return ((message1->from() == message2->from()) && (diff_time.count() < 2));
 }
 
 void MessageListModel::clear()

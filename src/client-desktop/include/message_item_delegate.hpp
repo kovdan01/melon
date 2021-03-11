@@ -27,15 +27,15 @@ public:
 private:
     [[nodiscard]] QString date_number_handler(const int& num) const;
     std::vector<QString> m_month_names = {tr("Jan"), tr("Feb"), tr("Mar"), tr("Apr"),
-                                        tr("Jun"), tr("Jul"), tr("Aug"),
-                                        tr("Sep"), tr("Oct"), tr("Nov"), tr("Dec")};
+                                          tr("Jun"), tr("Jul"), tr("Aug"),
+                                          tr("Sep"), tr("Oct"), tr("Nov"), tr("Dec")};
 
-    QFont m_sender_font     {QStringLiteral("Cantarell"), /*pointSize*/ 9, /*weight*/ QFont::DemiBold};
-    QFont m_base_font       {QStringLiteral("Cantarell"), /*pointSize*/ 9, /*weight*/ 41};
-    QFont m_timestamp_font  {QStringLiteral("Cantarell"), /*pointSize*/ 6, /*weight*/ 35};
-    const QColor M_SELECTED_COLOR{30, 30, 90, 50};
-    const int M_MIN_MESSAGE_WIDTH = 100;
-    qreal m_scale_message_length = 0.5;
+    QFont m_sender_font     {QStringLiteral("Cantarell"), /*pointSize*/ 9, /*weight*/ QFont::DemiBold};  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    QFont m_base_font       {QStringLiteral("Cantarell"), /*pointSize*/ 9, /*weight*/ 41};  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    QFont m_timestamp_font  {QStringLiteral("Cantarell"), /*pointSize*/ 6, /*weight*/ 35};  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    constexpr static QColor M_SELECTED_COLOR{30, 30, 90, 50};
+    const static int M_MIN_MESSAGE_WIDTH = 100;
+    constexpr static qreal M_SCALE_MESSAGE_LENGTH = 0.5;
 };
 
 }  // namespace melon::client_desktop

@@ -9,7 +9,6 @@
 #include <QRect>
 #include <QFontMetrics>
 
-#include <iostream>
 #include <ctime>
 
 namespace melon::client_desktop
@@ -66,7 +65,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Message text rect
     QString message_text = message->text();
     QRect message_max_rect = option.rect;
-    message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_length));
+    message_max_rect.setWidth(static_cast<int>(option.rect.width() * M_SCALE_MESSAGE_LENGTH));
     QRect message_text_rect = fm_message_text.boundingRect(message_max_rect,
                                                            Qt::AlignLeft | Qt::TextWordWrap,
                                                            message_text);
@@ -156,7 +155,7 @@ QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
     QFontMetrics fm_timestamp(m_timestamp_font);
 
     QRect message_max_rect = option.rect;
-    message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_length));
+    message_max_rect.setWidth(static_cast<int>(option.rect.width() * M_SCALE_MESSAGE_LENGTH));
     QRect my_rect = fm_message_text.boundingRect(message_max_rect,
                                                  Qt::AlignLeft | Qt::TextWordWrap,
                                                  text);
