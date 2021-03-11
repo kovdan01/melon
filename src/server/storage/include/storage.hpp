@@ -23,7 +23,7 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb();
 class Domain : public melon::core::Domain
 {
 public:
-    Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string hostname, bool external);
+    Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string& hostname, bool external);
 
     void remove_domain() override;
 

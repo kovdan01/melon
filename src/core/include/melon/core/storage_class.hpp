@@ -19,14 +19,8 @@ public:
     [[nodiscard]] const std::string& hostname() const;
     [[nodiscard]] bool external() const;
 
-    virtual void remove_domain()
-    {
-    }
-
-    void set_domain_id(std::uint64_t new_domain_id)
-    {
-        m_domain_id = new_domain_id;
-    }
+    virtual void remove_domain();
+    inline void set_domain_id(std::uint64_t new_domain_id);
 
 private:
     std::uint64_t m_domain_id;
@@ -51,24 +45,10 @@ public:
     [[nodiscard]] const std::string& username() const;
     [[nodiscard]] Status status() const;
 
-    virtual void remove_user()
-    {
-    }
-
-    virtual void change_status(Status new_status)
-    {
-        m_status = new_status;
-    }
-
-    void set_domain_id(std::uint64_t new_domain_id)
-    {
-        m_domain_id = new_domain_id;
-    }
-
-    void set_user_id(std::uint64_t new_user_id)
-    {
-        m_user_id = new_user_id;
-    }
+    virtual void remove_user();
+    virtual void change_status(Status new_status);
+    inline void set_domain_id(std::uint64_t new_domain_id);
+    inline void set_user_id(std::uint64_t new_user_id);
 
 private:
     std::uint64_t m_user_id;
@@ -98,39 +78,13 @@ public:
     [[nodiscard]] std::uint64_t user_id() const;
     [[nodiscard]] std::uint64_t chat_id() const;
 
-    virtual void update_text(const std::string& new_text)
-    {
-        m_text = new_text;
-    }
-
-    virtual void remove_message()
-    {
-    }
-
-    virtual void change_status(Status new_status)
-    {
-        m_status = new_status;
-    }
-
-    void set_message_id(std::uint64_t new_message_id)
-    {
-        m_message_id = new_message_id;
-    }
-
-    void set_domain_id(std::uint64_t new_domain_id)
-    {
-        m_domain_id = new_domain_id;
-    }
-
-    void set_user_id(std::uint64_t new_user_id)
-    {
-        m_user_id = new_user_id;
-    }
-
-    void set_chat_id(std::uint64_t new_chat_id)
-    {
-        m_chat_id = new_chat_id;
-    }
+    virtual void update_text(const std::string& new_text);
+    virtual void remove_message();
+    virtual void change_status(Status new_status);
+    inline void set_message_id(std::uint64_t new_message_id);
+    inline void set_domain_id(std::uint64_t new_domain_id);
+    inline void set_user_id(std::uint64_t new_user_id);
+    inline void set_chat_id(std::uint64_t new_chat_id);
 
 private:
     std::uint64_t m_message_id;
@@ -157,19 +111,9 @@ public:
 //        m_chatname = new_chatname;
 //    }
 
-    virtual void remove_chat()
-    {
-    }
-
-    void set_chat_id(std::uint64_t new_chat_id)
-    {
-        m_chat_id = new_chat_id;
-    }
-
-    void set_domain_id(std::uint64_t new_domain_id)
-    {
-        m_domain_id = new_domain_id;
-    }
+    virtual void remove_chat();
+    inline void set_chat_id(std::uint64_t new_chat_id);
+    inline void set_domain_id(std::uint64_t new_domain_id);
 
 private:
     std::uint64_t m_chat_id;

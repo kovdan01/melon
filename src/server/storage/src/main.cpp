@@ -12,22 +12,22 @@ int main() try
     mysql::connection db(mss::config_melondb());
 
     // Domains
-    std::string domain_ed = "Edward";
+    std::string domain_ed = "Edward3";
     mss::Domain domain_edward(db, 0, domain_ed, true);
     std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
 
     // Users
     // 1. Constructor
-    mss::User user1(db, 0, domain_edward.domain_id(), "kitt1", mc::User::Status::ONLINE);
+    mss::User user1(db, 0, domain_edward.domain_id(), "kitt12", mc::User::Status::ONLINE);
     std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
     std::cout << "Current user_id: " << user1.user_id() << "\n";
     user1.change_status(mc::User::Status::OFFLINE);
     user1.remove_user();
 
     // 2. Constructor [fails to create user2 if there is no domain in list]
-    mss::User user2(db, 0, 0, "kitt1", mc::User::Status::ONLINE, "not_in_list_domain");
-    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
-    std::cout << "Current user_id: " << user1.user_id() << "\n";
+//    mss::User user2(db, 0, 0, "kitt1", mc::User::Status::ONLINE, "not_in_list_domain");
+//    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
+//    std::cout << "Current user_id: " << user1.user_id() << "\n";
 
     mss::User user3(db, 0, domain_edward.domain_id(), "anna", mc::User::Status::ONLINE);
     mss::User user4(db, 0, domain_edward.domain_id(), "erick", mc::User::Status::ONLINE);
@@ -52,11 +52,13 @@ int main() try
     // Chats
     // 1. Constructor
     mss::Chat chat1(db, 0, domain_edward.domain_id(), "secret_chat");
+    std::cout << "Current chat_id: " << chat1.chat_id() << '\n';
     // 2. Constructor [fails to create user2 if there is no domain in list]
-    mss::Chat chat2(db, 0, 0, "secret_chat", "not_in_the_list_domain");
+//    mss::Chat chat2(db, 0, 0, "secret_chat", "not_in_the_list_domain");
 
     // Messages
     mss::Message message1(db, 0, domain_edward.domain_id(), user1.user_id(), chat1.chat_id(), ":D", mc::Message::Status::SENT);
+    std::cout << "Current message_id: " << message1.message_id() << '\n';
     message1.change_status(mc::Message::Status::SEEN);
     message1.update_text("((((((");
     message1.remove_message();

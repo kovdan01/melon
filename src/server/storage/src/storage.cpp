@@ -38,7 +38,7 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 /* class Domain */
 
 // Add only unique hostnames
-Domain::Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string hostname, bool external)
+Domain::Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string& hostname, bool external)
      : melon::core::Domain(domain_id, hostname, external), m_db(db)
 {
     // [check] In mariadb it is bool, but it is not bool in sqlpp11 why? should change then to std::uint8_t but that strange author says that bool IS supported]
@@ -47,7 +47,7 @@ Domain::Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::strin
     this->set_domain_id(this_domain_id);
 }
 
-// [check] That I do not delete useful information from messages - now it deletes to much maybe
+// [check] That I do not delete useful information from table messages - now it deletes to much maybe
 void Domain::remove_domain()
 {
     m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
@@ -58,7 +58,7 @@ void Domain::remove_domain()
 
 Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t user_id,
         std::uint64_t chat_id, std::string text, Status status)
-     : melon::core::Message(message_id, domain_id, user_id, chat_id, text, status), m_db(db)
+     : melon::core::Message(message_id, domain_id, user_id, chat_id, std::move(text), status), m_db(db)
 {
     m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
                                    G_MESSAGES.timesend = this->timestamp(),
@@ -76,7 +76,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
 Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id,
                  std::uint64_t user_id, std::uint64_t chat_id, std::string text, Status status,
                  const std::string& hostname, const std::string& username, const std::string& chatname)
-     : melon::core::Message(message_id, domain_id, user_id, chat_id, text, status), m_db(db)
+     : melon::core::Message(message_id, domain_id, user_id, chat_id, std::move(text), status), m_db(db)
 {
     std::uint64_t message_domain_id = get_domain_id_by_hostname(m_db, hostname);
     this->set_domain_id(message_domain_id);
@@ -126,7 +126,7 @@ Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t do
 }
 
 Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname, const std::string& hostname)
-    : melon::core::Chat(chat_id, domain_id, chatname), m_db(db)
+    : melon::core::Chat(chat_id, domain_id, std::move(chatname)), m_db(db)
 {
     std::uint64_t chat_domain_id = get_domain_id_by_hostname(m_db, hostname);
     this->set_domain_id(chat_domain_id);
@@ -151,7 +151,7 @@ void Chat::remove_chat()
 /* class User */
 
 User::User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status)
-     : melon::core::User(user_id, domain_id, username, status), m_db(db)
+     : melon::core::User(user_id, domain_id, std::move(username), status), m_db(db)
 {
     m_db(insert_into(G_USERS).set(G_USERS.username = this->username(), G_USERS.domainId = domain_id, G_USERS.status = static_cast<int>(this->status())));
     std::uint64_t this_user_id = get_user_id_by_username_and_domain_id(m_db, this->username(), this->domain_id());
@@ -159,7 +159,7 @@ User::User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t do
 }
 
 User::User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status, const std::string& hostname)
-    : melon::core::User(user_id, domain_id, username, status), m_db(db)
+    : melon::core::User(user_id, domain_id, std::move(username), status), m_db(db)
 {
     std::uint64_t user_domain_id = get_domain_id_by_hostname(m_db, hostname);
     this->set_domain_id(user_domain_id);
@@ -192,6 +192,7 @@ std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std:
         const auto& row = result.front();
         return row.domainId;
     }
+    //throw INVALID_ID; ?
     return INVALID_ID;
 }
 
