@@ -1,12 +1,13 @@
-package org.melon.feature_chats_list.presentation.viewmodels
+package org.melon.feature_chats_list.presentation.chats_list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import org.melon.feature_chats_list.domain.ChatsListUseCase
-import org.melon.feature_chats_list.presentation.models.ChatUi
 import javax.inject.Inject
 
+@HiltViewModel
 class ChatsListViewModel @Inject constructor(
     private val chatsListUseCase: ChatsListUseCase
 ) : ViewModel() {

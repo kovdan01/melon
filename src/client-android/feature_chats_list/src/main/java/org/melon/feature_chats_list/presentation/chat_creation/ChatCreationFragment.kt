@@ -1,18 +1,18 @@
-package org.melon.feature_chats_list.presentation.fragments
+package org.melon.feature_chats_list.presentation.chat_creation
 
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_chat_creation.*
+import org.melon.core.presentation.base.BaseFragment
 import org.melon.feature_chats_list.R
-import org.melon.feature_chats_list.di.DaggerChatsListComponent
-import org.melon.feature_chats_list.presentation.viewmodels.ChatCreationViewModel
-import org.melon.melonmessenger.presentation.base.BaseFragment
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class ChatCreationFragment : BaseFragment(R.layout.fragment_chat_creation) {
 
     companion object {
@@ -20,13 +20,7 @@ class ChatCreationFragment : BaseFragment(R.layout.fragment_chat_creation) {
         const val BUNDLE_KEY_CHAT_NAME = "chat_name_key"
     }
 
-    @Inject
-    lateinit var viewModel: ChatCreationViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        DaggerChatsListComponent.builder().context(requireContext()).build().inject(this)
-    }
+    private val viewModel by viewModels<ChatCreationViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

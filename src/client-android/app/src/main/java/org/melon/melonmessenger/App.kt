@@ -1,4 +1,4 @@
-package org.melon.melonmessenger.presentation
+package org.melon.melonmessenger
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

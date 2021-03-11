@@ -5,14 +5,14 @@ import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_chat_content.*
+import org.melon.core.presentation.base.BaseFragment
 import org.melon.feature_chat_content.R
 import org.melon.feature_chat_content.di.DaggerChatContentComponent
 import org.melon.feature_chat_content.presentation.items.OtherMessageItem
 import org.melon.feature_chat_content.presentation.items.UserMessageItem
 import org.melon.feature_chat_content.presentation.viewmodels.ChatContentViewModel
-import org.melon.melonmessenger.presentation.base.BaseFragment
 import javax.inject.Inject
 
 
@@ -35,7 +35,6 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
         chatContentRv.adapter = adapter
         chatContentRv.layoutManager = layoutManager
 
-        //TODO: make unified style for messages
         adapter.add(UserMessageItem("This is "))
         adapter.add(OtherMessageItem("your test"))
 

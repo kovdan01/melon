@@ -1,10 +1,12 @@
-package org.melon.feature_chats_list.presentation.viewmodels
+package org.melon.feature_chats_list.presentation.chat_creation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+@HiltViewModel
 class ChatCreationViewModel @Inject constructor() : ViewModel() {
 
     private val _showCreateBtn: MutableLiveData<Boolean> = MutableLiveData()

@@ -1,10 +1,9 @@
-package org.melon.feature_chats_list.presentation.items
+package org.melon.feature_chats_list.presentation.chats_list
 
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.item_chat.view.*
 import org.melon.feature_chats_list.R
-import org.melon.feature_chats_list.presentation.models.ChatUi
 
 class ChatItem(
     private val chatUi: ChatUi,
