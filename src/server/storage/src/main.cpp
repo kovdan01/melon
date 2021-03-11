@@ -13,28 +13,22 @@ int main() try
 
 
 
-    std::string domain1 = "Erick3 server";
+    std::string domain1 = "Anna7 server";
  //   std::string domain2 = "Clyde server";
 
 //    /* Domains */
 
-   // mc::Domain domain(0, domain1, true);
 //    //same hostnames are not allowed:
     mss::Domain domain(db, 0, domain1, true);
-
-    mss::User user(db, 1, 1, "kitt1", mc::User::Status::ONLINE);
-    user.add_user(domain1);
-    user.change_status(mc::User::Status::OFFLINE);
-//    //mss::add_domain(db, domain);
+    std::cout << "Domain id is " << domain.domain_id() << "\n";
 
 
-////    mss::remove_domain(db, domain);
-
-//    //add find hostname, if not exists add
-//    mss::find_or_insert_domain_id(db, domain1);
-//    mss::find_or_insert_domain_id(db, "someserver");
-
-
+//    mss::User user(db, 0, 0, "kitt_l0v3__", mc::User::Status::ONLINE, domain1);
+//    // or
+//    mss::User user2(db, 0, domain.domain_id(), "kitt1_r0ar", mc::User::Status::ONLINE);
+//    std::cout << "Current domain_id: " << user.domain_id() <<"\n";
+//    std::cout << "Current user_id: " << user.user_id() << "\n";
+//    user.change_status(mc::User::Status::OFFLINE);
 
 //    /* Users */
 
