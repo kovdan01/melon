@@ -11,121 +11,56 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
+    // Domains
+    std::string domain_ed = "Edward";
+    mss::Domain domain_edward(db, 0, domain_ed, true);
+    std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
 
+    // Users
+    // 1. Constructor
+    mss::User user1(db, 0, domain_edward.domain_id(), "kitt1", mc::User::Status::ONLINE);
+    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
+    std::cout << "Current user_id: " << user1.user_id() << "\n";
+    user1.change_status(mc::User::Status::OFFLINE);
+    user1.remove_user();
 
-    std::string domain1 = "Anna10 server";
- //   std::string domain2 = "Clyde server";
+    // 2. Constructor [fails to create user2 if there is no domain in list]
+    mss::User user2(db, 0, 0, "kitt1", mc::User::Status::ONLINE, "not_in_list_domain");
+    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
+    std::cout << "Current user_id: " << user1.user_id() << "\n";
 
-//    /* Domains */
+    mss::User user3(db, 0, domain_edward.domain_id(), "anna", mc::User::Status::ONLINE);
+    mss::User user4(db, 0, domain_edward.domain_id(), "erick", mc::User::Status::ONLINE);
+    mss::User user5(db, 0, domain_edward.domain_id(), "silvia", mc::User::Status::ONLINE);
+    mss::User user6(db, 0, domain_edward.domain_id(), "bunny", mc::User::Status::ONLINE);
 
-//    //same hostnames are not allowed:
-    mss::Domain domain(db, 0, domain1, true);
-//    std::cout << "Domain id is " << domain.domain_id() << "\n";
+    std::cout << "Get online usernames\n";
+    std::vector<mc::User> online_users = mss::get_online_users(db);
+    for (const auto& a : online_users)
+    {
+        std::cout << a.user_id() << " : " << a.username() << '\n';
+    }
+    user6.change_status(mc::User::Status::OFFLINE);
 
+    std::cout << "Get online usernames\n";
+    online_users = mss::get_online_users(db);
+    for (const auto& a : online_users)
+    {
+        std::cout << a.user_id() << " : " << a.username() << '\n';
+    }
 
-//    mss::User user(db, 0, 0, "kitt_l0v3__", mc::User::Status::ONLINE, domain1);
-//    // or
-    mss::User user2(db, 0, domain.domain_id(), "kitt1_r0ar_yeh__", mc::User::Status::ONLINE);
-    std::cout << "Current domain_id: " << user2.domain_id() <<"\n";
-    std::cout << "Current user_id: " << user2.user_id() << "\n";
-    user2.change_status(mc::User::Status::OFFLINE);
-    user2.remove_user();
+    // Chats
+    // 1. Constructor
+    mss::Chat chat1(db, 0, domain_edward.domain_id(), "secret_chat");
+    // 2. Constructor [fails to create user2 if there is no domain in list]
+    mss::Chat chat2(db, 0, 0, "secret_chat", "not_in_the_list_domain");
 
-//    /* Users */
+    // Messages
+    mss::Message message1(db, 0, domain_edward.domain_id(), user1.user_id(), chat1.chat_id(), ":D", mc::Message::Status::SENT);
+    message1.change_status(mc::Message::Status::SEEN);
+    message1.update_text("((((((");
+    message1.remove_message();
 
-//    mc::User user(1, 0, "h3ll0kitt1", mc::User::Status::ONLINE);
-//    mss::add_user(db, user, domain1);
-
-//    mc::User user2(2, 0, "Bey Hakim", mc::User::Status::OFFLINE);
-//    mss::add_user(db, user2, domain2);
-
-//    //same domain_id + username are not allowed
-//    //mss::add_user(db, user, domain1);
-
-//    mc::User user3(3, 0, "Anna Maria", mc::User::Status::OFFLINE);
-//    mss::add_user(db, user3, domain1);
-
-
-//    std::cout << "Get all usernames\n";
-//    std::vector<std::string> all_usernames = mss::get_names_of_all_users(db);
-//    for (const auto& a : all_usernames)
-//    {
-//        std::cout << a << '\n';
-//    }
-
-////    mss::remove_user(db, user2);
-////    mss::remove_user(db, user);
-//    std::cout << "Get all usernames\n";
-//    for (const auto& a : all_usernames)
-//    {
-//        std::cout << a << '\n';
-//    }
-
-//    /* Chats */
-
-//    mc::Chat chat(1, 0, "secret_chat");
-//    mss::add_chat(db, chat, domain1);
-////    mss::remove_chat(db, chat);
-
-//    mc::Chat chat2(2, 0, "secret_chat");
-//    mss::update_chatname(db, "party time", chat2);
-
-//    /* Messages */
-
-//    mc::Message message(0, 1, 1, 2, "Let's protest", mc::Message::Status::SENT);
-
-//    mss::Message message(db, 1, 1, 1, 1, "Let's protest", mc::Message::Status::SENT);
-//    //mss::add_message(db, message);
-//    message.update_text("This is smth new");
-
-//    mss::count_number_recieved_messages(db);
-
-//    mc::Message message2(2, 2, 2, 1, "or go to OVD", mc::Message::Status::RECEIVED);
-////    mss::add_message(db, message2);
-//    //mss::update_text(db, "You better watch yourself", message2);
-
-//    mss::count_number_recieved_messages(db);
-
-//    //Should I delete all chats if hostname is deleted ??
-//    mss::remove_chat(db, chat2);
-
-
-
-
-
-//    std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
-//    std::cout << "Messages of chat:\n";
-//    for (const auto& a : chat_message)
-//    {
-//        std::cout << "text: " << a.text() << '\n';
-//    }
-
-//    std::vector<mc::User> online_users = mss::get_online_users(db);
-//    std::cout << "Online users:\n";
-//    for (const auto& a : online_users)
-//    {
-//        std::cout << a.user_id() << " : " << a.username() << '\n';
-//    }
-
-//    std::cout << "Change status for online\n";
-//    mss::make_user_online(db, user);
-//    std::vector<std::string> online_users_names = mss::get_online_users_names(db);
-
-//    std::cout << "Online users:\n";
-//    for (const auto& a : online_users_names)
-//    {
-//        std::cout << a << '\n';
-//    }
-
-//    std::cout << "Change status for offline\n";
-//    mss::make_user_offline(db, user);
-//    online_users_names = mss::get_online_users_names(db);
-
-//    std::cout << "Online users:\n";
-//    for (const auto& a : online_users_names)
-//    {
-//        std::cout << a << '\n';
-//    }
 }
 catch (const sqlpp::exception& e)
 {

@@ -118,7 +118,7 @@ void Message::change_status(Status new_status)
 /* class Chat */
 
 Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
-    : melon::core::Chat(chat_id, domain_id, chatname), m_db(db)
+    : melon::core::Chat(chat_id, domain_id, std::move(chatname)), m_db(db)
 {
     m_db(insert_into(G_CHATS).set(G_CHATS.domainId = domain_id, G_CHATS.chatname = this->chatname()));
     std::uint64_t this_chat_id = get_chat_id_by_chatname_and_domain_id(m_db, this->chatname(), this->domain_id());
@@ -177,7 +177,7 @@ void User::remove_user()
 void User::change_status(Status new_status)
 {
     melon::core::User::change_status(new_status);
-    this->db()(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
+    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
     //m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
 }
 
@@ -209,7 +209,7 @@ std::uint64_t get_user_id_by_username_and_domain_id(sqlpp::mysql::connection& db
     return INVALID_ID;
 }
 
-//List of all users in database
+// List of all users in database
 std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
 {
     std::vector<std::string> all_users_on_server;
@@ -220,7 +220,7 @@ std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
     return all_users_on_server;
 }
 
-//List of usernames of online users in database
+// List of usernames of online users in database
 std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
 {
     std::vector<std::string> online_users_names;
@@ -231,7 +231,7 @@ std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
     return online_users_names;
 }
 
-//List of online mc::Users in database
+// List of online mc::Users in database
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 {
     std::vector<melon::core::User> online_users;

@@ -7,9 +7,6 @@
 #include <cstdint>
 #include <string>
 
-//delete, this is for checking
-#include <iostream>
-
 namespace melon::core
 {
 

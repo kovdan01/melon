@@ -16,6 +16,7 @@ namespace melon::server::storage
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_melondb();
 
+/* Should I also create Chats_Users class?  or should I fill values of Chats_Users table in MariaDB inside Chats, Users, Messages*/
 
 /* class Domain */
 
@@ -80,11 +81,6 @@ public:
 
     void remove_user() override;
     void change_status(Status new_status) override;
-
-    sqlpp::mysql::connection& db()
-    {
-        return m_db;
-    }
 
 private:
     sqlpp::mysql::connection& m_db;
