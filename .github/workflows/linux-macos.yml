@@ -85,8 +85,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install MariaDB (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt-get update -y
+        sudo apt-get purge *mysql* -y
+        sudo apt-get --purge remove libc++-dev libc++abi-dev -y
+        sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat cmake ninja-build p7zip-full python3 python3-pip pkg-config -y
+
     - name: Set environment variables
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
 
@@ -104,16 +112,8 @@ jobs:
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
-    - name: Install required python modules
-      run: pip install requests
-
-    - name: Install MariaDB (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: |
-        sudo apt-get update -y
-        sudo apt-get purge *mysql*
-        sudo apt-get --purge remove libc++-dev libc++abi-dev
-        sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+    - name: Install required python3 modules
+      run: pip3 install requests pyparsing
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
@@ -132,7 +132,7 @@ jobs:
     - name: Download Ninja and CMake
       id: download_ninja_and_cmake
       if: ${{ steps.cache_ninja_and_cmake.outputs.cache-hit != 'true' }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -190,7 +190,7 @@ jobs:
     - name: LLVM
       id: llvm
       if: ${{ steps.cache_llvm.outputs.cache-hit != 'true' }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -220,6 +220,14 @@ jobs:
         execute_command("sudo cmake --build build --target install")
         os.chdir(repo)
 
+        execute_command("sudo ln -s {}/bin/clang /usr/local/bin/cc".format(llvm_install_dir))
+        execute_command("sudo ln -s {}/bin/clang++ /usr/local/bin/c++".format(llvm_install_dir))
+
+    - name: Remove GCC (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt --purge remove gcc -y
+
     - name: Boost cache
       uses: actions/cache@v2
       id: cache_boost
@@ -230,7 +238,11 @@ jobs:
     - name: Boost
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
-      shell: python {0}
+      env:
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: "${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v"
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -266,18 +278,22 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
-        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
+        # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v'
 
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-        execute_command("./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang")
+        execute_command("./bootstrap.sh --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
     - name: Utils by Pavel A. Lebedev
+      env:
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
       run: |
         # ntc-cmake
         cd cmake/ntc
@@ -309,9 +325,10 @@ jobs:
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -345,7 +362,7 @@ jobs:
         execute_command("chmod +x ./configure")
         execute_command("./configure --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
-        execute_command("make -j2")
+        execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
         os.chdir(repo)
 
@@ -359,9 +376,10 @@ jobs:
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -411,9 +429,10 @@ jobs:
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -508,9 +527,10 @@ jobs:
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -539,12 +559,12 @@ jobs:
 
         os.chdir(qtbase_source_dir)
 
-        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
-        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
+        # os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
+        # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
-        execute_command("make -j2")
+        execute_command("./configure -opensource -confirm-license -prefix {} -platform linux-clang -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
+        execute_command("make")
         execute_command("make install")
 
         os.chdir(root)
@@ -564,8 +584,9 @@ jobs:
 
     - name: Configure
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
         -D CMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang \
@@ -593,6 +614,10 @@ jobs:
         languages: cpp
 
     - name: Build
+      env:
+        CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
+        LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
       run: cmake --build build --target all
 
     - name: Perform CodeQL Analysis
