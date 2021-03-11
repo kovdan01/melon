@@ -12,13 +12,13 @@ int main() try
     mysql::connection db(mss::config_melondb());
 
     // Domains
-    std::string domain_ed = "Edward3";
+    std::string domain_ed = "Edwar server";
     mss::Domain domain_edward(db, 0, domain_ed, true);
     std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
 
     // Users
     // 1. Constructor
-    mss::User user1(db, 0, domain_edward.domain_id(), "kitt12", mc::User::Status::ONLINE);
+    mss::User user1(db, 0, domain_edward.domain_id(), "Anna Maria Antuanetta Corella", mc::User::Status::ONLINE);
     std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
     std::cout << "Current user_id: " << user1.user_id() << "\n";
     user1.change_status(mc::User::Status::OFFLINE);
@@ -57,11 +57,12 @@ int main() try
 //    mss::Chat chat2(db, 0, 0, "secret_chat", "not_in_the_list_domain");
 
     // Messages
-    mss::Message message1(db, 0, domain_edward.domain_id(), user1.user_id(), chat1.chat_id(), ":D", mc::Message::Status::SENT);
+    mss::Message message1(db, 0, domain_edward.domain_id(), user3.user_id(), chat1.chat_id(), ":D", mc::Message::Status::SENT);
     std::cout << "Current message_id: " << message1.message_id() << '\n';
     message1.change_status(mc::Message::Status::SEEN);
     message1.update_text("((((((");
-    message1.remove_message();
+
+    mss::message_timesend(db);
 
 }
 catch (const sqlpp::exception& e)

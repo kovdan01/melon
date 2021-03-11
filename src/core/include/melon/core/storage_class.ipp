@@ -71,7 +71,7 @@ inline void User::set_domain_id(std::uint64_t new_domain_id)
     return m_status;
 }
 
-[[nodiscard]] inline std::chrono::high_resolution_clock::time_point Message::timestamp() const
+[[nodiscard]] inline std::chrono::system_clock Message::timestamp() const
 {
     return m_timestamp;
 }

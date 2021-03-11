@@ -74,7 +74,7 @@ public:
     [[nodiscard]] std::uint64_t domain_id() const;
     [[nodiscard]] const std::string& text() const;
     [[nodiscard]] Status status() const;
-    [[nodiscard]] std::chrono::high_resolution_clock::time_point timestamp() const;
+    [[nodiscard]] std::chrono::system_clock timestamp() const;
     [[nodiscard]] std::uint64_t user_id() const;
     [[nodiscard]] std::uint64_t chat_id() const;
 
@@ -90,7 +90,7 @@ private:
     std::uint64_t m_message_id;
     std::uint64_t m_domain_id;
     std::uint64_t m_user_id;
-    std::chrono::high_resolution_clock::time_point m_timestamp;
+    std::chrono::system_clock m_timestamp;
     std::uint64_t m_chat_id;
     std::string m_text;
     Status m_status;

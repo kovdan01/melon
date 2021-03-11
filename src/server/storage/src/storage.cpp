@@ -61,7 +61,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
      : melon::core::Message(message_id, domain_id, user_id, chat_id, std::move(text), status), m_db(db)
 {
     m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
-                                   G_MESSAGES.timesend = this->timestamp(),
+                                   G_MESSAGES.timesend = std::chrono::system_clock::now(),
                                    G_MESSAGES.status = static_cast<std::uint8_t>(this->status()),
                                    G_MESSAGES.domainId = this->domain_id(),
                                    G_MESSAGES.userId = this->user_id(),
@@ -85,7 +85,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
     std::uint64_t message_chat_id = get_chat_id_by_chatname_and_domain_id(m_db, chatname, message_domain_id);
     this->set_chat_id(message_chat_id);
     m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
-                                   G_MESSAGES.timesend = this->timestamp(),
+                                   G_MESSAGES.timesend = std::chrono::system_clock::now(),
                                    G_MESSAGES.status = static_cast<std::uint8_t>(this->status()),
                                    G_MESSAGES.domainId = this->domain_id(),
                                    G_MESSAGES.userId = this->user_id(),
@@ -112,6 +112,16 @@ void Message::change_status(Status new_status)
 {
     melon::core::Message::change_status(new_status);
     m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(new_status)).where(G_MESSAGES.messageId == this->message_id()));
+}
+
+void message_timesend(sqlpp::mysql::connection& db)
+{
+    for (const auto& row : db(select(G_MESSAGES.timesend).from(G_MESSAGES).unconditionally()))
+    {
+        std::cout << "timesend is " << row.timesend << "\n";
+//        const auto tp = std::chrono::system_clock::time_point{row.timesend.value()};
+//        std::cout << "std::chrono::system_clock::to_time_t" << std::chrono::system_clock::to_time_t(tp);
+    }
 }
 
 

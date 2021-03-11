@@ -108,6 +108,8 @@ std::uint64_t get_message_id_by_chat_id_and_domain_id_and_user_id(sqlpp::mysql::
 std::uint64_t get_chat_id_by_chatname_and_domain_id(sqlpp::mysql::connection& db, const std::string& chatname, std::uint64_t domain_id);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 
+// Check Greenwich time
+void message_timesend(sqlpp::mysql::connection& db);
 
 }  // namespace melon::server::storage
 
