@@ -21,16 +21,16 @@ struct FontParams
     const int weight;
 };
 
-static const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-static const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
-static const FontParams m_timestamp_font_params = {QStringLiteral("Cantarell"), 6, 35};
+const FontParams M_SENDER_FONT_PARAMS = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
+const FontParams M_MESSAGE_TEXT_FONT_PARAMS = {QStringLiteral("Cantarell"), 9, 41};
+const FontParams M_TIMESTAMP_FONT_PARAMS = {QStringLiteral("Cantarell"), 6, 35};
 
 constexpr static QColor M_RECEIVE_MESSAGE_COLOR{/*r*/ 255, /*g*/ 243, /*b*/ 223};
 constexpr static QColor M_SENDED_MESSAGE_COLOR{/*r*/ 235, /*g*/ 235, /*b*/ 235};
 
-}
+}  // namespace appearance
 
-}
+}  // namespace user_config
 
 namespace develop_config
 {
@@ -46,10 +46,10 @@ constexpr static int M_BASE_MARGIN = 5;
 constexpr static int M_ICON_DIAMETER = 30;
 constexpr static int M_MESSAGE_ROUND_RADIUS = 10;
 
-}
+}  // namespace appearance
 
-}
+}  // namespace develop_config
 
-}
+}  // namespace melon::client_desktop
 
 #endif  // MELON_CLIENT_DESKTOP_CONFIG_HPP_

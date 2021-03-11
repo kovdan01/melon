@@ -32,15 +32,15 @@ private:
                                           tr("May"), tr("Jun"), tr("Jul"), tr("Aug"),
                                           tr("Sep"), tr("Oct"), tr("Nov"), tr("Dec")};
 
-    const QFont m_sender_font       {user_config::appearance::m_sender_font_params.font_family,
-                                     user_config::appearance::m_sender_font_params.font_size,
-                                     user_config::appearance::m_sender_font_params.weight};
-    const QFont m_message_text_font {user_config::appearance::m_message_text_font_params.font_family,
-                                     user_config::appearance::m_message_text_font_params.font_size,
-                                     user_config::appearance::m_message_text_font_params.weight};
-    const QFont m_timestamp_font    {user_config::appearance::m_timestamp_font_params.font_family,
-                                     user_config::appearance::m_timestamp_font_params.font_size,
-                                     user_config::appearance::m_timestamp_font_params.weight};
+    const QFont m_sender_font       {user_config::appearance::M_SENDER_FONT_PARAMS.font_family,
+                                     user_config::appearance::M_SENDER_FONT_PARAMS.font_size,
+                                     user_config::appearance::M_SENDER_FONT_PARAMS.weight};
+    const QFont m_message_text_font {user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.font_family,
+                                     user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.font_size,
+                                     user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.weight};
+    const QFont m_timestamp_font    {user_config::appearance::M_TIMESTAMP_FONT_PARAMS.font_family,
+                                     user_config::appearance::M_TIMESTAMP_FONT_PARAMS.font_size,
+                                     user_config::appearance::M_TIMESTAMP_FONT_PARAMS.weight};
 };
 
 }  // namespace melon::client_desktop

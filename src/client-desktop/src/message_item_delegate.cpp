@@ -192,7 +192,7 @@ QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
 
 QString MessageItemDelegate::date_number_handler(const int& num) const
 {
-    if (num < 10)
+    if (num < 10)  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         return QString::number(0) + QString::number(num);
     return QString::number(num);
 }
