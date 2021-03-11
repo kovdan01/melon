@@ -177,18 +177,8 @@ void User::remove_user()
 void User::change_status(Status new_status)
 {
     melon::core::User::change_status(new_status);
-    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
-}
-
-//Number of recieved (this is like "not read" - maybe should change name for it) messages for specific user
-std::uint64_t User::count_number_of_recieved_messages()
-{
-    for (const auto& row : m_db(select(count(G_MESSAGES.messageId)).from(G_MESSAGES)
-                              .where(G_MESSAGES.status == static_cast<std::uint8_t>(melon::core::Message::Status::RECEIVED) and G_MESSAGES.userId == this->user_id())))
-    {
-        return row.count;
-    }
-    return INVALID_ID;
+    this->db()(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
+    //m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
 }
 
 
@@ -199,8 +189,8 @@ std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std:
     auto result = db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname));
     if (!result.empty())
     {
-       const auto& row = result.front();
-       return row.domainId;
+        const auto& row = result.front();
+        return row.domainId;
     }
     return INVALID_ID;
 }
@@ -213,8 +203,8 @@ std::uint64_t get_user_id_by_username_and_domain_id(sqlpp::mysql::connection& db
     auto result = db(select(G_USERS.userId).from(G_USERS).where(G_USERS.username == username and G_USERS.domainId == domain_id));
     if (!result.empty())
     {
-       const auto& row = result.front();
-       return row.userId;
+        const auto& row = result.front();
+        return row.userId;
     }
     return INVALID_ID;
 }
@@ -248,8 +238,7 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
     for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(melon::core::User::Status::ONLINE))))
     {
         auto status = static_cast<melon::core::User::Status>(static_cast<int>(row.status));
-        melon::core::User user(row.userId, row.domainId, row.username, status);
-        online_users.emplace_back(std::move(user));
+        online_users.emplace_back(row.userId, row.domainId, row.username, status);
     }
     return online_users;
 }
@@ -264,8 +253,8 @@ std::uint64_t get_message_id_by_chat_id_and_domain_id_and_user_id(sqlpp::mysql::
                                                                          G_MESSAGES.userId == user_id));
     if (!result.empty())
     {
-       const auto& row = result.front();
-       return row.messageId;
+        const auto& row = result.front();
+        return row.messageId;
     }
     return INVALID_ID;
 }
@@ -278,8 +267,8 @@ std::uint64_t get_chat_id_by_chatname_and_domain_id(sqlpp::mysql::connection& db
     auto result = db(select(G_CHATS.chatId).from(G_CHATS).where(G_CHATS.chatname == chatname and G_CHATS.domainId == domain_id));
     if (!result.empty())
     {
-       const auto& row = result.front();
-       return row.chatId;
+        const auto& row = result.front();
+        return row.chatId;
     }
     return INVALID_ID;
 }
@@ -290,8 +279,7 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
     for (const auto& row : db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == chat.chat_id())))
     {
         auto status = static_cast<melon::core::Message::Status>(static_cast<int>(row.status));
-        melon::core::Message message(row.messageId, row.domainId, row.userId, row.chatId, row.text, status);
-        messages_in_chat.emplace_back(std::move(message));
+        messages_in_chat.emplace_back(row.messageId, row.domainId, row.userId, row.chatId, row.text, status);
     }
     return messages_in_chat;
 }

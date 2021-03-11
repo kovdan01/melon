@@ -26,6 +26,7 @@ public:
 
     void remove_domain() override;
 
+private:
     sqlpp::mysql::connection& m_db;
 };
 
@@ -46,6 +47,7 @@ public:
     void change_status(Status new_status) override;
     void remove_message() override;
 
+private:
     sqlpp::mysql::connection& m_db;
 };
 
@@ -62,6 +64,7 @@ public:
 //    void update_chatname(const std::string& new_chatname) override;
     void remove_chat() override;
 
+private:
     sqlpp::mysql::connection& m_db;
 };
 
@@ -77,8 +80,13 @@ public:
 
     void remove_user() override;
     void change_status(Status new_status) override;
-    std::uint64_t count_number_of_recieved_messages() override;
 
+    sqlpp::mysql::connection& db()
+    {
+        return m_db;
+    }
+
+private:
     sqlpp::mysql::connection& m_db;
 };
 

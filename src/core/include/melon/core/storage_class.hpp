@@ -73,10 +73,6 @@ public:
         m_user_id = new_user_id;
     }
 
-    virtual std::uint64_t count_number_of_recieved_messages()
-    {
-    }
-
 private:
     std::uint64_t m_user_id;
     std::uint64_t m_domain_id;
