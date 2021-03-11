@@ -52,7 +52,8 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
         if ( (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
               && m_pressed_keys.contains(Qt::Key_Shift) )
         {
-            m_ui->MsgEdit->append(QString());
+            QTextCursor cursor = m_ui->MsgEdit->textCursor();
+            cursor.insertText(QStringLiteral("\n"));
             return true;
         }
 

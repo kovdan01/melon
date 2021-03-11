@@ -126,7 +126,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     painter->setFont(m_timestamp_font);
     auto timestamp = message->timestamp();
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
-    std::tm timestamp_tm = *std::gmtime(&time_tt);
+    std::tm timestamp_tm = *std::localtime(&time_tt);
 
     QString time_str = this->date_number_handler(timestamp_tm.tm_mday) + QStringLiteral(" ")
                        + m_month_names[timestamp_tm.tm_mon] + QStringLiteral(" ")

@@ -121,7 +121,7 @@ bool MessageListModel::has_messages_same_sender_and_time(const int& less_row, co
     auto message1 = m_it_messages[less_row];
     auto message2 = m_it_messages[bigger_row];
 
-    auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message1->timestamp() - message2->timestamp());
+    auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
 
     return ((message1->from() == message2->from()) && (diff_time.count() < 2));
 }
