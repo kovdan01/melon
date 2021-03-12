@@ -19,7 +19,7 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     : QStyledItemDelegate{parent}
 {
     const auto& user_config = UserConfigSingletone::get_instance();
-    UserConfigSingletone::Appearance user_ap = user_config.appearance();
+    const UserConfigSingletone::Appearance& user_ap = user_config.appearance();
 
     m_sender_font       = { user_ap.sender_font_params().family,
                             user_ap.sender_font_params().size,
@@ -37,7 +37,7 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     m_receive_message_color = user_ap.receive_message_color();
 
     const auto& dev_config = DevelopConfigSingletone::get_instance();
-    DevelopConfigSingletone::Appearance dev_ap = dev_config.appearance();
+    const DevelopConfigSingletone::Appearance& dev_ap = dev_config.appearance();
 
     m_min_message_width = dev_ap.min_message_width();
     m_scale_message_width = dev_ap.scale_message_width();
@@ -91,7 +91,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QRect sender_rect = fm_sender.boundingRect(option.rect, Qt::AlignLeft, sender);
     sender_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                             -m_base_margin,
-                             m_icon_diameter + m_base_margin * 5,
+                             m_icon_diameter + m_base_margin * 5,  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
                              m_base_margin * 2);
 
     // Message text rect
@@ -106,7 +106,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         int message_text_height = message_text_rect.height();
         message_text_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                        0,
-                                       m_icon_diameter + m_base_margin * 5,
+                                       m_icon_diameter + m_base_margin * 5,  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
                                        m_base_margin * 2);
         message_text_rect.setY(sender_rect.y() + sender_rect.height());
         message_text_rect.setHeight(message_text_height);
@@ -115,7 +115,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     {
         message_text_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                       -m_base_margin,
-                                       m_icon_diameter + m_base_margin * 5,
+                                       m_icon_diameter + m_base_margin * 5,  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
                                        m_base_margin * 2);
     }
     if (message_text_rect.width() < m_min_message_width)
