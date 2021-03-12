@@ -183,9 +183,9 @@ jobs:
     - name: LLVM
       run: |
         wget https://kovalev.website/static/files/llvm-install.tar.gz
-        sudo tar -xf llvm-install.tar.gz -C /usr/local
-        sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
-        sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
+        sudo tar -xvf llvm-install.tar.gz -C /usr/local
+        # sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
+        # sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
           
 #     - name: LLVM cache
 #       uses: actions/cache@v2
