@@ -102,7 +102,7 @@ void ChatWidget::send_message()
     Message new_message(QLatin1String("Me"),
                         message_text,
                         {},
-                        std::chrono::high_resolution_clock::now());
+                        std::chrono::system_clock::now());
 
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
@@ -116,7 +116,7 @@ void ChatWidget::receive_message()
     Message new_message(QLatin1String("Some Sender"),
                         QStringLiteral("I wish I could hear you."),
                         {},
-                        std::chrono::high_resolution_clock::now());
+                        std::chrono::system_clock::now());
 
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
@@ -163,9 +163,9 @@ Message ChatWidget::capture_message_from_editor()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
     if (message_text.isEmpty())
-        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::high_resolution_clock::now());
+        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now());
 
-    return Message(QLatin1String("Me"), message_text, {}, std::chrono::high_resolution_clock::now());
+    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now());
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)

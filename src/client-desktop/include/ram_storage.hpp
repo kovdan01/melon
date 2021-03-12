@@ -42,7 +42,7 @@ public:
         std::vector<byte_t> m_buffer;
     };
 
-    using timestamp_t = std::chrono::high_resolution_clock::time_point;
+    using timestamp_t = std::chrono::system_clock::time_point;
 
     Message() = default;  // for QVariant
     Message(const Message&) = default;
