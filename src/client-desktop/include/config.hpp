@@ -2,8 +2,8 @@
 #define MELON_CLIENT_DESKTOP_CONFIG_HPP_
 
 #include <QColor>
-#include <QString>
 #include <QFont>
+#include <QString>
 
 namespace melon::client_desktop
 {
@@ -25,6 +25,8 @@ public:
     class Appearance
     {
     public:
+        friend class UserConfigSingletone;
+
         struct FontParams
         {
             const QString family;
@@ -32,39 +34,38 @@ public:
             const int weight;
         };
 
-        [[nodiscard]] const FontParams sender_font_params() const
+        [[nodiscard]] FontParams sender_font_params() const
         {
-            return M_SENDER_FONT_PARAMS;
+            return m_sender_font_params;
         }
 
-        [[nodiscard]] const FontParams message_text_font_params() const
+        [[nodiscard]] FontParams message_text_font_params() const
         {
-            return M_MESSAGE_TEXT_FONT_PARAMS;
+            return m_message_text_font_params;
         }
 
-        [[nodiscard]] const FontParams timestamp_font_params() const
+        [[nodiscard]] FontParams timestamp_font_params() const
         {
-            return M_TIMESTAMP_FONT_PARAMS;
+            return m_timestamp_font_params;
         }
 
-        [[nodiscard]] const QColor receive_message_color() const
+        [[nodiscard]] const QColor& receive_message_color() const
         {
-            return M_RECEIVE_MESSAGE_COLOR;
+            return m_receive_message_color;
         }
 
-        [[nodiscard]] const QColor sended_message_color() const
+        [[nodiscard]] const QColor& sended_message_color() const
         {
-            return M_SENDED_MESSAGE_COLOR;
+            return m_sended_message_color;
         }
 
-        friend class UserConfigSingletone;
     private:
-        const FontParams M_SENDER_FONT_PARAMS = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-        const FontParams M_MESSAGE_TEXT_FONT_PARAMS = {QStringLiteral("Cantarell"), 9, 41};
-        const FontParams M_TIMESTAMP_FONT_PARAMS = {QStringLiteral("Cantarell"), 6, 35};
+        const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
+        const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
+        const FontParams m_timestamp_font_params = {QStringLiteral("Cantarell"), 6, 35};
 
-        const QColor M_RECEIVE_MESSAGE_COLOR{/*r*/ 255, /*g*/ 243, /*b*/ 223};
-        const QColor M_SENDED_MESSAGE_COLOR{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+        const QColor m_receive_message_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
+        const QColor m_sended_message_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
         Appearance() = default;
 
     };
@@ -103,45 +104,46 @@ public:
     class Appearance
     {
     public:
+        friend class DevelopConfigSingletone;
+
         [[nodiscard]] const QColor& selected_message_color() const
         {
-            return M_SELECTED_MESSAGE_COLOR;
+            return m_selected_message_color;
         }
 
-        [[nodiscard]] const int& min_message_width() const
+        [[nodiscard]] int min_message_width() const
         {
-            return M_MIN_MESSAGE_WIDTH;
+            return m_min_message_width;
         }
 
-        [[nodiscard]] const qreal& scale_message_width() const
+        [[nodiscard]] qreal scale_message_width() const
         {
-            return M_SCALE_MESSAGE_WIDTH;
+            return m_scale_message_width;
         }
 
-        [[nodiscard]] const int& base_margin() const
+        [[nodiscard]] int base_margin() const
         {
-            return M_BASE_MARGIN;
+            return m_base_margin;
         }
 
-        [[nodiscard]] const int& icon_diameter() const
+        [[nodiscard]] int icon_diameter() const
         {
-            return M_ICON_DIAMETER;
+            return m_icon_diameter;
         }
 
-        [[nodiscard]] const int& message_round_radius() const
+        [[nodiscard]] int message_round_radius() const
         {
-            return M_MESSAGE_ROUND_RADIUS;
+            return m_message_round_radius;
         }
 
-        friend class DevelopConfigSingletone;
     private:
-        const QColor M_SELECTED_MESSAGE_COLOR{/*r*/30, /*g*/30, /*b*/90, /*a*/50};
-        const int M_MIN_MESSAGE_WIDTH = 100;
-        const qreal M_SCALE_MESSAGE_WIDTH = 0.5;
+        const QColor m_selected_message_color{/*r*/30, /*g*/30, /*b*/90, /*a*/50};
+        const int m_min_message_width = 100;
+        const qreal m_scale_message_width = 0.5;
 
-        const int M_BASE_MARGIN = 5;
-        const int M_ICON_DIAMETER = 30;
-        const int M_MESSAGE_ROUND_RADIUS = 10;
+        const int m_base_margin = 5;
+        const int m_icon_diameter = 30;
+        const int m_message_round_radius = 10;
 
         Appearance() = default;
 
@@ -163,6 +165,6 @@ private:
     Appearance m_appearance;
 };
 
-}
+}  // namespace melon::client_desktop
 
 #endif  // MELON_CLIENT_DESKTOP_CONFIG_HPP_

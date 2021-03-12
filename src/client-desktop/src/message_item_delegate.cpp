@@ -18,25 +18,25 @@ namespace melon::client_desktop
 MessageItemDelegate::MessageItemDelegate(QObject* parent)
     : QStyledItemDelegate{parent}
 {
-    auto& user_config = UserConfigSingletone::get_instance();
+    const auto& user_config = UserConfigSingletone::get_instance();
     UserConfigSingletone::Appearance user_ap = user_config.appearance();
 
-    m_sender_font = {user_ap.sender_font_params().family,
-                     user_ap.sender_font_params().size,
-                     user_ap.sender_font_params().weight};
+    m_sender_font       = { user_ap.sender_font_params().family,
+                            user_ap.sender_font_params().size,
+                            user_ap.sender_font_params().weight };
 
-    m_message_text_font = {user_ap.message_text_font_params().family,
-                           user_ap.message_text_font_params().size,
-                           user_ap.message_text_font_params().weight};
+    m_message_text_font = { user_ap.message_text_font_params().family,
+                            user_ap.message_text_font_params().size,
+                            user_ap.message_text_font_params().weight };
 
-    m_timestamp_font = {user_ap.timestamp_font_params().family,
-                        user_ap.timestamp_font_params().size,
-                        user_ap.timestamp_font_params().weight};
+    m_timestamp_font    = { user_ap.timestamp_font_params().family,
+                            user_ap.timestamp_font_params().size,
+                            user_ap.timestamp_font_params().weight };
 
     m_sended_message_color = user_ap.sended_message_color();
     m_receive_message_color = user_ap.receive_message_color();
 
-    auto& dev_config = DevelopConfigSingletone::get_instance();
+    const auto& dev_config = DevelopConfigSingletone::get_instance();
     DevelopConfigSingletone::Appearance dev_ap = dev_config.appearance();
 
     m_min_message_width = dev_ap.min_message_width();
@@ -44,6 +44,7 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     m_base_margin = dev_ap.base_margin();
     m_icon_diameter = dev_ap.icon_diameter();
     m_message_round_radius = dev_ap.message_round_radius();
+    m_selected_message_color = dev_ap.selected_message_color();
 }
 
 void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
@@ -136,15 +137,19 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QRect message_background_rect = message_text_rect;
 
     if (!is_previous_same)
-        message_background_rect += QMargins( m_base_margin,
-                                             sender_rect.height(),
-                                             m_base_margin,
-                                             timestamp_rect.height() + m_base_margin);
+    {
+        message_background_rect += QMargins(m_base_margin,
+                                            sender_rect.height(),
+                                            m_base_margin,
+                                            timestamp_rect.height() + m_base_margin);
+    }
     else
-        message_background_rect += QMargins( m_base_margin,
-                                             0,
-                                             m_base_margin,
-                                             timestamp_rect.height() + m_base_margin);
+    {
+        message_background_rect += QMargins(m_base_margin,
+                                            0,
+                                            m_base_margin,
+                                            timestamp_rect.height() + m_base_margin);
+    }
     QPainterPath message_background_path;
     QColor color;
     if (message->from() == QStringLiteral("Me"))
@@ -217,7 +222,7 @@ QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
     if (!index.data(MyRoles::IsPreviousSameSenderAndTimeRole).value<bool>())
         row_height += /*message sender*/ fm_sender.height();
 
-    auto* p = qobject_cast<QListView*>(this->parent());
+    const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), row_height);
 }
 
