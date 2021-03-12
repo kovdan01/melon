@@ -12,8 +12,6 @@
 namespace melon::client_desktop
 {
 
-namespace dev_conf_ap = develop_config::appearance;
-
 class MessageItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -32,15 +30,18 @@ private:
                                           tr("May"), tr("Jun"), tr("Jul"), tr("Aug"),
                                           tr("Sep"), tr("Oct"), tr("Nov"), tr("Dec")};
 
-    const QFont m_sender_font       {user_config::appearance::M_SENDER_FONT_PARAMS.font_family,
-                                     user_config::appearance::M_SENDER_FONT_PARAMS.font_size,
-                                     user_config::appearance::M_SENDER_FONT_PARAMS.weight};
-    const QFont m_message_text_font {user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.font_family,
-                                     user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.font_size,
-                                     user_config::appearance::M_MESSAGE_TEXT_FONT_PARAMS.weight};
-    const QFont m_timestamp_font    {user_config::appearance::M_TIMESTAMP_FONT_PARAMS.font_family,
-                                     user_config::appearance::M_TIMESTAMP_FONT_PARAMS.font_size,
-                                     user_config::appearance::M_TIMESTAMP_FONT_PARAMS.weight};
+    QFont m_sender_font;
+    QFont m_message_text_font;
+    QFont m_timestamp_font;
+    QColor m_sended_message_color;
+    QColor m_receive_message_color;
+    QColor m_selected_message_color;
+
+    int m_min_message_width;
+    qreal m_scale_message_width;
+    int m_base_margin;
+    int m_icon_diameter;
+    int m_message_round_radius;
 };
 
 }  // namespace melon::client_desktop

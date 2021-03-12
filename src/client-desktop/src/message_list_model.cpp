@@ -30,12 +30,6 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         case MyRoles::MessageTextRole:
             data.setValue(m_it_messages[index.row()]->text());
             break;
-        case Qt::BackgroundRole:
-            if (m_it_messages[index.row()]->from() == QStringLiteral("Me"))
-                return user_config::appearance::M_SENDED_MESSAGE_COLOR;
-            else
-                return user_config::appearance::M_RECEIVE_MESSAGE_COLOR;
-            break;
         case MyRoles::IsPreviousSameSenderAndTimeRole:
             return this->has_messages_same_sender_and_time(index.row() - 1, index.row());
         case MyRoles::IsNextSameSenderAndTimeRole:
