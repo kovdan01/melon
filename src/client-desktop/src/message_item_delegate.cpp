@@ -178,7 +178,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
                       Qt::AlignLeft | Qt::TextWordWrap,
                       message_text);
 
-    // Timestamp rendering
+    // Timestamp and edit mark rendering
     painter->setFont(m_timestamp_font);
     Message::timestamp_t timestamp = message->timestamp();
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
@@ -188,6 +188,9 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
                        +m_month_names[timestamp_tm->tm_mon] + QStringLiteral(" ")
                        +this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":")
                        +this->date_number_handler(timestamp_tm->tm_min);
+
+    if (message->is_edit())
+        time_str = tr("edit") + QStringLiteral("  ") + time_str;
 
     painter->drawText(timestamp_rect, Qt::AlignRight, time_str);
     painter->setFont(m_message_text_font);

@@ -132,9 +132,9 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     {
         QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
         QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
-        chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 2,
+        chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                    -m_base_margin,
-                                    m_icon_diameter + m_base_margin * 2,
+                                    m_icon_diameter + m_base_margin * 3,
                                     m_base_margin);
         painter->setFont(m_chat_name_font);
         painter->drawText(chat_name_rect, Qt::AlignLeft, elided_name);
@@ -155,16 +155,16 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     max_chat_name_rect.setWidth(max_chat_name_rect.width() - timestamp_rect.width() - m_base_margin);
     QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
     QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
-    chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 2,
+    chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                -m_base_margin,
-                                m_icon_diameter + m_base_margin * 2,
+                                m_icon_diameter + m_base_margin * 3,
                                 m_base_margin);
     painter->setFont(m_chat_name_font);
     painter->drawText(chat_name_rect, Qt::ElideRight, elided_name);
 
     // Last message text rect definition
     QRect max_message_text_rect = option.rect;
-    max_message_text_rect.setX(max_message_text_rect.x() + m_icon_diameter + m_base_margin * 2);
+    max_message_text_rect.setX(max_message_text_rect.x() + m_icon_diameter + m_base_margin * 3);
     max_message_text_rect.setY(max_message_text_rect.y() + m_first_row_height + m_base_margin);
 
     if (!chat->is_read())
