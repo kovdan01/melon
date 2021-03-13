@@ -27,8 +27,8 @@ void MainWindow::replace_chat_widget_with_spacer()
                    this,
                    &MainWindow::change_chat);
 
-        disconnect(m_chat_widget->message_list_model(),
-                   &QAbstractItemModel::dataChanged,
+        disconnect(m_chat_widget,
+                   &ChatWidget::last_message_changed,
                    this,
                    &MainWindow::repaint_chat_list);
 
@@ -55,8 +55,8 @@ void MainWindow::replace_spacer_with_chat_widget()
             this,
             &MainWindow::change_chat);
 
-    connect(m_chat_widget->message_list_model(),
-            &QAbstractItemModel::dataChanged,
+    connect(m_chat_widget,
+            &ChatWidget::last_message_changed,
             this,
             &MainWindow::repaint_chat_list);
 }
@@ -183,7 +183,7 @@ void MainWindow::rename_chat()
     }
 }
 
-void MainWindow::repaint_chat_list(const QModelIndex&, const QModelIndex&)
+void MainWindow::repaint_chat_list()
 {
     QModelIndex cur_index = m_ui->ChatList->currentIndex();
     m_model_chat_list->setData(cur_index, QVariant(), MyRoles::RepaintRole);

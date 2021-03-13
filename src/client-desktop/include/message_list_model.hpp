@@ -20,7 +20,7 @@ public:
     using message_handle_t = Chat::message_handle_t;
     using chat_handle_t = RAMStorageSingletone::chat_handle_t;
 
-    [[nodiscard]] int rowCount(const QModelIndex& index) const override;
+    [[nodiscard]] int rowCount(const QModelIndex& index = QModelIndex()) const override;
     [[nodiscard]] Qt::ItemFlags flags(const QModelIndex&) const override;
     [[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;

@@ -36,6 +36,8 @@ ChatWidget::ChatWidget(QWidget* parent)
     m_submenu_sended_messages.addAction(tr("Edit"), this, SLOT(edit_message()));
     m_submenu_sended_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
 
+    m_submenu_received_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
+
     m_ui->MsgEdit->installEventFilter(this);
 }
 
@@ -84,6 +86,7 @@ void ChatWidget::send_message()
     if (m_edit_mode)
     {
         QModelIndex index = m_model_message_list->index(m_edit_row);
+
         m_model_message_list->setData(index, message_text, Qt::DisplayRole);
         m_model_message_list->setData(index, true, MyRoles::IsEditRole);
 
@@ -93,10 +96,10 @@ void ChatWidget::send_message()
         m_ui->SendButton->setText(QStringLiteral("Send"));
 
         m_ui->MsgEdit->setText(m_incomplete_message);
-        QTextCursor cursor = m_ui->MsgEdit->textCursor();
-        cursor.movePosition(QTextCursor::End);
-        m_ui->MsgEdit->setTextCursor(cursor);
         m_incomplete_message.clear();
+
+        if (m_edit_row == m_model_message_list->rowCount() - 1)
+            emit this->last_message_changed();
         return;
     }
 
@@ -110,6 +113,8 @@ void ChatWidget::send_message()
     m_ui->MsgList->scrollToBottom();
 
     m_ui->MsgEdit->setFocus();
+
+    emit this->last_message_changed();
 }
 
 void ChatWidget::receive_message()
@@ -124,6 +129,7 @@ void ChatWidget::receive_message()
     m_ui->MsgList->scrollToBottom();
 
     m_ui->MsgEdit->setFocus();
+    emit this->last_message_changed();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it)
@@ -196,8 +202,11 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 void ChatWidget::delete_message()
 {
     QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
-
+    int row = index.row();
     m_model_message_list->delete_message(m_current_chat_it, index);
+
+    if (row == m_model_message_list->rowCount())
+        emit this->last_message_changed();
 }
 
 void ChatWidget::edit_message()
@@ -212,6 +221,9 @@ void ChatWidget::edit_message()
     m_incomplete_message = m_ui->MsgEdit->toPlainText();
     m_ui->MsgEdit->setText(message_text);
     m_ui->MsgEdit->setFocus();
+    QTextCursor cursor = m_ui->MsgEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    m_ui->MsgEdit->setTextCursor(cursor);
 
     m_ui->ReceiveButton->setVisible(false);
     m_ui->SendButton->setText(QStringLiteral("Done"));
