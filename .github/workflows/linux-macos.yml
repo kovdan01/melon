@@ -113,7 +113,7 @@ jobs:
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
     - name: Install required python3 modules
-      run: pip3 install requests pyparsing
+      run: pip3 install --retries 20 requests pyparsing
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
@@ -184,9 +184,9 @@ jobs:
       run: |
         wget https://kovalev.website/static/files/llvm-install.tar.gz
         sudo tar -xvf llvm-install.tar.gz -C /usr/local
-        # sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
-        # sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
-          
+        sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
+        sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
+
 #     - name: LLVM cache
 #       uses: actions/cache@v2
 #       id: cache_llvm
