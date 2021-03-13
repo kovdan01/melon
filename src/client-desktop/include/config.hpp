@@ -59,13 +59,60 @@ public:
             return m_sended_message_color;
         }
 
+        [[nodiscard]] FontParams chat_name_font_params() const
+        {
+            return m_chat_name_font_params;
+        }
+
+        [[nodiscard]] FontParams chat_timestamp_font_params() const
+        {
+            return m_chat_timestamp_font_params;
+        }
+
+        [[nodiscard]] FontParams last_message_font_params() const
+        {
+            return m_last_message_font_params;
+        }
+
+        [[nodiscard]] FontParams unread_counter_font_params() const
+        {
+            return m_unread_counter_font_params;
+        }
+
+        [[nodiscard]] FontParams last_message_sender_font_params() const
+        {
+            return m_last_message_sender_font_params;
+        }
+
+        [[nodiscard]] QColor selected_chat_color() const
+        {
+            return m_selected_chat_color;
+        }
+
+        [[nodiscard]] QColor unread_background_color() const
+        {
+            return m_unread_background_color;
+        }
+
     private:
+        // for message item delegate
         const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
         const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
         const FontParams m_timestamp_font_params = {QStringLiteral("Cantarell"), 6, 35};
 
         const QColor m_receive_message_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
         const QColor m_sended_message_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+
+        // for chat item delegate
+        const FontParams m_chat_name_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
+        const FontParams m_chat_timestamp_font_params = {QStringLiteral("Cantarell"), 7, 35};
+        const FontParams m_last_message_font_params = {QStringLiteral("Cantarell"), 7, 35};
+        const FontParams m_unread_counter_font_params = {QStringLiteral("Cantarell"), 7, 45};
+        const FontParams m_last_message_sender_font_params = {QStringLiteral("Cantarell"), 7, 40};
+
+        const QColor m_selected_chat_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
+        const QColor m_unread_background_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+
         Appearance() = default;
 
     };
@@ -136,7 +183,28 @@ public:
             return m_message_round_radius;
         }
 
+        [[nodiscard]] int chat_base_margin() const
+        {
+            return m_chat_base_margin;
+        }
+
+        [[nodiscard]] int chat_icon_radius() const
+        {
+            return m_chat_icon_radius;
+        }
+
+        [[nodiscard]] int unread_indicator_round() const
+        {
+            return m_unread_indicator_round;
+        }
+
+        [[nodiscard]] const QColor& item_under_mouse_color() const
+        {
+            return m_item_under_mouse_color;
+        }
+
     private:
+        // for message item delegate
         const QColor m_selected_message_color{/*r*/30, /*g*/30, /*b*/90, /*a*/50};
         const int m_min_message_width = 100;
         const qreal m_scale_message_width = 0.5;
@@ -144,6 +212,12 @@ public:
         const int m_base_margin = 5;
         const int m_icon_diameter = 30;
         const int m_message_round_radius = 10;
+
+        // for chat item delegate
+        const int m_chat_base_margin = 5;
+        const int m_chat_icon_radius = 20;
+        const int m_unread_indicator_round = 5;
+        const QColor m_item_under_mouse_color{/*r*/230, /*g*/230, /*b*/230};
 
         Appearance() = default;
 

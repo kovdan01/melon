@@ -3,9 +3,10 @@
 
 #include <ui_main_window.h>
 
-#include <chat_widget.hpp>
+#include <chat_item_delegate.hpp>
 #include <chat_list_view.hpp>
 #include <chat_list_model.hpp>
+#include <chat_widget.hpp>
 
 #include <QMainWindow>
 #include <QSpacerItem>
@@ -25,6 +26,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    using MyRoles = ChatListModel::MyRoles;
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
@@ -45,6 +47,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QSpacerItem* m_spacer = nullptr;
     QPoint m_requested_menu_position;
     ChatListModel* m_model_chat_list = new ChatListModel{this};
+    ChatItemDelegate* m_chat_item_delegate;
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();

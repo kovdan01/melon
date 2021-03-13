@@ -27,6 +27,7 @@ ChatWidget::ChatWidget(QWidget* parent)
     m_message_item_delegate = new MessageItemDelegate{m_ui->MsgList};
     m_ui->MsgList->setItemDelegate(m_message_item_delegate);
 
+
     connect(m_ui->MsgList,
             &QWidget::customContextMenuRequested,
             this,
@@ -102,7 +103,8 @@ void ChatWidget::send_message()
     Message new_message(QLatin1String("Me"),
                         message_text,
                         {},
-                        std::chrono::system_clock::now());
+                        std::chrono::system_clock::now(),
+                        true);
 
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
@@ -116,7 +118,8 @@ void ChatWidget::receive_message()
     Message new_message(QLatin1String("Some Sender"),
                         QStringLiteral("I wish I could hear you."),
                         {},
-                        std::chrono::system_clock::now());
+                        std::chrono::system_clock::now(),
+                        true);
 
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
@@ -163,9 +166,9 @@ Message ChatWidget::capture_message_from_editor()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
     if (message_text.isEmpty())
-        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now());
+        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now(), true);
 
-    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now());
+    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now(), true);
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)

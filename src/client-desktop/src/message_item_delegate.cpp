@@ -153,9 +153,15 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QPainterPath message_background_path;
     QColor color;
     if (message->from() == QStringLiteral("Me"))
+    {
         color = m_sended_message_color;
+    }
     else
+    {
+        // if the message is displayed on the screen, it is considered read
+        message->set_is_read(true);
         color = m_receive_message_color;
+    }
     message_background_path.addRoundedRect(message_background_rect,
                                            m_message_round_radius,
                                            m_message_round_radius);
@@ -184,9 +190,9 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     std::tm* timestamp_tm = std::localtime(&time_tt);
 
     QString time_str = this->date_number_handler(timestamp_tm->tm_mday) + QStringLiteral(" ")
-                       + m_month_names[timestamp_tm->tm_mon] + QStringLiteral(" ")
-                       + this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":")
-                       + this->date_number_handler(timestamp_tm->tm_min);
+                       +m_month_names[timestamp_tm->tm_mon] + QStringLiteral(" ")
+                       +this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":")
+                       +this->date_number_handler(timestamp_tm->tm_min);
 
     painter->drawText(timestamp_rect, Qt::AlignRight, time_str);
     painter->setFont(m_message_text_font);
