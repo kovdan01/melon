@@ -31,9 +31,9 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_messages[index.row()]->text());
             break;
         case MyRoles::IsPreviousSameSenderAndTimeRole:
-            return this->has_messages_same_sender_and_time(index.row() - 1, index.row());
+            return this->are_icon_and_sendername_needed(index.row() - 1, index.row());
         case MyRoles::IsNextSameSenderAndTimeRole:
-            return this->has_messages_same_sender_and_time(index.row(), index.row() + 1);
+            return this->are_icon_and_sendername_needed(index.row(), index.row() + 1);
         case MyRoles::IsEditRole:
             data.setValue(m_it_messages[index.row()]->is_edit());
         default:
@@ -115,7 +115,7 @@ void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, cons
     it_msg->set_text(message);
 }
 
-bool MessageListModel::has_messages_same_sender_and_time(const int& less_row, const int& bigger_row) const
+bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const
 {
     if (less_row < 0 || bigger_row >= static_cast<int>(m_it_messages.size()))
         return false;

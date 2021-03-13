@@ -188,7 +188,7 @@ public:
         // this function is just draft
         // it can be used only to test "unread" mark painting
         // set to false to force "unread" mark near each chat
-        return false;
+        return true;
     }
 
     [[nodiscard]] message_handle_t last_message()
