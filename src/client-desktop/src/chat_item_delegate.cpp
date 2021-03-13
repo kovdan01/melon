@@ -58,7 +58,7 @@ ChatItemDelegate::ChatItemDelegate(QObject* parent)
     QFontMetrics fm_sender(m_sender_font);
     QFontMetrics fm_unread_counter(m_unread_counter_font);
 
-    m_first_row_height = std::max(fm_chat_name.height(), fm_timestamp.height());
+    m_first_row_height = std::max(fm_chat_name.height(), fm_timestamp.height()) + m_base_margin;
     m_second_row_height = std::max(fm_last_message.height(), std::max(fm_sender.height(), fm_unread_counter.height()));
 }
 
@@ -77,15 +77,11 @@ QString ChatItemDelegate::date_handler(const Message::timestamp_t& timestamp) co
     std::tm* tm = std::localtime(&time_tt);
 
     if (diff_time_days == 0)
-    {
         return this->date_number_handler(tm->tm_hour) + QStringLiteral(":") + this->date_number_handler(tm->tm_min);
-    }
-    else
-    {
-        return this->date_number_handler(tm->tm_mday) + QStringLiteral(" ") +
-               m_month_names[tm->tm_mon] + QStringLiteral(" ") +
-               this->date_number_handler(tm->tm_year % 100);
-    }
+
+    return this->date_number_handler(tm->tm_mday) + QStringLiteral(" ") +
+           m_month_names[tm->tm_mon] + QStringLiteral(" ") +
+           this->date_number_handler(tm->tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 }
 
 void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -93,7 +89,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     painter->setRenderHint(QPainter::Antialiasing);
 
     auto chat = index.data(Qt::DisplayRole).value<RAMStorageSingletone::chat_handle_t>();
-    Chat::message_handle_t last_message = chat->last_message();
+    auto last_message = chat->last_message();
 
     QPen pen_for_background;
     pen_for_background.setStyle(Qt::NoPen);
@@ -130,15 +126,15 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
      // Max chat name rect
     QRect max_chat_name_rect = option.rect;
-    max_chat_name_rect.setWidth(option.rect.width() - m_icon_diameter - m_base_margin * 2);
+    max_chat_name_rect.setWidth(option.rect.width() - m_icon_diameter - m_base_margin * 3);
 
     if (chat->is_empty())
     {
         QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
         QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
-        chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
+        chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 2,
                                    -m_base_margin,
-                                    m_icon_diameter + m_base_margin * 3,
+                                    m_icon_diameter + m_base_margin * 2,
                                     m_base_margin);
         painter->setFont(m_chat_name_font);
         painter->drawText(chat_name_rect, Qt::AlignLeft, elided_name);
@@ -159,28 +155,27 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     max_chat_name_rect.setWidth(max_chat_name_rect.width() - timestamp_rect.width() - m_base_margin);
     QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
     QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
-    chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
+    chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 2,
                                -m_base_margin,
-                                m_icon_diameter + m_base_margin * 3,
+                                m_icon_diameter + m_base_margin * 2,
                                 m_base_margin);
     painter->setFont(m_chat_name_font);
     painter->drawText(chat_name_rect, Qt::ElideRight, elided_name);
 
     // Last message text rect definition
     QRect max_message_text_rect = option.rect;
-    max_message_text_rect.setX(max_message_text_rect.x() + m_icon_diameter + m_base_margin * 3);
+    max_message_text_rect.setX(max_message_text_rect.x() + m_icon_diameter + m_base_margin * 2);
     max_message_text_rect.setY(max_message_text_rect.y() + m_first_row_height + m_base_margin);
 
     if (!chat->is_read())
     {
         // Unread indicator rect and render
-        QString unread_num = QStringLiteral("!");
+        QString unread_num = QStringLiteral("unr");
         int unread_num_width = fm_unread_counter.boundingRect(option.rect, Qt::AlignRight, unread_num).width() + m_base_margin * 2;
-        QPoint unread_rect_top_left(option.rect.topRight().x() - unread_num_width,
-                                    m_first_row_height + m_base_margin);
-        QPoint unread_rect_bottom_right(option.rect.bottomRight().x() - m_base_margin,
-                                        option.rect.bottomRight().y() - m_base_margin);
-        QRect unread_rect(unread_rect_top_left, unread_rect_bottom_right);
+        QRect unread_rect(option.rect.bottomRight().x() - unread_num_width - m_base_margin,
+                          option.rect.bottomRight().y() - m_second_row_height - m_base_margin,
+                          unread_num_width,
+                          m_second_row_height);
         QPainterPath unread_rect_path;
         unread_rect_path.addRoundedRect(unread_rect,
                                         m_unread_indicator_round,
@@ -213,10 +208,9 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     QRect message_rect = fm_last_message.boundingRect(max_message_text_rect, Qt::AlignLeft, elided_message_text);
     painter->setFont(m_last_message_font);
     painter->drawText(message_rect, Qt::AlignLeft, elided_message_text);
-
 }
 
-QSize ChatItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize ChatItemDelegate::sizeHint(const QStyleOptionViewItem&, const QModelIndex&) const
 {
     const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), m_first_row_height + m_second_row_height + m_base_margin * 2);

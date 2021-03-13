@@ -153,15 +153,10 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QPainterPath message_background_path;
     QColor color;
     if (message->from() == QStringLiteral("Me"))
-    {
         color = m_sended_message_color;
-    }
     else
-    {
-        // if the message is displayed on the screen, it is considered read
-        message->set_is_read(true);
         color = m_receive_message_color;
-    }
+
     message_background_path.addRoundedRect(message_background_rect,
                                            m_message_round_radius,
                                            m_message_round_radius);

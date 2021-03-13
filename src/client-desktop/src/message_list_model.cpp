@@ -34,6 +34,8 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
             return this->has_messages_same_sender_and_time(index.row() - 1, index.row());
         case MyRoles::IsNextSameSenderAndTimeRole:
             return this->has_messages_same_sender_and_time(index.row(), index.row() + 1);
+        case MyRoles::IsEditRole:
+            data.setValue(m_it_messages[index.row()]->is_edit());
         default:
             break;
         }
@@ -56,6 +58,10 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
             this->set_message_in_ram_storage(index, value.toString());
             emit dataChanged(index, index);
             return true;
+        case MyRoles::IsEditRole:
+            m_it_messages[index.row()]->set_is_edit(value.toBool());
+            emit dataChanged(index, index);
+            return true;
         default:
             break;
         }
@@ -72,7 +78,7 @@ void MessageListModel::add_message(chat_handle_t it_chat, const Message& message
     this->beginInsertRows(QModelIndex(), row, row);
     m_it_messages.emplace_back(it_message);
     this->endInsertRows();
-
+    emit this->dataChanged(QModelIndex(), QModelIndex());
 }
 
 void MessageListModel::load_message(message_handle_t it_message)

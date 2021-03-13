@@ -206,17 +206,17 @@ public:
     private:
         // for message item delegate
         const QColor m_selected_message_color{/*r*/30, /*g*/30, /*b*/90, /*a*/50};
-        const int m_min_message_width = 100;
-        const qreal m_scale_message_width = 0.5;
+        const int m_min_message_width = 120;
+        const qreal m_scale_message_width = 0.75;
 
         const int m_base_margin = 5;
         const int m_icon_diameter = 30;
         const int m_message_round_radius = 10;
 
         // for chat item delegate
-        const int m_chat_base_margin = 5;
+        const int m_chat_base_margin = 6;
         const int m_chat_icon_radius = 20;
-        const int m_unread_indicator_round = 5;
+        const int m_unread_indicator_round = 10;
         const QColor m_item_under_mouse_color{/*r*/230, /*g*/230, /*b*/230};
 
         Appearance() = default;

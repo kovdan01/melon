@@ -25,7 +25,7 @@ public:
     [[nodiscard]] QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
 private:
-    QString date_number_handler(const int& num) const;
+    [[nodiscard]] QString date_number_handler(const int& num) const;
 
     std::vector<QString> m_month_names = { tr("Jan"), tr("Feb"), tr("Mar"), tr("Apr"),
                                            tr("May"), tr("Jun"), tr("Jul"), tr("Aug"),

@@ -37,6 +37,7 @@ private slots:
     void provide_chat_context_menu(const QPoint& pos);
     void delete_chat();
     void rename_chat();
+    void repaint_chat_list(const QModelIndex&, const QModelIndex&);
 
     void change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat);
 

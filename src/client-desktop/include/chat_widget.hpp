@@ -38,6 +38,11 @@ public:
         m_current_chat_it = it;
     }
 
+    [[nodiscard]] MessageListModel* message_list_model()
+    {
+        return m_model_message_list;
+    }
+
 public slots:  // NOLINT (readability-redundant-access-specifiers)
     void change_chat(chat_handle_t current_it, chat_handle_t previous_it);
     void change_chat(chat_handle_t current_it);  // if current chat is the first and has no previous one

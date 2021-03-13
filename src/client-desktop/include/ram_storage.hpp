@@ -50,12 +50,12 @@ public:
     Message(Message&&) = default;
     Message& operator=(Message&&) = default;
 
-    Message(QString from, QString text, std::list<Attachment> attachments, timestamp_t timestamp, bool is_read)
+    Message(QString from, QString text, std::list<Attachment> attachments, timestamp_t timestamp, bool is_edit = false)
         : m_attachments(std::move(attachments))
         , m_timestamp(timestamp)
         , m_text(std::move(text))
         , m_from(std::move(from))
-        , m_is_read_by_me(std::move(is_read))
+        , m_is_edit(is_edit)
     {
     }
 
@@ -69,6 +69,16 @@ public:
     [[nodiscard]] timestamp_t timestamp() const noexcept
     {
         return m_timestamp;
+    }
+
+    [[nodiscard]] bool is_edit() const noexcept
+    {
+        return m_is_edit;
+    }
+
+    void set_is_edit(bool is_edit)
+    {
+        m_is_edit = is_edit;
     }
 
     [[nodiscard]] const QString& text() const noexcept
@@ -86,22 +96,12 @@ public:
         m_text = std::move(text);
     }
 
-    [[nodiscard]] bool is_read() const noexcept
-    {
-        return m_is_read_by_me;
-    }
-
-    void set_is_read(bool is_read)
-    {
-        m_is_read_by_me = std::move(is_read);
-    }
-
 private:
     std::list<Attachment> m_attachments;
     timestamp_t m_timestamp;
     QString m_text;
     QString m_from;
-    bool m_is_read_by_me;
+    bool m_is_edit;
 };
 
 class Chat
@@ -183,9 +183,12 @@ public:
         m_scrolling_position = scrollbar;
     }
 
-    [[nodiscard]] bool is_read() const
+    [[nodiscard]] bool is_read() const noexcept
     {
-        return (m_messages.empty() || m_messages.back().is_read());
+        // this function is just draft
+        // it can be used only to test "unread" mark painting
+        // set to false to force "unread" mark near each chat
+        return false;
     }
 
     [[nodiscard]] message_handle_t last_message()

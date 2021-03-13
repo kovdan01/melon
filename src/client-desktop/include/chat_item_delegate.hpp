@@ -18,11 +18,11 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-    [[nodiscard]] QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    [[nodiscard]] QSize sizeHint(const QStyleOptionViewItem&, const QModelIndex&) const override;
 
 private:
-    QString date_number_handler(const int& num) const;
-    QString date_handler(const Message::timestamp_t& timestamp) const;
+    [[nodiscard]] QString date_number_handler(const int& num) const;
+    [[nodiscard]] QString date_handler(const Message::timestamp_t& timestamp) const;
 
     std::vector<QString> m_month_names = { tr("Jan"), tr("Feb"), tr("Mar"), tr("Apr"),
                                            tr("May"), tr("Jun"), tr("Jul"), tr("Aug"),

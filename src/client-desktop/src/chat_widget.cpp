@@ -5,6 +5,7 @@
 #include <chat_widget.hpp>
 #include <message_list_model.hpp>
 
+#include <QMainWindow>
 #include <QMenuBar>
 #include <QMouseEvent>
 #include <QScrollBar>
@@ -27,7 +28,6 @@ ChatWidget::ChatWidget(QWidget* parent)
     m_message_item_delegate = new MessageItemDelegate{m_ui->MsgList};
     m_ui->MsgList->setItemDelegate(m_message_item_delegate);
 
-
     connect(m_ui->MsgList,
             &QWidget::customContextMenuRequested,
             this,
@@ -35,7 +35,6 @@ ChatWidget::ChatWidget(QWidget* parent)
 
     m_submenu_sended_messages.addAction(tr("Edit"), this, SLOT(edit_message()));
     m_submenu_sended_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
-    m_submenu_received_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
 
     m_ui->MsgEdit->installEventFilter(this);
 }
@@ -86,6 +85,7 @@ void ChatWidget::send_message()
     {
         QModelIndex index = m_model_message_list->index(m_edit_row);
         m_model_message_list->setData(index, message_text, Qt::DisplayRole);
+        m_model_message_list->setData(index, true, MyRoles::IsEditRole);
 
         m_edit_mode = false;
         m_ui->MsgEdit->clear();
@@ -103,8 +103,7 @@ void ChatWidget::send_message()
     Message new_message(QLatin1String("Me"),
                         message_text,
                         {},
-                        std::chrono::system_clock::now(),
-                        true);
+                        std::chrono::system_clock::now());
 
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
@@ -118,8 +117,7 @@ void ChatWidget::receive_message()
     Message new_message(QLatin1String("Some Sender"),
                         QStringLiteral("I wish I could hear you."),
                         {},
-                        std::chrono::system_clock::now(),
-                        true);
+                        std::chrono::system_clock::now());
 
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
@@ -142,15 +140,16 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     }
 
     this->load_message_to_editor(m_current_chat_it->incomplete_message());
-    QTextCursor cursor = m_ui->MsgEdit->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    m_ui->MsgEdit->setTextCursor(cursor);
 
     int my_scroll_pos = m_current_chat_it->scrolling_position();
     m_ui->MsgList->verticalScrollBar()->setMaximum(my_scroll_pos);
     m_ui->MsgList->verticalScrollBar()->setValue(my_scroll_pos);
 
     m_ui->MsgEdit->setFocus();
+    QTextCursor cursor = m_ui->MsgEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    m_ui->MsgEdit->setTextCursor(cursor);
+
     m_ui->MsgList->clearSelection();
 }
 
@@ -166,9 +165,9 @@ Message ChatWidget::capture_message_from_editor()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
     if (message_text.isEmpty())
-        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now(), true);
+        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now());
 
-    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now(), true);
+    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now());
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)

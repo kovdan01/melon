@@ -37,6 +37,7 @@ public:
         MessageTimestampRole = Qt::UserRole + 1,  // NOLINT (readability-identifier-naming)
         IsPreviousSameSenderAndTimeRole = Qt::UserRole + 2,  // NOLINT (readability-identifier-naming)
         IsNextSameSenderAndTimeRole = Qt::UserRole + 3,  // NOLINT (readability-identifier-naming)
+        IsEditRole = Qt::UserRole + 4,  // NOLINT (readability-identifier-naming)
     };
 
 private:
