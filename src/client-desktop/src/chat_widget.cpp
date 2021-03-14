@@ -98,7 +98,7 @@ void ChatWidget::send_message()
         m_ui->MsgEdit->setText(m_incomplete_message);
         m_incomplete_message.clear();
 
-        if (m_edit_row == m_model_message_list->rowCount() - 1)
+        if (m_edit_row == m_model_message_list->rowCount(QModelIndex()) - 1)
             emit this->last_message_changed();
         return;
     }
@@ -205,7 +205,7 @@ void ChatWidget::delete_message()
     int row = index.row();
     m_model_message_list->delete_message(m_current_chat_it, index);
 
-    if (row == m_model_message_list->rowCount())
+    if (row == m_model_message_list->rowCount(QModelIndex()))
         emit this->last_message_changed();
 }
 
