@@ -25,10 +25,11 @@ class Domain : public melon::core::Domain
 public:
     Domain(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string& hostname, bool external);
 
-    void remove_domain() override;
+    void remove();
 
 private:
     sqlpp::mysql::connection& m_db;
+    std::uint64_t m_this_domain_id;
 };
 
 
@@ -44,9 +45,9 @@ public:
             std::uint64_t user_id, std::uint64_t chat_id, std::string text, Status status,
             const std::string& hostname, const std::string& username, const std::string& chatname);
 
-    void update_text(const std::string& new_text) override;
-    void change_status(Status new_status) override;
-    void remove_message() override;
+    void set_text(const std::string new_text) override;
+    void set_status(Status new_status) override;
+    void remove();
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -60,10 +61,11 @@ class Chat : public melon::core::Chat
 public:
     Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname);
 
-    Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname, const std::string& hostname);
+    Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id,
+         std::string chatname, const std::string& hostname);
 
-//    void update_chatname(const std::string& new_chatname) override;
-    void remove_chat() override;
+    void set_chatname(const std::string new_chatname) override;
+    void remove();
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -77,10 +79,11 @@ class User : public melon::core::User
 public:
     User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status);
 
-    User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status, const std::string& hostname);
+    User(sqlpp::mysql::connection& db, std::uint64_t user_id, std::uint64_t domain_id,
+         std::string username, Status status, const std::string& hostname);
 
-    void remove_user() override;
-    void change_status(Status new_status) override;
+    void remove();
+    void set_status(Status new_status) override;
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -108,8 +111,6 @@ std::uint64_t get_message_id_by_chat_id_and_domain_id_and_user_id(sqlpp::mysql::
 std::uint64_t get_chat_id_by_chatname_and_domain_id(sqlpp::mysql::connection& db, const std::string& chatname, std::uint64_t domain_id);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 
-// Check Greenwich time
-void message_timesend(sqlpp::mysql::connection& db);
 
 }  // namespace melon::server::storage
 

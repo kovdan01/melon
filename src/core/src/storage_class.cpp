@@ -12,10 +12,6 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
-void Domain::remove_domain()
-{
-}
-
 User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status)
     : m_user_id(user_id)
     , m_domain_id(domain_id)
@@ -24,11 +20,7 @@ User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username,
 {
 }
 
-void User::remove_user()
-{
-}
-
-void User::change_status(Status new_status)
+void User::set_status(Status new_status)
 {
     m_status = new_status;
 }
@@ -44,16 +36,12 @@ Message::Message(std::uint64_t message_id, std::uint64_t domain_id, std::uint64_
 {
 }
 
-void Message::update_text(const std::string& new_text)
+void Message::set_text(const std::string new_text)
 {
     m_text = new_text;
 }
 
-void Message::remove_message()
-{
-}
-
-void Message::change_status(Status new_status)
+void Message::set_status(Status new_status)
 {
     m_status = new_status;
 }
@@ -65,8 +53,9 @@ Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
 {
 }
 
-void Chat::remove_chat()
+void Chat::set_chatname(const std::string new_chatname)
 {
+    m_chatname = new_chatname;
 }
 
 }  // namespace melon::core
