@@ -38,7 +38,7 @@ dependencies {
     implementation project(":core")
     implementation project(":feature_chat_content")
 
-    //Hilt
+    // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'

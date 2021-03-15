@@ -50,7 +50,7 @@ dependencies {
     implementation "com.xwray:groupie:2.9.0"
     implementation "com.xwray:groupie-kotlin-android-extensions:2.9.0"
 
-    //Hilt
+    // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
