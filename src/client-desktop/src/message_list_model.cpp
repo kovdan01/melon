@@ -30,10 +30,8 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         case MyRoles::MessageTextRole:
             data.setValue(m_it_messages[index.row()]->text());
             break;
-        case MyRoles::IsPreviousSameSenderAndTimeRole:
+        case MyRoles::AreIconAndSendernameNeededRole:
             return this->are_icon_and_sendername_needed(index.row() - 1, index.row());
-        case MyRoles::IsNextSameSenderAndTimeRole:
-            return this->are_icon_and_sendername_needed(index.row(), index.row() + 1);
         case MyRoles::IsEditRole:
             data.setValue(m_it_messages[index.row()]->is_edit());
         default:

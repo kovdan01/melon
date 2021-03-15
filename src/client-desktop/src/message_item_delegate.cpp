@@ -51,7 +51,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
                                 const QModelIndex& index) const
 {
     auto message = index.data(Qt::DisplayRole).value<Chat::message_handle_t>();
-    bool is_previous_same = index.data(MyRoles::IsPreviousSameSenderAndTimeRole).value<bool>();
+    bool is_previous_same = index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>();
 
     painter->setRenderHint(QPainter::Antialiasing);
     QPen pen_for_background;
@@ -223,7 +223,7 @@ QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
                      /*timestamp height*/ fm_timestamp.height() +
                      /*margin for whitespaces between messages*/ m_base_margin * 4;
 
-    if (!index.data(MyRoles::IsPreviousSameSenderAndTimeRole).value<bool>())
+    if (!index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>())
         row_height += /*message sender*/ fm_sender.height();
 
     const auto* p = qobject_cast<QListView*>(this->parent());

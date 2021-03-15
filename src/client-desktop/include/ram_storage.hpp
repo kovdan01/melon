@@ -198,7 +198,7 @@ public:
         return std::prev(m_messages.end());
     }
 
-    [[nodiscard]] bool is_empty() const
+    [[nodiscard]] bool empty() const
     {
         return m_messages.empty();
     }

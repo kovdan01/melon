@@ -95,6 +95,8 @@ public:
         }
 
     private:
+        Appearance() = default;
+
         // for message item delegate
         const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
         const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
@@ -112,9 +114,6 @@ public:
 
         const QColor m_selected_chat_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
         const QColor m_unread_background_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
-
-        Appearance() = default;
-
     };
 
     [[nodiscard]] Appearance& appearance()
@@ -204,6 +203,8 @@ public:
         }
 
     private:
+        Appearance() = default;
+
         // for message item delegate
         const QColor m_selected_message_color{/*r*/30, /*g*/30, /*b*/90, /*a*/50};
         const int m_min_message_width = 120;
@@ -218,9 +219,6 @@ public:
         const int m_chat_icon_radius = 20;
         const int m_unread_indicator_round = 10;
         const QColor m_item_under_mouse_color{/*r*/230, /*g*/230, /*b*/230};
-
-        Appearance() = default;
-
     };
 
     [[nodiscard]] Appearance& appearance()

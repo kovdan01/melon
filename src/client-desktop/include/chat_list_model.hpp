@@ -30,7 +30,7 @@ public:
     enum MyRoles
     {
         ChatNameRole = Qt::UserRole + 0,  // NOLINT (readability-identifier-naming)
-        RepaintRole = Qt::UserRole + 2,  // NOLINT (readability-identifier-naming)
+        RepaintRole = Qt::UserRole + 1,  // NOLINT (readability-identifier-naming)
     };
 
 private:

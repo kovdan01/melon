@@ -128,7 +128,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     QRect max_chat_name_rect = option.rect;
     max_chat_name_rect.setWidth(option.rect.width() - m_icon_diameter - m_base_margin * 3);
 
-    if (chat->is_empty())
+    if (chat->empty())
     {
         QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
         QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
