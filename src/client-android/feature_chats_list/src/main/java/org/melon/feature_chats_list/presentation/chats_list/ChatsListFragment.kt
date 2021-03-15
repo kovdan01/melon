@@ -11,6 +11,7 @@ import com.xwray.groupie.GroupieAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_chats_list.*
 import org.melon.core.presentation.base.BaseFragment
+import org.melon.feature_chat_content.presentation.chat_content.ChatContentFragment
 import org.melon.feature_chats_list.R
 import org.melon.feature_chats_list.presentation.chat_creation.ChatCreationFragment
 import org.melon.feature_chats_list.presentation.chat_creation.ChatCreationFragmentDirections
@@ -31,6 +32,14 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
         setFragmentResultListener(ChatCreationFragment.REQUEST_KEY_CHAT_RENAME) { requestKey, bundle ->
             bundle.getParcelable<ChatUi>(ChatCreationFragment.BUNDLE_KEY_CHAT_UI)
                 ?.let(viewModel::onChatRenamed)
+        }
+
+        //TODO: remade it maybe with shared view model
+        setFragmentResultListener(ChatContentFragment.REQUEST_KEY_CHAT_UPDATE) { requestKey, bundle ->
+            viewModel.onUpdateChatInfo(
+                bundle.getInt(ChatContentFragment.BUNDLE_KEY_CHAT_ID),
+                bundle.getParcelable(ChatContentFragment.BUNDLE_KEY_MESSAGE_UI)!!
+            )
         }
 
         super.onCreate(savedInstanceState)
@@ -55,8 +64,8 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
             })
 
             viewModel.openChatFragment.observe(viewLifecycleOwner, {
-                if (it) {
-                    findNavController().navigate(R.id.chatContentAction)
+                if (it != null) {
+                    findNavController().navigate(ChatsListFragmentDirections.chatContentAction(it.chatId))
                     viewModel.onNavigateToChatContent()
                 }
             })
@@ -88,6 +97,9 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
                                 ChatEditAction.Delete.index -> {
                                     viewModel.onChatDelete(chatUi)
                                 }
+                                ChatEditAction.MarkAsUnread.index -> {
+                                    viewModel.onChatMarkAsUnread(chatUi)
+                                }
                             }
                         }
                         .show()
@@ -110,5 +122,6 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
     sealed class ChatEditAction(val index: Int) {
         object Rename : ChatEditAction(0)
         object Delete : ChatEditAction(1)
+        object MarkAsUnread : ChatEditAction(2)
     }
 }

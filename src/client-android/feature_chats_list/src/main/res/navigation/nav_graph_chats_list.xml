@@ -24,7 +24,11 @@
 
     <action
         android:id="@+id/chatContentAction"
-        app:destination="@id/chatContentGraph" />
+        app:destination="@id/chatContentGraph" >
+        <argument
+            android:name="chatId"
+            app:argType="integer" />
+    </action>
     <action
         android:id="@+id/chatCreationAction"
         app:destination="@id/chatCreationFragment" />

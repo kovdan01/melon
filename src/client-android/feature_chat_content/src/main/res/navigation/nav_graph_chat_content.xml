@@ -7,5 +7,10 @@
     <fragment
         android:id="@+id/chatContentFragment"
         android:name="org.melon.feature_chat_content.presentation.chat_content.ChatContentFragment"
-        android:label="@string/app_name" />
+        android:label="@string/app_name">
+
+        <argument
+            android:name="chatId"
+            app:argType="integer" />
+    </fragment>
 </navigation>

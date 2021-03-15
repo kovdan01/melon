@@ -26,6 +26,10 @@ class ChatContentViewModel @Inject constructor() : ViewModel() {
     val liveMessageToEdit: LiveData<MessageUi?>
         get() = _liveMessageToEdit
 
+    fun onViewCreated() {
+
+    }
+
     fun onMessageChanged(messageText: String?) {
         this.messageToBeSend = messageText
     }
@@ -83,12 +87,13 @@ class ChatContentViewModel @Inject constructor() : ViewModel() {
         if (messageToBeSend.isNullOrEmpty().not()) {
             if (messageToEdit == null) {
                 messagesList.add(
-                        MessageUi(
-                                messageId = messagesList.getAvailableMessageId(),
-                                messageText = messageToBeSend!!,
-                                messageTime = Date(),
-                                isUserMessage = true
-                        )
+                    MessageUi(
+                        messageId = messagesList.getAvailableMessageId(),
+                        messageText = messageToBeSend!!,
+                        messageDate = Date(),
+                        isUserMessage = true,
+                        isRead = true
+                    )
                 )
             } else {
                 messagesList[messagesList.indexOf(messageToEdit)] = messageToEdit!!.copy(messageText = messageToBeSend!!)
@@ -97,12 +102,13 @@ class ChatContentViewModel @Inject constructor() : ViewModel() {
             }
         } else {
             messagesList.add(
-                    MessageUi(
-                            messageId = messagesList.getAvailableMessageId(),
-                            messageText = "Stub",
-                            messageTime = Date(),
-                            isUserMessage = Random.nextBoolean()
-                    )
+                MessageUi(
+                    messageId = messagesList.getAvailableMessageId(),
+                    messageText = "Stub",
+                    messageDate = Date(),
+                    isUserMessage = Random.nextBoolean(),
+                    isRead = true
+                )
             )
         }
 

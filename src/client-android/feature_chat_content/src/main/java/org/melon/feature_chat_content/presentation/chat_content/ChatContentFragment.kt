@@ -6,7 +6,10 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.setFragmentResult
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
@@ -19,10 +22,18 @@ import javax.inject.Inject
 
 class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
 
+    companion object{
+        const val REQUEST_KEY_CHAT_UPDATE = "chat_update_key"
+        const val BUNDLE_KEY_CHAT_ID = "key_chat_id"
+        const val BUNDLE_KEY_MESSAGE_UI = "key_message_ui"
+    }
+
     @Inject
     lateinit var viewModel: ChatContentViewModel
 
     private var actionMode: ActionMode? = null
+
+    private val args: ChatContentFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DaggerChatContentComponent.builder().context(requireContext()).build().inject(this)
@@ -100,6 +111,12 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
 
                     messageEt.clearFocus()
                     messageEt.setText("")
+
+                    //TODO: maybe erro if list if empty
+                    setFragmentResult(REQUEST_KEY_CHAT_UPDATE, bundleOf(
+                            BUNDLE_KEY_CHAT_ID  to args.chatId,
+                            BUNDLE_KEY_MESSAGE_UI to it.last()
+                    ))
                 }
         )
 
@@ -130,5 +147,7 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
                     }
                 }
         )
+
+        viewModel.onViewCreated()
     }
 }
