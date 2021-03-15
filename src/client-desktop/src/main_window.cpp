@@ -1,3 +1,5 @@
+#include <chat_item_delegate.hpp>
+#include <chat_list_model.hpp>
 #include <chat_widget.hpp>
 #include <main_window.hpp>
 
@@ -25,6 +27,11 @@ void MainWindow::replace_chat_widget_with_spacer()
                    this,
                    &MainWindow::change_chat);
 
+        disconnect(m_chat_widget,
+                   &ChatWidget::last_message_changed,
+                   this,
+                   &MainWindow::repaint_chat_list);
+
         m_ui->ChatPlace->removeWidget(m_chat_widget);
         delete m_chat_widget;
         m_chat_widget = nullptr;
@@ -40,13 +47,18 @@ void MainWindow::replace_spacer_with_chat_widget()
     delete m_spacer;
     m_spacer = nullptr;
 
-    m_chat_widget = new ChatWidget();
+    m_chat_widget = new ChatWidget(this);
     m_ui->ChatPlace->addWidget(m_chat_widget);
 
     connect(m_ui->ChatList->selectionModel(),
             &QItemSelectionModel::currentChanged,
             this,
             &MainWindow::change_chat);
+
+    connect(m_chat_widget,
+            &ChatWidget::last_message_changed,
+            this,
+            &MainWindow::repaint_chat_list);
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -71,6 +83,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_submenu.addAction(tr("Delete"), this, SLOT(delete_chat()));
 
     m_ui->ChatList->setModel(m_model_chat_list);
+
+    m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
+    m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 }
 
 class ChatNameException : public std::runtime_error
@@ -96,7 +111,6 @@ void MainWindow::add_chat()
         QString text = QInputDialog::getText(this, tr("Creating new chat"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              tr("NewChat") + QString::number(counter), &ok);
-
         if (!ok)
             return;
 
@@ -151,7 +165,7 @@ void MainWindow::rename_chat()
         bool ok;
         QModelIndex cur_index = m_ui->ChatList->indexAt(m_requested_menu_position);
 
-        QString old_name = m_model_chat_list->data(cur_index, Qt::DisplayRole).toString();
+        QString old_name = m_model_chat_list->data(cur_index, MyRoles::ChatNameRole).toString();
 
         QString text = QInputDialog::getText(this, tr("Type new name"),
                                              tr("Name of chat:"), QLineEdit::Normal,
@@ -161,12 +175,18 @@ void MainWindow::rename_chat()
 
         check_chat_name(text);
 
-        m_model_chat_list->setData(cur_index, text, Qt::DisplayRole);
+        m_model_chat_list->setData(cur_index, text, MyRoles::ChatNameRole);
     }
     catch (const ChatNameException& e)
     {
         QMessageBox::critical(this, tr("Oops!"), QLatin1String(e.what()));
     }
+}
+
+void MainWindow::repaint_chat_list()
+{
+    QModelIndex cur_index = m_ui->ChatList->currentIndex();
+    m_model_chat_list->setData(cur_index, QVariant(), MyRoles::RepaintRole);
 }
 
 void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat)

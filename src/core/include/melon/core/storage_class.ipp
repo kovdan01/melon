@@ -31,7 +31,7 @@ namespace melon::core
     return m_status;
 }
 
-[[nodiscard]] inline std::chrono::high_resolution_clock::time_point Message::timestamp() const
+[[nodiscard]] inline std::chrono::system_clock::time_point Message::timestamp() const
 {
     return m_timestamp;
 }

@@ -1,3 +1,4 @@
+#include <config.hpp>
 #include <message_list_model.hpp>
 
 #include <iterator>
@@ -24,15 +25,15 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_it_messages[index.row()]->text());
-            break;
-        case MyRoles::MessageHandleRole:
             data.setValue(m_it_messages[index.row()]);
             break;
-        case Qt::BackgroundRole:
-            if (m_it_messages[index.row()]->from() != QStringLiteral("Me"))
-                return M_RECEIVE_COLOR;
+        case MyRoles::MessageTextRole:
+            data.setValue(m_it_messages[index.row()]->text());
             break;
+        case MyRoles::AreIconAndSendernameNeededRole:
+            return this->are_icon_and_sendername_needed(index.row() - 1, index.row());
+        case MyRoles::IsEditRole:
+            data.setValue(m_it_messages[index.row()]->is_edit());
         default:
             break;
         }
@@ -55,6 +56,10 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
             this->set_message_in_ram_storage(index, value.toString());
             emit dataChanged(index, index);
             return true;
+        case MyRoles::IsEditRole:
+            m_it_messages[index.row()]->set_is_edit(value.toBool());
+            emit dataChanged(index, index);
+            return true;
         default:
             break;
         }
@@ -71,7 +76,7 @@ void MessageListModel::add_message(chat_handle_t it_chat, const Message& message
     this->beginInsertRows(QModelIndex(), row, row);
     m_it_messages.emplace_back(it_message);
     this->endInsertRows();
-
+    emit this->dataChanged(QModelIndex(), QModelIndex());
 }
 
 void MessageListModel::load_message(message_handle_t it_message)
@@ -106,6 +111,18 @@ void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, cons
 {
     auto it_msg = m_it_messages[index.row()];
     it_msg->set_text(message);
+}
+
+bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const
+{
+    if (less_row < 0 || bigger_row >= static_cast<int>(m_it_messages.size()))
+        return false;
+    auto message1 = m_it_messages[less_row];
+    auto message2 = m_it_messages[bigger_row];
+
+    auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
+
+    return ((message1->from() == message2->from()) && (diff_time.count() < 2));
 }
 
 void MessageListModel::clear()
