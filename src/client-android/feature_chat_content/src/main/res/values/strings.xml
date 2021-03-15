@@ -7,4 +7,7 @@
     <string name="action_mode_edit_title">Edit</string>
     <string name="action_mode_delete_title">Delete</string>
     <string name="action_mode_selected_placeholder">%d selected</string>
+
+    <!--Message Item-->
+    <string name="message_item_time_placeholder">%d:%d</string>
 </resources>

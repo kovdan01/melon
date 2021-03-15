@@ -9,8 +9,9 @@ class OtherMessageItem(private val message: MessageUi) : MessageBaseItem() {
 
     override val layoutId: Int = R.layout.item_other_message
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.itemView.messageTextTv.text = message.messageText
+    override fun bind(viewHolder: GroupieViewHolder, position: Int) = with(viewHolder.itemView) {
+        messageTextTv.text = message.messageText
+        messageTimeTv.text = messageTimeFormatter.format(message.messageDate)
     }
 
     override fun isSameAs(other: Item<*>): Boolean {
