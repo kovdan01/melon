@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="your_message">Your message</string>
+
+
+    <!--Chat content action mode-->
+    <string name="action_mode_edit_title">Edit</string>
+    <string name="action_mode_delete_title">Delete</string>
+    <string name="action_mode_selected_placeholder">%d selected</string>
 </resources>
