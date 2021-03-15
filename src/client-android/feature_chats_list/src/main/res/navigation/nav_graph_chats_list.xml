@@ -15,7 +15,12 @@
     <fragment
         android:id="@+id/chatCreationFragment"
         android:name="org.melon.feature_chats_list.presentation.chat_creation.ChatCreationFragment"
-        android:label="@string/app_name" />
+        android:label="@string/app_name" >
+        <argument
+            android:name="chat_ui"
+            app:argType="org.melon.feature_chats_list.presentation.chats_list.ChatUi"
+            app:nullable="true" />
+    </fragment>
 
     <action
         android:id="@+id/chatContentAction"
@@ -23,11 +28,4 @@
     <action
         android:id="@+id/chatCreationAction"
         app:destination="@id/chatCreationFragment" />
-
-    <fragment
-        android:id="@+id/blankFragment"
-        android:name="org.melon.feature_chats_list.BlankFragment"
-        android:label="fragment_blank"
-        tools:layout="@layout/fragment_blank" />
-
 </navigation>

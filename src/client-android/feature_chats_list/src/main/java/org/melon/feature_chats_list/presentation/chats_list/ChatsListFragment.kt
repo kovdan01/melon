@@ -6,13 +6,15 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.xwray.groupie.GroupieAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_chats_list.*
 import org.melon.core.presentation.base.BaseFragment
 import org.melon.feature_chats_list.R
 import org.melon.feature_chats_list.presentation.chat_creation.ChatCreationFragment
+import org.melon.feature_chats_list.presentation.chat_creation.ChatCreationFragmentDirections
+
 
 @AndroidEntryPoint
 class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
@@ -22,10 +24,13 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         setFragmentResultListener(ChatCreationFragment.REQUEST_KEY_CHAT_CREATION) { requestKey, bundle ->
-            // We use a String here, but any type that can be put in a Bundle is supported
             val result = bundle.getString(ChatCreationFragment.BUNDLE_KEY_CHAT_NAME).toString()
             viewModel.onNewChatCreated(result)
-            // Do something with the result
+        }
+
+        setFragmentResultListener(ChatCreationFragment.REQUEST_KEY_CHAT_RENAME) { requestKey, bundle ->
+            bundle.getParcelable<ChatUi>(ChatCreationFragment.BUNDLE_KEY_CHAT_UI)
+                ?.let(viewModel::onChatRenamed)
         }
 
         super.onCreate(savedInstanceState)
@@ -33,7 +38,7 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = GroupAdapter<GroupieViewHolder>()
+        val adapter = GroupieAdapter()
 
         with(view) {
             chatsListRv.adapter = adapter
@@ -42,7 +47,8 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
                 val chatsList = chats.map {
                     ChatItem(
                         it,
-                        viewModel::onChatClick
+                        onLongClickListener = viewModel::onChatLongClick,
+                        onClickListener = viewModel::onChatClick
                     )
                 }
                 adapter.update(chatsList)
@@ -57,14 +63,52 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
 
             viewModel.openCreateChatFragment.observe(viewLifecycleOwner, {
                 if (it) {
-                    findNavController().navigate(R.id.chatCreationAction)
+                    findNavController().navigate(
+                        ChatCreationFragmentDirections.chatCreationAction(
+                            null
+                        )
+                    )
                     viewModel.onNavigateToChatCreate()
+                }
+            })
+
+            viewModel.openChatEditDialog.observe(viewLifecycleOwner, { chatUi ->
+                if (chatUi != null) {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle(R.string.chat_edit_title)
+                        .setItems(R.array.chat_edit_variants) { dialog, actionIndex ->
+                            when (actionIndex) {
+                                ChatEditAction.Rename.index -> {
+                                    findNavController().navigate(
+                                        ChatCreationFragmentDirections.chatCreationAction(
+                                            chatUi
+                                        )
+                                    )
+                                }
+                                ChatEditAction.Delete.index -> {
+                                    viewModel.onChatDelete(chatUi)
+                                }
+                            }
+                        }
+                        .show()
+
+                    viewModel.onChatEditOpened()
                 }
             })
 
             newChatFab.setOnClickListener {
                 viewModel.onNewChatClick()
             }
+
+            newChatFab.setOnLongClickListener {
+                viewModel.createStubChat()
+                true
+            }
         }
+    }
+
+    sealed class ChatEditAction(val index: Int) {
+        object Rename : ChatEditAction(0)
+        object Delete : ChatEditAction(1)
     }
 }

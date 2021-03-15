@@ -54,4 +54,6 @@ dependencies {
 
     // Timber
     api 'com.jakewharton.timber:timber:4.7.1'
+
+    implementation 'it.xabaras.android:recyclerview-swipedecorator:1.2.3'
 }

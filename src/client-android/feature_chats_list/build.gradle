@@ -3,8 +3,9 @@ plugins {
     id 'kotlin-android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+    id 'androidx.navigation.safeargs.kotlin'
 }
-apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 30
