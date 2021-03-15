@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 project(melon-auth
         VERSION 0.0.0
         LANGUAGES CXX
-)
+        )
+
+set(TEST_CLIENT_NAME melon-auth-test-client)
 
 find_package(ntc-cmake REQUIRED)
 include(ntc-dev-build)
@@ -82,7 +84,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
 # melon-auth executable
 
-add_executable(melon-auth-test-client
+add_executable(${TEST_CLIENT_NAME}
     ${HEADERS}
     src/test_client.cpp
 )
@@ -90,10 +92,10 @@ add_executable(melon-auth-test-client
 if(WIN32)
     target_link_libraries(melon-auth-test-client PRIVATE ws2_32 mswsock)
 endif()
-target_link_libraries(melon-auth-test-client PRIVATE melon::core)
-target_link_libraries(melon-auth-test-client PRIVATE Boost::program_options)
-target_link_libraries(melon-auth-test-client PRIVATE Threads::Threads)
-target_link_libraries(melon-auth-test-client PRIVATE melon::sasl_wrappers)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::core)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Boost::program_options)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::sasl_wrappers)
 
 
 ntc_target(${PROJECT_NAME})

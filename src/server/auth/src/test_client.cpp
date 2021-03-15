@@ -29,7 +29,7 @@ std::string get_cli_response(const std::string& serv_response, melon::core::auth
 std::string read_buffered_string(std::size_t n, std::string& in_buf)
 {
     std::string x = in_buf.substr(0, n-1);
-    in_buf.erase(0,n);
+    in_buf.erase(0, n);
     return x;
 }
 
@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) try
 
     if (argc != 3)
     {
-      std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
-      return 1;
+        std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
+        return 1;
     }
 
     namespace mca = melon::core::auth;

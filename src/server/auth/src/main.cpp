@@ -21,7 +21,7 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/program_options.hpp>
 
 #include <exception>
 #include <memory>
@@ -32,8 +32,6 @@ namespace ce
 {
     namespace
     {
-        using bigint = boost::multiprecision::cpp_int;
-
         using socket_executor_t = ba::strand<ba::io_context::executor_type>;
         using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
         using tcp_stream = bb::basic_stream<ba::ip::tcp,
@@ -71,11 +69,11 @@ namespace ce
                     boost::system::error_code ec;
 
                     std::string_view supported_mechanisms = server.list_mechanisms();
-                    out_buf_ = std::string(supported_mechanisms) + "\n";
+                    m_out_buf = std::string(supported_mechanisms) + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(m_out_buf), yc);
                     stream_.expires_after(time_limit_);
-                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
+                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
                     if (ec)
                     {
                         if (ec!=boost::asio::error::eof)
@@ -86,37 +84,37 @@ namespace ce
                     std::string wanted_mechanism = read_buffered_string(n);
                     if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                         throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-                    out_buf_ = wanted_mechanism + "\n";
+                    m_out_buf = wanted_mechanism + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(m_out_buf), yc);
 
                     stream_.expires_after(time_limit_);
-                    n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
+                    n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
                     std::string client_response = read_buffered_string(n);
                     auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-                    out_buf_ = std::string(server_response) + "\n";
+                    m_out_buf = std::string(server_response) + "\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(m_out_buf), yc);
                     while (server_completness == mca::AuthCompletness::INCOMPLETE)
                     {
                         stream_.expires_after(time_limit_);
-                        n = async_read_until(stream_, ba::dynamic_string_buffer{in_buf_, NUMBER_LIMIT}, '\n', yc[ec]);
+                        n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
                         client_response = read_buffered_string(n);
                         mca::StepResult server_step_res = server.step(client_response);
                         server_response = server_step_res.response;
                         server_completness = server_step_res.completness;
                         if (server_response.data() != nullptr)
-                            out_buf_ = std::string(server_response) + '\n';
+                            m_out_buf = std::string(server_response) + '\n';
                         else
-                            out_buf_ = "";
+                            m_out_buf = "";
                         if (server_completness == mca::AuthCompletness::COMPLETE)
                             break;
                         stream_.expires_after(time_limit_);
-                        async_write(stream_, ba::buffer(out_buf_), yc);
+                        async_write(stream_, ba::buffer(m_out_buf), yc);
                     }
-                    out_buf_ = "Okay, Mr. Client, here's your token...\n";
+                    m_out_buf = "Okay, Mr. Client, here's your token...\n";
                     stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(out_buf_), yc);
+                    async_write(stream_, ba::buffer(m_out_buf), yc);
                     BOOST_LOG_TRIVIAL(info) << "Issued a token.";
                 }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
                 {
@@ -125,11 +123,11 @@ namespace ce
                 }));
             }
         private:
-            std::string in_buf_, out_buf_;
+            std::string m_in_buf, m_out_buf;
             std::string read_buffered_string(std::size_t n)
             {
-                std::string x = in_buf_.substr(0, n-1);
-                in_buf_.erase(0, n);
+                std::string x = m_in_buf.substr(0, n-1);
+                m_in_buf.erase(0, n);
                 return x;
             }
         };
@@ -157,20 +155,57 @@ int main(int argc, char* argv[]) try
     bl::add_common_attributes();
     try
     {
-        if (argc<2||argc>3)
-            throw std::runtime_error(ce::format("Usage: ", argv[0], " <listen-port> [threads]"));
-        auto port = ce::from_chars<std::uint16_t>(argv[1]);
-        if (!port||!*port)
-            throw std::runtime_error("Port must be in [1;65535]");
+        namespace po =  boost::program_options;
+        po::options_description desc("Allowed options");
+        desc.add_options()
+            ("help", "produce help message")
+            ("listen-port", po::value<unsigned short>(), "port to listen on")
+            ("threads", po::value<unsigned>(),"number of threads to use");
+        po::variables_map vm;
+        po::positional_options_description p;
+        p.add("listen-port", 1);
+        p.add("threads", 2);
+        try
+        {
+            po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+            po::notify(vm);
+        }
+        catch (const po::error& error)
+        {
+            std::cerr << "Error while parsing command-line arguments: "
+                      << error.what() << "\nPlease use --help to see help message\n";
+            return 1;
+        }
+
+        std::string usage = ce::format("Usage: ", argv[0], " <listen-port> [threads]");
+
+        if (vm.count("help"))
+        {
+            std::cout << desc << '\n' << usage << '\n';
+            return 0;
+        }
+        std::optional<unsigned short> port;
         unsigned threads;
-        if (argc==3){
-            auto t = ce::from_chars<unsigned>(argv[2]);
-            if (!t||!*t)
-                throw std::runtime_error("Threads must be a non-zero unsigned integer");
-            threads = *t;
+        if (vm.count("listen-port"))
+        {
+            port = vm["listen-port"].as<unsigned short>();
+            if (!port||!*port)
+                throw std::runtime_error("Port must be in [1;65535]");
+            if (vm.count("threads"))
+            {
+                std::optional<unsigned> t = vm["threads"].as<unsigned>();
+                if (!t||!*t)
+                    throw std::runtime_error("Threads must be a non-zero unsigned integer");
+                threads = *t;
+            }
+            else
+                threads = std::thread::hardware_concurrency();
         }
         else
-            threads = std::thread::hardware_concurrency();
+        {
+            throw std::runtime_error(usage);
+        }
+
         using namespace boost::log::trivial;
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
         ce::ba::io_context ctx{int(threads)};
