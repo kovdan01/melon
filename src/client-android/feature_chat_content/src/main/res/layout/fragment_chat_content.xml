@@ -7,8 +7,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatContentRv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="64dp" />
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/messageTi"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/messageTi"
@@ -28,7 +29,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
-        android:id="@+id/addChatBtn"
+        android:id="@+id/sendMsgBtn"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:background="?selectableItemBackground"
