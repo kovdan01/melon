@@ -90,7 +90,7 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql* -y
-        sudo apt-get --purge remove libc++-dev libc++abi-dev libc++ libc++abi -y
+        sudo apt-get --purge remove libc++-dev libc++abi-dev -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat cmake ninja-build p7zip-full python3 python3-pip pkg-config -y
 
     - name: Set environment variables
