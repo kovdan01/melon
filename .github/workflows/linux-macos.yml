@@ -85,7 +85,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install MariaDB (Linux)
+    - name: Install required packages, delete libc++ (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
@@ -245,17 +245,6 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt --purge remove gcc -y
-
-    - name: Debug prints
-      run: |
-        echo ">>>>> INSTALLED PACKAGES"
-        sudo apt list --installed
-        echo ">>>>> /LIB"
-        sudo ls -al /lib
-        echo ">>>>> /USR/LIB"
-        sudo ls -al /usr/lib
-        echo ">>>>> /usr/lib/x86_64-linux-gnu"
-        sudo ls -al /usr/lib/x86_64-linux-gnu
 
     - name: Boost cache
       uses: actions/cache@v2
