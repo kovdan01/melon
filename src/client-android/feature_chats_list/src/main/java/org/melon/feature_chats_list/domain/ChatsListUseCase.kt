@@ -1,10 +1,10 @@
 package org.melon.feature_chats_list.domain
 
+import org.melon.core.domain.base.BaseUseCase
 import org.melon.feature_chats_list.data.ChatsListRepository
-import org.melon.melonmessenger.domain.base.BaseUseCase
 import javax.inject.Inject
 
-interface ChatsListUseCase : BaseUseCase {
+interface ChatsListUseCase{
     fun getChatsList(): List<String>
 }
 

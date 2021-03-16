@@ -3,4 +3,16 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="enter_chat_name">Enter chat name</string>
     <string name="create_chat">Create chat</string>
+    <string name="rename_chat">Rename chat</string>
+
+    <!--Chat edit dialog-->
+    <string name="chat_edit_title">Choose an action</string>
+    <string-array name="chat_edit_variants">
+        <item>Rename</item>
+        <item>Delete</item>
+        <item>Mark as unread</item>
+    </string-array>
+
+    <!--Chat Item-->
+    <string name="chat_item_time_placeholder">%d:%d</string>
 </resources>
