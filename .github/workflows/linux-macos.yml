@@ -45,33 +45,33 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "PVS-Studio",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
         #- {
             #os: "macos-latest",
             #prefix: "macOS",
@@ -180,13 +180,6 @@ jobs:
 
         os.chdir(repo)
 
-    #- name: LLVM
-      #run: |
-        #wget https://kovalev.website/static/files/llvm-install.tar.gz
-        #sudo tar -xvf llvm-install.tar.gz -C /usr/local
-        #sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
-        #sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
-
     - name: LLVM cache
       uses: actions/cache@v2
       id: cache_llvm
@@ -235,12 +228,6 @@ jobs:
 
         execute_command("sudo ln -s {}/bin/clang /usr/local/bin/cc".format(llvm_install_dir))
         execute_command("sudo ln -s {}/bin/clang++ /usr/local/bin/c++".format(llvm_install_dir))
-
-#     - name: Upload LLVM
-#       uses: actions/upload-artifact@v2
-#       with:
-#         path: ./target.tar.gz
-#         name: llvm
 
     - name: Remove GCC (Linux)
       if: ${{ runner.os == 'Linux' }}
