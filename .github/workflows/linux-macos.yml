@@ -45,42 +45,42 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "PVS-Studio",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "macos-latest",
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "macos-latest",
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
