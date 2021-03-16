@@ -184,7 +184,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_llvm
       with:
-        path: ${{ env.ROOT_PATH }}/${{ env.LLVM_INSTALL_PATH }}
+        path: ${{ env.LLVM_INSTALL_PATH }}
         key: ${{ runner.os }}-llvm-${{ env.LLVM_VERSION }}-patched
 
     - name: LLVM
