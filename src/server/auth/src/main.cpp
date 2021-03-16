@@ -191,25 +191,29 @@ int main(int argc, char* argv[]) try
 
         using namespace boost::log::trivial;
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
-        ce::ba::io_context ctx{int(threads)};
+
+        namespace ba = boost::asio;
+
+        ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
         ce::tcp_listener<ce::MySaslSession, ce::ba::io_context::executor_type> tl{ctx.get_executor(), *port};
-        ce::ba::static_thread_pool tp{threads-1};
+        ba::static_thread_pool tp{threads-1};
 
-        for(unsigned i=1;i<threads;++i)
+        for (unsigned i=1; i<threads; ++i)
             ce::bae::execute(tp.get_executor(), [&]{
                 ctx.run();
             });
         ctx.run();
         return 0;
     }
-    catch(...)
+    catch (...)
     {
         BOOST_LOG_TRIVIAL(fatal) << boost::current_exception_diagnostic_information();
         return 1;
     }
 }
-catch(...){
+catch (...)
+{
     std::cerr << '\n' << boost::current_exception_diagnostic_information() << '\n';
     return 1;
 }
