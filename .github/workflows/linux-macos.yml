@@ -213,7 +213,8 @@ jobs:
         llvm_source_dir  = os.path.normpath(os.path.join(root, "llvm-project-{}.src".format(llvm_version)))
         llvm_install_dir = os.path.normpath(os.path.join(root, "${{ env.LLVM_INSTALL_PATH }}"))
 
-        os.mkdir(llvm_install_dir)
+        if not os.path.isdir(llvm_install_dir):
+          os.mkdir(llvm_install_dir)
 
         llvm_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-{}/llvm-project-{}.src.tar.xz".format(llvm_version, llvm_version)
         open("llvm.tar.xz", "wb").write(requests.get(llvm_url, allow_redirects=True).content)
