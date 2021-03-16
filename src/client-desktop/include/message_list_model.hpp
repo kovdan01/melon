@@ -33,14 +33,17 @@ public:
 
     enum MyRoles
     {
-        MessageHandleRole = Qt::UserRole + 0,  // NOLINT (readability-identifier-naming)
+        MessageTextRole = Qt::UserRole + 0,  // NOLINT (readability-identifier-naming)
+        MessageTimestampRole = Qt::UserRole + 1,  // NOLINT (readability-identifier-naming)
+        AreIconAndSendernameNeededRole = Qt::UserRole + 2,  // NOLINT (readability-identifier-naming)
+        IsEditRole = Qt::UserRole + 3,  // NOLINT (readability-identifier-naming)
     };
 
 private:
     message_handle_t add_message_to_ram_storage(chat_handle_t it_chat, const Message& message);
     void set_message_in_ram_storage(const QModelIndex& index, const QString& message);
+    [[nodiscard]] bool are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const;
 
-    constexpr static QColor M_RECEIVE_COLOR{250, 224, 180, 127};
     std::vector<message_handle_t> m_it_messages;
 };
 

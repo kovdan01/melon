@@ -27,6 +27,12 @@ public:
 
     chat_handle_t chat_it_by_index(const QModelIndex& index);
 
+    enum MyRoles
+    {
+        ChatNameRole = Qt::UserRole + 0,  // NOLINT (readability-identifier-naming)
+        RepaintRole = Qt::UserRole + 1,  // NOLINT (readability-identifier-naming)
+    };
+
 private:
     void set_chat_name_in_ram_storage(const QModelIndex& index, const QString& name);
 

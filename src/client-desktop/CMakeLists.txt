@@ -30,20 +30,25 @@ find_package(
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
 
 set(HEADERS
+    include/chat_item_delegate.hpp
     include/chat_list_model.hpp
     include/chat_list_view.hpp
     include/chat_widget.hpp
+    include/config.hpp
     include/main_window.hpp
+    include/message_item_delegate.hpp
     include/message_list_model.hpp
     include/ram_storage.hpp
 )
 
 set(SOURCES
+    src/chat_item_delegate.cpp
     src/chat_list_model.cpp
     src/chat_list_view.cpp
     src/chat_widget.cpp
     src/main.cpp
     src/main_window.cpp
+    src/message_item_delegate.cpp
     src/message_list_model.cpp
 )
 
