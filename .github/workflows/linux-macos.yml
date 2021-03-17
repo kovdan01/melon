@@ -114,7 +114,7 @@ jobs:
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
     - name: Install required python3 modules
-      run: pip3 install --retries 20 requests pyparsing
+      run: pip3 install requests pyparsing
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
@@ -257,7 +257,7 @@ jobs:
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
-        CXX: "${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v"
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
         LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
       shell: python3 {0}
       run: |
@@ -372,9 +372,6 @@ jobs:
         execute_command("7z x sasl.tar.gz -so | 7z x -si -ttar")
 
         os.chdir(sasl_source_dir)
-
-        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
-        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./configure")
         execute_command("./configure --prefix={}".format(sasl_install_dir))
@@ -575,9 +572,6 @@ jobs:
         execute_command("tar -xf qtbase.tar.xz")
 
         os.chdir(qtbase_source_dir)
-
-        # os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
-        # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} -platform linux-clang -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
