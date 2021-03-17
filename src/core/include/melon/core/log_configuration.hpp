@@ -16,9 +16,7 @@ namespace melon::core::log_conf
         bl::add_console_log(std::cerr,
                             bl::keywords::format = (
                     bl::expressions::stream
-                    << bl::expressions::format_date_time<boost::posix_time::ptime>(
-                        "TimeStamp", "%Y-%m-%d %H:%M:%S.%f"
-                    )
+                    << bl::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
                     << " [" << bl::trivial::severity << "] T"
                     << bl::expressions::attr<bl::attributes::current_thread_id::value_type>("ThreadID")
                     << " @" << ce::remote
