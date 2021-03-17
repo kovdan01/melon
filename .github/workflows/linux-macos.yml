@@ -295,9 +295,8 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/container-fix-141.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
+        # execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
-
-        # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v'
 
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
@@ -576,7 +575,7 @@ jobs:
 
         os.chdir(catch2_source_dir)
 
-        execute_command("{} -B build -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
+        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
                         "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
