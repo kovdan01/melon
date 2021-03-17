@@ -17,7 +17,7 @@ jobs:
       NINJA_TOOL_PATH: "ninja-tool"
       LLVM_VERSION: "11.1.0"
       LLVM_INSTALL_PATH: "/usr/local"
-      LLVM_NEED_BUILD: true
+      LLVM_NEED_BUILD: false
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
