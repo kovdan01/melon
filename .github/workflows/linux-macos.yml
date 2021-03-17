@@ -17,7 +17,7 @@ jobs:
       NINJA_TOOL_PATH: "ninja-tool"
       LLVM_VERSION: "11.1.0"
       LLVM_INSTALL_PATH: "/usr/local"
-      LLVM_NEED_BUILD: false
+      LLVM_NEED_BUILD: true
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
@@ -46,33 +46,33 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        - {
-            os: "ubuntu-20.04",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-20.04",
-            prefix: "Linux",
-            suffix: "PVS-Studio",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-20.04",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "ubuntu-20.04",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-20.04",
+            #prefix: "Linux",
+            #suffix: "PVS-Studio",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-20.04",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
         #- {
             #os: "macos-latest",
             #prefix: "macOS",
