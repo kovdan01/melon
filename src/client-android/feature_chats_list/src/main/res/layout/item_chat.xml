@@ -47,4 +47,27 @@
         tools:text="Test chat hint"
         app:layout_constraintStart_toEndOf="@id/chatImageContainer"
         app:layout_constraintTop_toBottomOf="@id/chatNameTv" />
+
+    <TextView
+        android:id="@+id/chatEditTimeTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="9:00" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/chatUnreadIndicator"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="@color/light_gray"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chatEditTimeTv" />
 </androidx.constraintlayout.widget.ConstraintLayout>

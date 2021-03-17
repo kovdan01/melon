@@ -17,6 +17,7 @@ jobs:
       NINJA_TOOL_PATH: "ninja-tool"
       LLVM_VERSION: "11.1.0"
       LLVM_INSTALL_PATH: "/usr/local"
+      LLVM_NEED_BUILD: false
       BOOST_MAJOR: 1
       BOOST_MINOR: 75
       BOOST_BUILD: 0
@@ -45,33 +46,33 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "PVS-Studio",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
-        #- {
-            #os: "ubuntu-20.04",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
+        - {
+            os: "ubuntu-20.04",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+          }
         #- {
             #os: "macos-latest",
             #prefix: "macOS",
@@ -85,12 +86,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install MariaDB (Linux)
+    - name: Install required packages, delete libc++ (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql* -y
-        sudo apt-get --purge remove libc++-dev libc++abi-dev -y
+        sudo apt-get --purge remove *libc++* -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat cmake ninja-build p7zip-full python3 python3-pip pkg-config -y
 
     - name: Set environment variables
@@ -113,7 +114,7 @@ jobs:
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
     - name: Install required python3 modules
-      run: pip3 install --retries 20 requests pyparsing
+      run: pip3 install requests pyparsing
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
@@ -180,66 +181,64 @@ jobs:
 
         os.chdir(repo)
 
-    - name: LLVM
+    - name: Download prebuilt LLVM
+      if: ${{ env.LLVM_NEED_BUILD != 'true' }}
       run: |
         wget https://kovalev.website/static/files/llvm-install.tar.gz
-        sudo tar -xvf llvm-install.tar.gz -C /usr/local
-        sudo ln -s /usr/local/bin/clang /usr/local/bin/cc
-        sudo ln -s /usr/local/bin/clang++ /usr/local/bin/c++
+        sudo tar -xf llvm-install.tar.gz -C ${{ env.LLVM_INSTALL_PATH }}
 
-#     - name: LLVM cache
-#       uses: actions/cache@v2
-#       id: cache_llvm
-#       with:
-#         path: ${{ env.ROOT_PATH }}/${{ env.LLVM_INSTALL_PATH }}
-#         key: ${{ runner.os }}-llvm-${{ env.LLVM_VERSION }}-patched
+    - name: LLVM
+      if: ${{ env.LLVM_NEED_BUILD == 'true' }}
+      shell: python3 {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        os.chdir(root)
+        llvm_version = os.environ['LLVM_VERSION']
+        llvm_source_dir  = os.path.normpath(os.path.join(root, "llvm-project-{}.src".format(llvm_version)))
+        llvm_install_dir = os.path.normpath(os.path.join(root, "${{ env.LLVM_INSTALL_PATH }}"))
 
-#     - name: LLVM
-#       id: llvm
-#       if: ${{ steps.cache_llvm.outputs.cache-hit != 'true' }}
-#       shell: python3 {0}
-#       run: |
-#         import os
-#         import requests
-#         import subprocess
-#         def execute_command(cmd):
-#           ret = subprocess.call(cmd, shell=True)
-#           if ret != 0:
-#             raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
-#         root = os.environ['ROOT_PATH']
-#         repo = os.environ['REPO_PATH']
-#         os.chdir(root)
-#         llvm_version = os.environ['LLVM_VERSION']
-#         llvm_source_dir  = os.path.normpath(os.path.join(root, "llvm-project-{}.src".format(llvm_version)))
-#         llvm_install_dir = os.path.normpath(os.path.join(root, "${{ env.LLVM_INSTALL_PATH }}"))
+        if not os.path.isdir(llvm_install_dir):
+          os.mkdir(llvm_install_dir)
 
-#         os.mkdir(llvm_install_dir)
+        llvm_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-{}/llvm-project-{}.src.tar.xz".format(llvm_version, llvm_version)
+        open("llvm.tar.xz", "wb").write(requests.get(llvm_url, allow_redirects=True).content)
+        execute_command("tar -xf llvm.tar.xz")
+        os.chdir(llvm_source_dir)
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-concepts.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-integer-comparison.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D68364.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D96926+94834.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/P1956.patch".format(repo))
+        execute_command("chmod +x {}/build-config/configure-llvm.sh".format(repo))
+        execute_command("sudo {}/build-config/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
+        execute_command("sudo cmake --build build --target all")
+        execute_command("sudo cmake --build build --target install")
+        os.chdir(repo)
 
-#         llvm_url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-{}/llvm-project-{}.src.tar.xz".format(llvm_version, llvm_version)
-#         open("llvm.tar.xz", "wb").write(requests.get(llvm_url, allow_redirects=True).content)
-#         execute_command("tar -xf llvm.tar.xz")
-#         os.chdir(llvm_source_dir)
-#         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-concepts.patch".format(repo))
-#         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/c++20-integer-comparison.patch".format(repo))
-#         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D68364.patch".format(repo))
-#         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/D96926+94834.patch".format(repo))
-#         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/llvm-11.1.0/P1956.patch".format(repo))
-#         execute_command("chmod +x {}/build-config/configure-llvm.sh".format(repo))
-#         execute_command("sudo {}/build-config/configure-llvm.sh -DCMAKE_INSTALL_PREFIX={} -DCMAKE_MAKE_PROGRAM={}/{}/ninja -B build -S llvm".format(repo, llvm_install_dir, root, os.environ['NINJA_TOOL_PATH']))
-#         execute_command("sudo cmake --build build --target all")
-#         execute_command("sudo cmake --build build --target install")
-#         os.chdir(repo)
+    - name: Create cc and c++ symlinks
+      run: |
+        sudo ln -s ${{ env.LLVM_INSTALL_PATH }}/bin/clang   ${{ env.LLVM_INSTALL_PATH }}/bin/cc
+        sudo ln -s ${{ env.LLVM_INSTALL_PATH }}/bin/clang++ ${{ env.LLVM_INSTALL_PATH }}/bin/c++
 
-#         execute_command("tar -czf target.tar.gz {}".format(llvm_install_dir))
+    - name: Tar prebuilt LLVM
+      if: ${{ env.LLVM_NEED_BUILD == 'true' }}
+      run: |
+        tar -czf llvm-install.tar.gz ${{ env.LLVM_INSTALL_PATH }}
 
-#         execute_command("sudo ln -s {}/bin/clang /usr/local/bin/cc".format(llvm_install_dir))
-#         execute_command("sudo ln -s {}/bin/clang++ /usr/local/bin/c++".format(llvm_install_dir))
-
-#     - name: Upload LLVM
-#       uses: actions/upload-artifact@v2
-#       with:
-#         path: ./target.tar.gz
-#         name: llvm
+    - name: Upload prebuilt LLVM
+      if: ${{ env.LLVM_NEED_BUILD == 'true' }}
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./llvm-install.tar.gz
+        name: llvm-install
 
     - name: Remove GCC (Linux)
       if: ${{ runner.os == 'Linux' }}
@@ -258,7 +257,7 @@ jobs:
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ env.LLVM_INSTALL_PATH }}/bin/clang
-        CXX: "${{ env.LLVM_INSTALL_PATH }}/bin/clang++ -v"
+        CXX: ${{ env.LLVM_INSTALL_PATH }}/bin/clang++
         LD_LIBRARY_PATH: ${{ env.LLVM_INSTALL_PATH }}/lib
       shell: python3 {0}
       run: |
@@ -373,9 +372,6 @@ jobs:
         execute_command("7z x sasl.tar.gz -so | 7z x -si -ttar")
 
         os.chdir(sasl_source_dir)
-
-        os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
-        os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./configure")
         execute_command("./configure --prefix={}".format(sasl_install_dir))
@@ -576,9 +572,6 @@ jobs:
         execute_command("tar -xf qtbase.tar.xz")
 
         os.chdir(qtbase_source_dir)
-
-        # os.environ['CC']='${{ env.LLVM_INSTALL_PATH }}/bin/clang'
-        # os.environ['CXX']='${{ env.LLVM_INSTALL_PATH }}/bin/clang++'
 
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} -platform linux-clang -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir))

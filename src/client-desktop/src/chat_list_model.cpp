@@ -23,6 +23,9 @@ QVariant ChatListModel::data(const QModelIndex& index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
+            data.setValue(m_it_chats[index.row()]);
+            break;
+        case MyRoles::ChatNameRole:
             data.setValue(m_it_chats[index.row()]->name());
             break;
         default:
@@ -43,12 +46,13 @@ bool ChatListModel::setData(const QModelIndex& index, const QVariant& value, int
     {
         switch(role)
         {
-        case Qt::DisplayRole:
+        case MyRoles::ChatNameRole:
             this->set_chat_name_in_ram_storage(index, value.toString());
             emit dataChanged(index, index);
             return true;
-        default:
-            break;
+        case MyRoles::RepaintRole:
+            emit dataChanged(index, index);
+            return true;
         }
     }
     return false;
