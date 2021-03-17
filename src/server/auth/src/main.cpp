@@ -25,111 +25,105 @@
 #include <stdexcept>
 #include <thread>
 
-namespace ce
+namespace ba = boost::asio;
+namespace bb = boost::beast;
+namespace bae = boost::asio::execution;
+
+using socket_executor_t = ba::strand<ba::io_context::executor_type>;
+using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
+using tcp_stream = bb::basic_stream<ba::ip::tcp,
+    socket_executor_t,
+    bb::simple_rate_policy>;
+
+class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
-    namespace
+    constexpr static std::size_t NUMBER_LIMIT = 1024,
+                                 BYTES_PER_SECOND_LIMIT = 1024;
+    constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
+public:
+    MySaslSession(ba::io_context::executor_type ex)
+        : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
     {
-        using socket_executor_t = ba::strand<ba::io_context::executor_type>;
-        using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
-        using tcp_stream = bb::basic_stream<ba::ip::tcp,
-            socket_executor_t,
-            bb::simple_rate_policy>;
-
-        class MySaslSession final : public socket_session<MySaslSession, tcp_stream>
-        {
-            constexpr static std::size_t NUMBER_LIMIT = 1024,
-                                         BYTES_PER_SECOND_LIMIT = 1024;
-            constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
-        public:
-            MySaslSession(ba::io_context::executor_type ex)
-                : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
-            {
-                stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
-            }
-
-            void start_protocol()
-            {            
-                [[maybe_unused]] auto& server_singletone = melon::server::auth::SaslServerSingleton::get_instance();
-                // This captures the pointer to session twice: non-owning as this,
-                // and owning as s. We need the owning capture to keep the session
-                // alive. Capturing this allows us to omit s-> before accessing
-                // any session content at the cost of one additional pointer of state.
-                spawn(this->executor(), [this, s=shared_from_this()](auto yc)
-                {
-                    using namespace boost::log::trivial;
-
-                    namespace mca = melon::core::auth;
-                    namespace msa = melon::server::auth;
-
-                    msa::SaslServerConnection server("melon");
-
-                    boost::system::error_code ec;
-
-                    std::string_view supported_mechanisms = server.list_mechanisms();
-                    m_out_buf = std::string(supported_mechanisms) + "\n";
-                    stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(m_out_buf), yc);
-                    stream_.expires_after(time_limit_);
-                    std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
-                    if (ec)
-                    {
-                        if (ec!=boost::asio::error::eof)
-                            throw boost::system::system_error{ec};
-                        BOOST_LOG_SEV(log(), info) << "Connection closed";
-                        return;
-                    }
-                    std::string wanted_mechanism = read_buffered_string(n);
-                    if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
-                        throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-                    m_out_buf = wanted_mechanism + "\n";
-                    stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(m_out_buf), yc);
-
-                    stream_.expires_after(time_limit_);
-                    n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
-                    std::string client_response = read_buffered_string(n);
-                    auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-                    m_out_buf = std::string(server_response) + "\n";
-                    stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(m_out_buf), yc);
-                    while (server_completness == mca::AuthCompletness::INCOMPLETE)
-                    {
-                        stream_.expires_after(time_limit_);
-                        n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
-                        client_response = read_buffered_string(n);
-                        mca::StepResult server_step_res = server.step(client_response);
-                        server_response = server_step_res.response;
-                        server_completness = server_step_res.completness;
-                        if (server_response.data() != nullptr)
-                            m_out_buf = std::string(server_response) + '\n';
-                        else
-                            m_out_buf = "";
-                        if (server_completness == mca::AuthCompletness::COMPLETE)
-                            break;
-                        stream_.expires_after(time_limit_);
-                        async_write(stream_, ba::buffer(m_out_buf), yc);
-                    }
-                    m_out_buf = "Okay, Mr. Client, here's your token...\n";
-                    stream_.expires_after(time_limit_);
-                    async_write(stream_, ba::buffer(m_out_buf), yc);
-                    BOOST_LOG_TRIVIAL(info) << "Issued a token.";
-                }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
-                {
-                    if (e)
-                        std::rethrow_exception(e);
-                }));
-            }
-        private:
-            std::string m_in_buf, m_out_buf;
-            std::string read_buffered_string(std::size_t n)
-            {
-                std::string x = m_in_buf.substr(0, n-1);
-                m_in_buf.erase(0, n);
-                return x;
-            }
-        };
+        stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
     }
-}
+
+    void start_protocol()
+    {
+        [[maybe_unused]] auto& server_singletone = melon::server::auth::SaslServerSingleton::get_instance();
+        spawn(this->executor(), [this, s=shared_from_this()](auto yc)
+        {
+            using namespace boost::log::trivial;
+
+            namespace mca = melon::core::auth;
+            namespace msa = melon::server::auth;
+
+            msa::SaslServerConnection server("melon");
+
+            boost::system::error_code ec;
+
+            std::string_view supported_mechanisms = server.list_mechanisms();
+            m_out_buf = std::string(supported_mechanisms) + "\n";
+            stream_.expires_after(time_limit_);
+            async_write(stream_, ba::buffer(m_out_buf), yc);
+            stream_.expires_after(time_limit_);
+            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
+            if (ec)
+            {
+                if (ec!=boost::asio::error::eof)
+                    throw boost::system::system_error{ec};
+                BOOST_LOG_SEV(log(), info) << "Connection closed";
+                return;
+            }
+            std::string wanted_mechanism = read_buffered_string(n);
+            if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
+                throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
+            m_out_buf = wanted_mechanism + "\n";
+            stream_.expires_after(time_limit_);
+            async_write(stream_, ba::buffer(m_out_buf), yc);
+
+            stream_.expires_after(time_limit_);
+            n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
+            std::string client_response = read_buffered_string(n);
+            auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+            m_out_buf = std::string(server_response) + "\n";
+            stream_.expires_after(time_limit_);
+            async_write(stream_, ba::buffer(m_out_buf), yc);
+            while (server_completness == mca::AuthCompletness::INCOMPLETE)
+            {
+                stream_.expires_after(time_limit_);
+                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec]);
+                client_response = read_buffered_string(n);
+                mca::StepResult server_step_res = server.step(client_response);
+                server_response = server_step_res.response;
+                server_completness = server_step_res.completness;
+                if (server_response.data() != nullptr)
+                    m_out_buf = std::string(server_response) + '\n';
+                else
+                    m_out_buf = "";
+                if (server_completness == mca::AuthCompletness::COMPLETE)
+                    break;
+                stream_.expires_after(time_limit_);
+                async_write(stream_, ba::buffer(m_out_buf), yc);
+            }
+            m_out_buf = "Okay, Mr. Client, here's your token...\n";
+            stream_.expires_after(time_limit_);
+            async_write(stream_, ba::buffer(m_out_buf), yc);
+            BOOST_LOG_TRIVIAL(info) << "Issued a token.";
+        }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
+        {
+            if (e)
+                std::rethrow_exception(e);
+        }));
+    }
+private:
+    std::string m_in_buf, m_out_buf;
+    std::string read_buffered_string(std::size_t n)
+    {
+        std::string x = m_in_buf.substr(0, n-1);
+        m_in_buf.erase(0, n);
+        return x;
+    }
+};
 
 int main(int argc, char* argv[]) try
 {
@@ -196,7 +190,7 @@ int main(int argc, char* argv[]) try
 
         ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
-        ce::tcp_listener<ce::MySaslSession, ce::ba::io_context::executor_type> tl{ctx.get_executor(), *port};
+        ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), *port};
         ba::static_thread_pool tp{threads-1};
 
         for (unsigned i=1; i<threads; ++i)
