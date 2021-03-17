@@ -10,12 +10,22 @@
 #include <ampi/pmr/shared_polymorphic_allocator.hpp>
 
 #include <boost/container/vector.hpp>
+#include <boost/variant2/variant.hpp>
 
+#include <optional>
 #include <span>
 #include <string>
 
 namespace ampi
 {
+    using std::optional;
+
+    using boost::variant2::variant;
+    using boost::variant2::get_if;
+    using boost::variant2::holds_alternative;
+    using boost::variant2::in_place_type;
+    using boost::variant2::visit;
+
     using string = std::basic_string<char,std::char_traits<char>,shared_polymorphic_allocator<char>>;
     using std::string_view;
 

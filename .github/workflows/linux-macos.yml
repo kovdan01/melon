@@ -252,7 +252,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-libcxx
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-libcxx-patched
 
     - name: Boost
       id: boost
@@ -295,7 +295,7 @@ jobs:
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/container-fix-141.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch".format(repo))
-        # execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
+        execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
         execute_command("patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
         execute_command("chmod +x ./bootstrap.sh")

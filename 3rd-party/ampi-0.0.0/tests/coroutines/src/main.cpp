@@ -135,7 +135,7 @@ namespace ampi { namespace
                 }
                 {
                     std::array<int,0> res;
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield []() -> ampi::noexcept_generator<int> {
                             co_return;
                         }();
@@ -144,7 +144,7 @@ namespace ampi { namespace
                 }
                 {
                     std::array res{1,2,3};
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield 1;
                         co_yield []() -> ampi::noexcept_generator<int> {
                             co_yield 2;
@@ -154,10 +154,22 @@ namespace ampi { namespace
                     expect(std::equal(gen_v.begin(),gen_v.end(),res.begin(),res.end()));
                 }
                 {
-                    std::array res{1,2,3,4,5};
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    std::array res{1,2,3};
+                    auto gen_v = []() -> ampi::noexcept_generator<int> {
+                            co_yield 2;
+                    }();
+                    auto gen_v2 = [](auto& gen) -> ampi::noexcept_delegating_generator<int> {
                         co_yield 1;
-                        co_yield []() -> ampi::noexcept_delegating_generator<int> {
+                        co_yield std::move(gen);
+                        co_yield 3;
+                    }(gen_v);
+                    expect(std::equal(gen_v2.begin(),gen_v2.end(),res.begin(),res.end()));
+                }
+                {
+                    std::array res{1,2,3,4,5};
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
+                        co_yield 1;
+                        co_yield []() -> ampi::delegating_generator<int> {
                             co_yield 2;
                             co_yield []() -> ampi::noexcept_generator<int> {
                                 co_yield 3;
@@ -170,11 +182,11 @@ namespace ampi { namespace
                 }
                 {
                     std::array res{1,2,3,4,5,6,7};
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield 1;
-                        co_yield []() -> ampi::noexcept_delegating_generator<int> {
+                        co_yield []() -> ampi::delegating_generator<int> {
                             co_yield 2;
-                            co_yield []() -> ampi::noexcept_delegating_generator<int> {
+                            co_yield []() -> ampi::delegating_generator<int> {
                                 co_yield 3;
                                 co_yield []() -> ampi::noexcept_generator<int> {
                                     co_yield 4;
@@ -189,7 +201,7 @@ namespace ampi { namespace
                 }
                 {
                     std::array<int,0> res;
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield ampi::tail_yield_to([]() -> ampi::noexcept_generator<int> {
                             co_return;
                         }());
@@ -198,7 +210,7 @@ namespace ampi { namespace
                 }
                 {
                     std::array res{1,2};
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield 1;
                         co_yield ampi::tail_yield_to([]() -> ampi::noexcept_generator<int> {
                             co_yield 2;
@@ -208,14 +220,14 @@ namespace ampi { namespace
                 }
                 {
                     std::array res{1,2,3,4,5,6,7};
-                    auto gen_v = []() -> ampi::noexcept_delegating_generator<int> {
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
                         co_yield 1;
-                        co_yield []() -> ampi::noexcept_delegating_generator<int> {
+                        co_yield []() -> ampi::delegating_generator<int> {
                             co_yield 2;
-                            co_yield tail_yield_to([]() -> ampi::noexcept_delegating_generator<int> {
-                                co_yield tail_yield_to([]() -> ampi::noexcept_delegating_generator<int> {
+                            co_yield tail_yield_to([]() -> ampi::delegating_generator<int> {
+                                co_yield tail_yield_to([]() -> ampi::delegating_generator<int> {
                                     co_yield 3;
-                                    co_yield []() -> ampi::noexcept_delegating_generator<int> {
+                                    co_yield []() -> ampi::delegating_generator<int> {
                                         co_yield 4;
                                         co_yield tail_yield_to([]() -> ampi::noexcept_delegating_generator<int> {
                                             co_yield 5;
@@ -228,6 +240,28 @@ namespace ampi { namespace
                         co_yield 7;
                     }();
                     expect(std::equal(gen_v.begin(),gen_v.end(),res.begin(),res.end()));
+                }
+                {
+                    std::array res{1,2};
+                    auto gen_v = []() -> ampi::delegating_generator<int> {
+                        co_yield 1;
+                        co_yield []() -> ampi::generator<int> {
+                            co_yield 2;
+                            throw std::runtime_error{"test"};
+                        }();
+                        co_yield 3;
+                    }();
+                    std::exception_ptr e;
+                    std::vector<int> v;
+                    try{
+                        while(auto p = gen_v())
+                            v.push_back(*p);
+                    }
+                    catch(const std::runtime_error&){
+                        e = std::current_exception();
+                    }
+                    expect(std::equal(v.begin(),v.end(),res.begin(),res.end()));
+                    expect(!!e);
                 }
             };
         };

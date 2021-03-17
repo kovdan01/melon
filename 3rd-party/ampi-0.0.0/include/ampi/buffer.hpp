@@ -43,22 +43,20 @@ namespace ampi
         };
     }
 
-    class buffer
+    class cbuffer
     {
     public:
-        constexpr static size_t default_size = 4*1024*1024;
+        cbuffer() noexcept = default;
 
-        buffer() noexcept = default;
+        cbuffer(const cbuffer& other) noexcept = default;
+        cbuffer& operator=(const cbuffer& other) noexcept = default;
 
-        buffer(const buffer& other) noexcept = default;
-        buffer& operator=(const buffer& other) noexcept = default;
-
-        buffer(buffer&& other) noexcept
+        cbuffer(cbuffer&& other) noexcept
             : header_{std::move(other.header_)},
               view_{std::exchange(other.view_,{})}
         {}
 
-        buffer& operator=(buffer&& other) noexcept
+        cbuffer& operator=(cbuffer&& other) noexcept
         {
             if(this!=&other){
                 header_ = std::move(other.header_);
@@ -67,39 +65,27 @@ namespace ampi
             return *this;
         }
 
-        buffer(binary_view_t bv) noexcept
-            : view_{bv}
+        cbuffer(binary_cview_t bv) noexcept
+            : header_{},
+              view_{const_cast<std::byte*>(bv.data()),bv.size()}
         {}
 
-        explicit buffer(size_t n);
-
-        buffer(size_t n,shared_polymorphic_allocator<> spa)
-            : header_{::new (spa.allocate_bytes(sizeof(detail::buffer_header)+n,
-                  alignof(detail::buffer_header))) detail::buffer_header{n,std::move(spa)}},
-              view_{reinterpret_cast<byte*>(header_.get())+sizeof(detail::buffer_header),n}
-        {}
-
-        buffer(buffer& other,size_t offset,size_t count = std::dynamic_extent) noexcept
+        cbuffer(cbuffer& other,size_t offset,size_t count = std::dynamic_extent) noexcept
             : header_{other.header_},
               view_{other.view_.subspan(offset,count)}
         {}
 
-        buffer(buffer&& other,size_t offset,size_t count = std::dynamic_extent) noexcept
+        cbuffer(cbuffer&& other,size_t offset,size_t count = std::dynamic_extent) noexcept
             : header_{std::move(other.header_)},
               view_{other.view_.subspan(offset,count)}
         {}
 
+        const shared_polymorphic_allocator<>* allocator() const noexcept
+        {
+            return header_?&header_->spa_:nullptr;
+        }
+
         explicit operator bool() const noexcept
-        {
-            return view_.data();
-        }
-
-        byte* data() noexcept
-        {
-            return view_.data();
-        }
-
-        const byte* data() const noexcept
         {
             return view_.data();
         }
@@ -109,12 +95,59 @@ namespace ampi
             return view_.size();
         }
 
-        binary_view_t view() noexcept
+        const byte* data() const noexcept
+        {
+            return view_.data();
+        }
+
+        binary_cview_t view() const noexcept
         {
             return view_;
         }
 
-        binary_cview_t view() const noexcept
+        operator boost::asio::const_buffer() const noexcept
+        {
+            return {data(),size()};
+        }
+    protected:
+        boost::intrusive_ptr<detail::buffer_header> header_;
+        binary_view_t view_;
+
+        cbuffer(boost::intrusive_ptr<detail::buffer_header> header) noexcept
+            : header_{std::move(header)},
+              view_{reinterpret_cast<byte*>(header_.get())+sizeof(detail::buffer_header),
+                    header_->capacity_}
+        {}
+    };
+
+    class buffer : public cbuffer
+    {
+    public:
+        constexpr static size_t default_size = 4*1024*1024;
+
+        buffer(binary_view_t bv) noexcept
+            : cbuffer{bv}
+        {}
+
+        explicit buffer(size_t n,shared_polymorphic_allocator<> spa = {})
+            : cbuffer{::new (spa.allocate_bytes(sizeof(detail::buffer_header)+n,
+                  alignof(detail::buffer_header))) detail::buffer_header{n,std::move(spa)}}
+        {}
+
+        buffer(buffer& other,size_t offset,size_t count = std::dynamic_extent) noexcept
+            : cbuffer{other,offset,count}
+        {}
+
+        buffer(buffer&& other,size_t offset,size_t count = std::dynamic_extent) noexcept
+            : cbuffer{std::move(other),offset,count}
+        {}
+
+        byte* data() const noexcept
+        {
+            return view_.data();
+        }
+
+        binary_view_t view() noexcept
         {
             return view_;
         }
@@ -123,19 +156,6 @@ namespace ampi
         {
             return {data(),size()};
         }
-
-        operator boost::asio::const_buffer() const noexcept
-        {
-            return {data(),size()};
-        }
-
-        const shared_polymorphic_allocator<>* allocator() const noexcept
-        {
-            return header_?&header_->spa_:nullptr;
-        }
-    private:
-        boost::intrusive_ptr<detail::buffer_header> header_ = {};
-        binary_view_t view_;
     };
 
     namespace archetypes

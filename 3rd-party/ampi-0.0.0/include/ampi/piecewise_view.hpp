@@ -13,7 +13,6 @@
 #include <boost/container/pmr/small_vector.hpp>
 #include <boost/container_hash/hash_fwd.hpp>
 #include <boost/stl_interfaces/iterator_interface.hpp>
-#include <boost/variant2/variant.hpp>
 
 #include <cassert>
 #include <compare>
@@ -25,15 +24,15 @@ namespace ampi
     class piecewise_view
     {
         using piece_vector_t = boost::container::small_vector<
-            buffer,2,shared_polymorphic_allocator<buffer>>;
-        using variant_t = boost::variant2::variant<Container,piece_vector_t>;
+            cbuffer,2,shared_polymorphic_allocator<cbuffer>>;
+        using variant_t = variant<Container,piece_vector_t>;
 
         variant_t v_;
 
         size_t piece_size() const noexcept
         {
             std::size_t s = 0;
-            for(const auto& view:*boost::variant2::get_if<piece_vector_t>(&v_))
+            for(const auto& view:*get_if<piece_vector_t>(&v_))
                 s += view.size();
             return s;
         }
@@ -42,8 +41,10 @@ namespace ampi
         {
             Container cont(std::move(alloc));
             cont.reserve(piece_size());
-            for(const auto& p:*boost::variant2::get_if<piece_vector_t>(&v_))
-                cont.insert(cont.end(),p.view().begin(),p.view().end());
+            for(const auto& p:*get_if<piece_vector_t>(&v_)){
+                auto d = reinterpret_cast<const typename Container::value_type*>(p.data());
+                cont.insert(cont.end(),d,d+p.size());
+            }
             return cont;
         }
     public:
@@ -55,11 +56,11 @@ namespace ampi
 
             View operator*() const noexcept
             {
-                if(auto single = boost::variant2::get_if<Container>(v_)){
+                if(auto single = get_if<Container>(v_)){
                     assert(!index_);
                     return {single->data(),single->size()};
                 }
-                auto& buf = (*boost::variant2::get_if<piece_vector_t>(v_))[size_t(index_)];
+                auto& buf = (*get_if<piece_vector_t>(v_))[size_t(index_)];
                 return {reinterpret_cast<typename View::const_pointer>(buf.data()),buf.size()};
             }
 
@@ -67,10 +68,10 @@ namespace ampi
             {
                 index_ += n;
                 assert(index_>=0);
-                if(auto single = boost::variant2::holds_alternative<Container>(*v_))
+                if(auto single = holds_alternative<Container>(*v_))
                     assert(index_<=1);
                 else
-                    assert(size_t(index_)<=boost::variant2::get_if<piece_vector_t>(v_)->size());
+                    assert(size_t(index_)<=get_if<piece_vector_t>(v_)->size());
                 return *this;
             }
 
@@ -110,16 +111,37 @@ namespace ampi
             : v_{std::move(cont)}
         {}
 
-        piecewise_view(buffer buf,shared_polymorphic_allocator<buffer> spa) noexcept
-            : v_{boost::variant2::in_place_type<piece_vector_t>,std::move(spa)}
+        piecewise_view(View view) noexcept
+            : piecewise_view{cbuffer{{reinterpret_cast<const byte*>(view.data()),view.size()}}}
+        {}
+
+        piecewise_view(cbuffer buf) noexcept
+            : piecewise_view{buf,buf.allocator()?
+                  shared_polymorphic_allocator<cbuffer>{*buf.allocator()}:
+                  shared_polymorphic_allocator<cbuffer>{}
+              }
+        {}
+
+        piecewise_view(cbuffer buf,shared_polymorphic_allocator<cbuffer> spa) noexcept
+            : v_{in_place_type<piece_vector_t>,
+                 // Explicitly cast needed because small_vector is only
+                 // constructible from its special small_vector_allocator,
+                 // not Allocator template parameter, and that special allocator's
+                 // constructor from Allocator is explicit.
+                 piece_vector_t::allocator_type{std::move(spa)}}
         {
             push_back(std::move(buf));
         }
 
-        void push_back(buffer buf)
+        void push_back(View view)
         {
-            assert(boost::variant2::holds_alternative<piece_vector_t>(v_));
-            boost::variant2::get_if<piece_vector_t>(v_)->push_back(std::move(buf));
+            push_back(cbuffer{reinterpret_cast<const byte*>(view.data()),view.size()});
+        }
+
+        void push_back(cbuffer buf)
+        {
+            assert(holds_alternative<piece_vector_t>(v_));
+            get_if<piece_vector_t>(&v_)->push_back(std::move(buf));
         }
 
         [[nodiscard]] bool empty() const noexcept
@@ -129,21 +151,21 @@ namespace ampi
 
         size_t size() const noexcept
         {
-            if(auto single = boost::variant2::get_if<Container>(&v_))
+            if(auto single = get_if<Container>(&v_))
                 return single->size();
             return piece_size();
         }
 
         Container merge(typename Container::allocator_type alloc = {}) const&
         {
-            if(auto single = boost::variant2::get_if<Container>(&v_))
+            if(auto single = get_if<Container>(&v_))
                 return {*single,std::move(alloc)};
             return merge_impl(std::move(alloc));
         }
 
         Container merge(typename Container::allocator_type alloc = {}) &&
         {
-            if(auto single = boost::variant2::get_if<Container>(&v_))
+            if(auto single = get_if<Container>(&v_))
                 return {std::move(*single),std::move(alloc)};
             return merge_impl(std::move(alloc));
         }
@@ -155,10 +177,10 @@ namespace ampi
 
         iterator end() const noexcept
         {
-            if(boost::variant2::holds_alternative<Container>(v_))
+            if(holds_alternative<Container>(v_))
                 return {&v_,1};
             else
-                return {&v_,ptrdiff_t(boost::variant2::get_if<piece_vector_t>(&v_)->size())};
+                return {&v_,ptrdiff_t(get_if<piece_vector_t>(&v_)->size())};
         }
 
         bool operator==(const piecewise_view& other) const noexcept
@@ -203,7 +225,23 @@ namespace ampi
     using piecewise_data = piecewise_view<binary_cview_t,vector<byte>>;
 
     AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,const piecewise_string& ps);
-    AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,const piecewise_data& ps);
+    AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,const piecewise_data& pd);
+
+    namespace detail
+    {
+        struct quoted_piecewise_string
+        {
+            const piecewise_string& ps;
+            char delim,escape;
+        };
+
+        AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,const quoted_piecewise_string& qps);
+    }
+
+    inline auto quoted(const piecewise_string& ps,char delim='"',char escape='\\') noexcept
+    {
+        return detail::quoted_piecewise_string{ps,delim,escape};
+    }
 }
 
 template<typename View,typename Container>

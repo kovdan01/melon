@@ -47,7 +47,7 @@ namespace ampi
             : options_{options}
         {}
 
-        buffer get_buffer(size_t min_size = 0)
+/*        buffer get_buffer(size_t min_size = 0)
         {
             return {};
         }
@@ -57,7 +57,7 @@ namespace ampi
             [[clang::lifetimebound]]
         {
             co_return;
-        }
+        } */
     private:
         parser_options options_;
         [[no_unique_address]] subobject_if<external_buffer_factory,BufferFactory*> bf_;

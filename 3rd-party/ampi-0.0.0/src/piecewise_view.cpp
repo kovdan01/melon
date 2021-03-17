@@ -20,12 +20,27 @@ namespace ampi
         return stream;
     }
 
-    std::ostream& operator<<(std::ostream& stream,const piecewise_data& ps)
+    std::ostream& operator<<(std::ostream& stream,const piecewise_data& pd)
     {
-        for(auto piece:ps)
+        for(auto piece:pd)
             boost::algorithm::hex(reinterpret_cast<const uint8_t*>(&piece.front()),
-                                    reinterpret_cast<const uint8_t*>(&piece.back())+1,
-                                    std::ostream_iterator<char>{stream});
+                                  reinterpret_cast<const uint8_t*>(&piece.back())+1,
+                                  std::ostream_iterator<char>{stream});
         return stream;
+    }
+
+    namespace detail
+    {
+        std::ostream& operator<<(std::ostream& stream,const quoted_piecewise_string& qps)
+        {
+            stream << qps.delim;
+            for(auto piece:qps.ps)
+                for(char c:piece){
+                    if(c==qps.delim||c==qps.escape)
+                        stream << qps.escape;
+                    stream << c;
+                }
+            return stream << qps.delim;
+        }
     }
 }

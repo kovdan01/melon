@@ -1,0 +1,35 @@
+--- a/boost/container/pmr/polymorphic_allocator.hpp	2021-03-08 21:10:11.573600282 +0300
++++ b/boost/container/pmr/polymorphic_allocator.hpp	2021-03-08 21:13:13.436979507 +0300
+@@ -59,7 +59,7 @@
+ 
+    //! <b>Effects</b>: Sets m_resource to
+    //!   other.resource().
+-   polymorphic_allocator(const polymorphic_allocator& other)
++   polymorphic_allocator(const polymorphic_allocator& other) BOOST_NOEXCEPT
+       : m_resource(other.m_resource)
+    {}
+ 
+@@ -72,7 +72,7 @@
+ 
+    //! <b>Effects</b>: Sets m_resource to
+    //!   other.resource().
+-   polymorphic_allocator& operator=(const polymorphic_allocator& other)
++   polymorphic_allocator& operator=(const polymorphic_allocator& other) BOOST_NOEXCEPT
+    {  m_resource = other.m_resource;   return *this;  }
+ 
+    //! <b>Returns</b>: Equivalent to
+@@ -133,12 +133,12 @@
+ 
+    //! <b>Returns</b>: Equivalent to
+    //!   `polymorphic_allocator()`.
+-   polymorphic_allocator select_on_container_copy_construction() const
++   polymorphic_allocator select_on_container_copy_construction() const BOOST_NOEXCEPT
+    {  return polymorphic_allocator();  }
+ 
+    //! <b>Returns</b>:
+    //!   m_resource.
+-   memory_resource* resource() const
++   memory_resource* resource() const BOOST_NOEXCEPT
+    {  return m_resource;  }
+ 
+    private:

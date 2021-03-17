@@ -18,13 +18,17 @@ namespace ampi::detail
     struct block_header
     {
         alignas(boost::container::pmr::memory_resource::max_align) size_t size_;
-        block_header* next_;
+        block_header* next_ = nullptr;
+
+        block_header(block_header* /*prev*/,size_t size) noexcept
+            : size_{size}
+        {}
     };
 
     class AMPI_EXPORT block_list_resource_base : public boost::container::pmr::memory_resource
     {
     public:
-        constexpr static size_t initial_next_buffer_size = 64;
+        constexpr static size_t initial_next_buffer_size = 128;
 
         block_list_resource_base(boost::container::pmr::memory_resource* upstream,
                                  size_t initial_size = initial_next_buffer_size)
@@ -92,28 +96,30 @@ namespace ampi::detail
             void* p = nullptr;
             if(current_){
                 p = this_().current_p();
-                for(;;){
-                    size_t space = left();
-                    p = std::align(alignment,bytes,p,space);
-                    if(p)
-                        break;
-                    current_ = static_cast<BlockHeader*>(current_->next_);
-                    if(!current_)
-                        break;
-                    p = reinterpret_cast<byte*>(current_)+sizeof(BlockHeader);
-                }
+                size_t remaining = left();
+                p = std::align(alignment,bytes,p,remaining);
+                if(!p)
+                    while(current_->next_){
+                        current_ = static_cast<BlockHeader*>(current_->next_);
+                        if(bytes<=(current_->size_-sizeof(BlockHeader))){
+                            p = reinterpret_cast<byte*>(current_)+sizeof(BlockHeader);
+                            break;
+                        }
+                    }
             }
             if(!p){
                 constexpr static size_t address_space = size_t(-1),
                                         half_address_space = address_space/2;
                 size_t s = current_?(current_->size_<half_address_space?current_->size_*2:address_space):
-                                    initial_size_;
-                s = std::max(s,bytes<half_address_space?std::bit_ceil(bytes):address_space);
-                auto n = static_cast<BlockHeader*>(upstream_->allocate(sizeof(BlockHeader)+s));
-                n->next_ = nullptr;
-                n->size_ = s;
+                                    initial_size_,
+                       need = bytes+sizeof(BlockHeader);
+                s = std::max(s,need<half_address_space?std::bit_ceil(need):address_space);
+                auto n = static_cast<BlockHeader*>(upstream_->allocate(s));
+                new (static_cast<void*>(n)) BlockHeader{current_,s};
                 if(auto old = std::exchange(current_,n))
                     old->next_ = n;
+                else
+                    first_ = current_;
                 p = reinterpret_cast<byte*>(n)+sizeof(BlockHeader);
             }
             this_().set_current_p(static_cast<byte*>(p)+bytes);
@@ -130,15 +136,14 @@ namespace ampi::detail
             auto c = first_;
             while(c){
                 auto old = std::exchange(c,static_cast<BlockHeader*>(c->next_));
-                upstream_->deallocate(old,sizeof(BlockHeader)+old->size_);
+                upstream_->deallocate(old,old->size_);
             }
         }
 
         size_t left() const noexcept
         {
-            return current_->size_-(size_t(
-                static_cast<byte*>(this_().current_p())-
-                reinterpret_cast<byte*>(current_))-sizeof(BlockHeader));
+            return current_->size_-size_t(static_cast<byte*>(this_().current_p())-
+                                          reinterpret_cast<byte*>(current_));
         }
     private:
         Derived& this_() noexcept
