@@ -576,13 +576,13 @@ jobs:
 
         os.chdir(catch2_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
+        execute_command("{} -B build -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
                         "-DCMAKE_C_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang -DCMAKE_CXX_COMPILER=${{ env.LLVM_INSTALL_PATH }}/bin/clang++ "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    catch2_install_dir))
-        execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
-        execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build build --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build build --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
         os.chdir(repo)
 
     - name: Qt5 cache
