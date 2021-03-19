@@ -59,9 +59,8 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
     {
         const auto& row = result.front();
         this->set_domain_id(row.domainId);
-        //auto external = static_cast<bool>(row.external);
-        this->set_ext(true);
-        //this->set_external(row.external);
+        auto ext_val = static_cast<bool>(row.external);
+        this->set_external(ext_val);
     }
     else
     {
@@ -130,8 +129,10 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
 
 std::uint64_t max_message_id(sqlpp::mysql::connection& db)
 {
-    for (const auto& row : db(select(max(G_MESSAGES.messageId)).from(G_MESSAGES).unconditionally()))
+    auto result =  db(select(max(G_MESSAGES.messageId)).from(G_MESSAGES).unconditionally());
+    if (!result.empty())
     {
+        const auto& row = result.front();
         return row.max;
     }
     return INVALID_ID;

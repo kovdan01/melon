@@ -19,7 +19,7 @@ public:
     [[nodiscard]] const std::string& hostname() const;
     [[nodiscard]] bool external() const;
 
-    void set_ext(bool new_ext);
+    void set_external(bool new_external);
 
 protected:
     inline void set_domain_id(std::uint64_t new_domain_id);

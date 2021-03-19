@@ -12,9 +12,9 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
-void Domain::set_ext(bool new_ext)
+void Domain::set_external(bool new_external)
 {
-    m_external = new_ext;
+    m_external = new_external;
 }
 
 
