@@ -1,6 +1,6 @@
 package org.melon.feature_chats_list.data
 
-import org.melon.melonmessenger.data.base.BaseRepository
+import org.melon.core.data.base.BaseRepository
 import javax.inject.Inject
 
 interface ChatsListRepository : BaseRepository {
