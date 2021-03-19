@@ -12,6 +12,12 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
+void Domain::set_ext(bool new_ext)
+{
+    m_external = new_ext;
+}
+
+
 User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status)
     : m_user_id(user_id)
     , m_domain_id(domain_id)
@@ -45,6 +51,13 @@ void Message::set_status(Status new_status)
 {
     m_status = new_status;
 }
+
+
+inline void Message::set_timestamp(std::chrono::system_clock new_timestamp)
+{
+    m_timestamp = new_timestamp;
+}
+
 
 Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
     : m_chat_id(chat_id)

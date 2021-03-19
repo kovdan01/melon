@@ -19,7 +19,11 @@ public:
     [[nodiscard]] const std::string& hostname() const;
     [[nodiscard]] bool external() const;
 
+    void set_ext(bool new_ext);
+
+protected:
     inline void set_domain_id(std::uint64_t new_domain_id);
+
 
 private:
     std::uint64_t m_domain_id;
@@ -45,6 +49,8 @@ public:
     [[nodiscard]] Status status() const;
 
     virtual void set_status(Status new_status);
+
+protected:
     inline void set_domain_id(std::uint64_t new_domain_id);
     inline void set_user_id(std::uint64_t new_user_id);
 
@@ -78,10 +84,13 @@ public:
 
     virtual void set_text(const std::string new_text);
     virtual void set_status(Status new_status);
+
+protected:
     inline void set_message_id(std::uint64_t new_message_id);
     inline void set_domain_id(std::uint64_t new_domain_id);
     inline void set_user_id(std::uint64_t new_user_id);
     inline void set_chat_id(std::uint64_t new_chat_id);
+    inline void set_timestamp(std::chrono::system_clock new_timestamp);
 
 private:
     std::uint64_t m_message_id;
@@ -104,6 +113,8 @@ public:
     [[nodiscard]] const std::string& chatname() const;
 
     virtual void set_chatname(const std::string new_chatname);
+
+protected:
     inline void set_chat_id(std::uint64_t new_chat_id);
     inline void set_domain_id(std::uint64_t new_domain_id);
 
