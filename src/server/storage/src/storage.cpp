@@ -106,7 +106,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::uin
 
 // For Select
 Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t chat_id)
-     : melon::core::Message(message_id, domain_id, INVALID, chat_id, std::move(""), Message::Status::FAIL)
+     : melon::core::Message(message_id, domain_id, INVALID, chat_id, "", Message::Status::FAIL)
      , m_db(db)
 {
     auto result = db(select(G_MESSAGES.userId, G_MESSAGES.text, G_MESSAGES.status, G_MESSAGES.timesend)
@@ -119,6 +119,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
         melon::core::Message::set_status(status);
         melon::core::Message::set_text(row.text);
         this->set_user_id(row.userId);
+        // check format again
         //this->set_timestamp(row.timesend);
     }
     else
@@ -138,7 +139,7 @@ std::uint64_t max_message_id(sqlpp::mysql::connection& db)
     return INVALID_ID;
 }
 
-void Message::set_text(const std::string new_text)
+void Message::set_text(std::string new_text)
 {
     melon::core::Message::set_text(new_text);
     m_db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == this->message_id()));
@@ -170,7 +171,7 @@ Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string ch
 
 // For Select
 Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id)
-    : melon::core::Chat(chat_id, domain_id, std::move(""))
+    : melon::core::Chat(chat_id, domain_id, "")
     , m_db(db)
 {
     auto result = db(select(G_CHATS.chatname).from(G_CHATS).where(G_CHATS.chatId == this->chat_id() and
@@ -266,22 +267,23 @@ void User::set_status(Status new_status)
 
 /* Domains */
 
-std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname)
-{
-    auto result = db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname));
-    if (!result.empty())
-    {
-        const auto& row = result.front();
-        return row.domainId;
-    }
-    return INVALID_ID;
-}
+//std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname)
+//{
+//    auto result = db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname));
+//    if (!result.empty())
+//    {
+//        const auto& row = result.front();
+//        return row.domainId;
+//    }
+//    return INVALID_ID;
+//}
 
 
 /* Users */
 
+// Should do it also member for User ?
 // Get all Chats where user participate in
-std::vector<melon::core::Chat> get_chats_for_user(sqlpp::mysql::connection& db, melon::core::User user)
+std::vector<melon::core::Chat> get_chats_for_user(sqlpp::mysql::connection& db, const melon::core::User& user)
 {
     std::vector<melon::core::Chat> chats_for_user;
     for (const auto& row : db(select(all_of(G_CHATS))
@@ -306,17 +308,6 @@ std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db)
     return all_users_on_server;
 }
 
-// List of usernames of online users in database
-std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db)
-{
-    std::vector<std::string> online_users_names;
-    for (const auto& row : db(select(G_USERS.username).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(melon::core::User::Status::ONLINE))))
-    {
-        online_users_names.emplace_back(row.username);
-    }
-    return online_users_names;
-}
-
 // List of online mc::Users in database
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 {
@@ -332,6 +323,7 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 
 /* Chats */
 
+// Should do it member for Chat ?
 // All users that participate in chat
 std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
@@ -347,6 +339,8 @@ std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, 
     return users_in_chat;
 }
 
+// Should do it member for Chat ?
+// All messages in chat
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
     std::vector<melon::core::Message> messages_in_chat;

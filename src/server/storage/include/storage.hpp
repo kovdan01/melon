@@ -45,7 +45,7 @@ public:
     // For Select
     Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t chat_id);
 
-    void set_text(const std::string new_text) override;
+    void set_text(std::string new_text) override;
     void set_status(Status new_status) override;
     void remove();
 
@@ -64,7 +64,7 @@ public:
     // For Select
     Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id);
 
-    void set_chatname(const std::string new_chatname) override;
+    void set_chatname(std::string new_chatname) override;
     void remove();
 
 private:
@@ -97,13 +97,12 @@ std::uint64_t max_user_id(sqlpp::mysql::connection& db);
 
 /* Domains */
 
-std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname);
+//std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname);
 
 /* Users */
 
-std::vector<melon::core::Chat> get_chats_for_user(sqlpp::mysql::connection& db, melon::core::User user);
+std::vector<melon::core::Chat> get_chats_for_user(sqlpp::mysql::connection& db, const melon::core::User& user);
 std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db);
-std::vector<std::string> get_online_users_names(sqlpp::mysql::connection& db);
 std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db);
 
 /* Chats */

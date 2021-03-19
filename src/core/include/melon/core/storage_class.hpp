@@ -82,7 +82,7 @@ public:
     [[nodiscard]] std::uint64_t user_id() const;
     [[nodiscard]] std::uint64_t chat_id() const;
 
-    virtual void set_text(const std::string new_text);
+    virtual void set_text(std::string new_text);
     virtual void set_status(Status new_status);
 
 protected:
@@ -112,7 +112,7 @@ public:
     [[nodiscard]] std::uint64_t domain_id() const;
     [[nodiscard]] const std::string& chatname() const;
 
-    virtual void set_chatname(const std::string new_chatname);
+    virtual void set_chatname(std::string new_chatname);
 
 protected:
     inline void set_chat_id(std::uint64_t new_chat_id);

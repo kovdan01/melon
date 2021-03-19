@@ -42,7 +42,7 @@ Message::Message(std::uint64_t message_id, std::uint64_t domain_id, std::uint64_
 {
 }
 
-void Message::set_text(const std::string new_text)
+void Message::set_text(std::string new_text)
 {
     m_text = new_text;
 }
@@ -66,7 +66,7 @@ Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
 {
 }
 
-void Chat::set_chatname(const std::string new_chatname)
+void Chat::set_chatname(std::string new_chatname)
 {
     m_chatname = new_chatname;
 }
