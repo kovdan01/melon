@@ -42,7 +42,7 @@ public:
         std::vector<byte_t> m_buffer;
     };
 
-    using timestamp_t = std::chrono::high_resolution_clock::time_point;
+    using timestamp_t = std::chrono::system_clock::time_point;
 
     Message() = default;  // for QVariant
     Message(const Message&) = default;
@@ -50,11 +50,12 @@ public:
     Message(Message&&) = default;
     Message& operator=(Message&&) = default;
 
-    Message(QString from, QString text, std::list<Attachment> attachments, timestamp_t timestamp)
+    Message(QString from, QString text, std::list<Attachment> attachments, timestamp_t timestamp, bool is_edit = false)
         : m_attachments(std::move(attachments))
         , m_timestamp(timestamp)
         , m_text(std::move(text))
         , m_from(std::move(from))
+        , m_is_edit(is_edit)
     {
     }
 
@@ -68,6 +69,16 @@ public:
     [[nodiscard]] timestamp_t timestamp() const noexcept
     {
         return m_timestamp;
+    }
+
+    [[nodiscard]] bool is_edit() const noexcept
+    {
+        return m_is_edit;
+    }
+
+    void set_is_edit(bool is_edit)
+    {
+        m_is_edit = is_edit;
     }
 
     [[nodiscard]] const QString& text() const noexcept
@@ -90,6 +101,7 @@ private:
     timestamp_t m_timestamp;
     QString m_text;
     QString m_from;
+    bool m_is_edit;
 };
 
 class Chat
@@ -102,7 +114,8 @@ public:
         : m_incomplete_message(/* from */ QLatin1String(""),
                                /* text */ QStringLiteral(""),
                                /* attachments */ {},
-                               /* timestamp */ {})
+                               /* timestamp */ {},
+                               /* is read by me */ true)
         , m_name(std::move(name))
         , m_id(id)
     {
@@ -168,6 +181,26 @@ public:
     void set_scrolling_position(int scrollbar) noexcept
     {
         m_scrolling_position = scrollbar;
+    }
+
+    [[nodiscard]] bool is_read() const noexcept
+    {
+        // this function is just draft
+        // it can be used only to test "unread" mark painting
+        // set to false to force "unread" mark near each chat
+        return true;
+    }
+
+    [[nodiscard]] message_handle_t last_message()
+    {
+        if (m_messages.empty())
+            return m_messages.begin();
+        return std::prev(m_messages.end());
+    }
+
+    [[nodiscard]] bool empty() const
+    {
+        return m_messages.empty();
     }
 
 private:
