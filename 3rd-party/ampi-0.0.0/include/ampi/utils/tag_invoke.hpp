@@ -1,8 +1,6 @@
 #ifndef UUID_81726E98_A81D_418F_867B_96105BFA2396
 #define UUID_81726E98_A81D_418F_867B_96105BFA2396
 
-#include <ampi/utils/transparent_return.hpp>
-
 #include <type_traits>
 #include <utility>
 
@@ -16,7 +14,11 @@ namespace ampi
         {
             template<typename CPO,typename... Args>
             constexpr auto operator()(CPO cpo,Args&&... args) const
-            AMPI_TRANSPARENT_RETURN(tag_invoke(cpo,std::forward<Args>(args)...))
+                noexcept(noexcept(tag_invoke(cpo,std::forward<Args>(args)...)))
+                -> decltype(tag_invoke(cpo,std::forward<Args>(args)...))
+            {
+                return tag_invoke(cpo,std::forward<Args>(args)...);
+            }
         };
     }
 

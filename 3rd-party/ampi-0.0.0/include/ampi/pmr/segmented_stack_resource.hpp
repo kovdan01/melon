@@ -11,6 +11,11 @@ namespace ampi
         {
             bidi_block_header* prev_;
             void* p_;
+
+            bidi_block_header(bidi_block_header* prev,size_t size) noexcept
+                : block_header{prev,size},
+                  prev_{prev}
+            {}
         };
     }
 

@@ -70,10 +70,10 @@ namespace ampi
                 auto new_indent = current_indent_+indent;
                 stream_ << '\n' << repeated(new_indent);
                 auto it = x.begin(),e = x.end();
-                boost::variant2::visit(print_visitor{stream_,new_indent},it++->v_);
+                visit(print_visitor{stream_,new_indent},it++->v_);
                 for(;it!=e;++it){
                     stream_ << ",\n" << repeated(new_indent);
-                    boost::variant2::visit(print_visitor{stream_,new_indent},it->v_);
+                    visit(print_visitor{stream_,new_indent},it->v_);
                 }
                 stream_ << '\n' << repeated(new_indent);
             }
@@ -87,14 +87,14 @@ namespace ampi
                 auto new_indent = current_indent_+indent;
                 stream_ << '\n' << repeated(new_indent);
                 auto it = x.begin(),e = x.end();
-                boost::variant2::visit(print_visitor{stream_,new_indent},it->first.v_);
+                visit(print_visitor{stream_,new_indent},it->first.v_);
                 stream_ << " : ";
-                boost::variant2::visit(print_visitor{stream_,new_indent},it++->second.v_);
+                visit(print_visitor{stream_,new_indent},it++->second.v_);
                 for(;it!=e;++it){
                     stream_ << ",\n" << repeated(new_indent);
-                    boost::variant2::visit(print_visitor{stream_,new_indent},it->first.v_);
+                    visit(print_visitor{stream_,new_indent},it->first.v_);
                     stream_ << " : ";
-                    boost::variant2::visit(print_visitor{stream_,new_indent},it->second.v_);
+                    visit(print_visitor{stream_,new_indent},it->second.v_);
                 }
                 stream_ << '\n' << repeated(current_indent_);
             }
@@ -103,36 +103,12 @@ namespace ampi
 
         void operator()(const piecewise_string& x) const
         {
-            // FIXME: libc++ has no std::ranges::join
-            stream_ << '"';
-            for(auto piece:x)
-                for(char c:piece){
-                    if(c=='"'||c=='\\')
-                        stream_ << '\\';
-                    stream_ << c;
-                }
-            stream_ << '"';
+            stream_ << quoted(x);
         }
 
         void operator()(const piecewise_data& x) const
         {
             stream_ << "Binary(" << x << ')';
-        }
-
-        void operator()(const timestamp_t& t) const
-        {
-            // FIXME:: no operator<< for std::chrono::sys_time.
-            auto dp = std::chrono::floor<std::chrono::days>(t);
-            std::chrono::year_month_day ymd{dp};
-            std::chrono::hh_mm_ss hms{t-dp};
-            boost::io::ios_fill_saver ifs{stream_};
-            stream_ << std::setfill('0')
-                    << std::setw(4) << int(ymd.year()) << '-'
-                    << std::setw(2) << unsigned(ymd.month()) << '-'
-                    << std::setw(2) << unsigned(ymd.day()) << ' '
-                    << std::setw(2) << hms.hours().count() << ':'
-                    << std::setw(2) << hms.minutes().count() << ':'
-                    << std::setw(2) << hms.seconds().count();
         }
     };
 
@@ -140,7 +116,7 @@ namespace ampi
     {
         boost::io::ios_flags_saver ifs{stream};
         stream << std::boolalpha;
-        boost::variant2::visit(value::print_visitor{stream},v.v_);
+        visit(value::print_visitor{stream},v.v_);
         return stream;
     }
 }

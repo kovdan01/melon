@@ -35,6 +35,7 @@
 #include <latch>
 #include <memory>
 #include <new>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -75,6 +76,12 @@ namespace ampi
     template<typename Result,typename Executor = boost::asio::system_executor>
     using noexcept_generator = basic_coroutine<coroutine_option::support_yield,
                                                Result,Executor>;
+
+    template<typename Result,typename Executor = boost::asio::system_executor>
+    using delegating_generator = basic_coroutine<coroutine_option::handle_exceptions|
+                                                 coroutine_option::support_yield|
+                                                 coroutine_option::delegated_yield,
+                                                 Result,Executor>;
 
     template<typename Result,typename Executor = boost::asio::system_executor>
     using noexcept_delegating_generator = basic_coroutine<coroutine_option::support_yield|
@@ -203,7 +210,7 @@ namespace ampi
 
     template<typename T>
         requires (!std::is_reference_v<T>)&&
-                 noexcept_async_generator_yielding_exactly<T,std::remove_pointer_t<
+                 async_generator_yielding_exactly<T,std::remove_pointer_t<
                     typename T::result_type>>
     auto tail_yield_to(T&& subgen)
     {
@@ -284,10 +291,9 @@ namespace ampi
         };
 
         template<coroutine_options Options /* &coroutine_option::support_yield==0*/,typename Result>
-        struct coroutine_promise_result : coroutine_promise_awaiter<Options>
+        struct coroutine_promise_result :
+            coroutine_promise_awaiter<Options&~coroutine_option::handle_exceptions>
         {
-            constexpr static bool is_orphan = false;
-
             std::conditional_t<std::is_trivially_default_constructible_v<Result>,
                                Result,std::optional<Result>> result_;
 
@@ -308,7 +314,7 @@ namespace ampi
         template<coroutine_options Options>
             requires (!(Options&coroutine_option::support_yield))
         struct coroutine_promise_result<Options,void>
-            : coroutine_promise_awaiter<Options&~coroutine_option::orphan_>
+            : coroutine_promise_awaiter<Options&~coroutine_option::handle_exceptions>
         {
             void return_void() noexcept {}
 
@@ -317,9 +323,11 @@ namespace ampi
 
         template<coroutine_options Options,typename Result>
             requires (bool(Options&coroutine_option::support_yield))&&
+                     (bool(Options&coroutine_option::handle_exceptions))&&
                      (!(Options&coroutine_option::delegated_yield))
         struct coroutine_promise_result<Options,Result> :
-            coroutine_promise_awaiter<Options&~coroutine_option::support_yield>
+            coroutine_promise_awaiter<Options&~(coroutine_option::handle_exceptions|
+                                                coroutine_option::support_yield)>
         {
             static_assert(!std::is_void_v<Result>,"async_generator cannot produce void");
 
@@ -350,7 +358,15 @@ namespace ampi
         };
 
         template<coroutine_options Options,typename Result>
-            requires (bool(Options&coroutine_option::delegated_yield))
+            requires (bool(Options&coroutine_option::support_yield))&&
+                     (!(Options&coroutine_option::handle_exceptions))&&
+                     (!(Options&coroutine_option::delegated_yield))
+        struct coroutine_promise_result<Options,Result> :
+            coroutine_promise_result<Options|coroutine_option::handle_exceptions,Result> {};
+
+        template<coroutine_options Options,typename Result>
+            requires (bool(Options&coroutine_option::delegated_yield))&&
+                     (bool(Options&coroutine_option::handle_exceptions))
         struct coroutine_promise_result<Options,Result> :
             coroutine_promise_result<Options&~coroutine_option::delegated_yield,Result>
         {
@@ -372,12 +388,8 @@ namespace ampi
                 : current_{this}
             {}
 
-            using base_t::yield_value;
-
             template<typename T,bool ReplaceCurrent = false>
-            auto yield_value(T&& subgen) noexcept
-                requires (!std::is_reference_v<T>)&&
-                         noexcept_generator_yielding_exactly<T,Result>
+            auto do_yield(T&& subgen) noexcept
             {
                 struct switch_to_subgen_awaitable : stdcoro::suspend_always
                 {
@@ -405,15 +417,47 @@ namespace ampi
                 return switch_to_subgen_awaitable{{},subgen.get()};
             }
 
-            template<typename T>
+            using base_t::yield_value;
+
+            template<generator_yielding_exactly<Result> T>
+            auto yield_value(T&& subgen) noexcept
+                requires (!std::is_reference_v<T>)
+            {
+                return do_yield(std::move(subgen));
+            }
+
+            template<generator_yielding_exactly<Result> T>
             auto yield_value(detail::tail_yield_to_t<T> tyt) noexcept
             {
-                return yield_value<T,true>(std::move(tyt.subgen_));
+                return do_yield<T,true>(std::move(tyt.subgen_));
             }
 
             Result* result() noexcept
             {
                 return current_->result_;
+            }
+        };
+
+        template<coroutine_options Options,typename Result>
+            requires (bool(Options&coroutine_option::delegated_yield))&&
+                     (!(Options&coroutine_option::handle_exceptions))
+        struct coroutine_promise_result<Options,Result> :
+            coroutine_promise_result<Options|coroutine_option::handle_exceptions,Result>
+        {
+            using coroutine_promise_result<(Options&~coroutine_option::delegated_yield)|
+                coroutine_option::handle_exceptions,Result>::yield_value;
+
+            template<noexcept_generator_yielding_exactly<Result> T>
+            auto yield_value(T&& subgen) noexcept
+                requires (!std::is_reference_v<T>)
+            {
+                return this->do_yield(std::move(subgen));
+            }
+
+            template<noexcept_generator_yielding_exactly<Result> T>
+            auto yield_value(detail::tail_yield_to_t<T> tyt) noexcept
+            {
+                return this->template do_yield<T,true>(std::move(tyt.subgen_));
             }
         };
 
@@ -476,7 +520,7 @@ namespace ampi
                 else{
                     size_t allocator_offset = round_up_pot(n,alignof(allocator_type));
                     auto a = reinterpret_cast<allocator_type*>(c+allocator_offset);
-                    allocator_type alloc{std::move(a)};
+                    allocator_type alloc{std::move(*a)};
                     std::destroy_at(a);
                     alloc.deallocate(fp,allocator_offset+sizeof(allocator_type));
                 }
@@ -522,7 +566,8 @@ namespace ampi
         struct coroutine_promise :
             coroutine_promise_executor<Options&(coroutine_option::save_awaiter|
                                                 coroutine_option::orphan_),
-                coroutine_promise_result<Options&(coroutine_option::support_yield|
+                coroutine_promise_result<Options&(coroutine_option::handle_exceptions|
+                                                  coroutine_option::support_yield|
                                                   coroutine_option::delegated_yield|
                                                   coroutine_option::save_awaiter),Result>,
                 Executor>,
@@ -537,15 +582,13 @@ namespace ampi
                           !(Options&coroutine_option::delegated_yield),
                           "basic yield support required for delegated yield");
             static_assert(!(Options&coroutine_option::delegated_yield)||
-                          !(Options&coroutine_option::handle_exceptions),
-                          "throwing delegating generators are not supported yet");
-            static_assert(!(Options&coroutine_option::delegated_yield)||
                           !(Options&coroutine_option::save_awaiter),
                           "asynchronous delegating generators are not supported yet");
 
             using base_t = coroutine_promise_executor<Options&(coroutine_option::save_awaiter|
                                                                coroutine_option::orphan_),
-                coroutine_promise_result<Options&(coroutine_option::support_yield|
+                coroutine_promise_result<Options&(coroutine_option::handle_exceptions|
+                                                  coroutine_option::support_yield|
                                                   coroutine_option::delegated_yield|
                                                   coroutine_option::save_awaiter),Result>,Executor>;
             using coroutine_t = basic_coroutine<Options,Result,Executor>;
@@ -960,7 +1003,8 @@ namespace ampi
             static_assert((Options&(coroutine_option::save_awaiter|
                                     coroutine_option::orphan_))||
                           is_asymmetric_awaitable_v<awaitable_t>,
-                          "Symmetric awaitables are only supported by saving awaiter");
+                          "Symmetric awaitables are only supported by saving awaiter, "
+                          "to use custom awaitables in coroutine, specialize is_asymmetric_awaitable.");
             if constexpr(is_trivial_executor_v<Executor>||
                          is_asymmetric_awaitable_v<awaitable_t>)
                 return std::forward<decltype(a)>(a);

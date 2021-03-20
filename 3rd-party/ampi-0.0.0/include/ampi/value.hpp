@@ -15,8 +15,6 @@
 #include <ampi/piecewise_view.hpp>
 #include <ampi/utils/compare.hpp>
 
-#include <boost/variant2/variant.hpp>
-
 #include <cmath>
 #include <initializer_list>
 #include <functional>
@@ -116,8 +114,8 @@ namespace ampi
     {
         struct print_visitor;
 
-        boost::variant2::variant<std::nullptr_t,bool,uint64_t,int64_t,float,double,map,sequence,
-                                 piecewise_data,extension,piecewise_string,timestamp_t> v_;
+        variant<std::nullptr_t,bool,uint64_t,int64_t,float,double,map,sequence,
+                piecewise_data,extension,piecewise_string,timestamp_t> v_;
 
         template<typename T>
         constexpr static bool is_value_type_v = boost::mp11::mp_contains<decltype(v_),T>{};
@@ -128,7 +126,7 @@ namespace ampi
             : v_{v}
         {}
 
-        template<std::integral T>
+        template<integral T>
         value(T v)
             : v_{[v](){
                      if constexpr(std::signed_integral<T>)
@@ -151,7 +149,7 @@ namespace ampi
         {}
 
         value(std::initializer_list<value> il)
-            : v_{boost::variant2::in_place_type<sequence>,il.begin(),il.end()}
+            : v_{in_place_type<sequence>,il.begin(),il.end()}
         {}
 
         value(map m) noexcept
@@ -159,7 +157,7 @@ namespace ampi
         {}
 
         value(std::initializer_list<map::value_type> il)
-            : v_{boost::variant2::in_place_type<map>,il.begin(),il.end()}
+            : v_{in_place_type<map>,il.begin(),il.end()}
         {}
 
         value(piecewise_data pd) noexcept
@@ -187,25 +185,24 @@ namespace ampi
             requires is_value_type_v<T>
         T* get_if() const
         {
-            return boost::variant2::get_if<T>(v_);
+            return get_if<T>(v_);
         }
 
         template<typename T>
             requires is_value_type_v<T>
         T* get_if()
         {
-            return boost::variant2::get_if<T>(v_);
+            return get_if<T>(v_);
         }
 
         bool operator==(const value& other) const noexcept
         {
-            return boost::variant2::visit(detail::value_equal{},v_,other.v_);
+            return visit(detail::value_equal{},v_,other.v_);
         }
 
         std::strong_ordering operator<=>(const value& other) const noexcept
         {
-            return boost::variant2::visit(detail::value_three_way{v_.index(),other.v_.index()},
-                                          v_,other.v_);
+            return visit(detail::value_three_way{v_.index(),other.v_.index()},v_,other.v_);
         }
 
         friend size_t hash_value(const value& v) noexcept

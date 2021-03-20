@@ -10,6 +10,7 @@
 #include <ampi/export.h>
 #include <ampi/utils/tagged_pointer.hpp>
 
+#include <boost/container/pmr/global_resource.hpp>
 #include <boost/container/pmr/memory_resource.hpp>
 
 #include <atomic>
@@ -59,9 +60,11 @@ namespace ampi
         class AMPI_EXPORT shared_polymorphic_allocator_base
         {
         public:
-            shared_polymorphic_allocator_base() noexcept = default;
+            shared_polymorphic_allocator_base()
+                : p_{boost::container::pmr::get_default_resource()}
+            {}
 
-            shared_polymorphic_allocator_base(boost::container::pmr::memory_resource* mr)
+            shared_polymorphic_allocator_base(boost::container::pmr::memory_resource* mr) noexcept
                 : p_{mr}
             {
                 assert(mr);

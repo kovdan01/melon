@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}
     include/ampi/coro/stdcoro.hpp
     include/ampi/coro/traits.hpp
     include/ampi/coro/use_coroutine.hpp
+    include/ampi/exception.hpp
     include/ampi/execution/executor_wrapper.hpp
     include/ampi/execution/prefer.hpp
     include/ampi/execution/query.hpp
@@ -40,6 +41,10 @@ add_library(${PROJECT_NAME}
     include/ampi/pmr/reusable_monotonic_buffer_resource.hpp
     include/ampi/pmr/segmented_stack_resource.hpp
     include/ampi/pmr/shared_polymorphic_allocator.hpp
+    include/ampi/serialize/hana_struct.hpp
+    include/ampi/serialize/pfr_tuple.hpp
+    include/ampi/serialize/serializable.hpp
+    include/ampi/serialize/transmute.hpp
     include/ampi/span_sinks/ostream_span_sink.hpp
     include/ampi/span_sources/async_stream_span_source.hpp
     include/ampi/span_sources/istream_span_source.hpp
@@ -49,15 +54,15 @@ add_library(${PROJECT_NAME}
     include/ampi/utils/bit.hpp
     include/ampi/utils/empty_subobject.hpp
     include/ampi/utils/flags.hpp
+    include/ampi/utils/format.hpp
     include/ampi/utils/repeated.hpp
     include/ampi/utils/stdtypes.hpp
     include/ampi/utils/tag_invoke.hpp
     include/ampi/utils/tagged_pointer.hpp
-    include/ampi/utils/transparent_return.hpp
     include/ampi/value.hpp
     include/ampi/utf8_validator.hpp
-    src/buffer.cpp
     src/emitter.cpp
+    src/exception.cpp
     src/msgpack.cpp
     src/parser.cpp
     src/piecewise_view.cpp
@@ -65,6 +70,7 @@ add_library(${PROJECT_NAME}
     src/pmr/reusable_monotonic_buffer_resource.cpp
     src/pmr/segmented_stack_resource.cpp
     src/pmr/shared_polymorphic_allocator.cpp
+    src/serialize/serializable.cpp
     src/utf8_validator.cpp
     src/value.cpp
 )

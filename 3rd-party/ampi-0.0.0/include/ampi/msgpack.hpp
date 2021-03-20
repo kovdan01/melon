@@ -7,8 +7,8 @@
 #ifndef UUID_E9A6C78D_E1CE_44CD_AB9F_10833086C33B
 #define UUID_E9A6C78D_E1CE_44CD_AB9F_10833086C33B
 
+#include <ampi/coro/coroutine.hpp>
 #include <ampi/piecewise_view.hpp>
-#include <ampi/span_sources/span_source.hpp>
 
 #include <boost/mp11/algorithm.hpp>
 #include <boost/outcome/boost_result.hpp>
@@ -30,6 +30,7 @@ namespace ampi
         null,
         bool_,
         unsigned_int,
+        // Only negative values, positive signed are passed as unsigned.
         signed_int,
         float_,
         double_,
@@ -42,8 +43,18 @@ namespace ampi
         extension,
         string,
         timestamp,
-        invalid = 0xff
+        kind_count_
     };
+
+    AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,object_kind kind);
+
+    template<typename T>
+    concept integral = std::integral<T>&&
+                       (!std::is_same_v<T,bool>)&&
+                       (!std::is_same_v<T,char8_t>)&&
+                       (!std::is_same_v<T,char16_t>)&&
+                       (!std::is_same_v<T,char32_t>)&&
+                       (!std::is_same_v<T,wchar_t>);
 
     using timestamp_t = std::chrono::sys_time<std::chrono::nanoseconds>;
 
@@ -77,9 +88,12 @@ namespace ampi
     }
 
     AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,const extension& ext);
+
+    AMPI_EXPORT std::ostream& operator<<(std::ostream& stream,timestamp_t ts);
+
     class event
     {
-        boost::variant2::variant<
+        variant<
             std::nullptr_t,bool,uint64_t,int64_t,float,double,
             map_header,sequence_header,piecewise_data,extension,piecewise_string,timestamp_t
         > v_;
@@ -101,21 +115,23 @@ namespace ampi
             requires is_event_type_v<T>
         T* get_if() noexcept
         {
-            return boost::variant2::get_if<T>(&v_);
+            return ampi::get_if<T>(&v_);
         }
 
         template<typename T>
             requires is_event_type_v<T>
         const T* get_if() const noexcept
         {
-            return boost::variant2::get_if<T>(&v_);
+            return ampi::get_if<T>(&v_);
         }
+
+        friend std::ostream& operator<<(std::ostream& stream,const event& e);
     };
 
+    using event_result = boost::outcome_v2::boost_result<event>;
+
     template<typename T>
-    concept event_source = requires(T& es,archetypes::span_source& ss) {
-        { es(ss) } -> async_generator_yielding<boost::outcome_v2::boost_result<event>>;
-    };
+    concept event_source = async_generator_yielding<T,event_result>;
 }
 
 template<>
