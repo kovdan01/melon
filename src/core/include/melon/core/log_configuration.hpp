@@ -10,7 +10,7 @@
 
 namespace melon::core::log_conf
 {
-    void setup_boost_log()
+    static void setup_boost_log()
     {
         namespace bl = boost::log;
         bl::add_console_log(std::cerr,
