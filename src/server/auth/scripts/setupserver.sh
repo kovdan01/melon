@@ -3,9 +3,9 @@ path_to_configs=$HOME/.melon
 [ ! -d $path_to_configs ] && mkdir $path_to_configs
 current_path=`pwd`
 cd $path_to_configs
-touchsasldb2
+touch sasldb2
 echo "doe" | saslpasswd2 -f sasldb2 -c john
 echo -n "pwcheck_method: auxprop
 sasldb_path: " > localserver.conf
-echo -n $HOME/.melon/sasldb2 >> localserver.conf
+echo -n $path_to_configs/sasldb2 >> localserver.conf
 cd $current_path
