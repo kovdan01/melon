@@ -98,7 +98,7 @@ jobs:
         sudo apt-get install cmake ninja-build pkg-config -y
         sudo apt-get install p7zip-full -y
         sudo apt-get install python3 python3-pip -y
-        sudo apt-get install libgdbm-dev -y  # libdb-dev -y  # for SASL DB utils
+        sudo apt-get install libgdbm-dev -y  # for SASL DB utils
 
     - name: Set environment variables
       shell: python3 {0}
@@ -700,7 +700,10 @@ jobs:
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
         ./src/server/auth/scripts/setupserver.sh
         cd build
+        ./src/server/auth/melon-auth 6666 &
+        MELON_AUTH_PID=$!
         ctest
+        kill -2 $MELON_AUTH_PID
         cd ..
         PATH=$PATH_BEFORE
 
