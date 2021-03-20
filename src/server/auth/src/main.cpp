@@ -49,14 +49,13 @@ public:
 
     void start_protocol()
     {
-        [[maybe_unused]] auto& server_singletone = melon::server::auth::SaslServerSingleton::get_instance();
+        namespace mca = melon::core::auth;
+        namespace msa = melon::server::auth;
+
+        [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
         spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
             using namespace boost::log::trivial;
-
-            namespace mca = melon::core::auth;
-            namespace msa = melon::server::auth;
-
             msa::SaslServerConnection server("melon");
 
             boost::system::error_code ec;
