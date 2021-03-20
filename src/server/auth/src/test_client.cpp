@@ -55,14 +55,11 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     std::string in_buf;
     size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
     read_buffered_string(n, in_buf);
-    //std::cout << "Reply is: " << reply << "\n";
 
-    std::cout << "Ready to send \"" << to_send << "\".\n";
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
     reply = read_buffered_string(n, in_buf);
-    std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
 
     auto cli_resp = client.start(wanted_mech);
     mca::StepResult cli_resp2;
@@ -74,11 +71,9 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
             to_send = cli_resp.response;
         else
             to_send = cli_resp2.response;
-        std::cout << "Ready to send \"" << to_send << "\".\n";
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() +1));
         size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
         reply = read_buffered_string(n, in_buf);
-        std::cout << "Reply is: " << reply << " Length is " << reply.size() << "\n";
         if (reply == "Okay, Mr. Client, here's your token...")
         {
             confirmation_recieved = true;
@@ -121,11 +116,11 @@ try
     }
     SECTION("not registered credentials")
     {
-        SECTION("SCRAM-SHA-256 mech2")
+        SECTION("SCRAM-SHA-256 mech")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("PLAIN mech2")
+        SECTION("PLAIN mech")
         {
             wanted_mech = "PLAIN";
         }

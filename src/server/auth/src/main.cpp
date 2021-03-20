@@ -39,7 +39,7 @@ class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
     constexpr static std::size_t NUMBER_LIMIT = 1024,
                                  BYTES_PER_SECOND_LIMIT = 1024;
-    constexpr static boost::asio::steady_timer::duration time_limit_ = std::chrono::seconds(15);
+    constexpr static boost::asio::steady_timer::duration TIME_LIMIT = std::chrono::seconds(15);
 public:
     MySaslSession(ba::io_context::executor_type ex)
         : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
@@ -63,9 +63,9 @@ public:
 
             std::string_view supported_mechanisms = server.list_mechanisms();
             m_out_buf = std::string(supported_mechanisms) + "\n";
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
             if (ec)
             {
@@ -78,21 +78,21 @@ public:
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
 
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
             std::string client_response = read_buffered_string(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response);
             if(m_out_buf[m_out_buf.size()-1] != '\n')
                 m_out_buf += "\n";
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             while (server_completness == mca::AuthCompletness::INCOMPLETE)
             {
                 async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
-                stream_.expires_after(time_limit_);
+                stream_.expires_after(TIME_LIMIT);
                 n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
                 client_response = read_buffered_string(n);
                 mca::StepResult server_step_res = server.step(client_response);
@@ -108,10 +108,10 @@ public:
                     m_out_buf = "";
                 if (server_completness == mca::AuthCompletness::COMPLETE)
                     break;
-                stream_.expires_after(time_limit_);
+                stream_.expires_after(TIME_LIMIT);
             }
             m_out_buf = "Okay, Mr. Client, here's your token...\n";
-            stream_.expires_after(time_limit_);
+            stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) try
         po::options_description desc("Allowed options");
         desc.add_options()
             ("help", "produce help message")
-            ("listen-port", po::value<unsigned short>(), "port to listen on")
+            ("listen-port", po::value<std::uint16_t>(), "port to listen on")
             ("threads", po::value<unsigned>(),"number of threads to use");
         po::variables_map vm;
         po::positional_options_description p;
@@ -166,11 +166,11 @@ int main(int argc, char* argv[]) try
             std::cout << desc << '\n' << usage << '\n';
             return 0;
         }
-        std::optional<unsigned short> port;
+        std::optional<std::uint16_t> port;
         unsigned threads;
         if (vm.count("listen-port"))
         {
-            port = vm["listen-port"].as<unsigned short>();
+            port = vm["listen-port"].as<std::uint16_t>();
             if (!port||!*port)
                 throw std::runtime_error("Port must be in [1;65535]");
             if (vm.count("threads"))
@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) try
         ba::static_thread_pool tp{threads-1};
 
         for (unsigned i=1; i<threads; ++i)
-            ce::bae::execute(tp.get_executor(), [&]{
+            bae::execute(tp.get_executor(), [&]{
                 ctx.run();
             });
         ctx.run();
