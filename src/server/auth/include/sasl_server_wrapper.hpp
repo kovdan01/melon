@@ -3,6 +3,8 @@
 
 #include <melon/core/sasl_client_wrapper.hpp>
 
+#include <filesystem>
+
 namespace melon::server::auth
 {
 
@@ -37,6 +39,7 @@ public:
     SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
 
 private:
+    std::filesystem::path m_config_path = "/home/user/Projects/melon/build";
     SaslServerSingleton();
     ~SaslServerSingleton();
 };

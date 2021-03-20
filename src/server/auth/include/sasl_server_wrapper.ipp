@@ -76,6 +76,7 @@ inline SaslServerSingleton& SaslServerSingleton::get_instance()
 
 inline SaslServerSingleton::SaslServerSingleton()
 {
+    sasl_set_path(SASL_PATH_TYPE_CONFIG, const_cast<char*>(m_config_path.c_str()));
     mca::sasl_res res = sasl_server_init(nullptr, "localserver");
     mca::detail::check_sasl_result(res, "server init");
 }
