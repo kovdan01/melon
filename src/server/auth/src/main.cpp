@@ -30,6 +30,8 @@ using tcp_stream = bb::basic_stream<ba::ip::tcp,
                                     socket_executor_t,
                                     bb::simple_rate_policy>;
 
+const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
+
 class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
     constexpr static std::size_t NUMBER_LIMIT = 1024,
@@ -50,7 +52,6 @@ public:
         [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
         spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
-            const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
             using namespace boost::log::trivial;
             boost::system::error_code ec;
 
