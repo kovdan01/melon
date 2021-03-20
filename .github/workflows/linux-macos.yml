@@ -690,7 +690,9 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Run tests
-      run: cd build && ctest && cd ..
+      run: |
+        ./src/server/auth/scripts/setupserver.sh
+        cd build && ctest && cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
