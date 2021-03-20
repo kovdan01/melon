@@ -1,17 +1,11 @@
 #include <sasl_server_wrapper.hpp>
 #include <melon/core/log_configuration.hpp>
 
-#include <ce/charconv.hpp>
 #include <ce/format.hpp>
 #include <ce/io_context_signal_interrupter.hpp>
-#include <ce/socket_session.hpp>
 #include <ce/spawn.hpp>
 #include <ce/tcp_listener.hpp>
 
-#include <boost/asio/bind_executor.hpp>
-#include <boost/asio/buffer.hpp>
-#include <boost/asio/execution/execute.hpp>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/asio/strand.hpp>
@@ -32,8 +26,8 @@ namespace bae = boost::asio::execution;
 using socket_executor_t = ba::strand<ba::io_context::executor_type>;
 using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
 using tcp_stream = bb::basic_stream<ba::ip::tcp,
-    socket_executor_t,
-    bb::simple_rate_policy>;
+                                    socket_executor_t,
+                                    bb::simple_rate_policy>;
 
 class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
@@ -55,10 +49,11 @@ public:
         [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
         spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
+            const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
             using namespace boost::log::trivial;
-            msa::SaslServerConnection server("melon");
-
             boost::system::error_code ec;
+
+            msa::SaslServerConnection server("melon");
 
             std::string_view supported_mechanisms = server.list_mechanisms();
             m_out_buf = std::string(supported_mechanisms) + "\n";
@@ -84,9 +79,7 @@ public:
             n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
             std::string client_response = read_buffered_string(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-            m_out_buf = std::string(server_response);
-            if(m_out_buf[m_out_buf.size()-1] != '\n')
-                m_out_buf += "\n";
+            m_out_buf = std::string(server_response) += "\n";
             stream_.expires_after(TIME_LIMIT);
             while (server_completness == mca::AuthCompletness::INCOMPLETE)
             {
@@ -99,26 +92,27 @@ public:
                 server_completness = server_step_res.completness;
                 if (server_response.data() != nullptr)
                 {
-                    m_out_buf = std::string(server_response);
-                    if(m_out_buf[m_out_buf.size()-1] != '\n')
-                        m_out_buf += "\n";
+                    m_out_buf = std::string(server_response) += "\n";
                 }
                 else
+                {
                     m_out_buf = "";
+                }
                 if (server_completness == mca::AuthCompletness::COMPLETE)
                     break;
                 stream_.expires_after(TIME_LIMIT);
             }
-            m_out_buf = "Okay, Mr. Client, here's your token...\n";
+            m_out_buf = TOKEN_CONFIRMATION_STRING + '\n';
             stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";
-        }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT
+        }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
             if (e)
                 std::rethrow_exception(e);
         }, nullptr));
     }
+
 private:
     std::string m_in_buf, m_out_buf;
     std::string read_buffered_string(std::size_t n)
@@ -132,7 +126,7 @@ private:
 int main(int argc, char* argv[]) try
 {
     std::ios_base::sync_with_stdio(false);
-    melon::core::log_conf::setup_boost_log();
+    melon::core::log::setup();
 
     try
     {
@@ -180,7 +174,9 @@ int main(int argc, char* argv[]) try
                 threads = *t;
             }
             else
+            {
                 threads = std::thread::hardware_concurrency();
+            }
         }
         else
         {
@@ -197,10 +193,12 @@ int main(int argc, char* argv[]) try
         ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), *port};
         ba::static_thread_pool tp{threads-1};
 
-        for (unsigned i=1; i<threads; ++i)
+        for (unsigned i = 1; i < threads; ++i)
+        {
             bae::execute(tp.get_executor(), [&]{
                 ctx.run();
             });
+        }
         ctx.run();
         return 0;
     }

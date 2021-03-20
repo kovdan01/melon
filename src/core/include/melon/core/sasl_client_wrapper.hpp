@@ -119,4 +119,4 @@ private:
 
 #include "sasl_client_wrapper.ipp"
 
-#endif // MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
+#endif  // MELON_CORE_SASL_CLIENT_WRAPPER_HPP_

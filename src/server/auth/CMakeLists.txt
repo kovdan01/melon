@@ -92,7 +92,7 @@ add_executable(${TEST_CLIENT_NAME}
 )
 
 if(WIN32)
-    target_link_libraries(melon-auth-test-client PRIVATE ws2_32 mswsock)
+    target_link_libraries(${TEST_CLIENT_NAME} PRIVATE ws2_32 mswsock)
 endif()
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::core)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Boost::program_options)

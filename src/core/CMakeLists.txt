@@ -39,6 +39,7 @@ set(HEADERS
 set(SOURCES
     src/exception.cpp
     src/jni_tests.cpp
+    src/log_configuration.cpp
     src/melon_core.cpp
     src/storage_class.cpp
     src/yaml_config.cpp
