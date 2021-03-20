@@ -98,7 +98,7 @@ jobs:
         sudo apt-get install cmake ninja-build pkg-config -y
         sudo apt-get install p7zip-full -y
         sudo apt-get install python3 python3-pip -y
-        sudo apt-get install libdb-dev -y  # for SASL DB utils
+        sudo apt-get install libgdbm-dev -y  # libdb-dev -y  # for SASL DB utils
 
     - name: Set environment variables
       shell: python3 {0}
@@ -379,7 +379,7 @@ jobs:
         os.chdir(sasl_source_dir)
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure --prefix={}".format(sasl_install_dir))
+        execute_command("./configure --with-dblib=gdbm --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
         execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
