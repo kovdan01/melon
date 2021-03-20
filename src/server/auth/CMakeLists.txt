@@ -101,3 +101,9 @@ target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::sasl_wrappers)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Catch2::Catch2)
 
 ntc_target(${PROJECT_NAME})
+
+# register tests with CTest
+
+include(CTest)
+include(ParseAndAddCatchTests)
+ParseAndAddCatchTests(melon-auth-test-client)
