@@ -54,7 +54,7 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
 
     std::string in_buf;
     size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
-    reply = read_buffered_string(n, in_buf);
+    read_buffered_string(n, in_buf);
     //std::cout << "Reply is: " << reply << "\n";
 
     std::cout << "Ready to send \"" << to_send << "\".\n";
