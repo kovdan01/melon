@@ -1,9 +1,16 @@
 #include <melon/core/log_configuration.hpp>
 
+#include <ce/socket_session.hpp>
+
+#include <boost/log/expressions.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
+
 namespace melon::core::log
 {
 
-inline void setup()
+void setup()
 {
     namespace bl = boost::log;
     bl::add_console_log(std::cerr,

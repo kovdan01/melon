@@ -15,6 +15,7 @@
 #include <boost/program_options.hpp>
 
 #include <exception>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <thread>
@@ -134,15 +135,22 @@ int main(int argc, char* argv[]) try
         po::options_description desc("Allowed options");
         desc.add_options()
             ("help", "produce help message")
-            ("listen-port", po::value<std::uint16_t>(), "port to listen on")
-            ("threads", po::value<unsigned>(),"number of threads to use");
+            ("listen-port", po::value<std::uint16_t>()->required(),                                     "port to listen on")
+            ("threads",     po::value<unsigned>()->default_value(std::thread::hardware_concurrency()),  "number of threads to use");
         po::variables_map vm;
         po::positional_options_description p;
         p.add("listen-port", 1);
         p.add("threads", 2);
+
+        std::string usage = ce::format("Usage: ", argv[0], " <listen-port> [threads]");
         try
         {
             po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+            if (vm.contains("help"))
+            {
+                std::cout << desc << '\n' << usage << '\n';
+                return 0;
+            }
             po::notify(vm);
         }
         catch (const po::error& error)
@@ -151,36 +159,15 @@ int main(int argc, char* argv[]) try
                       << error.what() << "\nPlease use --help to see help message\n";
             return 1;
         }
-
-        std::string usage = ce::format("Usage: ", argv[0], " <listen-port> [threads]");
-
-        if (vm.count("help"))
+        std::uint16_t port  = vm["listen-port"].as<std::uint16_t>();
+        unsigned threads    = vm["threads"].as<unsigned>();
+        if (port == 0)
         {
-            std::cout << desc << '\n' << usage << '\n';
-            return 0;
+            throw std::runtime_error("Port must be in [1;65535]");
         }
-        std::optional<std::uint16_t> port;
-        unsigned threads;
-        if (vm.count("listen-port"))
+        if (threads == 0)
         {
-            port = vm["listen-port"].as<std::uint16_t>();
-            if (!port||!*port)
-                throw std::runtime_error("Port must be in [1;65535]");
-            if (vm.count("threads"))
-            {
-                std::optional<unsigned> t = vm["threads"].as<unsigned>();
-                if (!t||!*t)
-                    throw std::runtime_error("Threads must be a non-zero unsigned integer");
-                threads = *t;
-            }
-            else
-            {
-                threads = std::thread::hardware_concurrency();
-            }
-        }
-        else
-        {
-            throw std::runtime_error(usage);
+            throw std::runtime_error("Threads must be a non-zero unsigned integer");
         }
 
         using namespace boost::log::trivial;
@@ -190,7 +177,7 @@ int main(int argc, char* argv[]) try
 
         ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
-        ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), *port};
+        ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), port};
         ba::static_thread_pool tp{threads-1};
 
         for (unsigned i = 1; i < threads; ++i)

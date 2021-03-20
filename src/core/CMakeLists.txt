@@ -11,8 +11,17 @@ include(ntc-dev-build)
 # boost asio
 find_package(
     Boost 1.75.0 REQUIRED
-    COMPONENTS system
+    COMPONENTS
+    chrono
+    context
+    log
+    system
+    thread
 )
+
+# own libraries
+find_package(ce-utils REQUIRED)
+find_package(asio-utils REQUIRED)
 
 # message pack
 # find_package(msgpack REQUIRED)
@@ -45,7 +54,6 @@ set(SOURCES
     src/yaml_config.cpp
 )
 
-
 add_library(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
@@ -54,6 +62,7 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 
