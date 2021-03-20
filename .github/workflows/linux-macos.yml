@@ -691,8 +691,11 @@ jobs:
 
     - name: Run tests
       run: |
+        PATH_BEFORE=$PATH
+        PATH=$ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/sbin:$PATH_BEFORE
         ./src/server/auth/scripts/setupserver.sh
         cd build && ctest && cd ..
+        PATH=$PATH_BEFORE
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
