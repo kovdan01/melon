@@ -342,7 +342,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-db-utils-${{ env.CYRUS_SASL_VERSION }}-libcxx
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-libcxx
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -695,20 +695,23 @@ jobs:
 
     - name: Run tests
       run: |
-        ls -al ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin
+        cd build
         PATH_BEFORE=$PATH
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+
         ./src/server/auth/scripts/setupserver.sh
-        cd build
+
         cd src/server/auth
-        ldd melon-auth
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
         MELON_AUTH_PID=$!
         cd ../../..
+
         ctest
+
         kill -2 $MELON_AUTH_PID
-        cd ..
+
         PATH=$PATH_BEFORE
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
