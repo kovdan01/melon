@@ -42,7 +42,7 @@ class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
     constexpr static boost::asio::steady_timer::duration TIME_LIMIT = std::chrono::seconds(15);
 public:
     MySaslSession(const ba::io_context::executor_type& ex)
-        : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
+        : socket_session<MySaslSession, tcp_stream>{ex}
     {
         stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
     }
