@@ -87,11 +87,11 @@ public:
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response);
             if(m_out_buf[m_out_buf.size()-1] != '\n')
-                m_in_buf += "\n";
+                m_out_buf += "\n";
             stream_.expires_after(time_limit_);
-            async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
             while (server_completness == mca::AuthCompletness::INCOMPLETE)
             {
+                async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
                 stream_.expires_after(time_limit_);
                 n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
                 client_response = read_buffered_string(n);
@@ -102,14 +102,13 @@ public:
                 {
                     m_out_buf = std::string(server_response);
                     if(m_out_buf[m_out_buf.size()-1] != '\n')
-                        m_in_buf += "\n";
+                        m_out_buf += "\n";
                 }
                 else
                     m_out_buf = "";
                 if (server_completness == mca::AuthCompletness::COMPLETE)
                     break;
                 stream_.expires_after(time_limit_);
-                async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
             }
             m_out_buf = "Okay, Mr. Client, here's your token...\n";
             stream_.expires_after(time_limit_);

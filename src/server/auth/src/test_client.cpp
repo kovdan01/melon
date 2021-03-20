@@ -109,17 +109,17 @@ try
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        /*SECTION("PLAIN mech")
+        SECTION("PLAIN mech")
         {
             wanted_mech = "PLAIN";
-        }*/
+        }
         mca::Credentials credentials = { "john", "doe" };
         client_singletone.set_credentials(&credentials);
         REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
         REQUIRE(confirmation_recieved == true);
 
     }
-    /*SECTION("not registered credentials")
+    SECTION("not registered credentials")
     {
         SECTION("SCRAM-SHA-256 mech2")
         {
@@ -132,11 +132,7 @@ try
         mca::Credentials credentials = { "Igor", "Shcherbakov" };
         client_singletone.set_credentials(&credentials);
         REQUIRE_THROWS(confirmation_recieved = run_auth(ip, port, wanted_mech));
-    }*/
-    wanted_mech = "PLAIN";
-    mca::Credentials credentials = { "john", "doe" };
-    client_singletone.set_credentials(&credentials);
-    confirmation_recieved = run_auth(ip, port, wanted_mech);
+    }
 }
 catch (const std::exception& e)
 {
