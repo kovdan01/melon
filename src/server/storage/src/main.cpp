@@ -11,13 +11,11 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
-
     // Domains
-    std::string domain_ed = "Dorothy Agatha server";
+    std::string domain_ed = "Dolores Umbrige server";
     mss::Domain domain_edward(db, domain_ed, false);
     std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
     std::cout << "Domain type is " << domain_edward.external() << "\n";
-    domain_edward.remove();
 
     mss::Domain found_domain_edward(db, domain_ed);
     std::cout << "Domain id is " << found_domain_edward.domain_id() << "\n";
@@ -25,14 +23,9 @@ int main() try
     std::cout << "Domain hostanme is " << found_domain_edward.hostname() << "\n";
 
     // Users
-    mss::User user1(db, 1, "Adriana", mc::User::Status::ONLINE);
+    mss::User user1(db, 1, "Fudge", mc::User::Status::ONLINE);
     std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
     std::cout << "Current user_id: " << user1.user_id() << "\n";
-
-    //    mss::User user3(db, domain_edward.domain_id(), "anna", mc::User::Status::ONLINE);
-    //    mss::User user4(db, domain_edward.domain_id(), "erick", mc::User::Status::ONLINE);
-    //    mss::User user5(db, domain_edward.domain_id(), "silvia", mc::User::Status::ONLINE);
-    //    mss::User user6(db, domain_edward.domain_id(), "bunny", mc::User::Status::ONLINE);
 
     mss::User anna_user(db, 1, "anna");
     std::cout << "Current domain_id: " << anna_user.domain_id() <<"\n";
@@ -86,6 +79,9 @@ int main() try
     std::cout << "Current message_id: " << message1.message_id() << '\n';
     message1.set_status(mc::Message::Status::SEEN);
     message1.set_text("((((((");
+
+    domain_edward.remove();
+    message1.remove();
 
 }
 catch (const sqlpp::exception& e)

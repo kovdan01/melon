@@ -19,8 +19,6 @@ const melon::Domains G_DOMAINS;
 const melon::Chats G_CHATS;
 const melon::ChatsUsers G_CHATSUSERS;
 
-const std::uint64_t INVALID_ID = std::uint64_t(-1);
-const std::uint64_t INVALID = 0;
 
 /* Init and connect to db */
 
@@ -40,18 +38,20 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_melondb()
 
 // For Insert
 Domain::Domain(sqlpp::mysql::connection& db, std::string hostname, bool external)
-     : melon::core::Domain(INVALID, std::move(hostname), external)
+     : melon::core::Domain(INVALID_ID, std::move(hostname), external)
      , m_db(db)
 {
     // [check] In mariadb it is bool, but it is not bool in sqlpp11 why? should change then to std::uint8_t but that strange author says that bool IS supported]
-    m_db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = this->hostname(), G_DOMAINS.external = static_cast<std::uint8_t>(this->external())));
+    m_db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = this->hostname(),
+                                    G_DOMAINS.external = static_cast<std::uint8_t>(this->external())));
     std::uint64_t this_domain_id = max_domain_id(m_db);
+    assert(this_domain_id != INVALID_ID);
     this->set_domain_id(this_domain_id);
 }
 
 // For Select
 Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
-     : melon::core::Domain(INVALID, std::move(hostname), false)
+     : melon::core::Domain(INVALID_ID, std::move(hostname), false)
      , m_db(db)
 {
     auto result = db(select(G_DOMAINS.domainId, G_DOMAINS.external).from(G_DOMAINS).where(G_DOMAINS.hostname == this->hostname()));
@@ -70,7 +70,7 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
 
 std::uint64_t max_domain_id(sqlpp::mysql::connection& db)
 {
-    auto result =  db(select(max(G_DOMAINS.domainId)).from(G_DOMAINS).unconditionally());
+    auto result = db(select(max(G_DOMAINS.domainId)).from(G_DOMAINS).unconditionally());
     if (!result.empty())
     {
         const auto& row = result.front();
@@ -86,149 +86,29 @@ void Domain::remove()
 }
 
 
-/* class Message */
-
-// For Insert
-Message::Message(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::uint64_t user_id, std::uint64_t chat_id,
-                 std::string text, Status status)
-     : melon::core::Message(INVALID, domain_id, user_id, chat_id, std::move(text), status)
-     , m_db(db)
-{
-    m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
-                                     G_MESSAGES.timesend = std::chrono::system_clock::now(),
-                                     G_MESSAGES.status = static_cast<std::uint8_t>(this->status()),
-                                     G_MESSAGES.domainId = this->domain_id(),
-                                     G_MESSAGES.userId = this->user_id(),
-                                     G_MESSAGES.chatId = this->chat_id()));
-    std::uint64_t this_message_id = max_message_id(m_db);
-    this->set_message_id(this_message_id);
-}
-
-// For Select
-Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t chat_id)
-     : melon::core::Message(message_id, domain_id, INVALID, chat_id, "", Message::Status::FAIL)
-     , m_db(db)
-{
-    auto result = db(select(G_MESSAGES.userId, G_MESSAGES.text, G_MESSAGES.status, G_MESSAGES.timesend)
-                     .from(G_MESSAGES).where(G_MESSAGES.chatId == this->chat_id() and G_MESSAGES.domainId == this->domain_id()
-                                             and G_MESSAGES.messageId == this->message_id()));
-    if (!result.empty())
-    {
-        const auto& row = result.front();
-        auto status = static_cast<melon::core::Message::Status>(static_cast<int>(row.status));
-        melon::core::Message::set_status(status);
-        melon::core::Message::set_text(row.text);
-        this->set_user_id(row.userId);
-        // check format again
-        //this->set_timestamp(row.timesend);
-    }
-    else
-    {
-        throw std::runtime_error("No message in database");
-    }
-}
-
-std::uint64_t max_message_id(sqlpp::mysql::connection& db)
-{
-    auto result =  db(select(max(G_MESSAGES.messageId)).from(G_MESSAGES).unconditionally());
-    if (!result.empty())
-    {
-        const auto& row = result.front();
-        return row.max;
-    }
-    return INVALID_ID;
-}
-
-void Message::set_text(std::string new_text)
-{
-    melon::core::Message::set_text(new_text);
-    m_db(update(G_MESSAGES).set(G_MESSAGES.text = new_text).where(G_MESSAGES.messageId == this->message_id()));
-}
-
-void Message::remove()
-{
-    m_db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == this->message_id()));
-}
-
-void Message::set_status(Status new_status)
-{
-    melon::core::Message::set_status(new_status);
-    m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(new_status)).where(G_MESSAGES.messageId == this->message_id()));
-}
-
-
-/* class Chat */
-
-// For Insert
-Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname)
-    : melon::core::Chat(INVALID, domain_id, std::move(chatname))
-    , m_db(db)
-{
-    m_db(insert_into(G_CHATS).set(G_CHATS.domainId = this->domain_id(), G_CHATS.chatname = this->chatname()));
-    std::uint64_t this_chat_id = max_chat_id(m_db);
-    this->set_chat_id(this_chat_id);
-}
-
-// For Select
-Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id)
-    : melon::core::Chat(chat_id, domain_id, "")
-    , m_db(db)
-{
-    auto result = db(select(G_CHATS.chatname).from(G_CHATS).where(G_CHATS.chatId == this->chat_id() and
-                                                                  G_CHATS.domainId == this->domain_id()));
-    if (!result.empty())
-    {
-        const auto& row = result.front();
-        melon::core::Chat::set_chatname(row.chatname);
-    }
-    else
-    {
-        throw std::runtime_error("No chat in database");
-    }
-}
-
-std::uint64_t max_chat_id(sqlpp::mysql::connection& db)
-{
-    auto result =  db(select(max(G_CHATS.chatId)).from(G_CHATS).unconditionally());
-    if (!result.empty())
-    {
-        const auto& row = result.front();
-        return row.max;
-    }
-    return INVALID_ID;
-}
-
-void Chat::set_chatname(const std::string new_chatname)
-{
-    melon::core::Chat::set_chatname(new_chatname);
-    m_db(update(G_CHATS).set(G_CHATS.chatname = new_chatname).where(G_CHATS.chatId == this->chat_id()));
-}
-
-// Deletes chat: deletes messages from chat, all info in Chats_Users concearnig this chat
-void Chat::remove()
-{
-    m_db(remove_from(G_CHATS).where(G_CHATS.chatId == this->chat_id()));
-}
-
-
 /* class User */
 
 // For Insert
 User::User(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string username, Status status)
-     : melon::core::User(INVALID, domain_id, std::move(username), status)
+     : melon::core::User(INVALID_ID, domain_id, std::move(username), status)
      , m_db(db)
 {
-    m_db(insert_into(G_USERS).set(G_USERS.username = this->username(), G_USERS.domainId = this->domain_id(), G_USERS.status = static_cast<int>(this->status())));
+    m_db(insert_into(G_USERS).set(G_USERS.username = this->username(),
+                                  G_USERS.domainId = this->domain_id(),
+                                  G_USERS.status = static_cast<int>(this->status())));
     std::uint64_t this_user_id = max_user_id(m_db);
+    assert(this_user_id != INVALID_ID);
     this->set_user_id(this_user_id);
 }
 
 // For Select
 User::User(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string username)
-    : melon::core::User(-1, domain_id, std::move(username), Status::OFFLINE)
+    : melon::core::User(INVALID_ID, domain_id, std::move(username), Status::OFFLINE)
     , m_db(db)
 {
-    auto result = db(select(G_USERS.userId, G_USERS.status).from(G_USERS).where(G_USERS.username == this->username() and G_USERS.domainId == this->domain_id()));
+    auto result = db(select(G_USERS.userId, G_USERS.status)
+                     .from(G_USERS).where(G_USERS.username == this->username() &&
+                                          G_USERS.domainId == this->domain_id()));
     if (!result.empty())
     {
         const auto& row = result.front();
@@ -258,39 +138,171 @@ void User::remove()
     m_db(remove_from(G_USERS).where(G_USERS.userId == this->user_id()));
 }
 
-void User::set_status(Status new_status)
+void User::set_status(Status status)
 {
-    melon::core::User::set_status(new_status);
-    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(new_status)).where(G_USERS.userId == this->user_id()));
+    melon::core::User::set_status(status);
+    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(status)).where(G_USERS.userId == this->user_id()));
+}
+
+/* class Chat */
+
+// For Insert
+Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname)
+    : melon::core::Chat(INVALID_ID, domain_id, std::move(chatname))
+    , m_db(db)
+{
+    m_db(insert_into(G_CHATS).set(G_CHATS.domainId = this->domain_id(),
+                                  G_CHATS.chatname = this->chatname()));
+    std::uint64_t this_chat_id = max_chat_id(m_db);
+    assert(this_chat_id != INVALID_ID);
+    this->set_chat_id(this_chat_id);
+}
+
+// For Insert also in ChatsUsers
+Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname, std::uint64_t user_id)
+    : melon::core::Chat(INVALID_ID, domain_id, std::move(chatname))
+    , m_db(db)
+{
+    m_db(insert_into(G_CHATS).set(G_CHATS.domainId = this->domain_id(),
+                                  G_CHATS.chatname = this->chatname()));
+    std::uint64_t this_chat_id = max_chat_id(m_db);
+    assert(this_chat_id != INVALID_ID);
+    this->set_chat_id(this_chat_id);
+    m_db(insert_into(G_CHATSUSERS).set(G_CHATSUSERS.domainId = this->domain_id(),
+                                       G_CHATSUSERS.chatId = this->chat_id(),
+                                       G_CHATSUSERS.userId = user_id));
+}
+
+// For Select
+Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id)
+    : melon::core::Chat(chat_id, domain_id, "")
+    , m_db(db)
+{
+    auto result = db(select(G_CHATS.chatname).from(G_CHATS).where(G_CHATS.chatId == this->chat_id() &&
+                                                                  G_CHATS.domainId == this->domain_id()));
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+        melon::core::Chat::set_chatname(row.chatname);
+    }
+    else
+    {
+        throw std::runtime_error("No chat in database");
+    }
+}
+
+std::uint64_t max_chat_id(sqlpp::mysql::connection& db)
+{
+    auto result =  db(select(max(G_CHATS.chatId)).from(G_CHATS).unconditionally());
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+        return row.max;
+    }
+    return INVALID_ID;
+}
+
+void Chat::set_chatname(const std::string chatname)
+{
+    melon::core::Chat::set_chatname(chatname);
+    m_db(update(G_CHATS).set(G_CHATS.chatname = chatname).where(G_CHATS.chatId == this->chat_id()));
+}
+
+// Deletes chat: deletes messages from chat, all info in Chats_Users concearnig this chat
+void Chat::remove()
+{
+    m_db(remove_from(G_CHATS).where(G_CHATS.chatId == this->chat_id()));
 }
 
 
-/* Domains */
+/* class Message */
 
-//std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname)
-//{
-//    auto result = db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname));
-//    if (!result.empty())
-//    {
-//        const auto& row = result.front();
-//        return row.domainId;
-//    }
-//    return INVALID_ID;
-//}
+// For Insert
+Message::Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
+                 std::string text, Status status)
+     : melon::core::Message(INVALID_ID, domain_id, user_id, chat_id, std::move(text), status)
+     , m_db(db)
+{
+    m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
+                                     G_MESSAGES.timesend = std::chrono::system_clock::now(),
+                                     G_MESSAGES.status = static_cast<std::uint8_t>(this->status()),
+                                     G_MESSAGES.domainId = this->domain_id(),
+                                     G_MESSAGES.userId = this->user_id(),
+                                     G_MESSAGES.chatId = this->chat_id()));
+    std::uint64_t this_message_id = max_message_id(m_db);
+    assert(this_message_id != INVALID_ID);
+    this->set_message_id(this_message_id);
+}
+
+// For Select
+Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
+     : melon::core::Message(message_id, domain_id, INVALID_ID, chat_id, "", Message::Status::FAIL)
+     , m_db(db)
+{
+    auto result = db(select(G_MESSAGES.userId, G_MESSAGES.text, G_MESSAGES.status, G_MESSAGES.timesend)
+                     .from(G_MESSAGES).where(G_MESSAGES.chatId == this->chat_id() &&
+                                             G_MESSAGES.domainId == this->domain_id() &&
+                                             G_MESSAGES.messageId == this->message_id()));
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+        auto status = static_cast<melon::core::Message::Status>(static_cast<int>(row.status));
+        melon::core::Message::set_status(status);
+        melon::core::Message::set_text(row.text);
+        this->set_user_id(row.userId);
+        this->set_timestamp(row.timesend.value());
+    }
+    else
+    {
+        throw std::runtime_error("No message in database");
+    }
+}
+
+std::uint64_t max_message_id(sqlpp::mysql::connection& db)
+{
+    auto result = db(select(max(G_MESSAGES.messageId)).from(G_MESSAGES).unconditionally());
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+        return row.max;
+    }
+    return INVALID_ID;
+}
+
+void Message::set_text(std::string text)
+{
+    melon::core::Message::set_text(text);
+    m_db(update(G_MESSAGES).set(G_MESSAGES.text = text).where(G_MESSAGES.messageId == this->message_id()));
+}
+
+void Message::remove()
+{
+    m_db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == this->message_id()));
+}
+
+void Message::set_status(Status status)
+{
+    melon::core::Message::set_status(status);
+    m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<int>(status)).where(G_MESSAGES.messageId == this->message_id()));
+}
 
 
 /* Users */
 
-// Should do it also member for User ?
 // Get all Chats where user participate in
 std::vector<melon::core::Chat> get_chats_for_user(sqlpp::mysql::connection& db, const melon::core::User& user)
 {
     std::vector<melon::core::Chat> chats_for_user;
-    for (const auto& row : db(select(all_of(G_CHATS))
-                              .from(G_CHATSUSERS.join(G_CHATS).on(G_CHATSUSERS
-                              .chatId == G_CHATS.chatId
-                              and G_CHATSUSERS.domainId == G_CHATS.domainId)).
-                              where(G_CHATSUSERS.userId == user.user_id())))
+    for (const auto& row : db(select(all_of(G_CHATS)).from
+                             (
+                                  G_CHATSUSERS.join(G_CHATS).on
+                                  (
+                                      G_CHATSUSERS.chatId == G_CHATS.chatId &&
+                                      G_CHATSUSERS.domainId == G_CHATS.domainId
+                                  )
+                             ).where(G_CHATSUSERS.userId == user.user_id())
+                             )
+         )
     {
         chats_for_user.emplace_back(row.chatId, row.domainId, row.chatname);
     }
@@ -323,15 +335,22 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db)
 
 /* Chats */
 
-// Should do it member for Chat ?
 // All users that participate in chat
 std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {
     std::vector<melon::core::User> users_in_chat;
-    for (const auto& row : db(select(all_of(G_USERS))
-                                  .from(G_CHATSUSERS.join(G_USERS).on(G_CHATSUSERS
-                                  .userId == G_USERS.userId))
-                                  .where(G_CHATSUSERS.chatId == chat.chat_id() and G_CHATSUSERS.domainId == chat.domain_id())))
+    for (const auto& row : db(select(all_of(G_USERS)).from
+                             (
+                                  G_CHATSUSERS.join(G_USERS).on
+                                  (
+                                      G_CHATSUSERS.userId == G_USERS.userId)
+                                  ).where
+                              (
+                                  G_CHATSUSERS.chatId == chat.chat_id() &&
+                                  G_CHATSUSERS.domainId == chat.domain_id()
+                              )
+                              )
+         )
     {
         auto status = static_cast<melon::core::User::Status>(static_cast<int>(row.status));
         users_in_chat.emplace_back(row.userId, row.domainId, row.username, status);
@@ -339,7 +358,6 @@ std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, 
     return users_in_chat;
 }
 
-// Should do it member for Chat ?
 // All messages in chat
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat)
 {

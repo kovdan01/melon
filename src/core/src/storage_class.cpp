@@ -12,9 +12,9 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
-void Domain::set_external(bool new_external)
+void Domain::set_external(bool external)
 {
-    m_external = new_external;
+    m_external = external;
 }
 
 
@@ -26,9 +26,21 @@ User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username,
 {
 }
 
-void User::set_status(Status new_status)
+void User::set_status(Status status)
 {
-    m_status = new_status;
+    m_status = status;
+}
+
+Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
+    : m_chat_id(chat_id)
+    , m_domain_id(domain_id)
+    , m_chatname(std::move(chatname))
+{
+}
+
+void Chat::set_chatname(std::string chatname)
+{
+    m_chatname = std::move(chatname);
 }
 
 Message::Message(std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t user_id,
@@ -42,33 +54,19 @@ Message::Message(std::uint64_t message_id, std::uint64_t domain_id, std::uint64_
 {
 }
 
-void Message::set_text(std::string new_text)
+void Message::set_text(std::string text)
 {
-    m_text = std::move(new_text);
+    m_text = std::move(text);
 }
 
-void Message::set_status(Status new_status)
+void Message::set_status(Status status)
 {
-    m_status = new_status;
+    m_status = status;
 }
 
-
-inline void Message::set_timestamp(std::chrono::system_clock new_timestamp)
+void Message::set_timestamp(std::chrono::system_clock::time_point timestamp)
 {
-    m_timestamp = new_timestamp;
-}
-
-
-Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id, std::string chatname)
-    : m_chat_id(chat_id)
-    , m_domain_id(domain_id)
-    , m_chatname(std::move(chatname))
-{
-}
-
-void Chat::set_chatname(std::string new_chatname)
-{
-    m_chatname = std::move(new_chatname);
+    m_timestamp = timestamp;
 }
 
 }  // namespace melon::core

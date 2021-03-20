@@ -16,9 +16,9 @@ namespace melon::core
     return m_external;
 }
 
-inline void Domain::set_domain_id(std::uint64_t new_domain_id)
+inline void Domain::set_domain_id(std::uint64_t domain_id)
 {
-    m_domain_id = new_domain_id;
+    m_domain_id = domain_id;
 }
 
 [[nodiscard]] inline User::Status User::status() const
@@ -41,14 +41,14 @@ inline void Domain::set_domain_id(std::uint64_t new_domain_id)
     return m_username;
 }
 
-inline void User::set_user_id(std::uint64_t new_user_id)
+inline void User::set_user_id(std::uint64_t user_id)
 {
-    m_user_id = new_user_id;
+    m_user_id = user_id;
 }
 
-inline void User::set_domain_id(std::uint64_t new_domain_id)
+inline void User::set_domain_id(std::uint64_t domain_id)
 {
-    m_domain_id = new_domain_id;
+    m_domain_id = domain_id;
 }
 
 [[nodiscard]] inline std::uint64_t Message::message_id() const
@@ -71,7 +71,7 @@ inline void User::set_domain_id(std::uint64_t new_domain_id)
     return m_status;
 }
 
-[[nodiscard]] inline std::chrono::system_clock Message::timestamp() const
+[[nodiscard]] inline std::chrono::system_clock::time_point Message::timestamp() const
 {
     return m_timestamp;
 }
@@ -86,24 +86,24 @@ inline void User::set_domain_id(std::uint64_t new_domain_id)
     return m_chat_id;
 }
 
-inline void Message::set_message_id(std::uint64_t new_message_id)
+inline void Message::set_message_id(std::uint64_t message_id)
 {
-    m_message_id = new_message_id;
+    m_message_id = message_id;
 }
 
-inline void Message::set_domain_id(std::uint64_t new_domain_id)
+inline void Message::set_domain_id(std::uint64_t domain_id)
 {
-    m_domain_id = new_domain_id;
+    m_domain_id = domain_id;
 }
 
-inline void Message::set_user_id(std::uint64_t new_user_id)
+inline void Message::set_user_id(std::uint64_t user_id)
 {
-    m_user_id = new_user_id;
+    m_user_id = user_id;
 }
 
-inline void Message::set_chat_id(std::uint64_t new_chat_id)
+inline void Message::set_chat_id(std::uint64_t chat_id)
 {
-    m_chat_id = new_chat_id;
+    m_chat_id = chat_id;
 }
 
 [[nodiscard]] inline std::uint64_t Chat::chat_id() const
@@ -121,14 +121,14 @@ inline void Message::set_chat_id(std::uint64_t new_chat_id)
     return m_chatname;
 }
 
-inline void Chat::set_chat_id(std::uint64_t new_chat_id)
+inline void Chat::set_chat_id(std::uint64_t chat_id)
 {
-    m_chat_id = new_chat_id;
+    m_chat_id = chat_id;
 }
 
-inline void Chat::set_domain_id(std::uint64_t new_domain_id)
+inline void Chat::set_domain_id(std::uint64_t domain_id)
 {
-    m_domain_id = new_domain_id;
+    m_domain_id = domain_id;
 }
 
 }  // namespace melon::core

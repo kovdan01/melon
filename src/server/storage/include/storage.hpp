@@ -12,6 +12,8 @@
 namespace melon::server::storage
 {
 
+inline const std::uint64_t INVALID_ID = std::uint64_t(-1);
+
 /* Init and connect to db */
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_melondb();
@@ -34,44 +36,6 @@ private:
 };
 
 
-/* class Message */
-
-class Message : public melon::core::Message
-{
-public:
-    // For Insert
-    Message(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::uint64_t user_id, std::uint64_t chat_id,
-            std::string text, Status status);
-    // For Select
-    Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t domain_id, std::uint64_t chat_id);
-
-    void set_text(std::string new_text) override;
-    void set_status(Status new_status) override;
-    void remove();
-
-private:
-    sqlpp::mysql::connection& m_db;
-};
-
-
-/* class Chat */
-
-class Chat : public melon::core::Chat
-{
-public:
-    // For Insert
-    Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname);
-    // For Select
-    Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id);
-
-    void set_chatname(std::string new_chatname) override;
-    void remove();
-
-private:
-    sqlpp::mysql::connection& m_db;
-};
-
-
 /* class User */
 
 class User : public melon::core::User
@@ -83,21 +47,57 @@ public:
     User(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string username);
 
     void remove();
-    void set_status(Status new_status) override;
+    void set_status(Status status) override;
 
 private:
     sqlpp::mysql::connection& m_db;
 };
+
+/* class Chat */
+
+class Chat : public melon::core::Chat
+{
+public:
+    // For Insert
+    Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname);
+    // For Insert also in ChatsUsers
+    Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname, std::uint64_t user_id);
+    // For Select
+    Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id);
+
+    void set_chatname(std::string chatname) override;
+    void remove();
+
+private:
+    sqlpp::mysql::connection& m_db;
+};
+
+
+/* class Message */
+
+class Message : public melon::core::Message
+{
+public:
+    // For Insert
+    Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
+            std::string text, Status status);
+    // For Select
+    Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
+
+    void set_text(std::string text) override;
+    void set_status(Status status) override;
+    void remove();
+
+private:
+    sqlpp::mysql::connection& m_db;
+};
+
 
 std::uint64_t max_domain_id(sqlpp::mysql::connection& db);
 std::uint64_t max_message_id(sqlpp::mysql::connection& db);
 std::uint64_t max_chat_id(sqlpp::mysql::connection& db);
 std::uint64_t max_user_id(sqlpp::mysql::connection& db);
 
-
-/* Domains */
-
-//std::uint64_t get_domain_id_by_hostname(sqlpp::mysql::connection& db, const std::string& hostname);
 
 /* Users */
 
