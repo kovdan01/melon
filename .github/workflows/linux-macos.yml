@@ -342,7 +342,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}-libcxx
+        key: ${{ runner.os }}-cyrus-sasl-with-db-utils-${{ env.CYRUS_SASL_VERSION }}-libcxx
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
