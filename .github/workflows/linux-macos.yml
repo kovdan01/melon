@@ -700,8 +700,11 @@ jobs:
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
         ./src/server/auth/scripts/setupserver.sh
         cd build
-        ./src/server/auth/melon-auth 6666 &
+        ldd ./src/server/auth/melon-auth
+        cd src/server/auth/melon-auth
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
         MELON_AUTH_PID=$!
+        cd ../../../..
         ctest
         kill -2 $MELON_AUTH_PID
         cd ..
