@@ -39,7 +39,7 @@ public:
     SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
 
 private:
-    std::filesystem::path m_config_path = std::string(std::getenv("HOME")) + "/melon";
+    std::filesystem::path m_config_path;
     SaslServerSingleton();
     ~SaslServerSingleton();
 };
