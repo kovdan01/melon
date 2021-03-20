@@ -41,7 +41,7 @@ class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
                                  BYTES_PER_SECOND_LIMIT = 1024;
     constexpr static boost::asio::steady_timer::duration TIME_LIMIT = std::chrono::seconds(15);
 public:
-    MySaslSession(ba::io_context::executor_type ex)
+    MySaslSession(ba::io_context::executor_type ex)  // NOLINT
         : socket_session<MySaslSession, tcp_stream>{std::move(ex)}
     {
         stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
@@ -113,7 +113,7 @@ public:
             stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";
-        }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)
+        }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT
         {
             if (e)
                 std::rethrow_exception(e);
