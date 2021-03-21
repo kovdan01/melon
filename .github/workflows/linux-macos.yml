@@ -699,7 +699,7 @@ jobs:
         PATH_BEFORE=$PATH
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        ./src/server/auth/scripts/setupserver.sh
+        ../src/server/auth/scripts/setupserver.sh
 
         cd src/server/auth
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
