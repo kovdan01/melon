@@ -89,6 +89,7 @@ public:
                                /* timestamp */ {},
                                /* text */ QStringLiteral(""),
                                /* status*/ melon::core::Message::Status::FAIL)
+        , m_name(std::move(name))
     {
     }
 

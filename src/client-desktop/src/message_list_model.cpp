@@ -28,7 +28,7 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_messages[index.row()]);
             break;
         case MyRoles::MessageTextRole:
-            data.setValue(m_it_messages[index.row()]->text());
+            data.setValue(m_it_messages[index.row()]->text_qstring());
             break;
         case MyRoles::AreIconAndSendernameNeededRole:
             return this->are_icon_and_sendername_needed(index.row() - 1, index.row());

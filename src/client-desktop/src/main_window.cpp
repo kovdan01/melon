@@ -119,7 +119,7 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        Chat chat(text, static_cast<Chat::id_t>(counter));
+        Chat chat(DRAFT_CHAT_ID, text);
 
         m_model_chat_list->add_chat(chat);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
