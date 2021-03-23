@@ -23,11 +23,6 @@ public:
     // until its fields are initialized properly
     Domain() = default;
 
-    // For Insert
-    Domain(std::string hostname, bool external);
-    // For Select
-    Domain(std::string hostname);
-
     virtual ~Domain();
 
     [[nodiscard]] std::uint64_t domain_id() const;
@@ -35,6 +30,11 @@ public:
     [[nodiscard]] bool external() const;
 
 protected:
+    // For Insert
+    Domain(std::string hostname, bool external);
+    // For Select
+    Domain(std::string hostname);
+
     void set_domain_id(std::uint64_t domain_id);
 
     void set_external(bool external);
@@ -65,11 +65,6 @@ public:
     // until its fields are initialized properly
     User() = default;
 
-    // For Insert
-    User(std::string username, std::uint64_t domain_id, Status status);
-    // For Select
-    User(std::string username, std::uint64_t domain_id);
-
     virtual ~User();
 
     [[nodiscard]] std::uint64_t user_id() const;
@@ -82,6 +77,11 @@ public:
     virtual std::vector<std::unique_ptr<Chat>> get_chats() const = 0;
 
 protected:
+    // For Insert
+    User(std::string username, std::uint64_t domain_id, Status status);
+    // For Select
+    User(std::string username, std::uint64_t domain_id);
+
     void set_status_base(Status status);
     virtual void set_status_impl(Status status);
 
@@ -106,11 +106,6 @@ public:
     // until its fields are initialized properly
     Chat() = default;
 
-    // For Insert
-    Chat(std::uint64_t domain_id, std::string chatname);
-    // For Select
-    Chat(std::uint64_t chat_id, std::uint64_t domain_id);
-
     virtual ~Chat();
 
     [[nodiscard]] std::uint64_t chat_id() const;
@@ -123,6 +118,11 @@ public:
     virtual std::vector<std::unique_ptr<Message>> get_messages() const = 0;
 
 protected:
+    // For Insert
+    Chat(std::uint64_t domain_id, std::string chatname);
+    // For Select
+    Chat(std::uint64_t chat_id, std::uint64_t domain_id);
+
     void set_chatname_base(std::string chatname);
     virtual void set_chatname_impl(const std::string& chatname);
 
@@ -154,12 +154,6 @@ public:
     // until its fields are initialized properly
     Message() = default;
 
-    // For Insert
-    Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
-            timestamp_t timestamp, std::string text, Status status);
-    // For Select
-    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
-
     virtual ~Message();
 
     [[nodiscard]] std::uint64_t message_id() const;
@@ -175,6 +169,12 @@ public:
     void set_timestamp(timestamp_t timestamp);
 
 protected:
+    // For Insert
+    Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
+            timestamp_t timestamp, std::string text, Status status);
+    // For Select
+    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
+
     void set_text_base(std::string text);
     virtual void set_text_impl(const std::string& text);
 
