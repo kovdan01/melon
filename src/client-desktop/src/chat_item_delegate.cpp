@@ -130,7 +130,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     if (chat->empty())
     {
-        QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
+        QString elided_name = fm_chat_name.elidedText(chat->name_qstring(), Qt::ElideRight, max_chat_name_rect.width());
         QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
         chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                    -m_base_margin,
@@ -153,7 +153,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     // Chat name rect and render
     max_chat_name_rect.setWidth(max_chat_name_rect.width() - timestamp_rect.width() - m_base_margin);
-    QString elided_name = fm_chat_name.elidedText(chat->name(), Qt::ElideRight, max_chat_name_rect.width());
+    QString elided_name = fm_chat_name.elidedText(chat->name_qstring(), Qt::ElideRight, max_chat_name_rect.width());
     QRect chat_name_rect = fm_chat_name.boundingRect(max_chat_name_rect, Qt::AlignLeft, elided_name);
     chat_name_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                                -m_base_margin,
@@ -204,7 +204,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     max_message_text_rect.setX(max_message_text_rect.x() + sender_rect.width());
 
     // Last message rect and render
-    QString elided_message_text = fm_last_message.elidedText(last_message->text(), Qt::ElideRight, max_message_text_rect.width());
+    QString elided_message_text = fm_last_message.elidedText(last_message->text_qstring(), Qt::ElideRight, max_message_text_rect.width());
     QRect message_rect = fm_last_message.boundingRect(max_message_text_rect, Qt::AlignLeft, elided_message_text);
     painter->setFont(m_last_message_font);
     painter->drawText(message_rect, Qt::AlignLeft, elided_message_text);

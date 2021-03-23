@@ -103,10 +103,11 @@ void ChatWidget::send_message()
         return;
     }
 
-    Message new_message(QLatin1String("Me"),
+
+    Message new_message(MY_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+                        std::chrono::system_clock::now(),
                         message_text,
-                        {},
-                        std::chrono::system_clock::now());
+                        Message::Status::SENT);
 
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
@@ -119,10 +120,10 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    Message new_message(QLatin1String("Some Sender"),
+    Message new_message(ANOTHER_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+                        std::chrono::system_clock::now(),
                         QStringLiteral("I wish I could hear you."),
-                        {},
-                        std::chrono::system_clock::now());
+                        Message::Status::RECEIVED);
 
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
@@ -171,14 +172,20 @@ Message ChatWidget::capture_message_from_editor()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
     if (message_text.isEmpty())
-        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now());
+        return Message(MY_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+                       std::chrono::system_clock::now(),
+                       QLatin1String(""),
+                       Message::Status::FAIL);
 
-    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now());
+    return Message(MY_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+                   std::chrono::system_clock::now(),
+                   message_text,
+                   Message::Status::FAIL);;
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)
 {
-    m_ui->MsgEdit->setText(message.text());
+    m_ui->MsgEdit->setText(message.text_qstring());
 }
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
@@ -189,7 +196,7 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 
     auto it_message = this->m_model_message_list->data(index, Qt::DisplayRole).value<message_handle_t>();
 
-    if (it_message->from() == QStringLiteral("Me"))
+    if (it_message->status() == Message::Status::SENT)
     {
         m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }

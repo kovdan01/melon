@@ -1,6 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 #define MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 
+#include <melon/core/storage_class.hpp>
+
 #include <QString>
 #include <QMetaType>
 
@@ -14,61 +16,45 @@ namespace melon::client_desktop
 
 using byte_t = std::uint8_t;
 
-class Message
+const std::uint64_t MY_USER_ID = 1;
+const std::uint64_t ANOTHER_USER_ID = 2;
+const std::uint64_t DRAFT_CHAT_ID = 1;
+const std::uint64_t DRAFT_DOMAIN_ID = 1;
+
+class Message : public melon::core::Message
 {
 public:
-    class Attachment
-    {
-    public:
-        Attachment() = default;
-        Attachment(const Attachment&) = default;
-        Attachment& operator=(const Attachment&) = default;
-        Attachment(Attachment&&) = default;
-        Attachment& operator=(Attachment&&) = default;
-
-        explicit Attachment(std::vector<byte_t> buffer)
-            : m_buffer(std::move(buffer))
-        {
-        }
-
-        bool operator==(const Attachment&) const noexcept = default;
-
-        [[nodiscard]] const std::vector<byte_t>& buffer() const noexcept
-        {
-            return m_buffer;
-        }
-
-    private:
-        std::vector<byte_t> m_buffer;
-    };
-
     using timestamp_t = std::chrono::system_clock::time_point;
+    //using Status = melon::core::Message::Status;
 
-    Message() = default;  // for QVariant
-    Message(const Message&) = default;
-    Message& operator=(const Message&) = default;
-    Message(Message&&) = default;
-    Message& operator=(Message&&) = default;
-
-    Message(QString from, QString text, std::list<Attachment> attachments, timestamp_t timestamp, bool is_edit = false)
-        : m_attachments(std::move(attachments))
-        , m_timestamp(timestamp)
+    //For Insert & Select (temporary)
+    Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
+            timestamp_t timestamp, QString text, Status status)
+        : melon::core::Message(user_id, chat_id, domain_id, timestamp, text.toStdString(), status)
         , m_text(std::move(text))
-        , m_from(std::move(from))
-        , m_is_edit(is_edit)
     {
+        if (this->user_id() == MY_USER_ID)
+            m_from = QStringLiteral("Me");
+        else
+            m_from = QStringLiteral("Some Sender");
     }
 
-    bool operator==(const Message&) const noexcept = default;
+    Message() = default;
 
-    [[nodiscard]] const std::list<Attachment>& attachments() const noexcept
+    [[nodiscard]] const QString& from() const noexcept
     {
-        return m_attachments;
+        return m_from;
     }
 
-    [[nodiscard]] timestamp_t timestamp() const noexcept
+    [[nodiscard]] const QString& text_qstring() const noexcept
     {
-        return m_timestamp;
+        return m_text;
+    }
+
+    void set_text_qstring(QString text)
+    {
+        m_text = std::move(text);
+        set_text_base(m_text.toStdString());
     }
 
     [[nodiscard]] bool is_edit() const noexcept
@@ -81,60 +67,50 @@ public:
         m_is_edit = is_edit;
     }
 
-    [[nodiscard]] const QString& text() const noexcept
-    {
-        return m_text;
-    }
-
-    [[nodiscard]] const QString& from() const noexcept
-    {
-        return m_from;
-    }
-
-    void set_text(QString text)
-    {
-        m_text = std::move(text);
-    }
-
 private:
-    std::list<Attachment> m_attachments;
-    timestamp_t m_timestamp;
+    void set_text(std::string);
+
     QString m_text;
     QString m_from;
-    bool m_is_edit;
+    bool m_is_edit = false;
 };
 
-class Chat
+class Chat : public melon::core::Chat
 {
 public:
-    using id_t = std::size_t;
     using message_handle_t = std::list<Message>::iterator;
 
-    Chat(QString name, id_t id)
-        : m_incomplete_message(/* from */ QLatin1String(""),
-                               /* text */ QStringLiteral(""),
-                               /* attachments */ {},
+    // For Insert & Select (temporary)
+    Chat(std::uint64_t domain_name, QString name)
+        : melon::core::Chat(domain_name, name.toStdString())
+        , m_incomplete_message(/* from */ MY_USER_ID,
+                               /* chat_id*/ DRAFT_CHAT_ID,
+                               /* domain_id*/ DRAFT_DOMAIN_ID,
                                /* timestamp */ {},
-                               /* is read by me */ true)
-        , m_name(std::move(name))
-        , m_id(id)
+                               /* text */ QStringLiteral(""),
+                               /* status*/ melon::core::Message::Status::FAIL)
     {
     }
-
-    Chat() = delete;
-    Chat(const Chat&) = default;
-    Chat& operator=(const Chat&) = default;
-    Chat(Chat&&) = default;
-    Chat& operator=(Chat&&) = default;
 
     [[nodiscard]] const std::list<Message>& messages() const noexcept
     {
         return m_messages;
     }
 
-    [[nodiscard]] std::list<Message>& messages() noexcept
+    [[nodiscard]] std::list<Message>& messages()noexcept
     {
         return m_messages;
+    }
+
+    [[nodiscard]] const QString& name_qstring() const noexcept
+    {
+        return m_name;
+    }
+
+    void set_name_qstring(QString chatname)
+    {
+        m_name = std::move(chatname);
+        set_chatname_base(m_name.toStdString());
     }
 
     [[nodiscard]] const Message& incomplete_message() const noexcept
@@ -145,21 +121,6 @@ public:
     [[nodiscard]] int scrolling_position() const noexcept
     {
         return m_scrolling_position;
-    }
-
-    [[nodiscard]] const QString& name() const noexcept
-    {
-        return m_name;
-    }
-
-    void set_name(QString name)
-    {
-        m_name = std::move(name);
-    }
-
-    [[nodiscard]] id_t id() const noexcept
-    {
-        return m_id;
     }
 
     message_handle_t add_message(Message message)
@@ -203,11 +164,24 @@ public:
         return m_messages.empty();
     }
 
+    std::vector<melon::core::User::Ptr> get_users() const override
+    {
+        std::vector<melon::core::User::Ptr> answer;
+        return answer;
+    }
+
+    std::vector<melon::core::Message::Ptr> get_messages() const override
+    {
+        std::vector<melon::core::Message::Ptr> answer;
+        return answer;
+    }
+
 private:
+    void set_chatname(std::string);
+
     std::list<Message> m_messages = {};
     Message m_incomplete_message;
     QString m_name;
-    id_t m_id;
     int m_scrolling_position = 0;
 };
 

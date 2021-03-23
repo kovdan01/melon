@@ -76,7 +76,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         painter->setPen(pen_for_background);
 
         QColor icon_color;
-        if (message->from() == QStringLiteral("Me"))
+        if (message->user_id() == MY_USER_ID)
             icon_color = Qt::darkCyan;
         else
             icon_color = Qt::darkGreen;
@@ -95,7 +95,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
                              m_base_margin * 2);
 
     // Message text rect
-    QString message_text = message->text();
+    QString message_text = message->text_qstring();
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
     QRect message_text_rect = fm_message_text.boundingRect(message_max_rect,

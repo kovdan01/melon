@@ -110,7 +110,7 @@ MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(
 void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, const QString& message)
 {
     auto it_msg = m_it_messages[index.row()];
-    it_msg->set_text(message);
+    it_msg->set_text_qstring(message);
 }
 
 bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const
@@ -122,7 +122,7 @@ bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const
 
     auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
 
-    return ((message1->from() == message2->from()) && (diff_time.count() < 2));
+    return ((message1->user_id() == message2->user_id()) && (diff_time.count() < 2));
 }
 
 void MessageListModel::clear()
