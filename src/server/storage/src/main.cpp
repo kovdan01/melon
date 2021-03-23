@@ -23,14 +23,14 @@ int main() try
     std::cout << "Domain hostanme is " << found_domain_edward.hostname() << "\n";
 
     // Users
-    mss::User user1(db, domain_edward.domain_id(), "Fudge", mc::User::Status::ONLINE);
+    mss::User user1(db, "Fudge", domain_edward.domain_id(), mc::User::Status::ONLINE);
     std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
     std::cout << "Current user_id: " << user1.user_id() << "\n";
 
     std::string anna = "anna";
 
-    mss::User anna_user(db, domain_edward.domain_id(), anna, mc::User::Status::ONLINE);
-    mss::User found_anna(db, domain_edward.domain_id(), anna_user.username());
+    mss::User anna_user(db, anna, domain_edward.domain_id(), mc::User::Status::ONLINE);
+    mss::User found_anna(db, anna_user.username(), domain_edward.domain_id());
     std::cout << "Current domain_id: " << anna_user.domain_id() <<"\n";
     std::cout << "Current user_id: " << anna_user.user_id() << "\n";
     std::cout << "Current username: " << anna_user.username() << "\n";
@@ -38,10 +38,10 @@ int main() try
     user1.remove();
 
     std::cout << "Get online usernames\n";
-    std::vector<mc::User> online_users = mss::get_online_users(db);
+    std::vector<mc::User::Ptr> online_users = mss::get_online_users(db);
     for (const auto& a : online_users)
     {
-        std::cout << a.user_id() << " : " << a.username() << '\n';
+        std::cout << a->user_id() << " : " << a->username() << '\n';
     }
     anna_user.set_status(mc::User::Status::OFFLINE);
 
@@ -49,7 +49,7 @@ int main() try
     online_users = mss::get_online_users(db);
     for (const auto& a : online_users)
     {
-        std::cout << a.user_id() << " : " << a.username() << '\n';
+        std::cout << a->user_id() << " : " << a->username() << '\n';
     }
 
     // Chats
@@ -61,19 +61,19 @@ int main() try
     std::cout << secret_chat.domain_id() << '\n';
     std::cout << secret_chat.chatname() << '\n';
 
-    std::vector<mc::User> vec_users = mss::get_users_for_chat(db, secret_chat);
+    std::vector<mc::User::Ptr> vec_users = secret_chat.get_users();
     std::cout << "Participants: \n";
     for (const auto& a : vec_users)
     {
-        std::cout << a.username() << " - ";
+        std::cout << a->username() << " - ";
     }
     std::cout << "\n\n";
 
 
-    std::vector<mc::Chat> vec_chats = mss::get_chats_for_user(db, anna_user);
+    std::vector<mc::Chat::Ptr> vec_chats = anna_user.get_chats();
     for (const auto& a : vec_chats)
     {
-        std::cout << a.chatname() << " - ";
+        std::cout << a->chatname() << " - ";
     }
     std::cout << "\n\n";
 
