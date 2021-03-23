@@ -92,7 +92,10 @@ public:
         SEEN,
     };
 
-    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id, std::string text, Status status);
+    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
+            std::chrono::system_clock::time_point timestamp, std::string text, Status status);
+
+    Message()=default;
 
     [[nodiscard]] std::uint64_t message_id() const;
     [[nodiscard]] std::uint64_t domain_id() const;

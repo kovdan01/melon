@@ -12,7 +12,7 @@ int main() try
     mysql::connection db(mss::config_melondb());
 
     // Domains
-    std::string domain_ed = "Dolores Umbrige server";
+    std::string domain_ed = "Arnold server";
     mss::Domain domain_edward(db, domain_ed, false);
     std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
     std::cout << "Domain type is " << domain_edward.external() << "\n";
@@ -23,11 +23,14 @@ int main() try
     std::cout << "Domain hostanme is " << found_domain_edward.hostname() << "\n";
 
     // Users
-    mss::User user1(db, 1, "Fudge", mc::User::Status::ONLINE);
+    mss::User user1(db, 6, "Fudge", mc::User::Status::ONLINE);
     std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
     std::cout << "Current user_id: " << user1.user_id() << "\n";
 
-    mss::User anna_user(db, 1, "anna");
+    std::string anna = "anna";
+
+    mss::User anna_user(db, 1, anna, mc::User::Status::ONLINE);
+    mss::User found_anna(db, 1, anna_user.username());
     std::cout << "Current domain_id: " << anna_user.domain_id() <<"\n";
     std::cout << "Current user_id: " << anna_user.user_id() << "\n";
     std::cout << "Current username: " << anna_user.username() << "\n";
@@ -75,7 +78,7 @@ int main() try
     std::cout << "\n\n";
 
     // Messages
-    mss::Message message1(db, domain_edward.domain_id(), user1.user_id(), chat1.chat_id(), ":D", mc::Message::Status::SENT);
+    mss::Message message1(db, chat1.chat_id(), domain_edward.domain_id(), user1.user_id(), std::chrono::system_clock::now(), ":D", mc::Message::Status::SENT);
     std::cout << "Current message_id: " << message1.message_id() << '\n';
     message1.set_status(mc::Message::Status::SEEN);
     message1.set_text("((((((");

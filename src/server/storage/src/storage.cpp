@@ -41,7 +41,6 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname, bool external
      : melon::core::Domain(INVALID_ID, std::move(hostname), external)
      , m_db(db)
 {
-    // [check] In mariadb it is bool, but it is not bool in sqlpp11 why? should change then to std::uint8_t but that strange author says that bool IS supported]
     m_db(insert_into(G_DOMAINS).set(G_DOMAINS.hostname = this->hostname(),
                                     G_DOMAINS.external = static_cast<std::uint8_t>(this->external())));
     std::uint64_t this_domain_id = max_domain_id(m_db);
@@ -59,7 +58,7 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
     {
         const auto& row = result.front();
         this->set_domain_id(row.domainId);
-        auto ext_val = static_cast<bool>(row.external);
+        bool ext_val = row.external;
         this->set_external(ext_val);
     }
     else
@@ -79,7 +78,6 @@ std::uint64_t max_domain_id(sqlpp::mysql::connection& db)
     return INVALID_ID;
 }
 
-// [check] That I do not delete useful information from table messages - now it deletes to much maybe
 void Domain::remove()
 {
     m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
@@ -143,6 +141,7 @@ void User::set_status(Status status)
     melon::core::User::set_status(status);
     m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(status)).where(G_USERS.userId == this->user_id()));
 }
+
 
 /* class Chat */
 
@@ -219,8 +218,8 @@ void Chat::remove()
 
 // For Insert
 Message::Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
-                 std::string text, Status status)
-     : melon::core::Message(INVALID_ID, domain_id, user_id, chat_id, std::move(text), status)
+                 std::chrono::system_clock::time_point timestamp, std::string text, Status status)
+     : melon::core::Message(INVALID_ID, chat_id, domain_id, user_id, timestamp, std::move(text), status)
      , m_db(db)
 {
     m_db(insert_into(G_MESSAGES).set(G_MESSAGES.text = this->text(),
@@ -236,7 +235,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint6
 
 // For Select
 Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
-     : melon::core::Message(message_id, domain_id, INVALID_ID, chat_id, "", Message::Status::FAIL)
+     : melon::core::Message(message_id, domain_id, INVALID_ID, chat_id, std::chrono::system_clock::now(), "", Message::Status::FAIL)
      , m_db(db)
 {
     auto result = db(select(G_MESSAGES.userId, G_MESSAGES.text, G_MESSAGES.status, G_MESSAGES.timesend)
@@ -347,8 +346,7 @@ std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, 
                                   ).where
                               (
                                   G_CHATSUSERS.chatId == chat.chat_id() &&
-                                  G_CHATSUSERS.domainId == chat.domain_id()
-                              )
+                                  G_CHATSUSERS.domainId == chat.domain_id())
                               )
          )
     {
@@ -365,7 +363,7 @@ std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection
     for (const auto& row : db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == chat.chat_id())))
     {
         auto status = static_cast<melon::core::Message::Status>(static_cast<int>(row.status));
-        messages_in_chat.emplace_back(row.messageId, row.domainId, row.userId, row.chatId, row.text, status);
+        messages_in_chat.emplace_back(row.messageId, row.chatId, row.domainId, row.userId, row.timesend.value(), row.text, status);
     }
     return messages_in_chat;
 }

@@ -80,7 +80,7 @@ class Message : public melon::core::Message
 public:
     // For Insert
     Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
-            std::string text, Status status);
+            std::chrono::system_clock::time_point timestamp, std::string text, Status status);
     // For Select
     Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
 

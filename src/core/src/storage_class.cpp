@@ -43,12 +43,13 @@ void Chat::set_chatname(std::string chatname)
     m_chatname = std::move(chatname);
 }
 
-Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id,
-                 std::uint64_t user_id, std::string text, Message::Status status)
+Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
+                 std::chrono::system_clock::time_point timestamp, std::string text, Message::Status status)
     : m_message_id(message_id)
     , m_domain_id(domain_id)
     , m_user_id(user_id)
     , m_chat_id(chat_id)
+    , m_timestamp(timestamp)
     , m_text(std::move(text))
     , m_status(status)
 {
