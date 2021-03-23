@@ -43,7 +43,7 @@ public:
     // For Select
     User(sqlpp::mysql::connection& db, std::string username, std::uint64_t domain_id);
 
-    std::vector<melon::core::Chat::Ptr> get_chats() const override;
+    [[nodiscard]] std::vector<melon::core::Chat::Ptr> get_chats() const override;
 
     void remove();
 
@@ -62,8 +62,8 @@ public:
     // For Select
     Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id);
 
-    std::vector<melon::core::User::Ptr> get_users() const override;
-    std::vector<melon::core::Message::Ptr> get_messages() const override;
+    [[nodiscard]] std::vector<melon::core::User::Ptr> get_users() const override;
+    [[nodiscard]] std::vector<melon::core::Message::Ptr> get_messages() const override;
 
     void remove();
 
