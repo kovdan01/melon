@@ -21,6 +21,11 @@ inline void Domain::set_domain_id(std::uint64_t domain_id)
     m_domain_id = domain_id;
 }
 
+inline void Domain::set_external(bool external)
+{
+    m_external = external;
+}
+
 [[nodiscard]] inline User::Status User::status() const
 {
     return m_status;
@@ -104,6 +109,11 @@ inline void Message::set_user_id(std::uint64_t user_id)
 inline void Message::set_chat_id(std::uint64_t chat_id)
 {
     m_chat_id = chat_id;
+}
+
+inline void Message::set_timestamp(std::chrono::system_clock::time_point timestamp)
+{
+    m_timestamp = timestamp;
 }
 
 [[nodiscard]] inline std::uint64_t Chat::chat_id() const

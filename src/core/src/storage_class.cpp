@@ -12,11 +12,6 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
-void Domain::set_external(bool external)
-{
-    m_external = external;
-}
-
 
 User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status)
     : m_user_id(user_id)
@@ -63,11 +58,6 @@ void Message::set_text(std::string text)
 void Message::set_status(Status status)
 {
     m_status = status;
-}
-
-void Message::set_timestamp(std::chrono::system_clock::time_point timestamp)
-{
-    m_timestamp = timestamp;
 }
 
 }  // namespace melon::core

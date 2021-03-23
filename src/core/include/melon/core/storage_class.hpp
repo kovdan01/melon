@@ -19,10 +19,9 @@ public:
     [[nodiscard]] const std::string& hostname() const;
     [[nodiscard]] bool external() const;
 
-    void set_external(bool external);
-
 protected:
     inline void set_domain_id(std::uint64_t domain_id);
+    inline void set_external(bool external);
 
 private:
     std::uint64_t m_domain_id;
@@ -113,7 +112,7 @@ protected:
     inline void set_domain_id(std::uint64_t domain_id);
     inline void set_user_id(std::uint64_t user_id);
     inline void set_chat_id(std::uint64_t chat_id);
-    void set_timestamp(std::chrono::system_clock::time_point timestamp);
+    inline void set_timestamp(std::chrono::system_clock::time_point timestamp);
 
 private:
     std::uint64_t m_message_id;
