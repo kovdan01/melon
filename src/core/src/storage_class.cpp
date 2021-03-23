@@ -12,7 +12,6 @@ Domain::Domain(std::uint64_t domain_id, std::string hostname, bool external)
 {
 }
 
-
 User::User(std::uint64_t user_id, std::uint64_t domain_id, std::string username, Status status)
     : m_user_id(user_id)
     , m_domain_id(domain_id)
