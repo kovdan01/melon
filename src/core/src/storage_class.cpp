@@ -11,7 +11,7 @@ Domain::Domain(std::string hostname, bool external)
 {
 }
 
-Domain::Domain(std::string hostname)
+Domain::Domain(std::string hostname)  // -V730
     : m_hostname(std::move(hostname))
 {
 }
@@ -46,7 +46,7 @@ User::User(std::string username, std::uint64_t domain_id, Status status)
 {
 }
 
-User::User(std::string username, std::uint64_t domain_id)
+User::User(std::string username, std::uint64_t domain_id)  // -V730
     : m_domain_id(domain_id)
     , m_username(std::move(username))
 {
@@ -129,7 +129,7 @@ Message::Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t dom
 {
 }
 
-Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
+Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)  // -V730
     : m_message_id(message_id)
     , m_chat_id(chat_id)
     , m_domain_id(domain_id)

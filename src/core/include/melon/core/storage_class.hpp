@@ -30,6 +30,9 @@ public:
     [[nodiscard]] bool external() const;
 
 protected:
+    // Corresponding constructors in derived classes must
+    // initialize all members that are not set here
+
     // For Insert
     Domain(std::string hostname, bool external);
     // For Select
@@ -77,6 +80,9 @@ public:
     virtual std::vector<std::unique_ptr<Chat>> get_chats() const = 0;
 
 protected:
+    // Corresponding constructors in derived classes must
+    // initialize all members that are not set here
+
     // For Insert
     User(std::string username, std::uint64_t domain_id, Status status);
     // For Select
@@ -118,6 +124,9 @@ public:
     virtual std::vector<std::unique_ptr<Message>> get_messages() const = 0;
 
 protected:
+    // Corresponding constructors in derived classes must
+    // initialize all members that are not set here
+
     // For Insert
     Chat(std::uint64_t domain_id, std::string chatname);
     // For Select
@@ -169,6 +178,9 @@ public:
     void set_timestamp(timestamp_t timestamp);
 
 protected:
+    // Corresponding constructors in derived classes must
+    // initialize all members that are not set here
+
     // For Insert
     Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
             timestamp_t timestamp, std::string text, Status status);
