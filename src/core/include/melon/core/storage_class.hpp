@@ -77,7 +77,7 @@ public:
 
     void set_status(Status status);
 
-    virtual std::vector<std::unique_ptr<Chat>> get_chats() const = 0;
+    [[nodiscard]] virtual std::vector<std::unique_ptr<Chat>> get_chats() const = 0;
 
 protected:
     // Corresponding constructors in derived classes must
@@ -120,8 +120,8 @@ public:
 
     void set_chatname(std::string chatname);
 
-    virtual std::vector<std::unique_ptr<User>> get_users() const = 0;
-    virtual std::vector<std::unique_ptr<Message>> get_messages() const = 0;
+    [[nodiscard]] virtual std::vector<std::unique_ptr<User>> get_users() const = 0;
+    [[nodiscard]] virtual std::vector<std::unique_ptr<Message>> get_messages() const = 0;
 
 protected:
     // Corresponding constructors in derived classes must

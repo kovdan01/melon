@@ -95,16 +95,16 @@ private:
 };
 
 
-std::uint64_t max_domain_id(sqlpp::mysql::connection& db);
-std::uint64_t max_message_id(sqlpp::mysql::connection& db);
-std::uint64_t max_chat_id(sqlpp::mysql::connection& db);
-std::uint64_t max_user_id(sqlpp::mysql::connection& db);
+[[nodiscard]] std::uint64_t max_domain_id(sqlpp::mysql::connection& db);
+[[nodiscard]] std::uint64_t max_message_id(sqlpp::mysql::connection& db);
+[[nodiscard]] std::uint64_t max_chat_id(sqlpp::mysql::connection& db);
+[[nodiscard]] std::uint64_t max_user_id(sqlpp::mysql::connection& db);
 
 
 /* Users */
 
-std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db);
-std::vector<melon::core::User::Ptr> get_online_users(sqlpp::mysql::connection& db);
+[[nodiscard]] std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db);
+[[nodiscard]] std::vector<melon::core::User::Ptr> get_online_users(sqlpp::mysql::connection& db);
 
 class IdNotFoundException : public std::runtime_error
 {
