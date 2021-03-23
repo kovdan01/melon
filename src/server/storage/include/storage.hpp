@@ -1,6 +1,8 @@
 #ifndef MELON_SERVER_STORAGE_HPP_
 #define MELON_SERVER_STORAGE_HPP_
 
+#include <stdexcept>
+
 #include <melon/core/storage_class.hpp>
 
 #include <sqlpp11/mysql/mysql.h>
@@ -109,6 +111,14 @@ std::vector<melon::core::User> get_online_users(sqlpp::mysql::connection& db);
 
 std::vector<melon::core::User> get_users_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
 std::vector<melon::core::Message> get_messages_for_chat(sqlpp::mysql::connection& db, const melon::core::Chat& chat);
+
+
+class IdNotFoundException : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+    using std::runtime_error::operator=;
+};
 
 
 }  // namespace melon::server::storage

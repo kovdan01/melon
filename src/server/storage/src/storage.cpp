@@ -63,7 +63,7 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
     }
     else
     {
-        throw std::runtime_error("No hostname in database");
+        throw IdNotFoundException("No hostname in database");
     }
 }
 
@@ -116,7 +116,7 @@ User::User(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string us
     }
     else
     {
-        throw std::runtime_error("No user in database");
+        throw IdNotFoundException("No user in database");
     }
 }
 
@@ -186,7 +186,7 @@ Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t do
     }
     else
     {
-        throw std::runtime_error("No chat in database");
+        throw IdNotFoundException("No chat in database");
     }
 }
 
@@ -253,7 +253,7 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
     }
     else
     {
-        throw std::runtime_error("No message in database");
+        throw IdNotFoundException("No message in database");
     }
 }
 
