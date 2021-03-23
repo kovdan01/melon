@@ -62,7 +62,7 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
         bool external = row.external;
 
         this->set_domain_id(row.domainId);
-        this->set_external(external);
+        this->set_external_base(external);
     }
     else
     {
@@ -194,7 +194,7 @@ Chat::Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t do
     if (!result.empty())
     {
         const auto& row = result.front();
-        mc::Chat::set_chatname(row.chatname);
+        this->set_chatname_base(row.chatname);
     }
     else
     {
@@ -293,9 +293,9 @@ Message::Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::ui
         auto status = static_cast<mc::Message::Status>(static_cast<int>(row.status));
 
         this->set_user_id(row.userId);
-        this->set_text(row.text);
-        this->set_timestamp(row.timesend.value());
-        this->set_status(status);
+        this->set_text_base(row.text);
+        this->set_timestamp_base(row.timesend.value());
+        this->set_status_base(status);
     }
     else
     {
