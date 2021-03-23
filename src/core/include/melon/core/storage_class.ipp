@@ -1,6 +1,31 @@
 namespace melon::core
 {
 
+[[nodiscard]] inline std::uint64_t Domain::domain_id() const
+{
+    return m_domain_id;
+}
+
+[[nodiscard]] inline const std::string& Domain::hostname() const
+{
+    return m_hostname;
+}
+
+[[nodiscard]] inline bool Domain::external() const
+{
+    return m_external;
+}
+
+inline void Domain::set_domain_id(std::uint64_t domain_id)
+{
+    m_domain_id = domain_id;
+}
+
+inline void Domain::set_external(bool external)
+{
+    m_external = external;
+}
+
 [[nodiscard]] inline User::Status User::status() const
 {
     return m_status;
@@ -11,14 +36,34 @@ namespace melon::core
     return m_user_id;
 }
 
+[[nodiscard]] inline std::uint64_t User::domain_id() const
+{
+    return m_domain_id;
+}
+
 [[nodiscard]] inline const std::string& User::username() const
 {
     return m_username;
 }
 
+inline void User::set_user_id(std::uint64_t user_id)
+{
+    m_user_id = user_id;
+}
+
+inline void User::set_domain_id(std::uint64_t domain_id)
+{
+    m_domain_id = domain_id;
+}
+
 [[nodiscard]] inline std::uint64_t Message::message_id() const
 {
     return m_message_id;
+}
+
+[[nodiscard]] inline std::uint64_t Message::domain_id() const
+{
+    return m_domain_id;
 }
 
 [[nodiscard]] inline const std::string& Message::text() const
@@ -46,13 +91,54 @@ namespace melon::core
     return m_chat_id;
 }
 
+inline void Message::set_message_id(std::uint64_t message_id)
+{
+    m_message_id = message_id;
+}
+
+inline void Message::set_domain_id(std::uint64_t domain_id)
+{
+    m_domain_id = domain_id;
+}
+
+inline void Message::set_user_id(std::uint64_t user_id)
+{
+    m_user_id = user_id;
+}
+
+inline void Message::set_chat_id(std::uint64_t chat_id)
+{
+    m_chat_id = chat_id;
+}
+
+inline void Message::set_timestamp(std::chrono::system_clock::time_point timestamp)
+{
+    m_timestamp = timestamp;
+}
+
 [[nodiscard]] inline std::uint64_t Chat::chat_id() const
 {
     return m_chat_id;
 }
+
+[[nodiscard]] inline std::uint64_t Chat::domain_id() const
+{
+    return m_domain_id;
+}
+
 [[nodiscard]] inline const std::string& Chat::chatname() const
 {
     return m_chatname;
+}
+
+inline void Chat::set_chat_id(std::uint64_t chat_id)
+{
+    m_chat_id = chat_id;
+}
+
+inline void Chat::set_domain_id(std::uint64_t domain_id)
+{
+    m_domain_id = domain_id;
 }
 
 }  // namespace melon::core

@@ -11,51 +11,81 @@ int main() try
 
     mysql::connection db(mss::config_melondb());
 
-    mc::User user(0, "h3ll0kitt1", mc::User::Status::ONLINE);
-    mss::add_user(db, user);
+    // Domains
+    std::string domain_ed = "Brizil server";
+    mss::Domain domain_edward(db, domain_ed, false);
+    std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
+    std::cout << "Domain type is " << domain_edward.external() << "\n";
 
-    mc::Chat chat(0, "secret_chat");
-    mss::add_chat(db, chat);
+    mss::Domain found_domain_edward(db, domain_ed);
+    std::cout << "Domain id is " << found_domain_edward.domain_id() << "\n";
+    std::cout << "Domain type is " << found_domain_edward.external() << "\n";
+    std::cout << "Domain hostanme is " << found_domain_edward.hostname() << "\n";
 
-    mc::Message message(0, 1, 1, "Let's protest", mc::Message::Status::SENT);
-    mss::add_message(db, message);
+    // Users
+    mss::User user1(db, domain_edward.domain_id(), "Fudge", mc::User::Status::ONLINE);
+    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
+    std::cout << "Current user_id: " << user1.user_id() << "\n";
 
-    mc::Message message2(0, 1, 1, "or go to OVD", mc::Message::Status::RECEIVED);
-    mss::add_message(db, message2);
+    std::string anna = "anna";
 
-    std::vector<mc::Message> chat_message = mss::get_messages_for_chat(db, chat);
-    std::cout << "Messages of chat:\n";
-    for (const auto& a : chat_message)
-    {
-        std::cout << "text: " << a.text() << '\n';
-    }
+    mss::User anna_user(db, domain_edward.domain_id(), anna, mc::User::Status::ONLINE);
+    mss::User found_anna(db, domain_edward.domain_id(), anna_user.username());
+    std::cout << "Current domain_id: " << anna_user.domain_id() <<"\n";
+    std::cout << "Current user_id: " << anna_user.user_id() << "\n";
+    std::cout << "Current username: " << anna_user.username() << "\n";
+    user1.set_status(mc::User::Status::OFFLINE);
+    user1.remove();
 
+    std::cout << "Get online usernames\n";
     std::vector<mc::User> online_users = mss::get_online_users(db);
-    std::cout << "Online users:\n";
+    for (const auto& a : online_users)
+    {
+        std::cout << a.user_id() << " : " << a.username() << '\n';
+    }
+    anna_user.set_status(mc::User::Status::OFFLINE);
+
+    std::cout << "Get online usernames\n";
+    online_users = mss::get_online_users(db);
     for (const auto& a : online_users)
     {
         std::cout << a.user_id() << " : " << a.username() << '\n';
     }
 
-    std::cout << "Change status for online\n";
-    mss::make_user_online(db, user);
-    std::vector<std::string> online_users_names = mss::get_online_users_names(db);
+    // Chats
+    mss::Chat chat1(db, domain_edward.domain_id(), "secret_chat6");
+    std::cout << "Current chat_id: " << chat1.chat_id() << '\n';
 
-    std::cout << "Online users:\n";
-    for (const auto& a : online_users_names)
+    mss::Chat secret_chat(db, chat1.chat_id(), domain_edward.domain_id());
+    std::cout << secret_chat.chat_id() << '\n';
+    std::cout << secret_chat.domain_id() << '\n';
+    std::cout << secret_chat.chatname() << '\n';
+
+    std::vector<mc::User> vec_users = mss::get_users_for_chat(db, secret_chat);
+    std::cout << "Participants: \n";
+    for (const auto& a : vec_users)
     {
-        std::cout << a << '\n';
+        std::cout << a.username() << " - ";
     }
+    std::cout << "\n\n";
 
-    std::cout << "Change status for offline\n";
-    mss::make_user_offline(db, user);
-    online_users_names = mss::get_online_users_names(db);
 
-    std::cout << "Online users:\n";
-    for (const auto& a : online_users_names)
+    std::vector<mc::Chat> vec_chats = mss::get_chats_for_user(db, anna_user);
+    for (const auto& a : vec_chats)
     {
-        std::cout << a << '\n';
+        std::cout << a.chatname() << " - ";
     }
+    std::cout << "\n\n";
+
+    // Messages
+    mss::Message message1(db, chat1.chat_id(), domain_edward.domain_id(), user1.user_id(), std::chrono::system_clock::now(), ":D", mc::Message::Status::SENT);
+    std::cout << "Current message_id: " << message1.message_id() << '\n';
+    message1.set_status(mc::Message::Status::SEEN);
+    message1.set_text("((((((");
+
+    domain_edward.remove();
+    message1.remove();
+
 }
 catch (const sqlpp::exception& e)
 {
