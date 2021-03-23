@@ -74,14 +74,15 @@ QString ChatItemDelegate::date_handler(const Message::timestamp_t& timestamp) co
     Message::timestamp_t now = std::chrono::system_clock::now();
     auto diff_time_days = std::chrono::duration_cast<std::chrono::days>(timestamp - now).count();
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
-    std::tm* tm = std::localtime(&time_tt);
+    std::tm tm;
+    ::localtime_r(&time_tt, &tm);
 
     if (diff_time_days == 0)
-        return this->date_number_handler(tm->tm_hour) + QStringLiteral(":") + this->date_number_handler(tm->tm_min);
+        return this->date_number_handler(tm.tm_hour) + QStringLiteral(":") + this->date_number_handler(tm.tm_min);
 
-    return this->date_number_handler(tm->tm_mday) + QStringLiteral(" ") +
-           m_month_names[tm->tm_mon] + QStringLiteral(" ") +
-           this->date_number_handler(tm->tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
+           m_month_names[tm.tm_mon] + QStringLiteral(" ") +
+           this->date_number_handler(tm.tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 }
 
 void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

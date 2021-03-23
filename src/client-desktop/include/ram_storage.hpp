@@ -25,7 +25,6 @@ class Message : public melon::core::Message
 {
 public:
     using timestamp_t = std::chrono::system_clock::time_point;
-    //using Status = melon::core::Message::Status;
 
     //For Insert & Select (temporary)
     Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,

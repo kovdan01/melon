@@ -182,13 +182,13 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     painter->setFont(m_timestamp_font);
     Message::timestamp_t timestamp = message->timestamp();
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
-    std::tm* timestamp_tm = std::localtime(&time_tt);
+    std::tm timestamp_tm;
+    ::localtime_r(&time_tt, &timestamp_tm);
 
-    QString time_str = this->date_number_handler(timestamp_tm->tm_mday) + QStringLiteral(" ")
-                       +m_month_names[timestamp_tm->tm_mon] + QStringLiteral(" ")
-                       +this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":")
-                       +this->date_number_handler(timestamp_tm->tm_min);
-
+    QString time_str = this->date_number_handler(timestamp_tm.tm_mday) + QStringLiteral(" ")
+                       +m_month_names[timestamp_tm.tm_mon] + QStringLiteral(" ")
+                       +this->date_number_handler(timestamp_tm.tm_hour) + QStringLiteral(":")
+                       +this->date_number_handler(timestamp_tm.tm_min);
     if (message->is_edit())
         time_str = tr("edit") + QStringLiteral("  ") + time_str;
 
