@@ -24,7 +24,7 @@ find_package(Threads REQUIRED)
 # qt widgets, translations
 find_package(
     Qt5 REQUIRED
-    COMPONENTS Widgets LinguistTools
+    COMPONENTS Widgets LinguistTools Sql
 )
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
@@ -35,6 +35,7 @@ set(HEADERS
     include/chat_list_view.hpp
     include/chat_widget.hpp
     include/config.hpp
+    include/db_storage.hpp
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
@@ -68,7 +69,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Sql)
 
 ntc_target(${PROJECT_NAME}
     TRANSLATIONS en_US

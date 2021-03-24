@@ -1,5 +1,5 @@
 #include <chat_list_model.hpp>
-#include <ram_storage.hpp>
+#include <db_storage.hpp>
 
 namespace melon::client_desktop
 {
@@ -62,7 +62,7 @@ void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
 {
     int row = this->rowCount(QModelIndex()) + 1;
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    auto& ram_storage = StorageSingletone::get_instance();
 
     auto it_added_chat = ram_storage.add_chat(chat);
 
@@ -81,7 +81,7 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
     m_it_chats.erase(m_it_chats.begin() + row);
     this->endRemoveRows();
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    auto& ram_storage = StorageSingletone::get_instance();
     ram_storage.delete_chat(it_chat);
 }
 

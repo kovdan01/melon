@@ -3,7 +3,7 @@
 
 #include <message_item_delegate.hpp>
 #include <message_list_model.hpp>
-#include <ram_storage.hpp>
+#include <db_storage.hpp>
 
 #include <ui_chat_widget.h>
 
@@ -28,8 +28,8 @@ public:
     ChatWidget(QWidget* parent = nullptr);
     ~ChatWidget() override = default;
 
-    using chat_handle_t = RAMStorageSingletone::chat_handle_t;
-    using const_chat_handle_t = RAMStorageSingletone::const_chat_handle_t;
+    using chat_handle_t = StorageSingletone::chat_handle_t;
+    using const_chat_handle_t = StorageSingletone::const_chat_handle_t;
     using message_handle_t = Chat::message_handle_t;
     using MyRoles = MessageListModel::MyRoles;
 

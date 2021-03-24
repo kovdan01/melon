@@ -1,7 +1,7 @@
 #include <chat_widget.hpp>
 #include <config.hpp>
+#include <db_storage.hpp>
 #include <message_item_delegate.hpp>
-#include <ram_storage.hpp>
 
 #include <QFont>
 #include <QFontMetrics>

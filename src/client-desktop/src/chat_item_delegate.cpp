@@ -1,6 +1,6 @@
 #include <chat_item_delegate.hpp>
 #include <config.hpp>
-#include <ram_storage.hpp>
+#include <db_storage.hpp>
 
 #include <QListView>
 #include <QPainter>
@@ -89,7 +89,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
-    auto chat = index.data(Qt::DisplayRole).value<RAMStorageSingletone::chat_handle_t>();
+    auto chat = index.data(Qt::DisplayRole).value<StorageSingletone::chat_handle_t>();
     auto last_message = chat->last_message();
 
     QPen pen_for_background;
@@ -205,10 +205,13 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     max_message_text_rect.setX(max_message_text_rect.x() + sender_rect.width());
 
     // Last message rect and render
-    QString elided_message_text = fm_last_message.elidedText(last_message->text_qstring(), Qt::ElideRight, max_message_text_rect.width());
-    QRect message_rect = fm_last_message.boundingRect(max_message_text_rect, Qt::AlignLeft, elided_message_text);
+    QString message_text = last_message->text_qstring();
+    message_text = message_text.replace(QStringLiteral("\n"), QStringLiteral(" "));
+    QString elided_text = fm_last_message.elidedText(message_text, Qt::ElideRight, max_message_text_rect.width());
+
+    QRect message_rect = fm_last_message.boundingRect(max_message_text_rect, Qt::AlignLeft, elided_text);
     painter->setFont(m_last_message_font);
-    painter->drawText(message_rect, Qt::AlignLeft, elided_message_text);
+    painter->drawText(message_rect, Qt::AlignLeft, elided_text);
 }
 
 QSize ChatItemDelegate::sizeHint(const QStyleOptionViewItem&, const QModelIndex&) const

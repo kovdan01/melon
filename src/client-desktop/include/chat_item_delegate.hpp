@@ -2,6 +2,7 @@
 #define MELON_CLIENT_DESKTOP_CHAT_ITEM_DELEGATE_HPP_
 
 #include <chat_list_model.hpp>
+#include <db_storage.hpp>
 
 #include <QStyledItemDelegate>
 
