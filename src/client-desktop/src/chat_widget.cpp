@@ -103,13 +103,13 @@ void ChatWidget::send_message()
     }
 
 
-    Message new_message(m_current_chat_it->chat_id(), DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+    Message new_message(m_current_chat_it->chat_id(), MY_USER_ID, DOMAIN_ID,
                         std::chrono::system_clock::now(),
                         message_text,
                         Message::Status::SENT);
 
     m_ui->MsgEdit->clear();
-    m_model_message_list->add_message(m_current_chat_it, new_message);
+    m_model_message_list->add_message(m_current_chat_it, message_text);
     m_ui->MsgList->scrollToBottom();
 
     m_ui->MsgEdit->setFocus();
@@ -119,7 +119,7 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    Message new_message(ANOTHER_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
+    Message new_message(ANOTHER_USER_ID, m_current_chat_it->chat_id(), DOMAIN_ID,
                         std::chrono::system_clock::now(),
                         QStringLiteral("I wish I could hear you."),
                         Message::Status::RECEIVED);
@@ -171,15 +171,9 @@ Message ChatWidget::capture_message_from_editor()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
     if (message_text.isEmpty())
-        return Message(MY_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
-                       std::chrono::system_clock::now(),
-                       QLatin1String(""),
-                       Message::Status::FAIL);
+        return Message(QLatin1String(""));
 
-    return Message(MY_USER_ID, DRAFT_CHAT_ID, DRAFT_DOMAIN_ID,
-                   std::chrono::system_clock::now(),
-                   message_text,
-                   Message::Status::FAIL);;
+    return Message(message_text);
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)
