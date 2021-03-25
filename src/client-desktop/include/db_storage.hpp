@@ -73,9 +73,9 @@ class Message : public MessageRAM
 {
 public:
     //For Insert
-    Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
+    Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
             timestamp_t timestamp, QString text, Status status)
-        : MessageRAM(user_id, chat_id, domain_id, timestamp, text, status)
+        : MessageRAM(chat_id, domain_id, user_id, timestamp, text, status)
     {
         this->set_message_id(max_message_id(this->chat_id(), this->domain_id()) + 1);
 
@@ -83,9 +83,9 @@ public:
         if(!qry.prepare(QStringLiteral("INSERT INTO messages"
                                        " VALUES("
                                        " :msg_id,"
-                                       " :user_id,"
                                        " :chat_id,"
                                        " :domain_id,"
+                                       " :user_id,"
                                        " :timestamp,"
                                        " :text,"
                                        " :status)")))
@@ -203,6 +203,26 @@ public:
         }
     }
 
+    // For Select
+    Chat(std::uint64_t chat_id, std::uint64_t domain_id)
+        : ChatRAM(chat_id, domain_id)
+        , m_incomplete_message(QStringLiteral(""))
+    {
+        QSqlQuery qry(QSqlDatabase::database(DB_NAME));
+        QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id())
+                            + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+        if (!qry.exec(qry_string))
+        {
+            std::cout << "Fail loading chat!" << std::endl;
+            std::cout << qry.lastError().text().toStdString() << std::endl;
+        }
+        else
+        {
+            qry.next();
+            this->set_name_qstring(qry.value(0).toString());
+        }
+    }
+
     void remove_from_db()
     {
         QSqlQuery qry(QSqlDatabase::database(DB_NAME));
@@ -217,8 +237,7 @@ public:
         }
         else
         {
-            qry.prepare(QStringLiteral("SELECT COUNT(*) FROM chats"));
-            qry.exec();
+            qry.exec(QStringLiteral("SELECT COUNT(*) FROM chats"));
             qry.next();
             std::cout << "Now number of chats is " << qry.value(0).toInt() << std::endl;
         }
@@ -295,9 +314,8 @@ public:
     StorageSingletone(StorageSingletone&& root) = delete;
     StorageSingletone& operator=(StorageSingletone&&) = delete;
 
-    chat_handle_t add_chat(std::uint64_t domain_id, const QString& name)
+    chat_handle_t add_chat(const Chat& chat)
     {
-        Chat chat(domain_id, name);
         m_chats.emplace_back(std::move(chat));
         return std::prev(m_chats.end());
     }

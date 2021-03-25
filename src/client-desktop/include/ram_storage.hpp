@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 namespace melon::client_desktop
 {
 
@@ -26,12 +28,12 @@ public:
     using timestamp_t = std::chrono::system_clock::time_point;
 
     // For Insert
-    MessageRAM(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
+    MessageRAM(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
                timestamp_t timestamp, QString text, Status status)
         : melon::core::Message(chat_id, domain_id, user_id, text.toStdString(), timestamp, status)
         , m_text(std::move(text))
     {
-        set_from();
+        this->set_from();
     }
 
     // For Select
@@ -89,10 +91,16 @@ class ChatRAM : public melon::core::Chat
 {
 public:
 
-    // For Insert & Select (temporary)
+    // For Insert
     ChatRAM(std::uint64_t domain_name, QString name)
         : melon::core::Chat(domain_name, name.toStdString())
         , m_name(std::move(name))
+    {
+    }
+
+    // For Select
+    ChatRAM(std::uint64_t chat_id, std::uint64_t domain_id)
+        : melon::core::Chat(chat_id, domain_id)
     {
     }
 

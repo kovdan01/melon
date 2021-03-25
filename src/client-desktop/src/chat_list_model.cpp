@@ -60,13 +60,13 @@ bool ChatListModel::setData(const QModelIndex& index, const QVariant& value, int
     return false;
 }
 
-void ChatListModel::add_chat(const QString& name, const QModelIndex& parent)
+void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
 {
     int row = this->rowCount(QModelIndex()) + 1;
 
     auto& ram_storage = StorageSingletone::get_instance();
 
-    auto it_added_chat = ram_storage.add_chat(DOMAIN_ID, name);
+    auto it_added_chat = ram_storage.add_chat(chat);
 
     this->beginInsertRows(parent, row, row);
     m_it_chats.emplace_back(it_added_chat);

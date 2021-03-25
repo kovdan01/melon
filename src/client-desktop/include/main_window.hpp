@@ -52,6 +52,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();
+    void load_data_from_database();
 };
 
 }  // namespace melon::client_desktop

@@ -1,7 +1,9 @@
 #include <chat_item_delegate.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
+#include <db_storage.hpp>
 #include <main_window.hpp>
+#include <melon/core/exception.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -61,13 +63,31 @@ void MainWindow::replace_spacer_with_chat_widget()
             &MainWindow::repaint_chat_list);
 }
 
+void MainWindow::load_data_from_database()
+{
+    std::cout << "In loading data from database!" << std::endl;
+    QSqlQuery qry(DB_NAME);
+    if (!qry.exec(QStringLiteral("SELECT chat_id, domain_id FROM chats")))
+    {
+        std::cout << "Error while loading data: " << std::flush;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+        return;
+    }
+    while(qry.next())
+    {
+        std::uint64_t chat_id = qry.value(0).value<std::uint64_t>();
+        std::uint64_t domain_id = qry.value(1).value<std::uint64_t>();
+        Chat chat(chat_id, domain_id); // here is second select inside (!!!)
+        m_model_chat_list->add_chat(chat);
+    }
+    m_ui->ChatList->setCurrentIndex(m_model_chat_list->index(0));
+}
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
     , m_ui{new Ui::MainWindow}
 {
     m_ui->setupUi(this);
-
-    this->replace_chat_widget_with_spacer();
 
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
@@ -86,16 +106,29 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
+
+    QSqlQuery qry(DB_NAME);
+    qry.exec(QStringLiteral("SELECT COUNT(chat_id) from chats"));
+    qry.next();
+    if (qry.value(0).toInt() > 1)
+    {
+        this->replace_spacer_with_chat_widget();
+        this->load_data_from_database();
+    }
+    else
+    {
+        this->replace_chat_widget_with_spacer();
+    }
 }
 
 namespace
 {
 
-class ChatNameException : public std::runtime_error
+class ChatNameException : public melon::Exception
 {
 public:
-    using std::runtime_error::runtime_error;
-    using std::runtime_error::operator=;
+    using melon::Exception::Exception;
+    using melon::Exception::operator=;
 };
 
 }  // namespace
@@ -124,7 +157,8 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        m_model_chat_list->add_chat(name);
+        Chat chat(DOMAIN_ID, name);
+        m_model_chat_list->add_chat(chat);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
         QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);
         m_ui->ChatList->setCurrentIndex(cur_index);
