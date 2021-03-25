@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chats` (
-  `chat_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `chat_id` bigint(20) unsigned NOT NULL,
   `domain_id` bigint(20) unsigned NOT NULL,
   `chatname` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`chat_id`,`domain_id`),
@@ -76,12 +76,12 @@ DROP TABLE IF EXISTS `messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `messages` (
-  `message_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `message_id` bigint(20) unsigned NOT NULL,
   `chat_id` bigint(20) unsigned NOT NULL,
   `domain_id` bigint(20) unsigned NOT NULL,
   `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `timesend` datetime NOT NULL,
+  `sendtime` datetime NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`message_id`,`chat_id`,`domain_id`),
   KEY `chat_id` (`chat_id`),
@@ -101,7 +101,7 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `user_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) unsigned NOT NULL,
   `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `domain_id` bigint(20) unsigned NOT NULL,

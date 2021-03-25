@@ -1,6 +1,7 @@
 #include <chat_widget.hpp>
 #include <config.hpp>
 #include <db_storage.hpp>
+#include <helpers.hpp>
 #include <message_item_delegate.hpp>
 
 #include <QFont>
@@ -185,10 +186,10 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     std::tm timestamp_tm;
     ::localtime_r(&time_tt, &timestamp_tm);
 
-    QString time_str = this->date_number_handler(timestamp_tm.tm_mday) + QStringLiteral(" ")
-                       +m_month_names[timestamp_tm.tm_mon] + QStringLiteral(" ")
-                       +this->date_number_handler(timestamp_tm.tm_hour) + QStringLiteral(":")
-                       +this->date_number_handler(timestamp_tm.tm_min);
+    QString time_str = this->date_number_handler(timestamp_tm.tm_mday) + QStringLiteral(" ") +
+                       m_month_names[timestamp_tm.tm_mon] + QStringLiteral(" ") +
+                       this->date_number_handler(timestamp_tm.tm_hour) + QStringLiteral(":") +
+                       this->date_number_handler(timestamp_tm.tm_min);
     if (message->is_edit())
         time_str = tr("edit") + QStringLiteral("  ") + time_str;
 

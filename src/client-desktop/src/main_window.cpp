@@ -88,12 +88,17 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 }
 
+namespace
+{
+
 class ChatNameException : public std::runtime_error
 {
 public:
     using std::runtime_error::runtime_error;
     using std::runtime_error::operator=;
 };
+
+}  // namespace
 
 static void check_chat_name(const QString& text)
 {

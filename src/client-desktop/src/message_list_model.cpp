@@ -1,4 +1,5 @@
 #include <config.hpp>
+#include <helpers.hpp>
 #include <message_list_model.hpp>
 
 #include <iterator>
@@ -13,7 +14,7 @@ MessageListModel::MessageListModel(QObject* parent)
 
 int MessageListModel::rowCount(const QModelIndex& index) const
 {
-    return index.isValid() ? 0 : static_cast<int>(m_it_messages.size());
+    return index.isValid() ? 0 : to_int(m_it_messages.size());
 }
 
 QVariant MessageListModel::data(const QModelIndex& index, int role) const
@@ -22,18 +23,20 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
 
     if (index.isValid())
     {
+        std::size_t row = to_size_t(index.row());
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_it_messages[index.row()]);
+            data.setValue(m_it_messages[row]);
             break;
         case MyRoles::MessageTextRole:
-            data.setValue(m_it_messages[index.row()]->text_qstring());
+            data.setValue(m_it_messages[row]->text_qstring());
             break;
         case MyRoles::AreIconAndSendernameNeededRole:
-            return this->are_icon_and_sendername_needed(index.row() - 1, index.row());
+            return this->are_icon_and_sendername_needed(row - 1, row);
         case MyRoles::IsEditRole:
-            data.setValue(m_it_messages[index.row()]->is_edit());
+            data.setValue(m_it_messages[row]->is_edit());
+            break;
         default:
             break;
         }
@@ -57,7 +60,7 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
             emit dataChanged(index, index);
             return true;
         case MyRoles::IsEditRole:
-            m_it_messages[index.row()]->set_is_edit(value.toBool());
+            m_it_messages[to_size_t(index.row())]->set_is_edit(value.toBool());
             emit dataChanged(index, index);
             return true;
         default:
@@ -89,11 +92,11 @@ void MessageListModel::load_message(message_handle_t it_message)
 }
 
 
-void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex &index, const QModelIndex& parent)
+void MessageListModel::delete_message(chat_handle_t it_chat, const QModelIndex& index, const QModelIndex& parent)
 {
     int row = index.row();
 
-    auto it_message = m_it_messages[row];
+    auto it_message = m_it_messages[to_size_t(row)];
 
     this->beginRemoveRows(parent, row, row);
     m_it_messages.erase(m_it_messages.begin() + row);
@@ -109,13 +112,12 @@ MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(
 
 void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, const QString& message)
 {
-    auto it_msg = m_it_messages[index.row()];
-    it_msg->set_text_qstring(message);
+    m_it_messages[to_size_t(index.row())]->set_text_qstring(message);
 }
 
-bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const
+bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std::size_t bigger_row) const
 {
-    if (less_row < 0 || bigger_row >= static_cast<int>(m_it_messages.size()))
+    if (less_row == std::size_t(-1) || bigger_row >= m_it_messages.size())
         return false;
     auto message1 = m_it_messages[less_row];
     auto message2 = m_it_messages[bigger_row];
@@ -127,7 +129,7 @@ bool MessageListModel::are_icon_and_sendername_needed(const int& less_row, const
 
 void MessageListModel::clear()
 {
-    this->beginRemoveRows(QModelIndex(), 1, static_cast<int>(m_it_messages.size()));
+    this->beginRemoveRows(QModelIndex(), 1, to_int(m_it_messages.size()));
     m_it_messages.clear();
     this->endRemoveRows();
 }
