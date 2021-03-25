@@ -2,7 +2,6 @@
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
 #include <main_window.hpp>
-#include <melon/core/exception.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -92,11 +91,11 @@ MainWindow::MainWindow(QWidget* parent)
 namespace
 {
 
-class ChatNameException : public melon::Exception
+class ChatNameException : public std::runtime_error
 {
 public:
-    using melon::Exception::Exception;
-    using melon::Exception::operator=;
+    using std::runtime_error::runtime_error;
+    using std::runtime_error::operator=;
 };
 
 }  // namespace
