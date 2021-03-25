@@ -163,10 +163,10 @@ int main() try
     user1.remove();
     try
     {
-        mss::User found_user1_deleted = mss::User(db, user1.username(), user1.domain_id());
+        [[maybe_unused]] mss::User found_user1_deleted = mss::User(db, user1.username(), user1.domain_id());
         assert(false);
     }
-    catch (...)
+    catch (const mss::IdNotFoundException& e)
     {
         std::cout << "Not found user1\n";
     }
