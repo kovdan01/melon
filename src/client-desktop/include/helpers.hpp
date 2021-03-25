@@ -1,3 +1,6 @@
+#ifndef MELON_CLIENT_DESKTOP_HELPERS_HPP_
+#define MELON_CLIENT_DESKTOP_HELPERS_HPP_
+
 #include <cstddef>
 
 namespace melon::client_desktop
@@ -14,3 +17,5 @@ inline int to_int(std::size_t value)
 }
 
 }  // namespace melon::client_desktop
+
+#endif  // MELON_CLIENT_DESKTOP_HELPERS_HPP_

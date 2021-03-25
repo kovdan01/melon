@@ -23,18 +23,19 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
 
     if (index.isValid())
     {
+        std::size_t row = to_size_t(index.row());
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_it_messages[index.row()]);
+            data.setValue(m_it_messages[row]);
             break;
         case MyRoles::MessageTextRole:
-            data.setValue(m_it_messages[index.row()]->text());
+            data.setValue(m_it_messages[row]->text());
             break;
         case MyRoles::AreIconAndSendernameNeededRole:
-            return this->are_icon_and_sendername_needed(index.row() - 1, index.row());
+            return this->are_icon_and_sendername_needed(row - 1, row);
         case MyRoles::IsEditRole:
-            data.setValue(m_it_messages[index.row()]->is_edit());
+            data.setValue(m_it_messages[row]->is_edit());
             break;
         default:
             break;
@@ -115,12 +116,12 @@ void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, cons
     it_msg->set_text(message);
 }
 
-bool MessageListModel::are_icon_and_sendername_needed(int less_row, int bigger_row) const
+bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std::size_t bigger_row) const
 {
-    if (less_row < 0 || bigger_row >= to_int(m_it_messages.size()))
+    if (less_row == std::size_t(-1) || bigger_row >= m_it_messages.size())
         return false;
-    auto message1 = m_it_messages[to_size_t(less_row)];
-    auto message2 = m_it_messages[to_size_t(bigger_row)];
+    auto message1 = m_it_messages[less_row];
+    auto message2 = m_it_messages[bigger_row];
 
     auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
 
