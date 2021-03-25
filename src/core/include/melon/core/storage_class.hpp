@@ -23,6 +23,11 @@ public:
     // until its fields are initialized properly
     Domain() = default;
 
+    Domain(const Domain&) = default;
+    Domain& operator=(const Domain&) = default;
+    Domain(Domain&&) = default;
+    Domain& operator=(Domain&&) = default;
+
     virtual ~Domain();
 
     [[nodiscard]] std::uint64_t domain_id() const;
@@ -68,6 +73,11 @@ public:
     // until its fields are initialized properly
     User() = default;
 
+    User(const User&) = default;
+    User& operator=(const User&) = default;
+    User(User&&) = default;
+    User& operator=(User&&) = default;
+
     virtual ~User();
 
     [[nodiscard]] std::uint64_t user_id() const;
@@ -111,6 +121,11 @@ public:
     // After default construction the object must not be used
     // until its fields are initialized properly
     Chat() = default;
+
+    Chat(const Chat&) = default;
+    Chat& operator=(const Chat&) = default;
+    Chat(Chat&&) = default;
+    Chat& operator=(Chat&&) = default;
 
     virtual ~Chat();
 
@@ -162,6 +177,11 @@ public:
     // After default construction the object must not be used
     // until its fields are initialized properly
     Message() = default;
+
+    Message(const Message&) = default;
+    Message& operator=(const Message&) = default;
+    Message(Message&&) = default;
+    Message& operator=(Message&&) = default;
 
     virtual ~Message();
 

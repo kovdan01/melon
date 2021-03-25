@@ -1,6 +1,7 @@
 #ifndef MELON_SERVER_STORAGE_HPP_
 #define MELON_SERVER_STORAGE_HPP_
 
+#include <melon/core/exception.hpp>
 #include <melon/core/storage_class.hpp>
 
 #include <sqlpp11/mysql/mysql.h>
@@ -106,11 +107,11 @@ private:
 [[nodiscard]] std::vector<std::string> get_names_of_all_users(sqlpp::mysql::connection& db);
 [[nodiscard]] std::vector<melon::core::User::Ptr> get_online_users(sqlpp::mysql::connection& db);
 
-class IdNotFoundException : public std::runtime_error
+class IdNotFoundException : public melon::Exception
 {
 public:
-    using std::runtime_error::runtime_error;
-    using std::runtime_error::operator=;
+    using melon::Exception::Exception;
+    using melon::Exception::operator=;
 };
 
 
