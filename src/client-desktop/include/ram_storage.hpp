@@ -1,7 +1,7 @@
 #ifndef MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 #define MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
 
-#include <melon/core/storage_class.hpp>
+#include <melon/core/entities.hpp>
 
 #include <QString>
 #include <QMetaType>
@@ -26,10 +26,10 @@ class MessageRAM : public melon::core::Message
 public:
     using timestamp_t = std::chrono::system_clock::time_point;
 
-    //For Insert & Select (temporary)
+    // For Insert & Select (temporary)
     MessageRAM(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
             timestamp_t timestamp, QString text, Status status)
-        : melon::core::Message(user_id, chat_id, domain_id, timestamp, text.toStdString(), status)
+        : melon::core::Message(chat_id, domain_id, user_id, text.toStdString(), timestamp, status)
         , m_text(std::move(text))
     {
         if (this->user_id() == MY_USER_ID)
