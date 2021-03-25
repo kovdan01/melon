@@ -494,7 +494,6 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D SQLPP11_MYSQL_CONNECTOR_PREFIX="${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\

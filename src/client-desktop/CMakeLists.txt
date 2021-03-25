@@ -39,6 +39,7 @@ set(HEADERS
     include/message_item_delegate.hpp
     include/message_list_model.hpp
     include/ram_storage.hpp
+    include/helpers.hpp
 )
 
 set(SOURCES

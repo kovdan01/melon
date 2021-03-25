@@ -1,91 +1,218 @@
 #include <storage.hpp>
 
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 
+namespace mc = melon::core;
+namespace mss = melon::server::storage;
+namespace mysql = sqlpp::mysql;
+
+static std::ostream& operator<<(std::ostream& o, const mc::Domain& domain)
+{
+    o << "Domain { "
+      << "domain_id: " << domain.domain_id() << ", "
+      << "hostname: \"" << domain.hostname() << "\", "
+      << "external: " << domain.external() << " } ";
+    return o;
+}
+
+static std::ostream& operator<<(std::ostream& o, const mc::User::Status status)
+{
+    switch (status)
+    {
+    case mc::User::Status::CHILL:
+        o << "CHILL";
+        break;
+    case mc::User::Status::OFFLINE:
+        o << "OFFLINE";
+        break;
+    case mc::User::Status::ONLINE:
+        o << "ONLINE";
+        break;
+    }
+    return o;
+}
+
+static std::ostream& operator<<(std::ostream& o, const mc::User& user)
+{
+    o << "User { "
+      << "user_id: " << user.user_id() << ", "
+      << "domain_id: " << user.domain_id() << ", "
+      << "username: \"" << user.username() << "\", "
+      << "status: " << user.status() << " } ";
+    return o;
+}
+
+static std::ostream& operator<<(std::ostream& o, const mc::Chat& chat)
+{
+    o << "Chat { "
+      << "chat_id: " << chat.chat_id() << ", "
+      << "domain_id: " << chat.domain_id() << ", "
+      << "chatname: \"" << chat.chatname() << "\" } ";
+    return o;
+}
+
+static std::ostream& operator<<(std::ostream& o, const mc::Message::Status status)
+{
+    switch (status)
+    {
+    case mc::Message::Status::FAIL:
+        o << "FAIL";
+        break;
+    case mc::Message::Status::SENT:
+        o << "SENT";
+        break;
+    case mc::Message::Status::RECEIVED:
+        o << "RECEIVED";
+        break;
+    case mc::Message::Status::SEEN:
+        o << "SEEN";
+        break;
+    }
+    return o;
+}
+
+static std::ostream& operator<<(std::ostream& o, const mc::Message& message)
+{
+    o << "Message { "
+      << "message_id: " << message.message_id() << ", "
+      << "chat_id: " << message.chat_id() << ", "
+      << "domain_id: " << message.domain_id() << ", "
+      << "user_id: " << message.user_id() << ", "
+      << "text: \"" << message.text() << "\", "
+      << "status: " << message.status() << " } ";
+    return o;
+}
+
+static void get_online_users(mysql::connection& db)
+{
+    std::vector<mc::User::Ptr> online_users = mss::get_online_users(db);
+    if (online_users.empty())
+    {
+        std::cout << "There are no users online\n";
+        return;
+    }
+
+    std::cout << "Online users:\n";
+    for (const auto& online_user : online_users)
+        std::cout << "    " << *online_user << '\n';
+}
+
+static void get_chat_participants(const mc::Chat& chat)
+{
+    std::vector<mc::User::Ptr> chat_participants = chat.get_users();
+    if (chat_participants.empty())
+    {
+        std::cout << "No participants in " << chat << '\n';
+        return;
+    }
+
+    std::cout << "Participants of " << chat << '\n';
+    for (const auto& chat_participant : chat_participants)
+        std::cout << "    " << *chat_participant << '\n';
+}
+
+static void get_chats_for_user(const mc::User& user)
+{
+    std::vector<mc::Chat::Ptr> chats = user.get_chats();
+    if (chats.empty())
+    {
+        std::cout << "No chats for " << user << '\n';
+        return;
+    }
+
+    std::cout << "Chats for " << user << '\n';
+    for (const auto& chat : chats)
+        std::cout << "    " << *chat << '\n';
+}
+
 int main() try
 {
-    namespace mss = melon::server::storage;
-    namespace mc = melon::core;
-    namespace mysql = sqlpp::mysql;
-
-    mysql::connection db(mss::config_melondb());
+    mysql::connection db(mss::config_db());
 
     // Domains
-    std::string domain_ed = "Brizil server";
-    mss::Domain domain_edward(db, domain_ed, false);
-    std::cout << "Domain id is " << domain_edward.domain_id() << "\n";
-    std::cout << "Domain type is " << domain_edward.external() << "\n";
+    mss::Domain domain1(db, "Brizil server", false);
+    std::cout << "Created domain1: " << domain1 << '\n';
 
-    mss::Domain found_domain_edward(db, domain_ed);
-    std::cout << "Domain id is " << found_domain_edward.domain_id() << "\n";
-    std::cout << "Domain type is " << found_domain_edward.external() << "\n";
-    std::cout << "Domain hostanme is " << found_domain_edward.hostname() << "\n";
+    mss::Domain found_domain1(db, domain1.hostname());
+    std::cout << "Found domain1: " << found_domain1 << '\n';
+
+    mss::Domain domain2(db, "melon.org", false);
+    std::cout << "Created domain2: " << domain2 << '\n';
 
     // Users
-    mss::User user1(db, "Fudge", domain_edward.domain_id(), mc::User::Status::ONLINE);
-    std::cout << "Current domain_id: " << user1.domain_id() <<"\n";
-    std::cout << "Current user_id: " << user1.user_id() << "\n";
+    mss::User user1(db, "Fudge", domain1.domain_id(), mc::User::Status::ONLINE);
+    std::cout << "Created user1: " << user1 << '\n';
 
-    std::string anna = "anna";
+    mss::User found_user1(db, user1.username(), user1.domain_id());
+    std::cout << "Found user1:   " << found_user1 << '\n';
 
-    mss::User anna_user(db, anna, domain_edward.domain_id(), mc::User::Status::ONLINE);
-    mss::User found_anna(db, anna_user.username(), domain_edward.domain_id());
-    std::cout << "Current domain_id: " << anna_user.domain_id() <<"\n";
-    std::cout << "Current user_id: " << anna_user.user_id() << "\n";
-    std::cout << "Current username: " << anna_user.username() << "\n";
+    mss::User user2(db, "Anna", domain1.domain_id(), mc::User::Status::ONLINE);
+    std::cout << "Created user2: " << user2 << '\n';
+
+    mss::User found_user2(db, user2.username(), user2.domain_id());
+    std::cout << "Found user2:   " << found_user2 << '\n';
+
     user1.set_status(mc::User::Status::OFFLINE);
+    std::cout << "Set status of user1 to offline\n";
+
+    mss::User found_user1_offline = mss::User(db, user1.username(), user1.domain_id());
+    std::cout << "Found user1:   " << found_user1_offline << '\n';
+
     user1.remove();
-
-    std::cout << "Get online usernames\n";
-    std::vector<mc::User::Ptr> online_users = mss::get_online_users(db);
-    for (const auto& a : online_users)
+    try
     {
-        std::cout << a->user_id() << " : " << a->username() << '\n';
+        [[maybe_unused]] mss::User found_user1_deleted = mss::User(db, user1.username(), user1.domain_id());
+        assert(false);
     }
-    anna_user.set_status(mc::User::Status::OFFLINE);
-
-    std::cout << "Get online usernames\n";
-    online_users = mss::get_online_users(db);
-    for (const auto& a : online_users)
+    catch (const mss::IdNotFoundException& e)
     {
-        std::cout << a->user_id() << " : " << a->username() << '\n';
+        std::cout << "Not found user1\n";
     }
+
+    mss::User user3(db, "Bob", domain2.domain_id(), mc::User::Status::OFFLINE);
+    std::cout << "Created user3: " << user3 << '\n';
+
+    get_online_users(db);
+
+    std::cout << "Set status of user2 to offline\n";
+    user2.set_status(mc::User::Status::OFFLINE);
+
+    get_online_users(db);
 
     // Chats
-    mss::Chat chat1(db, domain_edward.domain_id(), "secret_chat6");
-    std::cout << "Current chat_id: " << chat1.chat_id() << '\n';
+    mss::Chat chat1(db, domain1.domain_id(), "secret_chat6");
+    std::cout << "Created chat1: " << chat1 << '\n';
 
-    mss::Chat secret_chat(db, chat1.chat_id(), domain_edward.domain_id());
-    std::cout << secret_chat.chat_id() << '\n';
-    std::cout << secret_chat.domain_id() << '\n';
-    std::cout << secret_chat.chatname() << '\n';
+    mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+    std::cout << "Found chat1:   " << found_chat1 << '\n';
 
-    std::vector<mc::User::Ptr> vec_users = secret_chat.get_users();
-    std::cout << "Participants: \n";
-    for (const auto& a : vec_users)
-    {
-        std::cout << a->username() << " - ";
-    }
-    std::cout << "\n\n";
+    get_chat_participants(chat1);
 
+    get_chats_for_user(user2);
 
-    std::vector<mc::Chat::Ptr> vec_chats = anna_user.get_chats();
-    for (const auto& a : vec_chats)
-    {
-        std::cout << a->chatname() << " - ";
-    }
-    std::cout << "\n\n";
+    mss::Chat chat2(db, domain2.domain_id(), "On domain2");
+    std::cout << "Created chat2: " << chat2 << '\n';
 
     // Messages
-    mss::Message message1(db, chat1.chat_id(), domain_edward.domain_id(), user1.user_id(), std::chrono::system_clock::now(), ":D", mc::Message::Status::SENT);
-    std::cout << "Current message_id: " << message1.message_id() << '\n';
+    mss::Message message1(db, chat1.chat_id(), domain1.domain_id(), user2.user_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+    std::cout << "Created message1: " << message1 << '\n';
+
     message1.set_status(mc::Message::Status::SEEN);
+    std::cout << "Set message1 status to SEEN\n";
+
     message1.set_text("((((((");
+    std::cout << "Set message1 text to \"((((((\"\n";
 
-    domain_edward.remove();
+    mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id());
+    std::cout << "Found message1:   " << found_message1 << '\n';
+
+    mss::Message message2(db, chat2.chat_id(), domain2.domain_id(), user2.user_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+    std::cout << "Created message2: " << message2 << '\n';
+
+    domain1.remove();
     message1.remove();
-
 }
 catch (const sqlpp::exception& e)
 {
