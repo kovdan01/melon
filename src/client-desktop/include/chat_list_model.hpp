@@ -22,7 +22,7 @@ public:
     [[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
-    void add_chat(const Chat& chat, const QModelIndex& parent = QModelIndex());
+    void add_chat(const QString& name, const QModelIndex& parent = QModelIndex());
     void delete_chat(const QModelIndex& index, const QModelIndex& parent = QModelIndex());
 
     chat_handle_t chat_it_by_index(const QModelIndex& index);

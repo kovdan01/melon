@@ -29,21 +29,23 @@ QString create_connection_with_db()
         QSqlQuery query(db);
 
         std::cout << "File does not exist!" << std::endl;
-        if(!query.exec(QStringLiteral("CREATE TABLE messages(message_id int PRIMARY KEY,"
-                                      " user_id int,"
-                                      " chat_id int,"
+        if(!query.exec(QStringLiteral("CREATE TABLE messages(message_id int NOT NULL,"
+                                      " user_id int NOT NULL,"
+                                      " chat_id int NOT NULL,"
                                       " domain_id int,"
                                       " timestamp int,"
                                       " text text,"
-                                      " status int)")))
+                                      " status int, "
+                                      " PRIMARY KEY (message_id, user_id, chat_id))")))
         {
-            std::cout << "Error:" << query.lastError().text().toStdString() << std::endl;
+            std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
             return error(qApp->translate("CreateDB", "Couldn't create messages table: %1"));
         }
 
-        if(!query.exec(QStringLiteral("CREATE TABLE chats (chat_id int PRIMARY KEY,"
-                                      " domain_id int,"
-                                      " name text)")))
+        if(!query.exec(QStringLiteral("CREATE TABLE chats (chat_id int NOT NULL,"
+                                      " domain_id int NOT NULL,"
+                                      " name text,"
+                                      " PRIMARY KEY (chat_id, domain_id))")))
         {
             return error(qApp->translate("CreateDB", "Couldn't create chats table"));
         }

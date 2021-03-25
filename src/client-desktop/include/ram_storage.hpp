@@ -16,8 +16,7 @@ namespace melon::client_desktop
 
 const std::uint64_t MY_USER_ID = 1;
 const std::uint64_t ANOTHER_USER_ID = 2;
-const std::uint64_t DRAFT_CHAT_ID = 1;
-const std::uint64_t DRAFT_DOMAIN_ID = 1;
+const std::uint64_t DOMAIN_ID = 1;
 
 const QString DB_NAME = QStringLiteral("test_db");
 
@@ -26,16 +25,19 @@ class MessageRAM : public melon::core::Message
 public:
     using timestamp_t = std::chrono::system_clock::time_point;
 
-    //For Insert & Select (temporary)
+    //For Insert
     MessageRAM(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
             timestamp_t timestamp, QString text, Status status)
         : melon::core::Message(user_id, chat_id, domain_id, timestamp, text.toStdString(), status)
         , m_text(std::move(text))
     {
-        if (this->user_id() == MY_USER_ID)
-            m_from = QStringLiteral("Me");
-        else
-            m_from = QStringLiteral("Some Sender");
+        set_from();
+    }
+
+    //For Select
+    MessageRAM(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
+        : melon::core::Message(message_id, chat_id, domain_id)
+    {
     }
 
     // fr QVariant
@@ -67,6 +69,14 @@ public:
         m_is_edit = is_edit;
     }
 
+protected:
+    void set_from()
+    {
+        if (this->user_id() == MY_USER_ID)
+            m_from = QStringLiteral("Me");
+        else
+            m_from = QStringLiteral("Some Sender");
+    }
 private:
     void set_text(std::string);
 

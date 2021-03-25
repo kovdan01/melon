@@ -108,20 +108,18 @@ void MainWindow::add_chat()
 
     try
     {
-        QString text = QInputDialog::getText(this, tr("Creating new chat"),
+        QString name = QInputDialog::getText(this, tr("Creating new chat"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              tr("NewChat") + QString::number(counter), &ok);
         if (!ok)
             return;
 
-        check_chat_name(text);
+        check_chat_name(name);
 
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        Chat chat(DRAFT_CHAT_ID, text);
-
-        m_model_chat_list->add_chat(chat);
+        m_model_chat_list->add_chat(name);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
         QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);
         m_ui->ChatList->setCurrentIndex(cur_index);
@@ -195,7 +193,6 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
         return;
 
     auto current_it = m_model_chat_list->chat_it_by_index(current_chat);
-
     if (!previous_chat.isValid())
     {
         m_chat_widget->change_chat(current_it);
