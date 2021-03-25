@@ -24,6 +24,7 @@ class IdNotFoundException : public melon::Exception
 public:
     using melon::Exception::Exception;
     using melon::Exception::operator=;
+    ~IdNotFoundException() override;
 };
 
 // The following functions throw IdNotFoundException if the requested entity is not found

@@ -38,6 +38,9 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_db()
 }
 
 
+IdNotFoundException::~IdNotFoundException() = default;
+
+
 void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id)
 {
     if (db(select(max(G_DOMAINS.domainId)).from(G_DOMAINS).where(G_DOMAINS.domainId == domain_id)).empty())
