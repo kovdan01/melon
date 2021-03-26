@@ -855,8 +855,8 @@ jobs:
         -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
         -D CMAKE_VERBOSE_MAKEFILE=ON \
         -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-        -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-        -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+        -D CMAKE_C_COMPILER=/mingw64/bin/clang.exe \
+        -D CMAKE_CXX_COMPILER=/mingw64/bin/clang++.exe \
         -D CMAKE_AR=/mingw64/bin/ar.exe \
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
