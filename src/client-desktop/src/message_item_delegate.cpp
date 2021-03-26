@@ -59,10 +59,6 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     pen_for_background.setStyle(Qt::NoPen);
     QPen standart_pen = painter->pen();
 
-    // Fonts setting
-    QFontMetrics fm_sender(m_sender_font);
-    QFontMetrics fm_message_text(m_message_text_font);
-
     // Icon rect and render
     if (!is_previous_same)
     {
@@ -89,7 +85,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Rect setting
     // Sender rect
     QString sender = message->from();
-    QRect sender_rect = fm_sender.boundingRect(option.rect, Qt::AlignLeft, sender);
+    QRect sender_rect = m_fm_sender.boundingRect(option.rect, Qt::AlignLeft, sender);
     sender_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                             -m_base_margin,
                              m_icon_diameter + m_base_margin * 5,  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
@@ -99,7 +95,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QString message_text = message->text_qstring();
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
-    QRect message_text_rect = fm_message_text.boundingRect(message_max_rect,
+    QRect message_text_rect = m_fm_message_text.boundingRect(message_max_rect,
                                                            Qt::AlignLeft | Qt::TextWordWrap,
                                                            message_text);
     if (!is_previous_same)
@@ -210,22 +206,20 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QString text = index.data(MyRoles::MessageTextRole).toString();
-    QFontMetrics fm_sender(m_sender_font);
-    QFontMetrics fm_message_text(m_message_text_font);
-    QFontMetrics fm_timestamp(m_timestamp_font);
+
 
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
-    QRect my_rect = fm_message_text.boundingRect(message_max_rect,
+    QRect my_rect = m_fm_message_text.boundingRect(message_max_rect,
                                                  Qt::AlignLeft | Qt::TextWordWrap,
                                                  text);
 
     int row_height = /*message text height*/ my_rect.height() +
-                     /*timestamp height*/ fm_timestamp.height() +
+                     /*timestamp height*/ m_fm_timestamp.height() +
                      /*margin for whitespaces between messages*/ m_base_margin * 4;
 
     if (!index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>())
-        row_height += /*message sender*/ fm_sender.height();
+        row_height += /*message sender*/ m_fm_sender.height();
 
     const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), row_height);
