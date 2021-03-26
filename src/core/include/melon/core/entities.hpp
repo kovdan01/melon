@@ -187,12 +187,13 @@ public:
     virtual ~Message();
 
     [[nodiscard]] id_t message_id() const;
-    [[nodiscard]] id_t domain_id() const;
+    [[nodiscard]] id_t chat_id() const;
+    [[nodiscard]] id_t domain_id_chat() const;
+    [[nodiscard]] id_t user_id() const;
+    [[nodiscard]] id_t domain_id_user() const;
     [[nodiscard]] const std::string& text() const;
     [[nodiscard]] Status status() const;
     [[nodiscard]] timestamp_t timestamp() const;
-    [[nodiscard]] id_t user_id() const;
-    [[nodiscard]] id_t chat_id() const;
 
     void set_text(std::string text);
     void set_status(Status status);
@@ -203,10 +204,10 @@ protected:
     // initialize all members that are not set here
 
     // For Insert
-    Message(id_t chat_id, id_t domain_id, id_t user_id,
+    Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
             std::string text, timestamp_t timestamp, Status status);
     // For Select
-    Message(id_t message_id, id_t chat_id, id_t domain_id);
+    Message(id_t message_id, id_t chat_id, id_t domain_id_chat);
 
     void set_text_base(std::string text);
     virtual void set_text_impl(const std::string& text);
@@ -220,13 +221,15 @@ protected:
     void set_message_id(id_t message_id);
     void set_user_id(id_t user_id);
     void set_chat_id(id_t chat_id);
-    void set_domain_id(id_t domain_id);
+    void set_domain_id_chat(id_t domain_id_chat);
+    void set_domain_id_user(id_t domain_id_user);
 
 private:
     id_t m_message_id = INVALID_ID;
     id_t m_chat_id = INVALID_ID;
-    id_t m_domain_id = INVALID_ID;
+    id_t m_domain_id_chat = INVALID_ID;
     id_t m_user_id = INVALID_ID;
+    id_t m_domain_id_user = INVALID_ID;
     std::string m_text;
     timestamp_t m_timestamp;
     Status m_status;

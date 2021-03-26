@@ -78,8 +78,9 @@ static std::ostream& operator<<(std::ostream& o, const mc::Message& message)
     o << "Message { "
       << "message_id: " << message.message_id() << ", "
       << "chat_id: " << message.chat_id() << ", "
-      << "domain_id: " << message.domain_id() << ", "
+      << "domain_id_chat: " << message.domain_id_chat() << ", "
       << "user_id: " << message.user_id() << ", "
+      << "domain_id_user: " << message.domain_id_user() << ", "
       << "text: \"" << message.text() << "\", "
       << "status: " << message.status() << " } ";
     return o;
@@ -160,6 +161,7 @@ int main() try
     mss::User found_user1_offline = mss::User(db, user1.username(), user1.domain_id());
     std::cout << "Found user1:   " << found_user1_offline << '\n';
 
+    std::cout << "Remove user1\n";
     user1.remove();
     try
     {
@@ -196,7 +198,7 @@ int main() try
     std::cout << "Created chat2: " << chat2 << '\n';
 
     // Messages
-    mss::Message message1(db, chat1.chat_id(), domain1.domain_id(), user2.user_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+    mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
     std::cout << "Created message1: " << message1 << '\n';
 
     message1.set_status(mc::Message::Status::SEEN);
@@ -205,14 +207,45 @@ int main() try
     message1.set_text("((((((");
     std::cout << "Set message1 text to \"((((((\"\n";
 
-    mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id());
+    mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
     std::cout << "Found message1:   " << found_message1 << '\n';
 
-    mss::Message message2(db, chat2.chat_id(), domain2.domain_id(), user2.user_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+    mss::Message message2(db, chat2.chat_id(), chat2.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
     std::cout << "Created message2: " << message2 << '\n';
 
+    std::cout << "Remove domain1";
     domain1.remove();
-    message1.remove();
+    try
+    {
+        [[maybe_unused]] mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+        assert(false);
+    }
+    catch (const mss::IdNotFoundException& e)
+    {
+        std::cout << "Not found chat1\n";
+    }
+
+    try
+    {
+        [[maybe_unused]] mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+        assert(false);
+    }
+    catch (const mss::IdNotFoundException& e)
+    {
+        std::cout << "Not found message1\n";
+    }
+
+    std::cout << "Remove user2\n";
+    user2.remove();
+    try
+    {
+        [[maybe_unused]] mss::Message found_message2(db, message2.message_id(), message2.chat_id(), message2.domain_id_chat());
+        assert(false);
+    }
+    catch (const mss::IdNotFoundException& e)
+    {
+        std::cout << "Not found message2\n";
+    }
 }
 catch (const sqlpp::exception& e)
 {
