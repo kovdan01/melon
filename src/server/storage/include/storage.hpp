@@ -59,9 +59,9 @@ class User : public melon::core::User
 {
 public:
     // For Insert
-    User(sqlpp::mysql::connection& db, std::string username, std::uint64_t domain_id, Status status);
+    User(sqlpp::mysql::connection& db, std::string username, id_t domain_id, Status status);
     // For Select
-    User(sqlpp::mysql::connection& db, std::string username, std::uint64_t domain_id);
+    User(sqlpp::mysql::connection& db, std::string username, id_t domain_id);
 
     [[nodiscard]] std::vector<melon::core::Chat::Ptr> get_chats() const override;
 
@@ -78,9 +78,9 @@ class Chat : public melon::core::Chat
 {
 public:
     // For Insert
-    Chat(sqlpp::mysql::connection& db, std::uint64_t domain_id, std::string chatname);
+    Chat(sqlpp::mysql::connection& db, id_t domain_id, std::string chatname);
     // For Select
-    Chat(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id);
+    Chat(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
     [[nodiscard]] std::vector<melon::core::User::Ptr> get_users() const override;
     [[nodiscard]] std::vector<melon::core::Message::Ptr> get_messages() const override;
@@ -98,10 +98,10 @@ class Message : public melon::core::Message
 {
 public:
     // For Insert
-    Message(sqlpp::mysql::connection& db, std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
+    Message(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
             std::string text, std::chrono::system_clock::time_point timestamp, Status status);
     // For Select
-    Message(sqlpp::mysql::connection& db, std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
+    Message(sqlpp::mysql::connection& db, id_t message_id, id_t chat_id, id_t domain_id_chat);
 
     void remove();
 
