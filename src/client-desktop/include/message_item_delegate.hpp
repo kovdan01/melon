@@ -42,11 +42,13 @@ private:
     QFontMetrics m_fm_message_text = QFontMetrics(m_message_text_font);
     QFontMetrics m_fm_timestamp= QFontMetrics(m_timestamp_font);
 
-    int m_min_message_width;
     qreal m_scale_message_width;
+    int m_min_message_width;
     int m_base_margin;
     int m_icon_diameter;
     int m_message_round_radius;
+
+    QPen m_pen_for_text;
 };
 
 }  // namespace melon::client_desktop

@@ -46,7 +46,7 @@ Message::Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t u
     std::uint64_t timestamp_ms_int = timestamp_ms.time_since_epoch().count();
     qry.bindValue(QStringLiteral(":timestamp"), QVariant::fromValue(timestamp_ms_int));
 
-    qry.bindValue(QStringLiteral(":text"), this->text_qstring());
+    qry.bindValue(QStringLiteral(":text"), this->text());
     qry.bindValue(QStringLiteral(":status"), status_to_int(this->status()));
 
     if (!qry.exec())
@@ -82,17 +82,17 @@ Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t 
         std::chrono::milliseconds dur(tp);
         std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
         this->set_timestamp(tp_ms);
-        this->set_text_qstring_RAM(qry.value(2).toString());
+        this->set_text(qry.value(2).toString());
         this->set_status(int_to_status(qry.value(3).toInt()));
     }
     this->set_from();
 }
 
-void Message::set_text_qstring(QString text)
+void Message::set_text_impl()
 {
     QSqlQuery qry(DB_NAME);
-    QString qry_string = QStringLiteral("UPDATE messages SET text='") + text
-                        + QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
+    QString qry_string = QStringLiteral("UPDATE messages SET text='") + this->text() +
+                         QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
                         + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
@@ -100,7 +100,6 @@ void Message::set_text_qstring(QString text)
         std::cout << "Fail updating message text!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
     }
-    set_text_qstring_RAM(text);
 }
 
 void Message::remove_from_db()
@@ -136,7 +135,7 @@ Chat::Chat(std::uint64_t domain_id, QString name)
     }
     qry.bindValue(QStringLiteral(":chat_id"), QVariant::fromValue(this->chat_id()));
     qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
-    qry.bindValue(QStringLiteral(":name"), this->name_qstring());
+    qry.bindValue(QStringLiteral(":name"), this->chatname());
 
     if (!qry.exec())
     {
@@ -161,7 +160,7 @@ Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id)
     else
     {
         qry.next();
-        this->set_name_qstring_RAM(qry.value(0).toString());
+        this->set_chatname(qry.value(0).toString());
     }
 }
 
@@ -188,10 +187,10 @@ void Chat::remove_from_db()
     }
 }
 
-void Chat::set_name_qstring(QString text)
+void Chat::set_chatname_impl()
 {
     QSqlQuery qry(DB_NAME);
-    QString qry_string = QStringLiteral("UPDATE chats SET name='") + text
+    QString qry_string = QStringLiteral("UPDATE chats SET name='") + this->chatname()
                         + QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
@@ -199,8 +198,6 @@ void Chat::set_name_qstring(QString text)
         std::cout << "Fail updating chatname!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
     }
-
-    set_name_qstring_RAM(text);
 }
 
 

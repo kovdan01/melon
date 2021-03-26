@@ -183,7 +183,7 @@ Message ChatWidget::capture_message_from_editor()
 
 void ChatWidget::load_message_to_editor(const Message& message)
 {
-    m_ui->MsgEdit->setText(message.text_qstring());
+    m_ui->MsgEdit->setText(message.text());
 }
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)

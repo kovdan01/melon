@@ -24,14 +24,16 @@ public:
     // For incomplete message
     Message(QString text)
     {
-        this->set_text_qstring_RAM(std::move(text));
+        this->set_text(std::move(text));
     }
 
     // for QVariant
     Message() = default;
 
-    void set_text_qstring(QString text);
     void remove_from_db();
+
+protected:
+    void set_text_impl() override;
 };
 
 
@@ -41,13 +43,12 @@ public:
     using message_handle_t = std::list<Message>::iterator;
 
     // For insert
-    Chat(std::uint64_t domain_id, QString name);
+    Chat(std::uint64_t domain_id, QString chatname);
 
     // For Select
     Chat(std::uint64_t chat_id, std::uint64_t domain_id);
 
     void remove_from_db();
-    void set_name_qstring(QString text);
 
     [[nodiscard]] const std::list<Message>& messages() const noexcept
     {
@@ -92,6 +93,9 @@ public:
     {
         return m_incomplete_message;
     }
+
+protected:
+    void set_chatname_impl() override;
 
 private:
     std::list<Message> m_messages;

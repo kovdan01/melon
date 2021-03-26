@@ -48,15 +48,14 @@ public:
         return m_from;
     }
 
-    [[nodiscard]] const QString& text_qstring() const noexcept
+    [[nodiscard]] const QString& text() const noexcept
     {
         return m_text;
     }
 
-    void set_text_qstring_RAM(QString text)
+    void set_text(const QString& text)
     {
-        m_text = std::move(text);
-        set_text_base(m_text.toStdString());
+        melon::core::Message::set_text(text.toStdString());
     }
 
     [[nodiscard]] bool is_edit() const noexcept
@@ -77,9 +76,14 @@ protected:
         else
             m_from = QStringLiteral("Some Sender");
     }
-private:
-    void set_text(std::string);
 
+    void set_text_base(std::string text) override
+    {
+        melon::core::Message::set_text_base(std::move(text));
+        m_text = QString::fromStdString(melon::core::Message::text());
+    }
+
+private:
     QString m_text;
     QString m_from;
     bool m_is_edit = false;
@@ -88,11 +92,10 @@ private:
 class ChatRAM : public melon::core::Chat
 {
 public:
-
     // For Insert
     ChatRAM(std::uint64_t domain_name, QString name)
         : melon::core::Chat(domain_name, name.toStdString())
-        , m_name(std::move(name))
+        , m_chatname(std::move(name))
     {
     }
 
@@ -102,15 +105,14 @@ public:
     {
     }
 
-    [[nodiscard]] const QString& name_qstring() const noexcept
+    [[nodiscard]] const QString& chatname() const noexcept
     {
-        return m_name;
+        return m_chatname;
     }
 
-    void set_name_qstring_RAM(QString chatname)
+    void set_chatname(const QString& chatname)
     {
-        m_name = std::move(chatname);
-        set_chatname_base(m_name.toStdString());
+        melon::core::Chat::set_chatname(chatname.toStdString());
     }
 
     [[nodiscard]] int scrolling_position() const noexcept
@@ -133,20 +135,24 @@ public:
 
     std::vector<melon::core::User::Ptr> get_users() const override
     {
-        std::vector<melon::core::User::Ptr> answer;
-        return answer;
+        return {};  // just a placeholder
     }
 
     std::vector<melon::core::Message::Ptr> get_messages() const override
     {
-        std::vector<melon::core::Message::Ptr> answer;
-        return answer;
+        return {};  // just a placeholder
+    }
+
+protected:
+    void set_chatname_base(std::string chatname) override
+    {
+        melon::core::Chat::set_chatname_base(std::move(chatname));
+        m_chatname = QString::fromStdString(melon::core::Chat::chatname());
     }
 
 private:
-    void set_chatname(std::string);
 
-    QString m_name;
+    QString m_chatname;
     int m_scrolling_position = 0;
 };
 

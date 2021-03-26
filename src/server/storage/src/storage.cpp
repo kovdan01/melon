@@ -129,9 +129,9 @@ void Domain::remove()
     m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
 }
 
-void Domain::set_external_impl(bool external)
+void Domain::set_external_impl()
 {
-    m_db(update(G_DOMAINS).set(G_DOMAINS.external = static_cast<std::uint8_t>(external)).where(G_DOMAINS.domainId == this->domain_id()));
+    m_db(update(G_DOMAINS).set(G_DOMAINS.external = static_cast<std::uint8_t>(this->external())).where(G_DOMAINS.domainId == this->domain_id()));
 }
 
 
@@ -196,10 +196,10 @@ void User::remove()
     m_db(remove_from(G_USERS).where(G_USERS.userId == this->user_id()));
 }
 
-void User::set_status_impl(Status status)
+void User::set_status_impl()
 {
-    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(status)).where(G_USERS.userId == this->user_id() &&
-                                                                              G_USERS.domainId == this->domain_id()));
+    m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(this->status())).where(G_USERS.userId == this->user_id() &&
+                                                                                      G_USERS.domainId == this->domain_id()));
 }
 
 
@@ -267,10 +267,10 @@ std::vector<mc::Message::Ptr> Chat::get_messages() const
     return answer;
 }
 
-void Chat::set_chatname_impl(const std::string& chatname)
+void Chat::set_chatname_impl()
 {
-    m_db(update(G_CHATS).set(G_CHATS.chatname = chatname).where(G_CHATS.chatId == this->chat_id() &&
-                                                                G_CHATS.domainId == this->domain_id()));
+    m_db(update(G_CHATS).set(G_CHATS.chatname = this->chatname()).where(G_CHATS.chatId == this->chat_id() &&
+                                                                        G_CHATS.domainId == this->domain_id()));
 }
 
 // Deletes chat: deletes messages from chat, all info in Chats_Users concearnig this chat
@@ -330,25 +330,25 @@ void Message::remove()
     m_db(remove_from(G_MESSAGES).where(G_MESSAGES.messageId == this->message_id()));
 }
 
-void Message::set_text_impl(const std::string& text)
+void Message::set_text_impl()
 {
-    m_db(update(G_MESSAGES).set(G_MESSAGES.text = text).where(G_MESSAGES.messageId == this->message_id() &&
-                                                              G_MESSAGES.chatId == this->chat_id() &&
-                                                              G_MESSAGES.domainId == this->domain_id()));
+    m_db(update(G_MESSAGES).set(G_MESSAGES.text = this->text()).where(G_MESSAGES.messageId == this->message_id() &&
+                                                                      G_MESSAGES.chatId == this->chat_id() &&
+                                                                      G_MESSAGES.domainId == this->domain_id()));
 }
 
-void Message::set_status_impl(Status status)
+void Message::set_status_impl()
 {
-    m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<std::uint8_t>(status)).where(G_MESSAGES.messageId == this->message_id() &&
-                                                                                             G_MESSAGES.chatId == this->chat_id() &&
-                                                                                             G_MESSAGES.domainId == this->domain_id()));
+    m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<std::uint8_t>(this->status())).where(G_MESSAGES.messageId == this->message_id() &&
+                                                                                                     G_MESSAGES.chatId == this->chat_id() &&
+                                                                                                     G_MESSAGES.domainId == this->domain_id()));
 }
 
-void Message::set_timestamp_impl(timestamp_t timestamp)
+void Message::set_timestamp_impl()
 {
-    m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = timestamp).where(G_MESSAGES.messageId == this->message_id() &&
-                                                                       G_MESSAGES.chatId == this->chat_id() &&
-                                                                       G_MESSAGES.domainId == this->domain_id()));
+    m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = this->timestamp()).where(G_MESSAGES.messageId == this->message_id() &&
+                                                                               G_MESSAGES.chatId == this->chat_id() &&
+                                                                               G_MESSAGES.domainId == this->domain_id()));
 
 }
 

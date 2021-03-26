@@ -46,6 +46,8 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     m_icon_diameter = dev_ap.icon_diameter();
     m_message_round_radius = dev_ap.message_round_radius();
     m_selected_message_color = dev_ap.selected_message_color();
+
+    m_pen_for_text.setColor(Qt::black);
 }
 
 void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
@@ -92,7 +94,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
                              m_base_margin * 2);
 
     // Message text rect
-    QString message_text = message->text_qstring();
+    QString message_text = message->text();
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
     QRect message_text_rect = m_fm_message_text.boundingRect(message_max_rect,
@@ -166,14 +168,18 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     if (!is_previous_same)
     {
         painter->setFont(m_sender_font);
+        painter->setPen(m_pen_for_text);
         painter->drawText(sender_rect, sender);
+        painter->setPen(standart_pen);
     }
 
     // Message text rendering
     painter->setFont(m_message_text_font);
+    painter->setPen(m_pen_for_text);
     painter->drawText(message_text_rect,
                       Qt::AlignLeft | Qt::TextWordWrap,
                       message_text);
+    painter->setPen(standart_pen);
 
     // Timestamp and edit mark rendering
     painter->setFont(m_timestamp_font);
@@ -189,7 +195,9 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     if (message->is_edit())
         time_str = tr("edit") + QStringLiteral("  ") + time_str;
 
+    painter->setPen(m_pen_for_text);
     painter->drawText(timestamp_rect, Qt::AlignRight, time_str);
+    painter->setPen(standart_pen);
     painter->setFont(m_message_text_font);
 
 

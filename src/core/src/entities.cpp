@@ -24,7 +24,7 @@ void Domain::set_domain_id(id_t domain_id)
 void Domain::set_external(bool external)
 {
     this->set_external_base(external);
-    this->set_external_impl(external);
+    this->set_external_impl();
 }
 
 void Domain::set_external_base(bool external)
@@ -32,7 +32,7 @@ void Domain::set_external_base(bool external)
     m_external = external;
 }
 
-void Domain::set_external_impl(bool /* external */)
+void Domain::set_external_impl()
 {
 }
 
@@ -55,7 +55,7 @@ User::~User() = default;
 void User::set_status(Status status)
 {
     this->set_status_base(status);
-    this->set_status_impl(status);
+    this->set_status_impl();
 }
 
 void User::set_status_base(Status status)
@@ -63,7 +63,7 @@ void User::set_status_base(Status status)
     m_status = status;
 }
 
-void User::set_status_impl(Status /* status */)
+void User::set_status_impl()
 {
 }
 
@@ -94,7 +94,7 @@ Chat::~Chat() = default;
 void Chat::set_chatname(std::string chatname)
 {
     this->set_chatname_base(std::move(chatname));
-    this->set_chatname_impl(this->chatname());
+    this->set_chatname_impl();
 }
 
 void Chat::set_chatname_base(std::string chatname)
@@ -102,7 +102,7 @@ void Chat::set_chatname_base(std::string chatname)
     m_chatname = std::move(chatname);
 }
 
-void Chat::set_chatname_impl(const std::string& /* chatname */)
+void Chat::set_chatname_impl()
 {
 }
 
@@ -139,7 +139,7 @@ Message::~Message() = default;
 void Message::set_text(std::string text)
 {
     this->set_text_base(std::move(text));
-    this->set_text_impl(this->text());
+    this->set_text_impl();
 }
 
 void Message::set_text_base(std::string text)
@@ -147,14 +147,14 @@ void Message::set_text_base(std::string text)
     m_text = std::move(text);
 }
 
-void Message::set_text_impl(const std::string& /* text */)
+void Message::set_text_impl()
 {
 }
 
 void Message::set_status(Status status)
 {
     this->set_status_base(status);
-    this->set_status_impl(status);
+    this->set_status_impl();
 }
 
 void Message::set_status_base(Status status)
@@ -162,14 +162,14 @@ void Message::set_status_base(Status status)
     m_status = status;
 }
 
-void Message::set_status_impl(Status /* status */)
+void Message::set_status_impl()
 {
 }
 
 void Message::set_timestamp(Message::timestamp_t timestamp)
 {
     this->set_timestamp_base(timestamp);
-    this->set_timestamp_impl(timestamp);
+    this->set_timestamp_impl();
 }
 
 void Message::set_timestamp_base(Message::timestamp_t timestamp)
@@ -177,7 +177,7 @@ void Message::set_timestamp_base(Message::timestamp_t timestamp)
     m_timestamp = timestamp;
 }
 
-void Message::set_timestamp_impl(Message::timestamp_t /* timestamp */)
+void Message::set_timestamp_impl()
 {
 }
 

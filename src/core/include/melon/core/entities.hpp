@@ -48,7 +48,7 @@ protected:
 
     void set_external(bool external);
     void set_external_base(bool external);
-    virtual void set_external_impl(bool external);
+    virtual void set_external_impl();
 
 private:
     id_t m_domain_id = INVALID_ID;
@@ -100,7 +100,7 @@ protected:
     User(std::string username, id_t domain_id);
 
     void set_status_base(Status status);
-    virtual void set_status_impl(Status status);
+    virtual void set_status_impl();
 
     void set_user_id(id_t user_id);
     void set_domain_id(id_t domain_id);
@@ -148,8 +148,8 @@ protected:
     // For Select
     Chat(id_t chat_id, id_t domain_id);
 
-    void set_chatname_base(std::string chatname);
-    virtual void set_chatname_impl(const std::string& chatname);
+    virtual void set_chatname_base(std::string chatname);
+    virtual void set_chatname_impl();
 
     void set_chat_id(id_t chat_id);
     void set_domain_id(id_t domain_id);
@@ -208,14 +208,14 @@ protected:
     // For Select
     Message(id_t message_id, id_t chat_id, id_t domain_id);
 
-    void set_text_base(std::string text);
-    virtual void set_text_impl(const std::string& text);
+    virtual void set_text_base(std::string text);
+    virtual void set_text_impl();
 
     void set_status_base(Status status);
-    virtual void set_status_impl(Status status);
+    virtual void set_status_impl();
 
     void set_timestamp_base(timestamp_t timestamp);
-    virtual void set_timestamp_impl(timestamp_t timestamp);
+    virtual void set_timestamp_impl();
 
     void set_message_id(id_t message_id);
     void set_user_id(id_t user_id);

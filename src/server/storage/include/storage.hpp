@@ -49,7 +49,7 @@ public:
     void remove();
 
 protected:
-    void set_external_impl(bool external) override;
+    void set_external_impl() override;
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -68,7 +68,7 @@ public:
     void remove();
 
 protected:
-    void set_status_impl(Status status) override;
+    void set_status_impl() override;
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -88,7 +88,7 @@ public:
     void remove();
 
 protected:
-    void set_chatname_impl(const std::string& chatname) override;
+    void set_chatname_impl() override;
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -106,9 +106,9 @@ public:
     void remove();
 
 protected:
-    void set_text_impl(const std::string& text) override;
-    void set_status_impl(Status status) override;
-    void set_timestamp_impl(timestamp_t timestamp) override;
+    void set_text_impl() override;
+    void set_status_impl() override;
+    void set_timestamp_impl() override;
 
 private:
     sqlpp::mysql::connection& m_db;

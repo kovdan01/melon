@@ -30,7 +30,7 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_messages[row]);
             break;
         case MyRoles::MessageTextRole:
-            data.setValue(m_it_messages[row]->text_qstring());
+            data.setValue(m_it_messages[row]->text());
             break;
         case MyRoles::AreIconAndSendernameNeededRole:
             return this->are_icon_and_sendername_needed(row - 1, row);
@@ -112,7 +112,7 @@ MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(
 
 void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, const QString& message)
 {
-    m_it_messages[to_size_t(index.row())]->set_text_qstring(message);
+    m_it_messages[to_size_t(index.row())]->set_text(message);
 }
 
 bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std::size_t bigger_row) const

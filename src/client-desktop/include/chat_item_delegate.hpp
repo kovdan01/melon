@@ -51,6 +51,7 @@ private:
     QColor m_selected_background;
     QColor m_item_under_mouse_background;
 
+    QPen m_pen_for_text;
     QPen m_pen_for_background;
 };
 

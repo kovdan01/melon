@@ -28,7 +28,7 @@ QVariant ChatListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_chats[row]);
             break;
         case MyRoles::ChatNameRole:
-            data.setValue(m_it_chats[row]->name_qstring());
+            data.setValue(m_it_chats[row]->chatname());
             break;
         default:
             break;
@@ -89,7 +89,7 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
 
 void ChatListModel::set_chat_name_in_ram_storage(const QModelIndex &index, const QString &name)
 {
-    m_it_chats[to_size_t(index.row())]->set_name_qstring(name);
+    m_it_chats[to_size_t(index.row())]->set_chatname(name);
 }
 
 ChatListModel::chat_handle_t ChatListModel::chat_it_by_index(const QModelIndex &index)
