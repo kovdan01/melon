@@ -157,6 +157,7 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     m_ui->MsgEdit->setTextCursor(cursor);
 
     m_ui->MsgList->clearSelection();
+    m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)

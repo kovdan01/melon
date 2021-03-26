@@ -65,19 +65,35 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    std::cout << "In loading data from database!" << std::endl;
-    QSqlQuery qry(DB_NAME);
-    if (!qry.exec(QStringLiteral("SELECT chat_id, domain_id FROM chats")))
+    QSqlQuery qry_for_chats(DB_NAME);
+    QSqlQuery qry_for_messages(DB_NAME);
+    if (!qry_for_chats.exec(QStringLiteral("SELECT chat_id, domain_id FROM chats")))
     {
-        std::cout << "Error while loading data: " << std::flush;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
+        std::cout << "Error while loading chats: " << std::flush;
+        std::cout << qry_for_chats.lastError().text().toStdString() << std::endl;
         return;
     }
-    while(qry.next())
+    while(qry_for_chats.next())
     {
-        std::uint64_t chat_id = qry.value(0).value<std::uint64_t>();
-        std::uint64_t domain_id = qry.value(1).value<std::uint64_t>();
-        Chat chat(chat_id, domain_id); // here is second select inside (!!!)
+        std::uint64_t chat_id = qry_for_chats.value(0).value<std::uint64_t>();
+        std::uint64_t domain_id = qry_for_chats.value(1).value<std::uint64_t>();
+        Chat chat(chat_id, domain_id);
+
+        QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") +QString::number(chat_id)
+                         + QStringLiteral(" and domain_id=") + QString::number(domain_id);
+        if (!qry_for_messages.exec(qry_str))
+        {
+            std::cout << "Error while loading messages: " << std::flush;
+            std::cout << qry_for_messages.lastError().text().toStdString() << std::endl;
+            return;
+        }
+        while(qry_for_messages.next())
+        {
+            std::uint64_t message_id = qry_for_messages.value(0).value<std::uint64_t>();
+            Message message(message_id, chat_id, domain_id);
+            chat.add_message(message);
+        }
+
         m_model_chat_list->add_chat(chat);
     }
     m_ui->ChatList->setCurrentIndex(m_model_chat_list->index(0));
@@ -110,7 +126,7 @@ MainWindow::MainWindow(QWidget* parent)
     QSqlQuery qry(DB_NAME);
     qry.exec(QStringLiteral("SELECT COUNT(chat_id) from chats"));
     qry.next();
-    if (qry.value(0).toInt() > 1)
+    if (qry.value(0).toInt() > 0)
     {
         this->replace_spacer_with_chat_widget();
         this->load_data_from_database();
