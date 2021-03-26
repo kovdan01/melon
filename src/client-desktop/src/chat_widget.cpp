@@ -84,10 +84,14 @@ void ChatWidget::send_message()
 
     if (m_edit_mode)
     {
-        QModelIndex index = m_model_message_list->index(m_edit_row);
+        if (message_text != m_pre_edit_message)
+        {
+            QModelIndex index = m_model_message_list->index(m_edit_row);
 
-        m_model_message_list->setData(index, message_text, Qt::DisplayRole);
-        m_model_message_list->setData(index, true, MyRoles::IsEditRole);
+            m_model_message_list->setData(index, message_text, Qt::DisplayRole);
+            m_model_message_list->setData(index, true, MyRoles::IsEditRole);
+            m_pre_edit_message.clear();
+        }
 
         m_edit_mode = false;
         m_ui->MsgEdit->clear();
@@ -218,6 +222,7 @@ void ChatWidget::edit_message()
     m_edit_row = index.row();
 
     auto message_text = m_model_message_list->data(index, MyRoles::MessageTextRole).toString();
+    m_pre_edit_message = message_text;
 
     m_incomplete_message = m_ui->MsgEdit->toPlainText();
     m_ui->MsgEdit->setText(message_text);

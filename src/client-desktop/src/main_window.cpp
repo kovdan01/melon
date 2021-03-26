@@ -14,6 +14,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 namespace melon::client_desktop
 {
@@ -227,6 +228,9 @@ void MainWindow::rename_chat()
             return;
 
         check_chat_name(text);
+
+        if (old_name == text)
+            return;
 
         m_model_chat_list->setData(cur_index, text, MyRoles::ChatNameRole);
     }
