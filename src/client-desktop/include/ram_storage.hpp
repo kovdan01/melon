@@ -14,9 +14,9 @@
 namespace melon::client_desktop
 {
 
-const std::uint64_t MY_USER_ID = 1;
-const std::uint64_t ANOTHER_USER_ID = 2;
-const std::uint64_t DOMAIN_ID = 1;
+inline constexpr melon::core::id_t MY_USER_ID = 1;
+inline constexpr melon::core::id_t ANOTHER_USER_ID = 2;
+inline constexpr melon::core::id_t DOMAIN_ID = 1;
 
 const QString DB_NAME = QStringLiteral("test_db");
 
@@ -40,7 +40,7 @@ public:
     {
     }
 
-    // fr QVariant
+    // for QVariant
     MessageRAM() = default;
 
     [[nodiscard]] const QString& from() const noexcept

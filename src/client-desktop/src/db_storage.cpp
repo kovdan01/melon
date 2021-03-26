@@ -24,7 +24,7 @@ Message::Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t u
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id()) + 1);
 
     QSqlQuery qry(QSqlDatabase::database(DB_NAME));
-    if(!qry.prepare(QStringLiteral("INSERT INTO messages"
+    if (!qry.prepare(QStringLiteral("INSERT INTO messages"
                                    " VALUES("
                                    " :msg_id,"
                                    " :chat_id,"

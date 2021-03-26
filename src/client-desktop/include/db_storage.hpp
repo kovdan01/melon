@@ -14,20 +14,20 @@ QString create_connection_with_db();
 class Message : public MessageRAM
 {
 public:
-    //For Insert
+    // For Insert
     Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
             timestamp_t timestamp, QString text, Status status);
 
-    //For Select
+    // For Select
     Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
 
-    //For incomplete message
+    // For incomplete message
     Message(QString text)
     {
-        this->set_text_qstring_RAM(text);
+        this->set_text_qstring_RAM(std::move(text));
     }
 
-    //for QVariant
+    // for QVariant
     Message() = default;
 
     void set_text_qstring(QString text);
@@ -54,7 +54,7 @@ public:
         return m_messages;
     }
 
-    [[nodiscard]] std::list<Message>& messages()noexcept
+    [[nodiscard]] std::list<Message>& messages() noexcept
     {
         return m_messages;
     }
@@ -94,7 +94,7 @@ public:
     }
 
 private:
-    std::list<Message> m_messages = {};
+    std::list<Message> m_messages;
     Message m_incomplete_message;
 };
 
@@ -125,7 +125,6 @@ public:
     chat_handle_t delete_chat(chat_handle_t chat_handle)
     {
         chat_handle->remove_from_db();
-
         return m_chats.erase(chat_handle);
     }
 
