@@ -60,10 +60,19 @@ jobs:
       run: |
         pip install requests
 
+    - name: Update MinGW
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -Syu --noconfirm
+
+    - name: Update MinGW packages
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -Syu --noconfirm
+
     - name: Install required python modules (MinGW64)
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
-        pacman -Syu
         pacman -S --noconfirm mingw-w64-x86_64-python-pip
         pip install pyparsing
         
