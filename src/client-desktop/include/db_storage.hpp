@@ -15,11 +15,12 @@ class Message : public MessageRAM
 {
 public:
     // For Insert
-    Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
-            timestamp_t timestamp, QString text, Status status);
+    Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
+            std::uint64_t user_id, std::uint64_t domain_id_user,
+            QString text, timestamp_t timestamp, Status status);
 
     // For Select
-    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
+    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat);
 
     // For incomplete message
     Message(QString text)

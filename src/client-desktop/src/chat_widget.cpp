@@ -107,9 +107,9 @@ void ChatWidget::send_message()
     }
 
 
-    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, MY_USER_ID,
-                        std::chrono::system_clock::now(),
+    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, MY_USER_ID, DOMAIN_ID,
                         message_text,
+                        std::chrono::system_clock::now(),
                         Message::Status::SENT);
 
     m_ui->MsgEdit->clear();
@@ -123,9 +123,9 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, ANOTHER_USER_ID,
-                        std::chrono::system_clock::now(),
+    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, ANOTHER_USER_ID, DOMAIN_ID,
                         QStringLiteral("I wish I could hear you."),
+                        std::chrono::system_clock::now(),
                         Message::Status::RECEIVED);
 
     m_model_message_list->add_message(m_current_chat_it, new_message);

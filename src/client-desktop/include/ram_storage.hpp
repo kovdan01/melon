@@ -26,17 +26,18 @@ public:
     using timestamp_t = std::chrono::system_clock::time_point;
 
     // For Insert
-    MessageRAM(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
-               timestamp_t timestamp, QString text, Status status)
-        : melon::core::Message(chat_id, domain_id, user_id, text.toStdString(), timestamp, status)
+    MessageRAM(std::uint64_t chat_id, std::uint64_t domain_id_chat,
+               std::uint64_t user_id, std::uint64_t domain_id_user,
+                QString text, timestamp_t timestamp, Status status)
+        : melon::core::Message(chat_id, domain_id_chat, user_id, domain_id_user, text.toStdString(), timestamp, status)
         , m_text(std::move(text))
     {
         this->set_from();
     }
 
     // For Select
-    MessageRAM(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
-        : melon::core::Message(message_id, chat_id, domain_id)
+    MessageRAM(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat)
+        : melon::core::Message(message_id, chat_id, domain_id_chat)
     {
     }
 

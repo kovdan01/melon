@@ -17,11 +17,12 @@ melon::core::Message::Status int_to_status(int status);
 /* Message */
 
 // For Insert
-Message::Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t user_id,
-        timestamp_t timestamp, QString text, Status status)
-    : MessageRAM(chat_id, domain_id, user_id, timestamp, text, status)
+Message::Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
+                 std::uint64_t user_id, std::uint64_t domain_id_user,
+                 QString text, timestamp_t timestamp, Status status)
+    : MessageRAM(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
-    this->set_message_id(max_message_id(this->chat_id(), this->domain_id()) + 1);
+    this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
 
     QSqlQuery qry(QSqlDatabase::database(DB_NAME));
     if (!qry.prepare(QStringLiteral("INSERT INTO messages"
@@ -39,7 +40,8 @@ Message::Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t u
     }
     qry.bindValue(QStringLiteral(":msg_id"), QVariant::fromValue(this->message_id()));
     qry.bindValue(QStringLiteral(":chat_id"), QVariant::fromValue(this->chat_id()));
-    qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
+    // TODO: add domain_id_user
+    qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id_chat()));
     qry.bindValue(QStringLiteral(":user_id"), QVariant::fromValue(this->user_id()));
 
     auto timestamp_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(this->timestamp());
@@ -57,8 +59,8 @@ Message::Message(std::uint64_t chat_id, std::uint64_t domain_id, std::uint64_t u
 }
 
 //For Select
-Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)
-    : MessageRAM(message_id, chat_id, domain_id)
+Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat)
+    : MessageRAM(message_id, chat_id, domain_id_chat)
 {
     QSqlQuery qry(DB_NAME);
     QString qry_string = QStringLiteral("SELECT user_id, timestamp, text, status FROM messages"
@@ -67,7 +69,7 @@ Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t 
                         + QStringLiteral(" and chat_id=")
                         + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=")
-                        + QString::number(this->domain_id())
+                        + QString::number(this->domain_id_chat())
                         + QStringLiteral(")");
     if (!qry.exec(qry_string))
     {
@@ -94,7 +96,7 @@ void Message::set_text_impl()
     QString qry_string = QStringLiteral("UPDATE messages SET text='") + this->text() +
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
                         + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
-                        + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+                        + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail updating message text!" << std::endl;
@@ -108,7 +110,7 @@ void Message::remove_from_db()
 
     QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id())
                            + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
-                           + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+                           + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
 
     if (!qry.exec(query_string))
     {
