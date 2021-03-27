@@ -1,5 +1,5 @@
-#ifndef MELON_CORE_STORAGE_CLASS_HPP_
-#define MELON_CORE_STORAGE_CLASS_HPP_
+#ifndef MELON_CORE_ENTITIES_HPP_
+#define MELON_CORE_ENTITIES_HPP_
 
 #include <melon/core/export.h>
 
@@ -12,7 +12,8 @@
 namespace melon::core
 {
 
-inline constexpr std::uint64_t INVALID_ID = std::uint64_t(-1);
+using id_t = std::uint64_t;
+inline constexpr id_t INVALID_ID = 0;
 
 class MELON_CORE_EXPORT Domain
 {
@@ -23,9 +24,14 @@ public:
     // until its fields are initialized properly
     Domain() = default;
 
+    Domain(const Domain&) = default;
+    Domain& operator=(const Domain&) = default;
+    Domain(Domain&&) = default;
+    Domain& operator=(Domain&&) = default;
+
     virtual ~Domain();
 
-    [[nodiscard]] std::uint64_t domain_id() const;
+    [[nodiscard]] id_t domain_id() const;
     [[nodiscard]] const std::string& hostname() const;
     [[nodiscard]] bool external() const;
 
@@ -38,14 +44,14 @@ protected:
     // For Select
     Domain(std::string hostname);
 
-    void set_domain_id(std::uint64_t domain_id);
+    void set_domain_id(id_t domain_id);
 
     void set_external(bool external);
     void set_external_base(bool external);
     virtual void set_external_impl(bool external);
 
 private:
-    std::uint64_t m_domain_id = INVALID_ID;
+    id_t m_domain_id = INVALID_ID;
     std::string m_hostname;
     bool m_external;
 };
@@ -68,10 +74,15 @@ public:
     // until its fields are initialized properly
     User() = default;
 
+    User(const User&) = default;
+    User& operator=(const User&) = default;
+    User(User&&) = default;
+    User& operator=(User&&) = default;
+
     virtual ~User();
 
-    [[nodiscard]] std::uint64_t user_id() const;
-    [[nodiscard]] std::uint64_t domain_id() const;
+    [[nodiscard]] id_t user_id() const;
+    [[nodiscard]] id_t domain_id() const;
     [[nodiscard]] const std::string& username() const;
     [[nodiscard]] Status status() const;
 
@@ -84,19 +95,19 @@ protected:
     // initialize all members that are not set here
 
     // For Insert
-    User(std::string username, std::uint64_t domain_id, Status status);
+    User(std::string username, id_t domain_id, Status status);
     // For Select
-    User(std::string username, std::uint64_t domain_id);
+    User(std::string username, id_t domain_id);
 
     void set_status_base(Status status);
     virtual void set_status_impl(Status status);
 
-    void set_user_id(std::uint64_t user_id);
-    void set_domain_id(std::uint64_t domain_id);
+    void set_user_id(id_t user_id);
+    void set_domain_id(id_t domain_id);
 
 private:
-    std::uint64_t m_user_id = INVALID_ID;
-    std::uint64_t m_domain_id = INVALID_ID;
+    id_t m_user_id = INVALID_ID;
+    id_t m_domain_id = INVALID_ID;
     std::string m_username;
     Status m_status;
 };
@@ -112,10 +123,15 @@ public:
     // until its fields are initialized properly
     Chat() = default;
 
+    Chat(const Chat&) = default;
+    Chat& operator=(const Chat&) = default;
+    Chat(Chat&&) = default;
+    Chat& operator=(Chat&&) = default;
+
     virtual ~Chat();
 
-    [[nodiscard]] std::uint64_t chat_id() const;
-    [[nodiscard]] std::uint64_t domain_id() const;
+    [[nodiscard]] id_t chat_id() const;
+    [[nodiscard]] id_t domain_id() const;
     [[nodiscard]] const std::string& chatname() const;
 
     void set_chatname(std::string chatname);
@@ -128,19 +144,19 @@ protected:
     // initialize all members that are not set here
 
     // For Insert
-    Chat(std::uint64_t domain_id, std::string chatname);
+    Chat(id_t domain_id, std::string chatname);
     // For Select
-    Chat(std::uint64_t chat_id, std::uint64_t domain_id);
+    Chat(id_t chat_id, id_t domain_id);
 
     void set_chatname_base(std::string chatname);
     virtual void set_chatname_impl(const std::string& chatname);
 
-    void set_chat_id(std::uint64_t chat_id);
-    void set_domain_id(std::uint64_t domain_id);
+    void set_chat_id(id_t chat_id);
+    void set_domain_id(id_t domain_id);
 
 private:
-    std::uint64_t m_chat_id = INVALID_ID;
-    std::uint64_t m_domain_id = INVALID_ID;
+    id_t m_chat_id = INVALID_ID;
+    id_t m_domain_id = INVALID_ID;
     std::string m_chatname;
 };
 
@@ -163,15 +179,21 @@ public:
     // until its fields are initialized properly
     Message() = default;
 
+    Message(const Message&) = default;
+    Message& operator=(const Message&) = default;
+    Message(Message&&) = default;
+    Message& operator=(Message&&) = default;
+
     virtual ~Message();
 
-    [[nodiscard]] std::uint64_t message_id() const;
-    [[nodiscard]] std::uint64_t domain_id() const;
+    [[nodiscard]] id_t message_id() const;
+    [[nodiscard]] id_t chat_id() const;
+    [[nodiscard]] id_t domain_id_chat() const;
+    [[nodiscard]] id_t user_id() const;
+    [[nodiscard]] id_t domain_id_user() const;
     [[nodiscard]] const std::string& text() const;
     [[nodiscard]] Status status() const;
     [[nodiscard]] timestamp_t timestamp() const;
-    [[nodiscard]] std::uint64_t user_id() const;
-    [[nodiscard]] std::uint64_t chat_id() const;
 
     void set_text(std::string text);
     void set_status(Status status);
@@ -182,10 +204,10 @@ protected:
     // initialize all members that are not set here
 
     // For Insert
-    Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
-            timestamp_t timestamp, std::string text, Status status);
+    Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
+            std::string text, timestamp_t timestamp, Status status);
     // For Select
-    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id);
+    Message(id_t message_id, id_t chat_id, id_t domain_id_chat);
 
     void set_text_base(std::string text);
     virtual void set_text_impl(const std::string& text);
@@ -196,23 +218,25 @@ protected:
     void set_timestamp_base(timestamp_t timestamp);
     virtual void set_timestamp_impl(timestamp_t timestamp);
 
-    void set_message_id(std::uint64_t message_id);
-    void set_user_id(std::uint64_t user_id);
-    void set_chat_id(std::uint64_t chat_id);
-    void set_domain_id(std::uint64_t domain_id);
+    void set_message_id(id_t message_id);
+    void set_user_id(id_t user_id);
+    void set_chat_id(id_t chat_id);
+    void set_domain_id_chat(id_t domain_id_chat);
+    void set_domain_id_user(id_t domain_id_user);
 
 private:
-    std::uint64_t m_message_id = INVALID_ID;
-    std::uint64_t m_user_id = INVALID_ID;
-    std::uint64_t m_chat_id = INVALID_ID;
-    std::uint64_t m_domain_id = INVALID_ID;
-    timestamp_t m_timestamp;
+    id_t m_message_id = INVALID_ID;
+    id_t m_chat_id = INVALID_ID;
+    id_t m_domain_id_chat = INVALID_ID;
+    id_t m_user_id = INVALID_ID;
+    id_t m_domain_id_user = INVALID_ID;
     std::string m_text;
+    timestamp_t m_timestamp;
     Status m_status;
 };
 
 }  // namespace melon::core
 
-#include "storage_class.ipp"
+#include "entities.ipp"
 
-#endif  // MELON_CORE_STORAGE_CLASS_HPP_
+#endif  // MELON_CORE_ENTITIES_HPP_

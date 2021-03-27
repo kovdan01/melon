@@ -1,7 +1,7 @@
 namespace melon::core
 {
 
-[[nodiscard]] inline std::uint64_t Domain::domain_id() const
+[[nodiscard]] inline id_t Domain::domain_id() const
 {
     return m_domain_id;
 }
@@ -22,12 +22,12 @@ namespace melon::core
     return m_status;
 }
 
-[[nodiscard]] inline std::uint64_t User::user_id() const
+[[nodiscard]] inline id_t User::user_id() const
 {
     return m_user_id;
 }
 
-[[nodiscard]] inline std::uint64_t User::domain_id() const
+[[nodiscard]] inline id_t User::domain_id() const
 {
     return m_domain_id;
 }
@@ -38,12 +38,12 @@ namespace melon::core
 }
 
 
-[[nodiscard]] inline std::uint64_t Chat::chat_id() const
+[[nodiscard]] inline id_t Chat::chat_id() const
 {
     return m_chat_id;
 }
 
-[[nodiscard]] inline std::uint64_t Chat::domain_id() const
+[[nodiscard]] inline id_t Chat::domain_id() const
 {
     return m_domain_id;
 }
@@ -54,15 +54,31 @@ namespace melon::core
 }
 
 
-[[nodiscard]] inline std::uint64_t Message::message_id() const
+[[nodiscard]] inline id_t Message::message_id() const
 {
     return m_message_id;
 }
 
-[[nodiscard]] inline std::uint64_t Message::domain_id() const
+[[nodiscard]] inline id_t Message::chat_id() const
 {
-    return m_domain_id;
+    return m_chat_id;
 }
+
+[[nodiscard]] inline id_t Message::domain_id_chat() const
+{
+    return m_domain_id_chat;
+}
+
+[[nodiscard]] inline id_t Message::user_id() const
+{
+    return m_user_id;
+}
+
+[[nodiscard]] inline id_t Message::domain_id_user() const
+{
+    return m_domain_id_user;
+}
+
 
 [[nodiscard]] inline const std::string& Message::text() const
 {
@@ -79,14 +95,5 @@ namespace melon::core
     return m_timestamp;
 }
 
-[[nodiscard]] inline std::uint64_t Message::user_id() const
-{
-    return m_user_id;
-}
-
-[[nodiscard]] inline std::uint64_t Message::chat_id() const
-{
-    return m_chat_id;
-}
 
 }  // namespace melon::core

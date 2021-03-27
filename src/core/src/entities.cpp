@@ -1,6 +1,4 @@
-#include <melon/core/storage_class.hpp>
-
-#include <iostream>
+#include <melon/core/entities.hpp>
 
 namespace melon::core
 {
@@ -18,7 +16,7 @@ Domain::Domain(std::string hostname)  // -V730
 
 Domain::~Domain() = default;
 
-void Domain::set_domain_id(std::uint64_t domain_id)
+void Domain::set_domain_id(id_t domain_id)
 {
     m_domain_id = domain_id;
 }
@@ -39,14 +37,14 @@ void Domain::set_external_impl(bool /* external */)
 }
 
 
-User::User(std::string username, std::uint64_t domain_id, Status status)
+User::User(std::string username, id_t domain_id, Status status)
     : m_domain_id(domain_id)
     , m_username(std::move(username))
     , m_status(status)
 {
 }
 
-User::User(std::string username, std::uint64_t domain_id)  // -V730
+User::User(std::string username, id_t domain_id)  // -V730
     : m_domain_id(domain_id)
     , m_username(std::move(username))
 {
@@ -69,23 +67,23 @@ void User::set_status_impl(Status /* status */)
 {
 }
 
-void User::set_user_id(std::uint64_t user_id)
+void User::set_user_id(id_t user_id)
 {
     m_user_id = user_id;
 }
 
-void User::set_domain_id(std::uint64_t domain_id)
+void User::set_domain_id(id_t domain_id)
 {
     m_domain_id = domain_id;
 }
 
-Chat::Chat(std::uint64_t domain_id, std::string chatname)
+Chat::Chat(id_t domain_id, std::string chatname)
     : m_domain_id(domain_id)
     , m_chatname(std::move(chatname))
 {
 }
 
-Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id)
+Chat::Chat(id_t chat_id, id_t domain_id)
     : m_chat_id(chat_id)
     , m_domain_id(domain_id)
 {
@@ -108,31 +106,32 @@ void Chat::set_chatname_impl(const std::string& /* chatname */)
 {
 }
 
-void Chat::set_chat_id(std::uint64_t chat_id)
+void Chat::set_chat_id(id_t chat_id)
 {
     m_chat_id = chat_id;
 }
 
-void Chat::set_domain_id(std::uint64_t domain_id)
+void Chat::set_domain_id(id_t domain_id)
 {
     m_domain_id = domain_id;
 }
 
-Message::Message(std::uint64_t user_id, std::uint64_t chat_id, std::uint64_t domain_id,
-                 std::chrono::system_clock::time_point timestamp, std::string text, Message::Status status)
-    : m_user_id(user_id)
-    , m_chat_id(chat_id)
-    , m_domain_id(domain_id)
-    , m_timestamp(timestamp)
+Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
+                 std::string text, std::chrono::system_clock::time_point timestamp, Message::Status status)
+    : m_chat_id(chat_id)
+    , m_domain_id_chat(domain_id_chat)
+    , m_user_id(user_id)
+    , m_domain_id_user(domain_id_user)
     , m_text(std::move(text))
+    , m_timestamp(timestamp)
     , m_status(status)
 {
 }
 
-Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id)  // -V730
+Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)  // -V730
     : m_message_id(message_id)
     , m_chat_id(chat_id)
-    , m_domain_id(domain_id)
+    , m_domain_id_chat(domain_id_chat)
 {
 }
 
@@ -183,24 +182,29 @@ void Message::set_timestamp_impl(Message::timestamp_t /* timestamp */)
 {
 }
 
-void Message::set_message_id(std::uint64_t message_id)
+void Message::set_message_id(id_t message_id)
 {
     m_message_id = message_id;
 }
 
-void Message::set_user_id(std::uint64_t user_id)
+void Message::set_user_id(id_t user_id)
 {
     m_user_id = user_id;
 }
 
-void Message::set_chat_id(std::uint64_t chat_id)
+void Message::set_chat_id(id_t chat_id)
 {
     m_chat_id = chat_id;
 }
 
-void Message::set_domain_id(std::uint64_t domain_id)
+void Message::set_domain_id_chat(id_t domain_id_chat)
 {
-    m_domain_id = domain_id;
+    m_domain_id_chat = domain_id_chat;
+}
+
+void Message::set_domain_id_user(id_t domain_id_user)
+{
+    m_domain_id_user = domain_id_user;
 }
 
 }  // namespace melon::core

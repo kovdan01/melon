@@ -1,4 +1,5 @@
 #include <chat_list_model.hpp>
+#include <helpers.hpp>
 #include <ram_storage.hpp>
 
 namespace melon::client_desktop
@@ -20,13 +21,14 @@ QVariant ChatListModel::data(const QModelIndex& index, int role) const
 
     if (index.isValid())
     {
+        std::size_t row = to_size_t(index.row());
         switch (role)
         {
         case Qt::DisplayRole:
-            data.setValue(m_it_chats[index.row()]);
+            data.setValue(m_it_chats[row]);
             break;
         case MyRoles::ChatNameRole:
-            data.setValue(m_it_chats[index.row()]->name());
+            data.setValue(m_it_chats[row]->name());
             break;
         default:
             break;
@@ -75,7 +77,7 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
 {
     int row = index.row();
 
-    auto it_chat = m_it_chats[row];
+    auto it_chat = m_it_chats[to_size_t(row)];
 
     this->beginRemoveRows(parent, row, row);
     m_it_chats.erase(m_it_chats.begin() + row);
@@ -87,14 +89,12 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
 
 void ChatListModel::set_chat_name_in_ram_storage(const QModelIndex &index, const QString &name)
 {
-    auto it_msg = m_it_chats[index.row()];
-    it_msg->set_name(name);
+    m_it_chats[to_size_t(index.row())]->set_name(name);
 }
 
 ChatListModel::chat_handle_t ChatListModel::chat_it_by_index(const QModelIndex &index)
 {
-    int row = index.row();
-    return m_it_chats[row];
+    return m_it_chats[to_size_t(index.row())];
 }
 
 }  // namespace melon::client_desktop
