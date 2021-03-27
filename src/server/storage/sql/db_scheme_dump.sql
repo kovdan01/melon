@@ -16,6 +16,40 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `domains`
+--
+
+DROP TABLE IF EXISTS `domains`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `domains` (
+  `domain_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `hostname` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `external` tinyint(1) NOT NULL,
+  PRIMARY KEY (`domain_id`),
+  UNIQUE KEY `unique_hostname` (`hostname`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
+  `user_id` bigint(20) unsigned NOT NULL,
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `domain_id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`domain_id`),
+  UNIQUE KEY `unique_pair_username_domain_id` (`username`,`domain_id`),
+  KEY `domain_id` (`domain_id`),
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
 -- Table structure for table `chats`
 --
 
@@ -40,31 +74,17 @@ DROP TABLE IF EXISTS `chats_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chats_users` (
-  `chat_id` bigint(20) unsigned NOT NULL,
-  `user_id` bigint(20) unsigned NOT NULL,
-  `domain_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`user_id`,`chat_id`,`domain_id`),
-  KEY `domain_id` (`domain_id`),
+  `chat_id`        bigint(20) unsigned NOT NULL,
+  `domain_id_chat` bigint(20) unsigned NOT NULL,
+  `user_id`        bigint(20) unsigned NOT NULL,
+  `domain_id_user` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`chat_id`,`domain_id_chat`,`user_id`,`domain_id_user`),
   KEY `chat_id` (`chat_id`),
-  CONSTRAINT `chats_users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE,
-  CONSTRAINT `chats_users_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `chats_users_ibfk_3` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `domains`
---
-
-DROP TABLE IF EXISTS `domains`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `domains` (
-  `domain_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `external` tinyint(1) NOT NULL,
-  PRIMARY KEY (`domain_id`),
-  UNIQUE KEY `unique_hostname` (`hostname`)
+  KEY `domain_id_chat` (`domain_id_chat`),
+  KEY `user_id` (`user_id`),
+  KEY `domain_id_user` (`domain_id_user`),
+  CONSTRAINT `chats_users_ibfk_1` FOREIGN KEY (`chat_id`, `domain_id_chat`) REFERENCES `chats` (`chat_id`, `domain_id`) ON DELETE CASCADE,
+  CONSTRAINT `chats_users_ibfk_2` FOREIGN KEY (`user_id`, `domain_id_user`) REFERENCES `users` (`user_id`, `domain_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -78,38 +98,23 @@ DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
   `message_id` bigint(20) unsigned NOT NULL,
   `chat_id` bigint(20) unsigned NOT NULL,
-  `domain_id` bigint(20) unsigned NOT NULL,
+  `domain_id_chat` bigint(20) unsigned NOT NULL,
   `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `sendtime` datetime NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`message_id`,`chat_id`,`domain_id`),
+  `domain_id_user` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`message_id`,`chat_id`,`domain_id_chat`),
   KEY `chat_id` (`chat_id`),
+  KEY `domain_id_chat` (`domain_id_chat`),
   KEY `user_id` (`user_id`),
-  KEY `domain_id` (`domain_id`),
-  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `chats` (`chat_id`) ON DELETE CASCADE,
-  CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE
+  KEY `domain_id_user` (`domain_id_user`),
+  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`chat_id`, `domain_id_chat`) REFERENCES `chats` (`chat_id`, `domain_id`) ON DELETE CASCADE,
+  CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`user_id`, `domain_id_user`) REFERENCES `users` (`user_id`, `domain_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users`
---
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
-  `user_id` bigint(20) unsigned NOT NULL,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `domain_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `unique_pair_username_domain_id` (`username`,`domain_id`),
-  KEY `domain_id` (`domain_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`domain_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
