@@ -42,8 +42,6 @@ set(HEADERS
     include/melon/core/log_configuration.hpp
     include/melon/core/sasl_client_wrapper.hpp
     include/melon/core/sasl_client_wrapper.ipp
-    include/melon/core/storage_class.hpp
-    include/melon/core/storage_class.ipp
     include/melon/core/yaml_config.hpp
 )
 
