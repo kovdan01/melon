@@ -45,33 +45,33 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "PVS-Studio",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "PVS-Studio",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
         #- {
             #os: "macos-latest",
             #prefix: "macOS",
@@ -122,10 +122,6 @@ jobs:
         
         sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-${version}   ${priority}
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
-        
-        ls -al /usr/bin/c++
-        ls -al /usr/bin/cc
-        ls -al /usr/bin/clang*
 
     - name: Set environment variables
       shell: python3 {0}
