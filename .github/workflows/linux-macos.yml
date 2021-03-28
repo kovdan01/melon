@@ -105,13 +105,13 @@ jobs:
         sudo apt install p7zip-full -y
         sudo apt install python3 python3-pip -y
         sudo apt install libgdbm-dev -y  # for SASL DB utils
-        sudo update-alternatives --set cc /usr/bin/clang-11
-        sudo update-alternatives --set cxx /usr/bin/clang++-11
 
-#     - name: Create cc and c++ symlinks
-#       run: |
-#         sudo ln -s /usr/bin/clang-11 /usr/bin/cc
-#         sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+    - name: Create cc and c++ symlinks
+      run: |
+        [ -f /usr/bin/cc ] && sudo rm /usr/bin/cc
+        sudo ln -s /usr/bin/clang-11 /usr/bin/cc
+        [ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
+        sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
 
     - name: Set environment variables
       shell: python3 {0}
