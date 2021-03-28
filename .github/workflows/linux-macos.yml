@@ -111,7 +111,7 @@ jobs:
       run: |       
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
-        sudo rm gcc*
+        sudo rm /usr/bin/gcc*
         
         version=11
         priority=100
