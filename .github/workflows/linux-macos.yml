@@ -110,6 +110,8 @@ jobs:
 
     - name: Create necessary symlinks
       run: |       
+        sudo update-alternatives --remove-all gcc
+        sudo update-alternatives --remove-all g++
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
         
@@ -123,7 +125,8 @@ jobs:
         sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-${version}   ${priority}
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
         
-        clang++ --help
+        which gcc
+        which g++
 
     - name: Set environment variables
       shell: python3 {0}
