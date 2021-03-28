@@ -117,8 +117,6 @@ jobs:
         
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
-        sudo update-alternatives --remove-all clang-cpp
-        sudo update-alternatives --remove-all clang-format
         
         echo "Create clang-11 alternatives"
         
@@ -127,9 +125,7 @@ jobs:
         
         sudo update-alternatives \
             --install /usr/bin/clang                 clang                 /usr/bin/clang-${version} ${priority} \
-            --slave   /usr/bin/clang++               clang++               /usr/bin/clang++-${version}  \
-            --slave   /usr/bin/clang-cpp             clang-cpp             /usr/bin/clang-cpp-${version} \
-            --slave   /usr/bin/clang-format          clang-format          /usr/bin/clang-format-${version}
+            --slave   /usr/bin/clang++               clang++               /usr/bin/clang++-${version}
         
         sudo update-alternatives --set cc /usr/bin/clang
         sudo update-alternatives --set cxx /usr/bin/clang++
