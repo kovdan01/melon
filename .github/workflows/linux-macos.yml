@@ -93,8 +93,7 @@ jobs:
         sudo apt --purge remove libc++* -y
         sudo apt --purge remove lld* -y
         sudo apt --purge remove llvm* -y
-        sudo apt --purge remove gcc -y
-        sudo apt --purge remove g++* -y
+        sudo apt --purge remove gcc-7 gcc-8 gcc-9 gcc-10 gcc -y
         sudo apt autoremove
 
     - name: Install required packages (Linux)
