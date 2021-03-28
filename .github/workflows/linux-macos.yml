@@ -123,8 +123,7 @@ jobs:
         sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-${version}   ${priority}
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
         
-        which gcc
-        which g++
+        sudo rm /usr/bin/gcc
 
     - name: Set environment variables
       shell: python3 {0}
