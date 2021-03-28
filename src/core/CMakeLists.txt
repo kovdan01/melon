@@ -10,18 +10,9 @@ include(ntc-dev-build)
 
 # boost asio
 find_package(
-    Boost 1.75.0 REQUIRED
-    COMPONENTS
-    chrono
-    context
-    log
-    system
-    thread
+    Boost 1.74.0 REQUIRED
+    COMPONENTS system
 )
-
-# own libraries
-find_package(ce-utils REQUIRED)
-find_package(asio-utils REQUIRED)
 
 # message pack
 # find_package(msgpack REQUIRED)
@@ -39,9 +30,6 @@ set(HEADERS
     include/melon/core/entities.ipp
     include/melon/core/exception.hpp
     include/melon/core/jni_tests.hpp
-    include/melon/core/log_configuration.hpp
-    include/melon/core/sasl_client_wrapper.hpp
-    include/melon/core/sasl_client_wrapper.ipp
     include/melon/core/yaml_config.hpp
 )
 
@@ -49,10 +37,10 @@ set(SOURCES
     src/entities.cpp
     src/exception.cpp
     src/jni_tests.cpp
-    src/log_configuration.cpp
     src/melon_core.cpp
     src/yaml_config.cpp
 )
+
 
 add_library(${PROJECT_NAME}
     ${HEADERS}
@@ -62,7 +50,6 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 
