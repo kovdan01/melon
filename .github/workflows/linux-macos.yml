@@ -111,9 +111,10 @@ jobs:
       run: |       
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
+        sudo update-alternatives --remove-all gcc
         
         version=11
-        priority=1000
+        priority=100
         
         sudo update-alternatives \
             --install /usr/bin/clang                 clang                 /usr/bin/clang-${version} ${priority} \
@@ -123,7 +124,7 @@ jobs:
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
         
         ls -al /usr/bin/gcc*
-        ls -al /usr/bin/g++*
+        which g++
         ls -al /usr/bin/c++
         ls -al /usr/bin/cc
         ls -al /usr/bin/clang*
