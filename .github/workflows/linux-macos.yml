@@ -93,15 +93,13 @@ jobs:
         sudo apt --purge remove libc++* -y
         sudo apt --purge remove lld* -y
         sudo apt --purge remove llvm* -y
-        sudo apt --purge remove gcc* -y
+        sudo apt --purge remove g++* -y
         sudo apt autoremove
 
     - name: Install required packages (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
-        echo "\n\n\nALALALA\n\n\nLLVM\n\n\n"
         sudo apt install clang-11 libc++-11-dev libc++abi-11-dev lld-11 -y
-        echo "\n\n\nALALALA\n\n\nMARIADB\n\n\n"
         sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
