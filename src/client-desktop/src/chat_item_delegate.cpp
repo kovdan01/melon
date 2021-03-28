@@ -1,5 +1,6 @@
 #include <chat_item_delegate.hpp>
 #include <config.hpp>
+#include <helpers.hpp>
 #include <ram_storage.hpp>
 
 #include <QListView>
@@ -80,7 +81,7 @@ QString ChatItemDelegate::date_handler(const Message::timestamp_t& timestamp) co
         return this->date_number_handler(tm->tm_hour) + QStringLiteral(":") + this->date_number_handler(tm->tm_min);
 
     return this->date_number_handler(tm->tm_mday) + QStringLiteral(" ") +
-           m_month_names[tm->tm_mon] + QStringLiteral(" ") +
+           m_month_names[to_size_t(tm->tm_mon)] + QStringLiteral(" ") +
            this->date_number_handler(tm->tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 }
 

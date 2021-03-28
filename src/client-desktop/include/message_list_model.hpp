@@ -42,7 +42,7 @@ public:
 private:
     message_handle_t add_message_to_ram_storage(chat_handle_t it_chat, const Message& message);
     void set_message_in_ram_storage(const QModelIndex& index, const QString& message);
-    [[nodiscard]] bool are_icon_and_sendername_needed(const int& less_row, const int& bigger_row) const;
+    [[nodiscard]] bool are_icon_and_sendername_needed(std::size_t less_row, std::size_t bigger_row) const;
 
     std::vector<message_handle_t> m_it_messages;
 };

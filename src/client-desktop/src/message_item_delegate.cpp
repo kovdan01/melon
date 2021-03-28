@@ -1,5 +1,6 @@
 #include <chat_widget.hpp>
 #include <config.hpp>
+#include <helpers.hpp>
 #include <message_item_delegate.hpp>
 #include <ram_storage.hpp>
 
@@ -184,10 +185,10 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
     std::tm* timestamp_tm = std::localtime(&time_tt);
 
-    QString time_str = this->date_number_handler(timestamp_tm->tm_mday) + QStringLiteral(" ")
-                       +m_month_names[timestamp_tm->tm_mon] + QStringLiteral(" ")
-                       +this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":")
-                       +this->date_number_handler(timestamp_tm->tm_min);
+    QString time_str = this->date_number_handler(timestamp_tm->tm_mday) + QStringLiteral(" ") +
+                       m_month_names[to_size_t(timestamp_tm->tm_mon)] + QStringLiteral(" ") +
+                       this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":") +
+                       this->date_number_handler(timestamp_tm->tm_min);
 
     if (message->is_edit())
         time_str = tr("edit") + QStringLiteral("  ") + time_str;
