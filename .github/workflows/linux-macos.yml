@@ -94,14 +94,14 @@ jobs:
         sudo apt-get --purge remove *libc++* -y
         sudo apt-get --purge remove lld* -y
         sudo apt-get --purge remove *llvm* -y
-        # sudo apt-get --purge remove *libstdc++* -y
+        sudo apt-get --purge remove libstdc++* -y
+        sudo apt-get --purge remove gcc* -y
         sudo apt-get install clang-11 libc++-11-dev libc++abi-11-dev lld-11 -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
         sudo apt-get install cmake ninja-build pkg-config -y
         sudo apt-get install p7zip-full -y
         sudo apt-get install python3 python3-pip -y
         sudo apt-get install libgdbm-dev -y  # for SASL DB utils
-        sudo apt-get --purge remove *gcc* -y
 
     - name: Create cc and c++ symlinks
       run: |
