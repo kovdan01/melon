@@ -110,7 +110,7 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get purge *mysql*
-        sudo apt-get install clang -y
+        sudo apt-get install clang-11 lld-11 -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
 
     - name: Install MariaDB (macOS)
@@ -494,6 +494,8 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+        -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
+        -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
