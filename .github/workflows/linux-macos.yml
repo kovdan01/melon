@@ -275,12 +275,14 @@ jobs:
         mkdir prefix
         cd build
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
-            -GNinja \
-            -DCMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-            -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++" ..
+            -G Ninja \
+            -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+            -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
+            -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
+            -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+            -D CMAKE_CXX_FLAGS="-stdlib=libc++" ..
         cmake --build . --target all
         cmake --build . --target install
         cd ${{ env.REPO_PATH }}
@@ -375,6 +377,7 @@ jobs:
         os.chdir(yaml_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
+                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
                         "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -426,6 +429,7 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
+                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -448,6 +452,7 @@ jobs:
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
                         "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
+                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    sqlpp11_install_dir))
@@ -468,6 +473,7 @@ jobs:
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
                         "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
+                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -520,6 +526,7 @@ jobs:
         os.chdir(catch2_source_dir)
 
         execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
+                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    catch2_install_dir))
@@ -601,6 +608,8 @@ jobs:
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
+        -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
+        -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
