@@ -114,6 +114,7 @@ jobs:
         sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         [ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
         sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+        sudo ls -al /usr/bin/clang*
         [ -f /usr/bin/clang ] && sudo rm /usr/bin/clang
         sudo ln -s /usr/bin/clang-11 /usr/bin/clang
         [ -f /usr/bin/clang++ ] && sudo rm /usr/bin/clang++
