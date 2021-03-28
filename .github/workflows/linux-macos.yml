@@ -37,7 +37,7 @@ jobs:
       matrix:
         config:
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "",
             artifact: "all-release-linux",
@@ -46,7 +46,7 @@ jobs:
             cxx: "clang++-11",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "CodeQL",
             artifact: "",
@@ -55,7 +55,7 @@ jobs:
             cxx: "clang++-11",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "PVS-Studio",
             artifact: "",
@@ -64,7 +64,7 @@ jobs:
             cxx: "clang++-11",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "clang-tidy",
             artifact: "",
