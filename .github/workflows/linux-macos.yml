@@ -114,8 +114,15 @@ jobs:
         sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         [ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
         sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+        echo "11111"
         sudo ls -al /usr/bin/clang*
+        echo "22222"
+        sudo ls -al /etc/alternatives/clang*
         [ -f /usr/bin/clang ] && sudo rm /usr/bin/clang
+        echo "33333"
+        sudo ls -al /usr/bin/clang*
+        echo "44444"
+        sudo ls -al /etc/alternatives/clang*
         sudo ln -s /usr/bin/clang-11 /usr/bin/clang
         [ -f /usr/bin/clang++ ] && sudo rm /usr/bin/clang++
         sudo ln -s /usr/bin/clang++-11 /usr/bin/clang++
