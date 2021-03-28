@@ -110,8 +110,6 @@ jobs:
 
     - name: Create necessary symlinks
       run: |       
-        sudo update-alternatives --remove-all gcc
-        sudo update-alternatives --remove-all g++
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
         
