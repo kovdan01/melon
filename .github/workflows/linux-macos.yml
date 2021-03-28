@@ -89,7 +89,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt-get update -y
-        sudo apt-get purge *mysql* -y
+        sudo apt-get upgrade -y
+        sudo apt-get --purge remove *mysql* -y
         sudo apt-get --purge remove clang* -y
         sudo apt-get --purge remove libc++* -y
         sudo apt-get --purge remove lld* -y
