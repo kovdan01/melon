@@ -94,7 +94,7 @@ jobs:
         sudo apt-get --purge remove *libc++* -y
         sudo apt-get --purge remove *lld* -y
         sudo apt-get --purge remove *llvm* -y
-        sudo apt-get --purge remove *libstdc++* -y
+        # sudo apt-get --purge remove *libstdc++* -y
         sudo apt-get --purge remove *gcc* -y
         sudo apt-get install clang-11 libc++-11-dev libc++abi-11-dev lld-11 -y
         sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
