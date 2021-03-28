@@ -99,8 +99,12 @@ jobs:
     - name: Install required packages (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
+        sudo apt update
+        echo "11111111111111111111"
         sudo apt install clang-11 libc++-11-dev libc++abi-11-dev lld-11 -y
+        echo "222222222222222"
         sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+        echo "33333333333333"
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
         sudo apt install python3 python3-pip -y
