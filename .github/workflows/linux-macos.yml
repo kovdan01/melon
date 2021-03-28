@@ -265,8 +265,8 @@ jobs:
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-        execute_command("./bootstrap.sh --with-toolset=clang")
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
+        execute_command("CC=clang CXX=clang++ ./bootstrap.sh --with-toolset=clang")
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
