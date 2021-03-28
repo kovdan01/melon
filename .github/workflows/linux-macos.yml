@@ -127,8 +127,8 @@ jobs:
             --install /usr/bin/clang                 clang                 /usr/bin/clang-${version} ${priority} \
             --slave   /usr/bin/clang++               clang++               /usr/bin/clang++-${version}
         
-        sudo update-alternatives --set cc /usr/bin/clang
-        sudo update-alternatives --set cxx /usr/bin/clang++
+        sudo update-alternatives --set cc clang
+        sudo update-alternatives --set cxx clang++
         
         #sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         #[ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
