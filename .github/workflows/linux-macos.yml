@@ -42,8 +42,8 @@ jobs:
             suffix: "",
             artifact: "all-release-linux",
             build_type: "Release",
-            cc: "clang-11",
-            cxx: "clang++-11",
+            cc: "/usr/bin/clang-11",
+            cxx: "/usr/bin/clang++-11",
           }
         - {
             os: "ubuntu-latest",
@@ -51,8 +51,8 @@ jobs:
             suffix: "CodeQL",
             artifact: "",
             build_type: "Debug",
-            cc: "clang-11",
-            cxx: "clang++-11",
+            cc: "/usr/bin/clang-11",
+            cxx: "/usr/bin/clang++-11",
           }
         - {
             os: "ubuntu-latest",
@@ -60,8 +60,8 @@ jobs:
             suffix: "PVS-Studio",
             artifact: "",
             build_type: "Debug",
-            cc: "clang-11",
-            cxx: "clang++-11",
+            cc: "/usr/bin/clang-11",
+            cxx: "/usr/bin/clang++-11",
           }
         - {
             os: "ubuntu-latest",
@@ -69,8 +69,8 @@ jobs:
             suffix: "clang-tidy",
             artifact: "",
             build_type: "Debug",
-            cc: "clang-11",
-            cxx: "clang++-11",
+            cc: "/usr/bin/clang-11",
+            cxx: "/usr/bin/clang++-11",
           }
         #- {
             #os: "macos-latest",
