@@ -113,10 +113,14 @@ jobs:
         #sudo ls -al /usr/bin/c++
         #sudo ls -al /etc/alternatives/c++
         
+        echo "Remove clang-10 alternatives"
+        
         sudo update-alternatives --remove clang         /usr/bin/clang-10
         sudo update-alternatives --remove clang++       /usr/bin/clang++-10
         sudo update-alternatives --remove clang-cpp     /usr/bin/clang-cpp-10
         sudo update-alternatives --remove clang-format  /usr/bin/clang-format-10
+        
+        echo "Create clang-11 alternatives"
         
         version=11
         priority=1000
@@ -127,9 +131,9 @@ jobs:
             --slave   /usr/bin/clang-cpp             clang-cpp             /usr/bin/clang-cpp-${version} \
             --slave   /usr/bin/clang-format          clang-format          /usr/bin/clang-format-${version}
         
-        sudo ln -s /usr/bin/clang-11 /usr/bin/cc
+        #sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         #[ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
-        sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+        #sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
         echo "11111"
         sudo ls -al /usr/bin/clang*
         echo "22222"
@@ -142,6 +146,11 @@ jobs:
         sudo ln -s /usr/bin/clang-11 /usr/bin/clang
         [ -f /usr/bin/clang++ ] && sudo rm /usr/bin/clang++
         sudo ln -s /usr/bin/clang++-11 /usr/bin/clang++
+        
+        echo "CC HELP"
+        cc --help
+        echo "CXX HELP"
+        cxx --help
 
     - name: Set environment variables
       shell: python3 {0}
