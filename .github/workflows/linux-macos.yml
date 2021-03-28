@@ -72,15 +72,15 @@ jobs:
             #cc: "clang",
             #cxx: "clang++",
           #}
-        #- {
-            #os: "macos-latest",
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "macos-latest",
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -107,7 +107,8 @@ jobs:
         sudo apt install python3 python3-pip -y
         sudo apt install libgdbm-dev -y  # for SASL DB utils
 
-    - name: Create necessary symlinks
+    - name: Create necessary symlinks (Linux)
+      if: ${{ runner.os == 'Linux' }}
       run: |       
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
@@ -610,7 +611,8 @@ jobs:
 
         os.chdir(repo)
 
-    - name: Configure
+    - name: Configure (Linux)
+      if: ${{ runner.os == 'Linux' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -625,6 +627,30 @@ jobs:
         -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
         -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
         -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+        -D CMAKE_PREFIX_PATH=\
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
+        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Configure (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: |
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -G Ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+        -S . \
+        -B build \
+        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+        -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
