@@ -70,7 +70,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(MINGW)
     # for localtime_r
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _POSIX_THREAD_SAFE_FUNCTIONS)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _POSIX_C_SOURCE)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
