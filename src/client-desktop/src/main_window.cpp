@@ -145,7 +145,6 @@ class ChatNameException : public melon::Exception
 {
 public:
     using melon::Exception::Exception;
-    using melon::Exception::operator=;
 };
 
 }  // namespace
