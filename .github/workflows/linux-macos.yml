@@ -110,8 +110,8 @@ jobs:
 
     - name: Create necessary symlinks
       run: |
-        sudo ls -al /usr/bin/c++
-        sudo ls -al /etc/alternatives/c++
+        #sudo ls -al /usr/bin/c++
+        #sudo ls -al /etc/alternatives/c++
         
         version=11
         priority=1000
@@ -122,9 +122,9 @@ jobs:
         --slave   /usr/bin/clang-cpp             clang-cpp             /usr/bin/clang-cpp-${version} \
         --slave   /usr/bin/clang-format          clang-format          /usr/bin/clang-format-${version} \
         
-        #sudo ln -s /usr/bin/clang-11 /usr/bin/cc
+        sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         #[ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
-        #sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+        sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
         echo "11111"
         sudo ls -al /usr/bin/clang*
         echo "22222"
