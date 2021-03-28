@@ -108,12 +108,16 @@ jobs:
         sudo apt install python3 python3-pip -y
         sudo apt install libgdbm-dev -y  # for SASL DB utils
 
-    - name: Create cc and c++ symlinks
+    - name: Create necessary symlinks
       run: |
         [ -f /usr/bin/cc ] && sudo rm /usr/bin/cc
         sudo ln -s /usr/bin/clang-11 /usr/bin/cc
         [ -f /usr/bin/c++ ] && sudo rm /usr/bin/c++
         sudo ln -s /usr/bin/clang++-11 /usr/bin/c++
+        [ -f /usr/bin/clang ] && sudo rm /usr/bin/clang
+        sudo ln -s /usr/bin/clang-11 /usr/bin/clang
+        [ -f /usr/bin/clang++ ] && sudo rm /usr/bin/clang++
+        sudo ln -s /usr/bin/clang++-11 /usr/bin/clang++
 
     - name: Set environment variables
       shell: python3 {0}
