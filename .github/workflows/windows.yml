@@ -23,7 +23,7 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MINGW64_CACHE_VERSION: 13  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 14  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -680,6 +680,7 @@ jobs:
           C:/msys64/mingw64/bin/qscxmlc.exe
           C:/msys64/mingw64/bin/Qt5Core.dll
           C:/msys64/mingw64/bin/Qt5Gui.dll
+          C:/msys64/mingw64/bin/Qt5Sql.dll
           C:/msys64/mingw64/bin/Qt5Widgets.dll
           C:/msys64/mingw64/bin/qtattributionsscanner.exe
           C:/msys64/mingw64/bin/qtdiag.exe
@@ -703,6 +704,7 @@ jobs:
           C:/msys64/mingw64/lib/cmake/Qt5*/
           C:/msys64/mingw64/lib/libQt5Core.dll.a
           C:/msys64/mingw64/lib/libQt5Gui.dll.a
+          C:/msys64/mingw64/lib/libQt5Sql.dll.a
           C:/msys64/mingw64/lib/libQt5Widgets.dll.a
           C:/msys64/mingw64/lib/libqtmain.a
           C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
