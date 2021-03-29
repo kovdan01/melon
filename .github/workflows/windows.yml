@@ -129,14 +129,14 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-clang-patched
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-gcc-patched
 
     - name: Boost
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
+        CC: gcc
+        CXX: g++
       shell: python {0}
       run: |
         import os
