@@ -72,15 +72,15 @@ jobs:
             #cc: "clang",
             #cxx: "clang++",
           #}
-        - {
-            os: "macos-latest",
-            prefix: "macOS",
-            suffix: "",
-            artifact: "all-release-macos",
-            build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "macos-latest",
+            #prefix: "macOS",
+            #suffix: "",
+            #artifact: "all-release-macos",
+            #build_type: "Release",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
 
     steps:
     - uses: actions/checkout@v2
@@ -448,7 +448,7 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" {} "
-                        "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
+                        "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    os.environ['CMAKE_LINKER_FLAGS'],
