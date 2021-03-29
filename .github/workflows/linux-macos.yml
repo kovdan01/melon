@@ -267,7 +267,7 @@ jobs:
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command("CC=clang CXX=clang++ ./bootstrap.sh --with-toolset=clang")
+        execute_command("./bootstrap.sh --with-toolset=clang")
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
@@ -696,7 +696,9 @@ jobs:
 
     - name: Install clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      run: sudo apt-get install clang-tidy -y
+      run: |
+        sudo apt install clang-tidy-11 -y
+        sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-11 100
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
