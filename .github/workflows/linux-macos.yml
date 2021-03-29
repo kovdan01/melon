@@ -143,6 +143,7 @@ jobs:
             env_file.write("CMAKE_LINKER_FLAGS=-DCMAKE_SHARED_LINKER_FLAGS='-fuse-ld=lld' -DCMAKE_EXE_LINKER_FLAGS='-fuse-ld=lld'\n")
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
+            env_file.write("CMAKE_LINKER_FLAGS= \n")
 
     - name: Install required python3 modules
       run: pip3 install requests pyparsing
