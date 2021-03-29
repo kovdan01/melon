@@ -698,7 +698,8 @@ jobs:
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
       run: |
         sudo apt install clang-tidy-11 -y
-        sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-11 100
+        sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11 100
+        sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
