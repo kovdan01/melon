@@ -72,7 +72,7 @@ jobs:
         pacman -S --noconfirm mingw-w64-x86_64-clang
 
     - name: Remove gcc
-      shell:
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -R --noconfirm mingw-w64-x86_64-gcc
         
@@ -189,6 +189,40 @@ jobs:
         execute_command(cmd_prefix + '"./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags=\'-stdlib=libstdc++\' linkflags=\'-stdlib=libstdc++\' toolset=clang variant=release link=shared threading=multi install"'.format(boost_install_dir))
 
         os.chdir(repo)
+
+    - name: Utils by Pavel A. Lebedev
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        echo "LINKER FLAGS"
+        echo $CMAKE_LINKER_FLAGS
+        # ntc-cmake
+        cd cmake/ntc
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
+
+        # utils and asio-utils from cosec-examples
+        cd 3rd-party/lebedev-utils
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+            -G Ninja \
+            -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+            -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
+            -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
 
     # mingw64 packages:
     # - mingw-w64-x86_64-cyrus-sasl (and mingw-w64-x86_64-gdbm as a dependency)
@@ -882,7 +916,8 @@ jobs:
         -D CMAKE_NM=/mingw64/bin/nm.exe \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
