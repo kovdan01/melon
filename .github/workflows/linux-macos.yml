@@ -72,15 +72,15 @@ jobs:
             #cc: "clang",
             #cxx: "clang++",
           #}
-        #- {
-            #os: "macos-latest",
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "macos-latest",
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -595,8 +595,14 @@ jobs:
 
         os.chdir(qtbase_source_dir)
 
+        qt_platform = ''
+        if '${{ runner.os }}' == 'Linux':
+            qt_platform = '-platform linux-clang-libc++'
+        elif '${{ runner.os }}' == 'macOS':
+            qt_platform = '-platform macx-clang-libc++'
+
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} -platform linux-clang-libc++ -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
+        execute_command("./configure -opensource -confirm-license -prefix {} {} -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_platform))
         execute_command("make")
         execute_command("make install")
 
