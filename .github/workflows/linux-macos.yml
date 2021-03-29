@@ -45,42 +45,42 @@ jobs:
             cc: "clang",
             cxx: "clang++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "PVS-Studio",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
-          }
-        - {
-            os: "macos-latest",
-            prefix: "macOS",
-            suffix: "",
-            artifact: "all-release-macos",
-            build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "PVS-Studio",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
+        #- {
+            #os: "macos-latest",
+            #prefix: "macOS",
+            #suffix: "",
+            #artifact: "all-release-macos",
+            #build_type: "Release",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
 
     steps:
     - uses: actions/checkout@v2
@@ -100,7 +100,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt update
-        sudo apt install clang-11 libc++-11-dev libc++abi-11-dev lld-11 -y
+        sudo apt install libstdc++-10-dev -y
+        sudo apt install clang-11 lld-11 -y
         sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
@@ -218,7 +219,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-libcxx-patched-3
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-patched-3
 
     - name: Boost
       id: boost
@@ -268,7 +269,7 @@ jobs:
 
         execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
         execute_command("./bootstrap.sh --with-toolset=clang")
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags="-stdlib=libstdc++" linkflags="-stdlib=libstdc++" toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
@@ -301,7 +302,7 @@ jobs:
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
             $CMAKE_LINKER_FLAGS \
-            -D CMAKE_CXX_FLAGS="-stdlib=libc++" ..
+            -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" ..
         cmake --build . --target all
         cmake --build . --target install
         cd ${{ env.REPO_PATH }}
@@ -311,7 +312,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-libcxx-3
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-3
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -358,7 +359,7 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-libcxx-3
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-3
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
@@ -395,7 +396,7 @@ jobs:
 
         os.chdir(yaml_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" {} "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=\"-stdlib=libstdc++\" {} "
                         "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -410,7 +411,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-libcxx-3
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-3
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -447,7 +448,7 @@ jobs:
 
         os.chdir(sqlpp11_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" {} "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libstdc++\" {} "
                         "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -470,7 +471,7 @@ jobs:
         os.chdir(chrono_date_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" {} "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libstdc++\" {} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    os.environ['CMAKE_LINKER_FLAGS'],
@@ -491,7 +492,7 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" {} "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libstdc++\" {} "
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
@@ -508,7 +509,7 @@ jobs:
       id: cache_catch2_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-libcxx-3
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-3
 
     - name: Catch2
       if: ${{ steps.cache_catch2_unix.outputs.cache-hit != 'true' }}
@@ -545,7 +546,7 @@ jobs:
 
         os.chdir(catch2_source_dir)
 
-        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} {} -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
+        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} {} -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libstdc++\" "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    os.environ['CMAKE_LINKER_FLAGS'],
@@ -559,7 +560,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-libcxx-3
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-3
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -597,7 +598,7 @@ jobs:
 
         qt_platform = ''
         if '${{ runner.os }}' == 'Linux':
-            qt_platform = '-platform linux-clang-libc++'
+            qt_platform = '-platform linux-clang'
         elif '${{ runner.os }}' == 'macOS':
             qt_platform = '-platform macx-clang'
 
@@ -633,7 +634,7 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
+        -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
@@ -703,7 +704,7 @@ jobs:
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      run: run-clang-tidy -p=build -j=2 -extra-arg-before="-isystem/usr/lib/llvm-11/include/c++/v1/ -stdlib=libc++" 2>&1 | tee reports/clang-tidy-report.log
+      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
 
     - name: Install PVS-Studio
       if: ${{ matrix.config.suffix == 'PVS-Studio' }}
