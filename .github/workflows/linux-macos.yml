@@ -109,18 +109,18 @@ jobs:
 
     - name: Create necessary symlinks (Linux)
       if: ${{ runner.os == 'Linux' }}
-      run: |       
+      run: |
         sudo update-alternatives --remove-all clang
         sudo update-alternatives --remove-all clang++
         sudo rm /usr/bin/gcc*
-        
+
         version=11
         priority=100
-        
+
         sudo update-alternatives \
             --install /usr/bin/clang                 clang                 /usr/bin/clang-${version} ${priority} \
             --slave   /usr/bin/clang++               clang++               /usr/bin/clang++-${version}
-        
+
         sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-${version}   ${priority}
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
 
@@ -140,8 +140,10 @@ jobs:
 
           if "${{ runner.os }}" == "Linux":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
+            env_file.write('CMAKE_LINKER_FLAGS=\'-DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"\'\n')
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
+            env_file.write('CMAKE_LINKER_FLAGS=\'\'\n')
 
     - name: Install required python3 modules
       run: pip3 install requests pyparsing
@@ -216,7 +218,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-libcxx-patched-1
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-libcxx-patched-2
 
     - name: Boost
       id: boost
@@ -296,8 +298,7 @@ jobs:
             -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
-            -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
-            -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+            $CMAKE_LINKER_FLAGS \
             -D CMAKE_CXX_FLAGS="-stdlib=libc++" ..
         cmake --build . --target all
         cmake --build . --target install
@@ -308,7 +309,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-libcxx-1
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-libcxx-2
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -355,7 +356,7 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-libcxx-1
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-libcxx-2
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
@@ -392,8 +393,8 @@ jobs:
 
         os.chdir(yaml_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
-                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" " +
+                        "{} ".format(os.environ['CMAKE_LINKER_FLAGS']) +
                         "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -407,7 +408,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-libcxx-1
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-libcxx-2
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -444,8 +445,8 @@ jobs:
 
         os.chdir(sqlpp11_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
-                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" " +
+                        "{} ".format(os.environ['CMAKE_LINKER_FLAGS']) +
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -467,8 +468,8 @@ jobs:
         os.chdir(chrono_date_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
-                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" " +
+                        "{} ".format(os.environ['CMAKE_LINKER_FLAGS']) +
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    sqlpp11_install_dir))
@@ -488,8 +489,8 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
-                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 " +
+                        "{} ".format(os.environ['CMAKE_LINKER_FLAGS']) +
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
@@ -504,7 +505,7 @@ jobs:
       id: cache_catch2_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-libcxx-1
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-libcxx-2
 
     - name: Catch2
       if: ${{ steps.cache_catch2_unix.outputs.cache-hit != 'true' }}
@@ -541,8 +542,8 @@ jobs:
 
         os.chdir(catch2_source_dir)
 
-        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" "
-                        "-D CMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=lld\" -DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=lld\" "
+        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} -DCMAKE_CXX_FLAGS=\"-stdlib=libc++\" " +
+                        "{} ".format(os.environ['CMAKE_LINKER_FLAGS']) +
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    catch2_install_dir))
@@ -555,7 +556,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-libcxx-1
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-libcxx-2
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -611,8 +612,7 @@ jobs:
 
         os.chdir(repo)
 
-    - name: Configure (Linux)
-      if: ${{ runner.os == 'Linux' }}
+    - name: Configure
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -625,32 +625,7 @@ jobs:
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
-        -D CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
-        -D CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
-        -D CMAKE_PREFIX_PATH=\
-        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
-        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
-        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-    - name: Configure (macOS)
-      if: ${{ runner.os == 'macOS' }}
-      env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
-      run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
-        -G Ninja \
-        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-        -S . \
-        -B build \
-        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D CMAKE_CXX_FLAGS="-stdlib=libc++" \
+        $CMAKE_LINKER_FLAGS \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
