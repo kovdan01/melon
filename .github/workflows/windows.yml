@@ -23,7 +23,7 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MINGW64_CACHE_VERSION: 12  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 13  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -34,8 +34,8 @@ jobs:
             suffix: "",
             artifact: "all-release-windows-mingw64",
             build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
+            cc: "clang",
+            cxx: "clang++",
           }
 
     steps:
@@ -66,10 +66,15 @@ jobs:
         pacman -S --noconfirm mingw-w64-x86_64-python-pip
         pip install pyparsing
 
-    - name: Install Clang and libc++
+    - name: Install Clang
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-clang mingw-w64-x86_64-libc++
+        pacman -S --noconfirm mingw-w64-x86_64-clang
+
+    - name: Remove gcc
+      shell:
+      run: |
+        pacman -R --noconfirm mingw-w64-x86_64-gcc
         
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -129,11 +134,14 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-shared-only-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-context-exception-log-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-clang-patched
 
     - name: Boost
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       shell: python {0}
       run: |
         import os
@@ -167,19 +175,18 @@ jobs:
 
         cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
 
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/container-fix-141.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch"'.format(repo))
+        execute_command(cmd_prefix + '"patch -p1 < {}/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch"'.format(repo))
+        execute_command(cmd_prefix + '"patch -p1 < {}/patches/boost-1.75.0/container-fix-141.patch"'.format(repo))
+        execute_command(cmd_prefix + '"patch -p1 < {}/patches/boost-1.75.0/move-fix-35.patch"'.format(repo))
+        execute_command(cmd_prefix + '"patch -p1 < {}/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch"'.format(repo))
+        execute_command(cmd_prefix + '"patch -p1 < {}/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch"'.format(repo))
 
-        execute_command(cmd_prefix + '"export CXX=\'/mingw64/bin/clang++\'"')
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang --prefix={}"'.format(boost_install_dir))
-        execute_command(cmd_prefix + '"./b2 clean"')
-        execute_command(cmd_prefix + '"./b2 toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={} stage release"'.format(boost_install_dir))
-        execute_command(cmd_prefix + '"./b2 install toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={}"'.format(boost_install_dir))
+        execute_command('echo "using clang : : ${{ env.CXX }} : ;" > user-config.jam')
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-toolset=clang"')
+        execute_command(cmd_prefix + '"./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} cxxflags=\'-stdlib=libstdc++\' linkflags=\'-stdlib=libstdc++\' toolset=clang variant=release link=shared threading=multi install"'.format(boost_install_dir))
 
         os.chdir(repo)
 
@@ -692,6 +699,7 @@ jobs:
           C:/msys64/mingw64/bin/qscxmlc.exe
           C:/msys64/mingw64/bin/Qt5Core.dll
           C:/msys64/mingw64/bin/Qt5Gui.dll
+          C:/msys64/mingw64/bin/Qt5Sql.dll
           C:/msys64/mingw64/bin/Qt5Widgets.dll
           C:/msys64/mingw64/bin/qtattributionsscanner.exe
           C:/msys64/mingw64/bin/qtdiag.exe
@@ -710,10 +718,12 @@ jobs:
           C:/msys64/mingw64/include/ActiveQt/
           C:/msys64/mingw64/include/QtCore/
           C:/msys64/mingw64/include/QtGui/
+          C:/msys64/mingw64/include/QtSql/
           C:/msys64/mingw64/include/QtWidgets/
           C:/msys64/mingw64/lib/cmake/Qt5*/
           C:/msys64/mingw64/lib/libQt5Core.dll.a
           C:/msys64/mingw64/lib/libQt5Gui.dll.a
+          C:/msys64/mingw64/lib/libQt5Sql.dll.a
           C:/msys64/mingw64/lib/libQt5Widgets.dll.a
           C:/msys64/mingw64/lib/libqtmain.a
           C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
@@ -758,7 +768,7 @@ jobs:
       id: cache_sqlpp11
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-clang
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
@@ -850,6 +860,9 @@ jobs:
 
     - name: Configure
       if: ${{ runner.os == 'Windows' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cp ${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja.exe C:\\msys64\\mingw64\\bin\\ninja.exe
@@ -861,13 +874,12 @@ jobs:
         -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
         -D CMAKE_VERBOSE_MAKEFILE=ON \
         -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-        -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-        -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+        -D CMAKE_C_COMPILER=/mingw64/bin/clang.exe \
+        -D CMAKE_CXX_COMPILER=/mingw64/bin/clang++.exe \
         -D CMAKE_AR=/mingw64/bin/ar.exe \
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
-        -D SQLPP11_MYSQL_CONNECTOR_PREFIX="${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
@@ -891,6 +903,7 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\libmariadb.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Core.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Gui.dll"                 install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\Qt5Sql.dll"                 install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Widgets.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libicuin68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libdouble-conversion.dll"   install\\bin
