@@ -71,11 +71,6 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-clang
 
-    - name: Remove gcc
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -R --noconfirm mingw-w64-x86_64-gcc
-        
     - name: Ninja and CMake cache
       uses: actions/cache@v2
       id: cache_ninja_and_cmake
