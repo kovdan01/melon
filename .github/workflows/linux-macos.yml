@@ -703,7 +703,7 @@ jobs:
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
+      run: run-clang-tidy -p=build -j=2 --extra-arg="-stdlib=libc++" 2>&1 | tee reports/clang-tidy-report.log
 
     - name: Install PVS-Studio
       if: ${{ matrix.config.suffix == 'PVS-Studio' }}
