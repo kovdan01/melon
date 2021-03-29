@@ -602,7 +602,7 @@ jobs:
             qt_platform = '-platform macx-clang'
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} {} -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_platform))
+        execute_command("./configure -opensource -confirm-license -prefix {} {} -c++std c++1z -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_platform))
         execute_command("make")
         execute_command("make install")
 
