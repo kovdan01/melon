@@ -599,7 +599,7 @@ jobs:
         if '${{ runner.os }}' == 'Linux':
             qt_platform = '-platform linux-clang-libc++'
         elif '${{ runner.os }}' == 'macOS':
-            qt_platform = '-platform macx-clang-libc++'
+            qt_platform = '-platform macx-clang'
 
         execute_command("chmod +x ./configure")
         execute_command("./configure -opensource -confirm-license -prefix {} {} -c++std c++17 -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_platform))
