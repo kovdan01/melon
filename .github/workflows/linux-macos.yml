@@ -244,18 +244,12 @@ jobs:
 
         os.chdir(boost_source_dir)
 
-        #execute_command("patch -p1 < {}/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch".format(repo))
-        #execute_command("patch -p1 < {}/patches/boost-1.75.0/container-fix-141.patch".format(repo))
-        #execute_command("patch -p1 < {}/patches/boost-1.75.0/move-fix-35.patch".format(repo))
-        #execute_command("patch -p1 < {}/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
-        #execute_command("patch -p1 < {}/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
-
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
 
-        execute_command('echo "using clang : : ${CXX} : ;" > user-config.jam')
-        execute_command("./bootstrap.sh --with-toolset=clang")
-        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=clang variant=release link=shared threading=multi install'.format(boost_install_dir))
+        execute_command('echo "using gcc : : ${CXX} : ;" > user-config.jam')
+        execute_command("./bootstrap.sh --with-toolset=gcc --without-libraries=python")
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=gcc variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
 
@@ -538,7 +532,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-3
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-4
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -574,14 +568,14 @@ jobs:
 
         os.chdir(qtbase_source_dir)
 
-        qt_platform = ''
+        qt_params = ''
         if '${{ runner.os }}' == 'Linux':
-            qt_platform = '-platform linux-clang'
+            qt_params = '-platform linux-g++'
         elif '${{ runner.os }}' == 'macOS':
-            qt_platform = '-platform macx-clang'
+            qt_params = '-platform macx-clang'
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_platform))
+        execute_command("./configure -opensource -confirm-license -prefix {} {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_params))
         execute_command("make")
         execute_command("make install")
 
