@@ -45,33 +45,33 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "PVS-Studio",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "PVS-Studio",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
         - {
             os: "macos-latest",
             prefix: "macOS",
@@ -205,7 +205,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-3
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-4
 
     - name: Boost
       id: boost
@@ -289,7 +289,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-3
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-4
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -336,7 +336,7 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-3
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-4
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
@@ -387,7 +387,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-3
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-4
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -482,7 +482,7 @@ jobs:
       id: cache_catch2_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-3
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-4
 
     - name: Catch2
       if: ${{ steps.cache_catch2_unix.outputs.cache-hit != 'true' }}
@@ -634,7 +634,9 @@ jobs:
 
     - name: Run tests
       run: |
+        cd build
         ctest
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
