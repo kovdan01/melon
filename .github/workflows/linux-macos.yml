@@ -42,8 +42,8 @@ jobs:
             suffix: "",
             artifact: "all-release-linux",
             build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
             os: "ubuntu-latest",
@@ -51,8 +51,8 @@ jobs:
             suffix: "CodeQL",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
             os: "ubuntu-latest",
@@ -60,8 +60,8 @@ jobs:
             suffix: "PVS-Studio",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
             os: "ubuntu-latest",
@@ -69,8 +69,8 @@ jobs:
             suffix: "clang-tidy",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
             os: "macos-latest",
@@ -85,23 +85,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Uninstall unnecessary packages (Linux)
+    - name: Uninstall MySQL (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt --purge remove *mysql* -y
-        sudo apt --purge remove clang* -y
-        sudo apt --purge remove libc++* -y
-        sudo apt --purge remove lld* -y
-        sudo apt --purge remove llvm* -y
-        sudo apt --purge remove gcc-7 gcc-8 gcc-9 gcc-10 gcc -y
-        sudo apt autoremove
 
     - name: Install required packages (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt update
-        sudo apt install libstdc++-10-dev -y
-        sudo apt install clang-11 lld-11 -y
+        sudo apt install libstdc++-10-dev gcc-10 g++-10 -y
         sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
@@ -111,19 +104,14 @@ jobs:
     - name: Create necessary symlinks (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
-        sudo update-alternatives --remove-all clang
-        sudo update-alternatives --remove-all clang++
-        sudo rm /usr/bin/gcc*
-
-        version=11
+        version=10
         priority=100
 
-        sudo update-alternatives \
-            --install /usr/bin/clang                 clang                 /usr/bin/clang-${version} ${priority} \
-            --slave   /usr/bin/clang++               clang++               /usr/bin/clang++-${version}
+        sudo update-alternatives --install /usr/bin/gcc  gcc  /usr/bin/gcc-${version} ${priority}
+        sudo update-alternatives --install /usr/bin/g++  g++  /usr/bin/g++-${version} ${priority}
 
-        sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-${version}   ${priority}
-        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-${version} ${priority}
+        sudo update-alternatives --install /usr/bin/cc   cc   /usr/bin/gcc-${version} ${priority}
+        sudo update-alternatives --install /usr/bin/c++  c++  /usr/bin/g++-${version} ${priority}
 
     - name: Set environment variables
       shell: python3 {0}
@@ -141,10 +129,8 @@ jobs:
 
           if "${{ runner.os }}" == "Linux":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin")))
-            env_file.write("CMAKE_LINKER_FLAGS=-DCMAKE_SHARED_LINKER_FLAGS='-fuse-ld=lld' -DCMAKE_EXE_LINKER_FLAGS='-fuse-ld=lld'\n")
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
-            env_file.write("CMAKE_LINKER_FLAGS= \n")
 
     - name: Install required python3 modules
       run: pip3 install requests pyparsing
@@ -219,7 +205,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-patched-3
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-3
 
     - name: Boost
       id: boost
@@ -258,11 +244,11 @@ jobs:
 
         os.chdir(boost_source_dir)
 
-        execute_command("patch -p1 < {}/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch".format(repo))
-        execute_command("patch -p1 < {}/patches/boost-1.75.0/container-fix-141.patch".format(repo))
-        execute_command("patch -p1 < {}/patches/boost-1.75.0/move-fix-35.patch".format(repo))
-        execute_command("patch -p1 < {}/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
-        execute_command("patch -p1 < {}/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
+        #execute_command("patch -p1 < {}/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch".format(repo))
+        #execute_command("patch -p1 < {}/patches/boost-1.75.0/container-fix-141.patch".format(repo))
+        #execute_command("patch -p1 < {}/patches/boost-1.75.0/move-fix-35.patch".format(repo))
+        #execute_command("patch -p1 < {}/patches/boost-1.75.0/polymorphic-allocator-noexcept.patch".format(repo))
+        #execute_command("patch -p1 < {}/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch".format(repo))
 
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
@@ -278,8 +264,6 @@ jobs:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
       run: |
-        echo "LINKER FLAGS"
-        echo $CMAKE_LINKER_FLAGS
         # ntc-cmake
         cd cmake/ntc
         mkdir build
@@ -301,7 +285,7 @@ jobs:
             -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
-            $CMAKE_LINKER_FLAGS ..
+            -S ..
         cmake --build . --target all
         cmake --build . --target install
         cd ${{ env.REPO_PATH }}
@@ -395,11 +379,10 @@ jobs:
 
         os.chdir(yaml_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON  {} "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
                         "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
-                                   os.environ['CMAKE_LINKER_FLAGS'],
                                    yaml_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
@@ -447,11 +430,10 @@ jobs:
 
         os.chdir(sqlpp11_source_dir)
 
-        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release  {} "
+        execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release "
                         "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
-                                   os.environ['CMAKE_LINKER_FLAGS'],
                                    sqlpp11_install_dir,
                                    os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
@@ -470,10 +452,9 @@ jobs:
         os.chdir(chrono_date_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={}  {} "
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
-                                   os.environ['CMAKE_LINKER_FLAGS'],
                                    sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
@@ -491,12 +472,11 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release  {} "
+                        "-DCMAKE_BUILD_TYPE=Release "
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
-                                   os.environ['CMAKE_LINKER_FLAGS'],
                                    sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
@@ -545,10 +525,9 @@ jobs:
 
         os.chdir(catch2_source_dir)
 
-        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} {} -DCMAKE_INSTALL_PREFIX={}  "
+        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={}  "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
-                                   os.environ['CMAKE_LINKER_FLAGS'],
                                    catch2_install_dir))
         execute_command("{} --build build --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build build --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
@@ -626,7 +605,7 @@ jobs:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
       run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake $CMAKE_LINKER_FLAGS \
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
         -G Ninja \
         -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
         -S . \
@@ -696,10 +675,9 @@ jobs:
     - name: Install clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
       run: |
-        sudo apt install clang-tidy -y
-        #sudo apt install clang-tidy-11 -y
-        #sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11 100
-        #sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
+        sudo apt install clang-tidy-11 -y
+        sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11     100
+        sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
