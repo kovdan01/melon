@@ -5,10 +5,8 @@ add_library(ce-utils
     include/ce/format.hpp
     include/ce/generator.hpp
     include/ce/hex.hpp
-    include/ce/random.hpp
     include/ce/stdcoro.hpp
     src/hex.cpp
-    src/random.cpp
 )
 
 if(NOT WIN32)
