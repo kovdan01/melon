@@ -151,10 +151,6 @@ if(NTC_DEV_BUILD)
         list(APPEND NTC_BOOST_DEFINITIONS BOOST_ALL_DYN_LINK BOOST_ALL_NO_LIB)
         # clang + LTO + -Bsymbolic-functions breaks Qt Signals, too dangerous.
         #_ntc_try_append_linker_flag(-Wl,-Bsymbolic-functions)
-    else()
-        if(NOT DEFINED Boost_USE_STATIC_LIBS)
-            set(Boost_USE_STATIC_LIBS ON)
-        endif()
     endif()
 
     set(NTC_QT_DEFINITIONS QT_DISABLE_DEPRECATED_BEFORE=0x060000

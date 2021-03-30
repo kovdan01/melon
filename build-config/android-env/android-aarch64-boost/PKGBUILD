@@ -16,7 +16,7 @@ _boost_arch=arm
 _boost_address_model=64
 
 pkgname=android-$_pkg_arch-$_pkgname
-pkgver=1.75.0
+pkgver=1.76.0
 _boostver=${pkgver//./_}
 pkgrel=1
 url='https://www.boost.org/'
@@ -28,9 +28,9 @@ options=(!buildflags staticlibs !strip !emptydirs)
 makedepends=('bzip2' 'zlib' 'android-ndk' 'android-sdk')
 conflicts=("android-$_pkgname-$_android_arch")
 replaces=("android-$_pkgname-$_android_arch")
-source=(https://dl.bintray.com/boostorg/release/${pkgver}/source/boost_${_boostver}.tar.bz2
+source=(https://dl.bintray.com/boostorg/beta/${pkgver}.beta1/source/boost_${_boostver}_b1.tar.bz2
         no-versioned-shlibs.patch)
-sha256sums=('953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb'
+sha256sums=('eb098d6d5352e10b17a3c49d2927ed61f09b6544f7c534627de35dfa2560fe20'
             'd82d0f15064812dcabb3456a7bcb1db0e0f6145980e4728e638372e0fd35af23')
 
 prepare() {
