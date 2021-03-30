@@ -34,8 +34,8 @@ jobs:
             suffix: "",
             artifact: "all-release-windows-mingw64",
             build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
 
     steps:
@@ -65,11 +65,6 @@ jobs:
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-python-pip
         pip install pyparsing
-
-    - name: Install Clang
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -S --noconfirm mingw-w64-x86_64-clang
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -904,8 +899,8 @@ jobs:
         -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
         -D CMAKE_VERBOSE_MAKEFILE=ON \
         -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-        -D CMAKE_C_COMPILER=/mingw64/bin/clang.exe \
-        -D CMAKE_CXX_COMPILER=/mingw64/bin/clang++.exe \
+        -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+        -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
         -D CMAKE_AR=/mingw64/bin/ar.exe \
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
