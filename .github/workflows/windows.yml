@@ -907,7 +907,11 @@ jobs:
       run: cmake --build build --target all
 
     - name: Run tests
-      run: cd build && ctest && cd ..
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        cd build
+        ctest
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
