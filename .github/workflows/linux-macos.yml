@@ -735,7 +735,7 @@ jobs:
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src'; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src\|autogen'; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings
       if: ${{ matrix.config.suffix == 'PVS-Studio' }}
