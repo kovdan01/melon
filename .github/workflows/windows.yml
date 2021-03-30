@@ -793,7 +793,7 @@ jobs:
       id: cache_sqlpp11
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-clang
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
@@ -837,7 +837,7 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release " +
-                              "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
+                              "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           root + "/" + os.environ['BOOST_INSTALL_PATH']))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
@@ -875,7 +875,7 @@ jobs:
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
                               "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE " +
-                              "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include " +
+                              "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           sqlpp11_install_dir, sqlpp11_install_dir))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
