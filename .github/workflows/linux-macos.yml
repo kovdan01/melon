@@ -45,33 +45,33 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "PVS-Studio",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
         - {
             os: "macos-latest",
             prefix: "macOS",
