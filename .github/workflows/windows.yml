@@ -168,7 +168,7 @@ jobs:
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
-        toolset = "gcc"
+        toolset = "${{ env.CC }}"
         execute_command(cmd_prefix + '"./bootstrap.sh --with-toolset={} --without-libraries=python --prefix={}"'.format(toolset, boost_install_dir))
         execute_command(cmd_prefix + '"./b2"')
         execute_command(cmd_prefix + '"./b2 install"')
