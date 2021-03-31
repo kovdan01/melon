@@ -60,9 +60,9 @@ public:
             std::string_view supported_mechanisms = server.list_mechanisms();
             m_out_buf = std::string(supported_mechanisms) + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
+            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
             stream_.expires_after(TIME_LIMIT);
-            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
+            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
             if (ec)
             {
                 if (ec!=boost::asio::error::eof)
@@ -75,19 +75,19 @@ public:
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
+            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
 
             stream_.expires_after(TIME_LIMIT);
-            n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
+            n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
             std::string client_response = read_buffered_string(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response) += "\n";
             stream_.expires_after(TIME_LIMIT);
             while (server_completness == mca::AuthCompletness::INCOMPLETE)
             {
-                async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
+                async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
                 stream_.expires_after(TIME_LIMIT);
-                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], nullptr);
+                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
                 client_response = read_buffered_string(n);
                 mca::StepResult server_step_res = server.step(client_response);
                 server_response = server_step_res.response;
@@ -106,13 +106,13 @@ public:
             }
             m_out_buf = TOKEN_CONFIRMATION_STRING + '\n';
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, nullptr);
+            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
             if (e)
                 std::rethrow_exception(e);
-        }, nullptr));
+        }/*, nullptr*/));
     }
 
 private:

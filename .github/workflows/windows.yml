@@ -16,14 +16,14 @@ jobs:
       NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: "ninja-tool"
       BOOST_MAJOR: 1
-      BOOST_MINOR: 75
+      BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
       SQLPP11_VERSION: "0.60"
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MINGW64_CACHE_VERSION: 12  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 14  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -66,11 +66,6 @@ jobs:
         pacman -S --noconfirm mingw-w64-x86_64-python-pip
         pip install pyparsing
 
-    - name: Install Clang and libc++
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
-      run: |
-        pacman -S --noconfirm mingw-w64-x86_64-clang mingw-w64-x86_64-libc++
-        
     - name: Ninja and CMake cache
       uses: actions/cache@v2
       id: cache_ninja_and_cmake
@@ -129,11 +124,14 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-shared-only-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-context-exception-log-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-2
 
     - name: Boost
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
+      env:
+        CC: gcc
+        CXX: g++
       shell: python {0}
       run: |
         import os
@@ -158,8 +156,8 @@ jobs:
         boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(boost_install_dir)
 
-        boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
-                                                                                                        boost_major, boost_minor, boost_build)
+        boost_url = "https://dl.bintray.com/boostorg/beta/{}.{}.{}.beta1/source/boost_{}_{}_{}_b1.zip".format(boost_major, boost_minor, boost_build,
+                                                                                                              boost_major, boost_minor, boost_build)
         open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
         execute_command("7z x boost.zip")
 
@@ -167,21 +165,47 @@ jobs:
 
         cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
 
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/asio-fix-outstanding-work-tracked-executor-move-assignment.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/container-fix-141.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/move-fix-35.patch"'.format(repo))
-        execute_command(cmd_prefix + '"patch -p1 < {}/3rd-party/ampi-0.0.0/patches/boost-1.75.0/throw_exception-fix-BOOST_EXCEPTION_DISABLE.patch"'.format(repo))
-
-        execute_command(cmd_prefix + '"export CXX=\'/mingw64/bin/clang++\'"')
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
 
-        execute_command(cmd_prefix + '"./bootstrap.sh --with-libraries=chrono,context,exception,log,program_options,system,thread --with-toolset=clang --prefix={}"'.format(boost_install_dir))
-        execute_command(cmd_prefix + '"./b2 clean"')
-        execute_command(cmd_prefix + '"./b2 toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={} stage release"'.format(boost_install_dir))
-        execute_command(cmd_prefix + '"./b2 install toolset=clang cxxflags=\'-stdlib=libc++\' linkflags=\'-stdlib=libc++\' --prefix={}"'.format(boost_install_dir))
+        toolset = "${{ env.CC }}"
+        execute_command(cmd_prefix + '"./bootstrap.sh --with-toolset={} --without-libraries=python --prefix={}"'.format(toolset, boost_install_dir))
+        execute_command(cmd_prefix + '"./b2"')
+        execute_command(cmd_prefix + '"./b2 install"')
 
         os.chdir(repo)
+
+    - name: Utils by Pavel A. Lebedev
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        # ntc-cmake
+        cd cmake/ntc
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
+
+        # utils and asio-utils from cosec-examples
+        cd 3rd-party/lebedev-utils
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+            -G Ninja \
+            -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+            -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
+            -D CMAKE_CXX_FLAGS="-stdlib=libstdc++" ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
 
     # mingw64 packages:
     # - mingw-w64-x86_64-cyrus-sasl (and mingw-w64-x86_64-gdbm as a dependency)
@@ -692,6 +716,7 @@ jobs:
           C:/msys64/mingw64/bin/qscxmlc.exe
           C:/msys64/mingw64/bin/Qt5Core.dll
           C:/msys64/mingw64/bin/Qt5Gui.dll
+          C:/msys64/mingw64/bin/Qt5Sql.dll
           C:/msys64/mingw64/bin/Qt5Widgets.dll
           C:/msys64/mingw64/bin/qtattributionsscanner.exe
           C:/msys64/mingw64/bin/qtdiag.exe
@@ -710,10 +735,12 @@ jobs:
           C:/msys64/mingw64/include/ActiveQt/
           C:/msys64/mingw64/include/QtCore/
           C:/msys64/mingw64/include/QtGui/
+          C:/msys64/mingw64/include/QtSql/
           C:/msys64/mingw64/include/QtWidgets/
           C:/msys64/mingw64/lib/cmake/Qt5*/
           C:/msys64/mingw64/lib/libQt5Core.dll.a
           C:/msys64/mingw64/lib/libQt5Gui.dll.a
+          C:/msys64/mingw64/lib/libQt5Sql.dll.a
           C:/msys64/mingw64/lib/libQt5Widgets.dll.a
           C:/msys64/mingw64/lib/libqtmain.a
           C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
@@ -758,7 +785,7 @@ jobs:
       id: cache_sqlpp11
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-2
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
@@ -802,7 +829,7 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release " +
-                              "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
+                              "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           root + "/" + os.environ['BOOST_INSTALL_PATH']))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
@@ -840,7 +867,7 @@ jobs:
 
         execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
                               "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE " +
-                              "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include " +
+                              "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
                                           sqlpp11_install_dir, sqlpp11_install_dir))
         execute_msys_command("{} --build . --target all".format(cmake_binary))
@@ -850,6 +877,9 @@ jobs:
 
     - name: Configure
       if: ${{ runner.os == 'Windows' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
       run: |
         cp ${{ env.ROOT_PATH }}\\${{ env.NINJA_TOOL_PATH }}\\ninja.exe C:\\msys64\\mingw64\\bin\\ninja.exe
@@ -867,17 +897,21 @@ jobs:
         -D CMAKE_LINKER=/mingw64/bin/ld.exe \
         -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
         -D CMAKE_NM=/mingw64/bin/nm.exe \
-        -D SQLPP11_MYSQL_CONNECTOR_PREFIX="${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}" \
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
       run: cmake --build build --target all
 
     - name: Run tests
-      run: cd build && ctest && cd ..
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        cd build
+        ctest
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
@@ -891,6 +925,7 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\libmariadb.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Core.dll"                install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Gui.dll"                 install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\Qt5Sql.dll"                 install\\bin
         copy "C:\\msys64\\mingw64\\bin\\Qt5Widgets.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libicuin68.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libdouble-conversion.dll"   install\\bin
