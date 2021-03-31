@@ -345,7 +345,7 @@ Message::Message(sqlpp::mysql::connection& db, id_t message_id, id_t chat_id, id
 
         this->set_user_id(row.userId);
         this->set_domain_id_user(row.domainIdUser);
-        mc::Message::set_text(std::move(row.text));
+        mc::Message::set_text(row.text);
         mc::Message::set_timestamp(row.sendtime.value());
         mc::Message::set_status(status);
     }
@@ -367,6 +367,7 @@ void Message::set_text(std::string text)
     m_db(update(G_MESSAGES).set(G_MESSAGES.text = text).where(G_MESSAGES.messageId == this->message_id() &&
                                                               G_MESSAGES.chatId == this->chat_id() &&
                                                               G_MESSAGES.domainIdChat == this->domain_id_chat()));
+    mc::Message::set_text(std::move(text));
 }
 
 void Message::set_status(Status status)
@@ -374,6 +375,7 @@ void Message::set_status(Status status)
     m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<std::uint8_t>(status)).where(G_MESSAGES.messageId == this->message_id() &&
                                                                                              G_MESSAGES.chatId == this->chat_id() &&
                                                                                              G_MESSAGES.domainIdChat == this->domain_id_chat()));
+    mc::Message::set_status(status);
 }
 
 void Message::set_timestamp(timestamp_t timestamp)
@@ -381,7 +383,7 @@ void Message::set_timestamp(timestamp_t timestamp)
     m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = timestamp).where(G_MESSAGES.messageId == this->message_id() &&
                                                                        G_MESSAGES.chatId == this->chat_id() &&
                                                                        G_MESSAGES.domainIdChat == this->domain_id_chat()));
-
+    mc::Message::set_timestamp(timestamp);
 }
 
 }  // namespace melon::server::storage
