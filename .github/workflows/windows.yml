@@ -900,7 +900,6 @@ jobs:
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix;
         ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
@@ -910,9 +909,9 @@ jobs:
     - name: Run tests
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
-        cd build
-        ctest
-        cd ..
+        #cd build
+        #ctest
+        #cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip

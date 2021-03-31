@@ -641,23 +641,23 @@ jobs:
 
     - name: Run tests
       run: |
-        cd build
-        PATH_BEFORE=$PATH
-        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+        #cd build
+        #PATH_BEFORE=$PATH
+        #PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        ../src/server/auth/scripts/setupserver.sh
+        #../src/server/auth/scripts/setupserver.sh
 
-        cd src/server/auth
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
-        MELON_AUTH_PID=$!
-        cd ../../..
+        #cd src/server/auth
+        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
+        #MELON_AUTH_PID=$!
+        #cd ../../..
 
-        ctest
+        #ctest
 
-        kill -2 $MELON_AUTH_PID
+        #kill -2 $MELON_AUTH_PID
 
-        PATH=$PATH_BEFORE
-        cd ..
+        #PATH=$PATH_BEFORE
+        #cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
