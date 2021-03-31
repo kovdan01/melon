@@ -28,9 +28,8 @@ public:
     // For Insert
     MessageRAM(std::uint64_t chat_id, std::uint64_t domain_id_chat,
                std::uint64_t user_id, std::uint64_t domain_id_user,
-                QString text, timestamp_t timestamp, Status status)
+               const QString& text, timestamp_t timestamp, Status status)
         : melon::core::Message(chat_id, domain_id_chat, user_id, domain_id_user, text.toStdString(), timestamp, status)
-        , m_text(std::move(text))
     {
         this->set_from();
     }
@@ -49,9 +48,9 @@ public:
         return m_from;
     }
 
-    [[nodiscard]] const QString& text() const noexcept
+    [[nodiscard]] QString text() const noexcept
     {
-        return m_text;
+        return QString::fromStdString(melon::core::Message::text());
     }
 
     void set_text(const QString& text)
@@ -78,14 +77,7 @@ protected:
             m_from = QStringLiteral("Some Sender");
     }
 
-    void set_text_base(std::string text) override
-    {
-        melon::core::Message::set_text_base(std::move(text));
-        m_text = QString::fromStdString(melon::core::Message::text());
-    }
-
 private:
-    QString m_text;
     QString m_from;
     bool m_is_edit = false;
 };
@@ -96,7 +88,6 @@ public:
     // For Insert
     ChatRAM(std::uint64_t domain_name, QString name)
         : melon::core::Chat(domain_name, name.toStdString())
-        , m_chatname(std::move(name))
     {
     }
 
@@ -106,9 +97,9 @@ public:
     {
     }
 
-    [[nodiscard]] const QString& chatname() const noexcept
+    [[nodiscard]] QString chatname() const noexcept
     {
-        return m_chatname;
+        return QString::fromStdString(melon::core::Chat::chatname());
     }
 
     void set_chatname(const QString& chatname)
@@ -134,26 +125,7 @@ public:
         return true;
     }
 
-    std::vector<melon::core::User::Ptr> get_users() const override
-    {
-        return {};  // just a placeholder
-    }
-
-    std::vector<melon::core::Message::Ptr> get_messages() const override
-    {
-        return {};  // just a placeholder
-    }
-
-protected:
-    void set_chatname_base(std::string chatname) override
-    {
-        melon::core::Chat::set_chatname_base(std::move(chatname));
-        m_chatname = QString::fromStdString(melon::core::Chat::chatname());
-    }
-
 private:
-
-    QString m_chatname;
     int m_scrolling_position = 0;
 };
 

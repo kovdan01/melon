@@ -5,6 +5,7 @@
 namespace melon::client_desktop
 {
 
+namespace mc = melon::core;
 
 /* Helpers */
 
@@ -19,7 +20,7 @@ melon::core::Message::Status int_to_status(int status);
 // For Insert
 Message::Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
                  std::uint64_t user_id, std::uint64_t domain_id_user,
-                 QString text, timestamp_t timestamp, Status status)
+                 const QString& text, timestamp_t timestamp, Status status)
     : MessageRAM(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
@@ -90,10 +91,10 @@ Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t 
     this->set_from();
 }
 
-void Message::set_text_impl()
+void Message::set_text(const QString& text)
 {
     QSqlQuery qry(DB_NAME);
-    QString qry_string = QStringLiteral("UPDATE messages SET text='") + this->text() +
+    QString qry_string = QStringLiteral("UPDATE messages SET text='") + text +
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
                         + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
@@ -102,6 +103,7 @@ void Message::set_text_impl()
         std::cout << "Fail updating message text!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
     }
+    mc::Message::set_text(text.toStdString());
 }
 
 void Message::remove_from_db()
@@ -123,7 +125,7 @@ void Message::remove_from_db()
 /* Chat */
 
 // For Insert
-Chat::Chat(std::uint64_t domain_id, QString name)
+Chat::Chat(std::uint64_t domain_id, const QString& name)
     : ChatRAM(domain_id, name)
     , m_incomplete_message(QLatin1String(""))
 {
@@ -149,7 +151,6 @@ Chat::Chat(std::uint64_t domain_id, QString name)
 // For Select
 Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id)
     : ChatRAM(chat_id, domain_id)
-    , m_incomplete_message(QLatin1String(""))
 {
     QSqlQuery qry(DB_NAME);
     QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id())
@@ -189,10 +190,10 @@ void Chat::remove_from_db()
     }
 }
 
-void Chat::set_chatname_impl()
+void Chat::set_chatname(const QString& chatname)
 {
     QSqlQuery qry(DB_NAME);
-    QString qry_string = QStringLiteral("UPDATE chats SET name='") + this->chatname()
+    QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname
                         + QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
@@ -200,6 +201,7 @@ void Chat::set_chatname_impl()
         std::cout << "Fail updating chatname!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
     }
+    mc::Chat::set_chatname(chatname.toStdString());
 }
 
 

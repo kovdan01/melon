@@ -17,15 +17,15 @@ public:
     // For Insert
     Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
             std::uint64_t user_id, std::uint64_t domain_id_user,
-            QString text, timestamp_t timestamp, Status status);
+            const QString& text, timestamp_t timestamp, Status status);
 
     // For Select
     Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat);
 
     // For incomplete message
-    Message(QString text)
+    Message(const QString& text)
     {
-        this->set_text(std::move(text));
+        this->set_text(text);
     }
 
     // for QVariant
@@ -33,8 +33,10 @@ public:
 
     void remove_from_db();
 
-protected:
-    void set_text_impl() override;
+    void set_text(const QString& text);
+
+private:
+    void set_text(std::string text);  // hide base class function
 };
 
 
@@ -44,7 +46,7 @@ public:
     using message_handle_t = std::list<Message>::iterator;
 
     // For insert
-    Chat(std::uint64_t domain_id, QString chatname);
+    Chat(std::uint64_t domain_id, const QString& chatname);
 
     // For Select
     Chat(std::uint64_t chat_id, std::uint64_t domain_id);
@@ -95,10 +97,10 @@ public:
         return m_incomplete_message;
     }
 
-protected:
-    void set_chatname_impl() override;
+    void set_chatname(const QString& chatname);
 
 private:
+    void set_chatname(std::string chatname);  // hide base class function
     std::list<Message> m_messages;
     Message m_incomplete_message;
 };
