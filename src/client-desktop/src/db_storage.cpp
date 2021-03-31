@@ -11,8 +11,6 @@ namespace mc = melon::core;
 
 melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id);
 melon::core::id_t max_chat_id(melon::core::id_t domain_id);
-int status_to_int(melon::core::Message::Status status);
-melon::core::Message::Status int_to_status(int status);
 
 
 /* Message */
@@ -21,7 +19,7 @@ melon::core::Message::Status int_to_status(int status);
 Message::Message(id_t chat_id, id_t domain_id_chat,
                  id_t user_id, id_t domain_id_user,
                  const QString& text, timestamp_t timestamp, Status status)
-    : MessageRAM(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
+    : ram::Message(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
 
@@ -52,7 +50,7 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     qry.bindValue(QStringLiteral(":timestamp"), QVariant::fromValue(timestamp_ms_int));
 
     qry.bindValue(QStringLiteral(":text"), this->text());
-    qry.bindValue(QStringLiteral(":status"), status_to_int(this->status()));
+    qry.bindValue(QStringLiteral(":status"), static_cast<int>((this->status())));
 
     if (!qry.exec())
     {
@@ -63,19 +61,19 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
 
 //For Select
 Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
-    : MessageRAM(message_id, chat_id, domain_id_chat)
+    : ram::Message(message_id, chat_id, domain_id_chat)
 {
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT user_id, timestamp, text, status FROM messages"
-"                                            WHERE (message_id=")
-                        + QString::number(this->message_id())
-                        + QStringLiteral(" and chat_id=")
-                        + QString::number(this->chat_id())
-                        + QStringLiteral(" and domain_id=")
-                        + QString::number(this->domain_id_chat())
-                        + QStringLiteral(")");
+"                                        WHERE (message_id=") +
+                         QString::number(this->message_id()) +
+                         QStringLiteral(" and chat_id=") +
+                         QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id=") +
+                         QString::number(this->domain_id_chat()) +
+                         QStringLiteral(")");
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail loading message!" << std::endl;
@@ -90,7 +88,7 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
         std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
         this->set_timestamp(tp_ms);
         this->set_text(qry.value(2).toString());
-        this->set_status(int_to_status(qry.value(3).toInt()));
+        this->set_status(static_cast<melon::core::Message::Status>((qry.value(3).toInt())));
     }
     this->set_from();
 }
@@ -101,9 +99,9 @@ void Message::set_text(const QString& text)
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE messages SET text='") + text +
-                         QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
-                        + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
-                        + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
+                         QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
+                         QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail updating message text!" << std::endl;
@@ -117,9 +115,9 @@ void Message::remove_from_db()
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id())
-                           + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
-                           + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
+    QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
+                           QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
+                           QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
 
     if (!qry.exec(query_string))
     {
@@ -133,7 +131,7 @@ void Message::remove_from_db()
 
 // For Insert
 Chat::Chat(id_t domain_id, const QString& name)
-    : ChatRAM(domain_id, name)
+    : ram::Chat(domain_id, name)
     , m_incomplete_message(QLatin1String(""))
 {
     this->set_chat_id(max_chat_id(this->domain_id()) + 1);
@@ -141,8 +139,8 @@ Chat::Chat(id_t domain_id, const QString& name)
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    if(!qry.prepare(QStringLiteral("INSERT INTO chats"
-                                   " VALUES(:chat_id, :domain_id, :name)")))
+    if (!qry.prepare(QStringLiteral("INSERT INTO chats "
+                                   "VALUES(:chat_id, :domain_id, :name)")))
     {
         std::cout << "Fail preparing inserting chat!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
@@ -160,13 +158,13 @@ Chat::Chat(id_t domain_id, const QString& name)
 
 // For Select
 Chat::Chat(id_t chat_id, id_t domain_id)
-    : ChatRAM(chat_id, domain_id)
+    : ram::Chat(chat_id, domain_id)
 {
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id())
-                        + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+    QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail loading chat!" << std::endl;
@@ -184,8 +182,8 @@ void Chat::remove_from_db()
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString query_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id())
-                           + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+    QString query_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
+                           QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
     if (!qry.exec(query_string))
     {
@@ -194,8 +192,8 @@ void Chat::remove_from_db()
     }
 
     // Deleting messages, because cascade deleting seems not working
-    query_string = QStringLiteral("DELETE FROM messages WHERE chat_id=") + QString::number(this->chat_id())
-                           + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+    query_string = QStringLiteral("DELETE FROM messages WHERE chat_id=") + QString::number(this->chat_id()) +
+                   QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(query_string))
     {
         std::cout << "Fail deleting messages on cascade chat!" << std::endl;
@@ -208,9 +206,9 @@ void Chat::set_chatname(const QString& chatname)
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname
-                        + QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id())
-                        + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+    QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname +
+                         QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail updating chatname!" << std::endl;
@@ -228,8 +226,8 @@ melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t do
     auto& storage = StorageSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id)
-                         + QStringLiteral(" and domain_id=") + QString::number(domain_id);
+    QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id) +
+                         QStringLiteral(" and domain_id=") + QString::number(domain_id);
     if (!qry.exec(qry_string))
     {
         std::cout << "Fail selecting message_id!" << std::endl;
@@ -268,40 +266,6 @@ melon::core::id_t max_chat_id(melon::core::id_t domain_id)
     auto chat_id = chat_id_qvar.value<id_t>();
 
     return chat_id;
-}
-
-int status_to_int(melon::core::Message::Status status)
-{
-    switch (status)
-    {
-    case melon::core::Message::Status::FAIL:
-        return 0;
-    case melon::core::Message::Status::SEEN:
-        return 1;
-    case melon::core::Message::Status::RECEIVED:
-        return 2;
-    case melon::core::Message::Status::SENT:
-        return 3;
-    default:
-        return 5;
-    }
-}
-
-melon::core::Message::Status int_to_status(int status)
-{
-    switch (status)
-    {
-    case 0:
-        return melon::core::Message::Status::FAIL;
-    case 1:
-        return melon::core::Message::Status::SEEN;
-    case 2:
-        return melon::core::Message::Status::RECEIVED;
-    case 3:
-        return melon::core::Message::Status::SENT;
-    default:
-        return melon::core::Message::Status::FAIL;
-    }
 }
 
 }  // namespace melon::client_desktop

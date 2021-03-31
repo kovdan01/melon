@@ -77,7 +77,7 @@ void MainWindow::load_data_from_database()
         std::cout << qry_for_chats.lastError().text().toStdString() << std::endl;
         return;
     }
-    while(qry_for_chats.next())
+    while (qry_for_chats.next())
     {
         auto chat_id = qry_for_chats.value(0).value<std::uint64_t>();
         auto domain_id = qry_for_chats.value(1).value<std::uint64_t>();
@@ -91,7 +91,7 @@ void MainWindow::load_data_from_database()
             std::cout << qry_for_messages.lastError().text().toStdString() << std::endl;
             return;
         }
-        while(qry_for_messages.next())
+        while (qry_for_messages.next())
         {
             auto message_id = qry_for_messages.value(0).value<std::uint64_t>();
             Message message(message_id, chat_id, domain_id);

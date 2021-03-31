@@ -11,11 +11,9 @@ namespace melon::client_desktop
 
 QString create_connection_with_db();
 
-class Message : public MessageRAM
+class Message : public ram::Message
 {
 public:
-    using id_t = melon::core::id_t;
-
     // For Insert
     Message(id_t chat_id, id_t domain_id_chat,
             id_t user_id, id_t domain_id_user,
@@ -42,11 +40,10 @@ private:
 };
 
 
-class Chat : public ChatRAM
+class Chat : public ram::Chat
 {
 public:
     using message_handle_t = std::list<Message>::iterator;
-    using id_t = melon::core::id_t;
 
     // For insert
     Chat(id_t domain_id, const QString& chatname);
@@ -121,14 +118,14 @@ public:
         return instance;
     }
 
-    StorageSingletone(const StorageSingletone& root) = delete;
+    StorageSingletone(const StorageSingletone&) = delete;
     StorageSingletone& operator=(const StorageSingletone&) = delete;
-    StorageSingletone(StorageSingletone&& root) = delete;
+    StorageSingletone(StorageSingletone&&) = delete;
     StorageSingletone& operator=(StorageSingletone&&) = delete;
 
-    chat_handle_t add_chat(const Chat& chat)
+    chat_handle_t add_chat(Chat chat)
     {
-        m_chats.emplace_back(chat);
+        m_chats.emplace_back(std::move(chat));
         return std::prev(m_chats.end());
     }
 
