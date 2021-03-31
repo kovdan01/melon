@@ -216,7 +216,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     // Last message rect and render
     QString message_text = last_message->text();
-    message_text = message_text.replace(QStringLiteral("\n"), QStringLiteral(" "));
+    message_text = message_text.replace(QStringLiteral("\n"), QStringLiteral(" "));  // -V567
     QString elided_text = m_fm_last_message.elidedText(message_text, Qt::ElideRight, max_message_text_rect.width());
 
     QRect message_rect = m_fm_last_message.boundingRect(max_message_text_rect, Qt::AlignLeft, elided_text);
