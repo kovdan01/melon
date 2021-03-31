@@ -92,16 +92,15 @@ public:
                 mca::StepResult server_step_res = server.step(client_response);
                 server_response = server_step_res.response;
                 server_completness = server_step_res.completness;
-                if (server_response.data() != nullptr)
-                {
-                    m_out_buf = std::string(server_response) += "\n";
-                }
-                else
-                {
-                    m_out_buf = "";
-                }
+
                 if (server_completness == mca::AuthCompletness::COMPLETE)
                     break;
+
+                if (server_response.data() != nullptr)
+                    m_out_buf = std::string(server_response.data(), server_response.size()) += "\n";
+                else
+                    m_out_buf = "";
+
                 stream_.expires_after(TIME_LIMIT);
             }
             m_out_buf = TOKEN_CONFIRMATION_STRING + '\n';
