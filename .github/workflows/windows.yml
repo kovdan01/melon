@@ -130,8 +130,8 @@ jobs:
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
       env:
-        CC: ${{ matrix.config.cc }}
-        CXX: ${{ matrix.config.cxx }}
+        CC: gcc
+        CXX: g++
       shell: python {0}
       run: |
         import os
