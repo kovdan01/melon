@@ -26,14 +26,12 @@ public:
 
     Domain(const Domain&) = default;
     Domain& operator=(const Domain&) = default;
-    Domain(Domain&&) = default;
-    Domain& operator=(Domain&&) = default;
+    Domain(Domain&&) noexcept = default;
+    Domain& operator=(Domain&&) noexcept = default;
 
-    virtual ~Domain();
-
-    [[nodiscard]] id_t domain_id() const;
-    [[nodiscard]] const std::string& hostname() const;
-    [[nodiscard]] bool external() const;
+    [[nodiscard]] id_t domain_id() const noexcept;
+    [[nodiscard]] const std::string& hostname() const noexcept;
+    [[nodiscard]] bool external() const noexcept;
 
 protected:
     // Corresponding constructors in derived classes must
@@ -44,19 +42,14 @@ protected:
     // For Select
     Domain(std::string hostname);
 
-    void set_domain_id(id_t domain_id);
-
-    void set_external(bool external);
-    void set_external_base(bool external);
-    virtual void set_external_impl();
+    void set_domain_id(id_t domain_id) noexcept;
+    void set_external(bool external) noexcept;
 
 private:
     id_t m_domain_id = INVALID_ID;
     std::string m_hostname;
     bool m_external;
 };
-
-class Chat;
 
 class MELON_CORE_EXPORT User
 {
@@ -76,19 +69,15 @@ public:
 
     User(const User&) = default;
     User& operator=(const User&) = default;
-    User(User&&) = default;
-    User& operator=(User&&) = default;
+    User(User&&) noexcept = default;
+    User& operator=(User&&) noexcept = default;
 
-    virtual ~User();
+    [[nodiscard]] id_t user_id() const noexcept;
+    [[nodiscard]] id_t domain_id() const noexcept;
+    [[nodiscard]] const std::string& username() const noexcept;
+    [[nodiscard]] Status status() const noexcept;
 
-    [[nodiscard]] id_t user_id() const;
-    [[nodiscard]] id_t domain_id() const;
-    [[nodiscard]] const std::string& username() const;
-    [[nodiscard]] Status status() const;
-
-    void set_status(Status status);
-
-    [[nodiscard]] virtual std::vector<std::unique_ptr<Chat>> get_chats() const = 0;
+    void set_status(Status status) noexcept;
 
 protected:
     // Corresponding constructors in derived classes must
@@ -99,11 +88,8 @@ protected:
     // For Select
     User(std::string username, id_t domain_id);
 
-    void set_status_base(Status status);
-    virtual void set_status_impl();
-
-    void set_user_id(id_t user_id);
-    void set_domain_id(id_t domain_id);
+    void set_user_id(id_t user_id) noexcept;
+    void set_domain_id(id_t domain_id) noexcept;
 
 private:
     id_t m_user_id = INVALID_ID;
@@ -111,8 +97,6 @@ private:
     std::string m_username;
     Status m_status;
 };
-
-class Message;
 
 class MELON_CORE_EXPORT Chat
 {
@@ -125,19 +109,14 @@ public:
 
     Chat(const Chat&) = default;
     Chat& operator=(const Chat&) = default;
-    Chat(Chat&&) = default;
-    Chat& operator=(Chat&&) = default;
+    Chat(Chat&&) noexcept = default;
+    Chat& operator=(Chat&&) noexcept = default;
 
-    virtual ~Chat();
-
-    [[nodiscard]] id_t chat_id() const;
-    [[nodiscard]] id_t domain_id() const;
-    [[nodiscard]] const std::string& chatname() const;
+    [[nodiscard]] id_t chat_id() const noexcept;
+    [[nodiscard]] id_t domain_id() const noexcept;
+    [[nodiscard]] const std::string& chatname() const noexcept;
 
     void set_chatname(std::string chatname);
-
-    [[nodiscard]] virtual std::vector<std::unique_ptr<User>> get_users() const = 0;
-    [[nodiscard]] virtual std::vector<std::unique_ptr<Message>> get_messages() const = 0;
 
 protected:
     // Corresponding constructors in derived classes must
@@ -148,11 +127,8 @@ protected:
     // For Select
     Chat(id_t chat_id, id_t domain_id);
 
-    virtual void set_chatname_base(std::string chatname);
-    virtual void set_chatname_impl();
-
-    void set_chat_id(id_t chat_id);
-    void set_domain_id(id_t domain_id);
+    void set_chat_id(id_t chat_id) noexcept;
+    void set_domain_id(id_t domain_id) noexcept;
 
 private:
     id_t m_chat_id = INVALID_ID;
@@ -181,22 +157,20 @@ public:
 
     Message(const Message&) = default;
     Message& operator=(const Message&) = default;
-    Message(Message&&) = default;
-    Message& operator=(Message&&) = default;
+    Message(Message&&) noexcept = default;
+    Message& operator=(Message&&) noexcept = default;
 
-    virtual ~Message();
-
-    [[nodiscard]] id_t message_id() const;
-    [[nodiscard]] id_t chat_id() const;
-    [[nodiscard]] id_t domain_id_chat() const;
-    [[nodiscard]] id_t user_id() const;
-    [[nodiscard]] id_t domain_id_user() const;
-    [[nodiscard]] const std::string& text() const;
-    [[nodiscard]] Status status() const;
+    [[nodiscard]] id_t message_id() const noexcept;
+    [[nodiscard]] id_t chat_id() const noexcept;
+    [[nodiscard]] id_t domain_id_chat() const noexcept;
+    [[nodiscard]] id_t user_id() const noexcept;
+    [[nodiscard]] id_t domain_id_user() const noexcept;
+    [[nodiscard]] const std::string& text() const noexcept;
+    [[nodiscard]] Status status() const noexcept;
     [[nodiscard]] timestamp_t timestamp() const;
 
     void set_text(std::string text);
-    void set_status(Status status);
+    void set_status(Status status) noexcept;
     void set_timestamp(timestamp_t timestamp);
 
 protected:
@@ -209,20 +183,11 @@ protected:
     // For Select
     Message(id_t message_id, id_t chat_id, id_t domain_id_chat);
 
-    virtual void set_text_base(std::string text);
-    virtual void set_text_impl();
-
-    void set_status_base(Status status);
-    virtual void set_status_impl();
-
-    void set_timestamp_base(timestamp_t timestamp);
-    virtual void set_timestamp_impl();
-
-    void set_message_id(id_t message_id);
-    void set_user_id(id_t user_id);
-    void set_chat_id(id_t chat_id);
-    void set_domain_id_chat(id_t domain_id_chat);
-    void set_domain_id_user(id_t domain_id_user);
+    void set_message_id(id_t message_id) noexcept;
+    void set_user_id(id_t user_id) noexcept;
+    void set_chat_id(id_t chat_id) noexcept;
+    void set_domain_id_chat(id_t domain_id_chat) noexcept;
+    void set_domain_id_user(id_t domain_id_user) noexcept;
 
 private:
     id_t m_message_id = INVALID_ID;

@@ -15,6 +15,11 @@
 namespace melon::server::storage
 {
 
+class Domain;
+class User;
+class Chat;
+class Message;
+
 using id_t = melon::core::id_t;
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_db();
@@ -35,7 +40,7 @@ void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domai
 [[nodiscard]] id_t max_message_id(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
 [[nodiscard]] std::vector<std::string> get_all_usernames(sqlpp::mysql::connection& db);
-[[nodiscard]] std::vector<melon::core::User::Ptr> get_online_users(sqlpp::mysql::connection& db);
+[[nodiscard]] std::vector<User> get_online_users(sqlpp::mysql::connection& db);
 
 class Domain : public melon::core::Domain
 {
@@ -48,7 +53,7 @@ public:
     void remove();
 
 protected:
-    void set_external_impl() override;
+    void set_external(bool external);
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -62,12 +67,11 @@ public:
     // For Select
     User(sqlpp::mysql::connection& db, std::string username, id_t domain_id);
 
-    [[nodiscard]] std::vector<melon::core::Chat::Ptr> get_chats() const override;
+    [[nodiscard]] std::vector<Chat> get_chats() const;
 
     void remove();
 
-protected:
-    void set_status_impl() override;
+    void set_status(Status status);
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -81,13 +85,12 @@ public:
     // For Select
     Chat(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
-    [[nodiscard]] std::vector<melon::core::User::Ptr> get_users() const override;
-    [[nodiscard]] std::vector<melon::core::Message::Ptr> get_messages() const override;
+    [[nodiscard]] std::vector<User> get_users() const;
+    [[nodiscard]] std::vector<Message> get_messages() const;
 
     void remove();
 
-protected:
-    void set_chatname_impl() override;
+    void set_chatname(std::string chatname);
 
 private:
     sqlpp::mysql::connection& m_db;
@@ -104,10 +107,9 @@ public:
 
     void remove();
 
-protected:
-    void set_text_impl() override;
-    void set_status_impl() override;
-    void set_timestamp_impl() override;
+    void set_text(std::string text);
+    void set_status(Status status);
+    void set_timestamp(timestamp_t timestamp);
 
 private:
     sqlpp::mysql::connection& m_db;

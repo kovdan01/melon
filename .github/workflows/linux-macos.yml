@@ -16,7 +16,7 @@ jobs:
       NINJA_TOOL_VERSION: "1.10.2"
       NINJA_TOOL_PATH: "ninja-tool"
       BOOST_MAJOR: 1
-      BOOST_MINOR: 75
+      BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
       CYRUS_SASL_VERSION: "2.1.27"
@@ -27,48 +27,50 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      CATCH2_VERSION: "2.13.4"
+      CATCH2_INSTALL_PATH: "catch2-install"
       QT_SHORT_VERSION: "5.15"
       QT_VERSION: "5.15.1"
       QT_INSTALL_PATH: "qt-install"
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         config:
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "",
             artifact: "all-release-linux",
             build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "CodeQL",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "PVS-Studio",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
-            os: "ubuntu-20.04",
+            os: "ubuntu-latest",
             prefix: "Linux",
             suffix: "clang-tidy",
             artifact: "",
             build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++",
+            cc: "gcc",
+            cxx: "g++",
           }
         - {
             os: "macos-latest",
@@ -83,8 +85,43 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Uninstall MySQL (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt --purge remove *mysql* -y
+
+    - name: Install required packages (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt update
+        sudo apt install libstdc++-10-dev gcc-10 g++-10 -y
+        sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+        sudo apt install cmake ninja-build pkg-config -y
+        sudo apt install p7zip-full -y
+        sudo apt install python3 python3-pip -y
+        sudo apt install libgdbm-dev -y  # for SASL DB utils
+
+    - name: Create necessary symlinks (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        version=10
+        priority=100
+
+        sudo update-alternatives --install /usr/bin/gcc         gcc         /usr/bin/gcc-${version}         ${priority}
+        sudo update-alternatives --install /usr/bin/gcc-ar      gcc-ar      /usr/bin/gcc-ar-${version}      ${priority}
+        sudo update-alternatives --install /usr/bin/gcc-nm      gcc-nm      /usr/bin/gcc-nm-${version}      ${priority}
+        sudo update-alternatives --install /usr/bin/gcc-ranlib  gcc-ranlib  /usr/bin/gcc-ranlib-${version}  ${priority}
+        sudo update-alternatives --install /usr/bin/gcov        gcov        /usr/bin/gcov-${version}        ${priority}
+        sudo update-alternatives --install /usr/bin/gcov-dump   gcov-dump   /usr/bin/gcov-dump-${version}   ${priority}
+        sudo update-alternatives --install /usr/bin/gcov-tool   gcov-tool   /usr/bin/gcov-tool-${version}   ${priority}
+        sudo update-alternatives --install /usr/bin/lto-dump    lto-dump    /usr/bin/lto-dump-${version}    ${priority}
+        sudo update-alternatives --install /usr/bin/g++         g++         /usr/bin/g++-${version}         ${priority}
+
+        sudo update-alternatives --install /usr/bin/cc   cc   /usr/bin/gcc-${version} ${priority}
+        sudo update-alternatives --install /usr/bin/c++  c++  /usr/bin/g++-${version} ${priority}
+
     - name: Set environment variables
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
 
@@ -102,16 +139,8 @@ jobs:
           elif "${{ runner.os }}" == "macOS":
             env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "CMake.app", "Contents", "bin")))
 
-    - name: Install required python modules
-      run: pip install requests
-
-    - name: Install Clang and MariaDB (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: |
-        sudo apt-get update -y
-        sudo apt-get purge *mysql*
-        sudo apt-get install clang-11 lld-11 -y
-        sudo apt-get install mariadb-server libmariadb-dev libmariadb-dev-compat -y
+    - name: Install required python3 modules
+      run: pip3 install requests pyparsing
 
     - name: Install MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
@@ -130,7 +159,7 @@ jobs:
     - name: Download Ninja and CMake
       id: download_ninja_and_cmake
       if: ${{ steps.cache_ninja_and_cmake.outputs.cache-hit != 'true' }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -172,7 +201,7 @@ jobs:
         cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
 
         open("cmake.tar.gz", "wb").write(requests.get(cmake_url, allow_redirects=True).content)
-        execute_command("7z x cmake.tar.gz -so | 7z x -si -ttar")
+        execute_command("tar -xf cmake.tar.gz")
         os.rename(cmake_dir, cmake_tool_path)
         execute_command("chmod +x {}/cmake".format(cmake_tool_binary_path))
 
@@ -183,12 +212,15 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-program_options-system
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-4
 
     - name: Boost
       id: boost
       if: ${{ steps.cache_boost.outputs.cache-hit != 'true' }}
-      shell: python {0}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -212,36 +244,66 @@ jobs:
         boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}"))
         os.mkdir(boost_install_dir)
 
-        boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
-                                                                                                        boost_major, boost_minor, boost_build)
+        boost_url = "https://dl.bintray.com/boostorg/beta/{}.{}.{}.beta1/source/boost_{}_{}_{}_b1.zip".format(boost_major, boost_minor, boost_build,
+                                                                                                              boost_major, boost_minor, boost_build)
         open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
         execute_command("7z x boost.zip")
 
         os.chdir(boost_source_dir)
 
-        toolset = "clang"
-
         execute_command("chmod +x ./bootstrap.sh")
         execute_command("chmod +x ./tools/build/src/engine/build.sh")
-        execute_command("./bootstrap.sh --with-libraries=program_options,system --with-toolset={} --prefix={}".format(toolset, boost_install_dir))
-        execute_command("./b2")
-        execute_command("./b2 install")
+
+        execute_command('echo "using ${{ env.CC }} : : ${{ env.CXX }} : ;" > user-config.jam')
+        execute_command("./bootstrap.sh --with-toolset=${{ env.CC }} --without-libraries=python")
+        execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset=${{ env.CC }} variant=release link=shared threading=multi install'.format(boost_install_dir))
 
         os.chdir(repo)
+
+    - name: Utils by Pavel A. Lebedev
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: |
+        # ntc-cmake
+        cd cmake/ntc
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
+
+        # utils and asio-utils from cosec-examples
+        cd 3rd-party/lebedev-utils
+        mkdir build
+        mkdir prefix
+        cd build
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+            -G Ninja \
+            -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+            -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
+            -S ..
+        cmake --build . --target all
+        cmake --build . --target install
+        cd ${{ env.REPO_PATH }}
 
     - name: Cyrus SASL cache
       uses: actions/cache@v2
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-${{ env.CYRUS_SASL_VERSION }}
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-4
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -265,14 +327,14 @@ jobs:
 
         sasl_url = "https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-{}/cyrus-sasl-{}.tar.gz".format(sasl_version, sasl_version)
         open("sasl.tar.gz", "wb").write(requests.get(sasl_url, allow_redirects=True).content)
-        execute_command("7z x sasl.tar.gz -so | 7z x -si -ttar")
+        execute_command("tar -xf sasl.tar.gz")
 
         os.chdir(sasl_source_dir)
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure --prefix={}".format(sasl_install_dir))
+        execute_command("./configure --with-dblib=gdbm --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
-        execute_command("make -j2")
+        execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
         os.chdir(repo)
 
@@ -281,14 +343,14 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-4
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -314,15 +376,15 @@ jobs:
 
         yaml_url = "https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-{}.tar.gz".format(yaml_version)
         open("yaml.tar.gz", "wb").write(requests.get(yaml_url, allow_redirects=True).content)
-        execute_command("7z x yaml.tar.gz -so | 7z x -si -ttar")
+        execute_command("tar -xf yaml.tar.gz")
 
         os.chdir(yaml_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DYAML_BUILD_SHARED_LIBS=ON "
-                       "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  yaml_install_dir))
+                        "-DYAML_CPP_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   yaml_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
         os.chdir(repo)
@@ -332,14 +394,14 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-4
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -370,11 +432,11 @@ jobs:
         os.chdir(sqlpp11_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_BUILD_TYPE=Release "
-                       "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir,
-                                  os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
+                        "-DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir,
+                                   os.path.join(root, os.environ['BOOST_INSTALL_PATH'])))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -391,10 +453,10 @@ jobs:
         os.chdir(chrono_date_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir))
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
@@ -411,14 +473,65 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                       "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
-                       "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include "
-                       ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
-                                  os.path.join(root, ninja_tool_path, "ninja"),
-                                  sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
+                        "-DCMAKE_BUILD_TYPE=Release "
+                        "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
+                        "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   sqlpp11_install_dir, sqlpp11_install_dir, sqlpp11_install_dir))
         execute_command("{} --build . --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
         execute_command("{} --build . --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
 
+        os.chdir(repo)
+
+    - name: Catch2 cache
+      uses: actions/cache@v2
+      id: cache_catch2_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-4
+
+    - name: Catch2
+      if: ${{ steps.cache_catch2_unix.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python3 {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        os.chdir(root)
+
+        catch2_version = os.environ['CATCH2_VERSION']
+
+        catch2_source_dir  = os.path.normpath(os.path.join(root, "Catch2-{}".format(catch2_version)))
+        catch2_install_dir = os.path.normpath(os.path.join(root, "${{ env.CATCH2_INSTALL_PATH }}"))
+        os.mkdir(catch2_install_dir)
+
+        catch2_url = "https://github.com/catchorg/Catch2/archive/v{}.tar.gz".format(catch2_version)
+        open("catch2.tar.gz", "wb").write(requests.get(catch2_url, allow_redirects=True).content)
+        execute_command("tar -xf catch2.tar.gz")
+
+        os.chdir(catch2_source_dir)
+
+        execute_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={}  "
+                        ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                   os.path.join(root, ninja_tool_path, "ninja"),
+                                   catch2_install_dir))
+        execute_command("{} --build build --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_command("{} --build build --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
         os.chdir(repo)
 
     - name: Qt5 cache
@@ -426,14 +539,14 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-4
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: python {0}
+      shell: python3 {0}
       run: |
         import os
         import requests
@@ -462,9 +575,15 @@ jobs:
 
         os.chdir(qtbase_source_dir)
 
+        qt_params = ''
+        if '${{ runner.os }}' == 'Linux':
+            qt_params = '-platform linux-g++'
+        elif '${{ runner.os }}' == 'macOS':
+            qt_params = '-platform macx-clang'
+
         execute_command("chmod +x ./configure")
-        execute_command("./configure -opensource -confirm-license -prefix {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir))
-        execute_command("make -j2")
+        execute_command("./configure -opensource -confirm-license -prefix {} {} -no-opengl -nomake examples -nomake tests".format(qt_install_dir, qt_params))
+        execute_command("make")
         execute_command("make install")
 
         os.chdir(root)
@@ -523,7 +642,9 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}" \
+        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Initialize CodeQL
@@ -533,6 +654,9 @@ jobs:
         languages: cpp
 
     - name: Build
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
       run: cmake --build build --target all
 
     - name: Perform CodeQL Analysis
@@ -540,7 +664,10 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Run tests
-      run: cd build && ctest && cd ..
+      run: |
+        cd build
+        ctest
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
@@ -574,7 +701,10 @@ jobs:
 
     - name: Install clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      run: sudo apt-get install clang-tidy -y
+      run: |
+        sudo apt install clang-tidy-11 -y
+        sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11     100
+        sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
 
     - name: Run clang-tidy
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
@@ -611,7 +741,7 @@ jobs:
       if: ${{ matrix.config.suffix == 'clang-tidy' }}
       shell: sh {0}
       run: |
-        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src'; status=$?; test $status -ne 0
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src\|autogen\|-fcoroutines'; status=$?; test $status -ne 0
 
     - name: Fail if PVS-Studio found warnings
       if: ${{ matrix.config.suffix == 'PVS-Studio' }}

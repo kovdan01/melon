@@ -10,7 +10,7 @@ include(ntc-dev-build)
 
 # boost asio
 find_package(
-    Boost 1.74.0 REQUIRED
+    Boost 1.75 REQUIRED
     COMPONENTS system
 )
 
@@ -34,7 +34,6 @@ set(HEADERS
 )
 
 set(SOURCES
-    src/entities.cpp
     src/exception.cpp
     src/jni_tests.cpp
     src/melon_core.cpp
