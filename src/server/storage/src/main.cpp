@@ -88,7 +88,7 @@ static std::ostream& operator<<(std::ostream& o, const mc::Message& message)
 
 static void get_online_users(mysql::connection& db)
 {
-    std::vector<mc::User::Ptr> online_users = mss::get_online_users(db);
+    std::vector<mss::User> online_users = mss::get_online_users(db);
     if (online_users.empty())
     {
         std::cout << "There are no users online\n";
@@ -97,12 +97,12 @@ static void get_online_users(mysql::connection& db)
 
     std::cout << "Online users:\n";
     for (const auto& online_user : online_users)
-        std::cout << "    " << *online_user << '\n';
+        std::cout << "    " << online_user << '\n';
 }
 
-static void get_chat_participants(const mc::Chat& chat)
+static void get_chat_participants(const mss::Chat& chat)
 {
-    std::vector<mc::User::Ptr> chat_participants = chat.get_users();
+    std::vector<mss::User> chat_participants = chat.get_users();
     if (chat_participants.empty())
     {
         std::cout << "No participants in " << chat << '\n';
@@ -111,12 +111,12 @@ static void get_chat_participants(const mc::Chat& chat)
 
     std::cout << "Participants of " << chat << '\n';
     for (const auto& chat_participant : chat_participants)
-        std::cout << "    " << *chat_participant << '\n';
+        std::cout << "    " << chat_participant << '\n';
 }
 
-static void get_chats_for_user(const mc::User& user)
+static void get_chats_for_user(const mss::User& user)
 {
-    std::vector<mc::Chat::Ptr> chats = user.get_chats();
+    std::vector<mss::Chat> chats = user.get_chats();
     if (chats.empty())
     {
         std::cout << "No chats for " << user << '\n';
@@ -125,7 +125,7 @@ static void get_chats_for_user(const mc::User& user)
 
     std::cout << "Chats for " << user << '\n';
     for (const auto& chat : chats)
-        std::cout << "    " << *chat << '\n';
+        std::cout << "    " << chat << '\n';
 }
 
 int main() try

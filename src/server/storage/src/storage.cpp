@@ -91,6 +91,28 @@ id_t max_message_id(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id)
     return mc::INVALID_ID;
 }
 
+
+std::vector<std::string> get_all_usernames(sqlpp::mysql::connection& db)
+{
+    std::vector<std::string> answer;
+    for (const auto& row : db(select(G_USERS.username).from(G_USERS).unconditionally()))
+    {
+        answer.emplace_back(row.username);
+    }
+    return answer;
+}
+
+std::vector<User> get_online_users(sqlpp::mysql::connection& db)
+{
+    std::vector<User> answer;
+    for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(mc::User::Status::ONLINE))))
+    {
+        answer.emplace_back(db, row.username, row.domainId);
+    }
+    return answer;
+}
+
+
 /* class Domain */
 
 // For Insert
@@ -113,10 +135,8 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
     {
         const auto& row = result.front();
 
-        bool external = row.external;
-
         this->set_domain_id(row.domainId);
-        this->set_external_base(external);
+        mc::Domain::set_external(row.external);
     }
     else
     {
@@ -129,9 +149,10 @@ void Domain::remove()
     m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
 }
 
-void Domain::set_external_impl(bool external)
+void Domain::set_external(bool external)
 {
     m_db(update(G_DOMAINS).set(G_DOMAINS.external = static_cast<std::uint8_t>(external)).where(G_DOMAINS.domainId == this->domain_id()));
+    mc::Domain::set_external(external);
 }
 
 
@@ -165,7 +186,7 @@ User::User(sqlpp::mysql::connection& db, std::string username, id_t domain_id)
         auto status = static_cast<mc::User::Status>(static_cast<int>(row.status));
 
         this->set_user_id(row.userId);
-        this->set_status_base(status);
+        mc::User::set_status(status);
     }
     else
     {
@@ -173,9 +194,9 @@ User::User(sqlpp::mysql::connection& db, std::string username, id_t domain_id)
     }
 }
 
-std::vector<mc::Chat::Ptr> User::get_chats() const
+std::vector<Chat> User::get_chats() const
 {
-    std::vector<mc::Chat::Ptr> answer;
+    std::vector<Chat> answer;
     for (const auto& row : m_db(select(all_of(G_CHATS)).from
                                 (
                                     G_CHATSUSERS.join(G_CHATS).on
@@ -190,7 +211,7 @@ std::vector<mc::Chat::Ptr> User::get_chats() const
                                 ))
          )
     {
-        answer.emplace_back(std::make_unique<Chat>(m_db, row.chatId, row.domainId));
+        answer.emplace_back(m_db, row.chatId, row.domainId);
     }
     return answer;
 }
@@ -200,10 +221,11 @@ void User::remove()
     m_db(remove_from(G_USERS).where(G_USERS.userId == this->user_id() && G_USERS.domainId == this->domain_id()));
 }
 
-void User::set_status_impl(Status status)
+void User::set_status(Status status)
 {
     m_db(update(G_USERS).set(G_USERS.status = static_cast<int>(status)).where(G_USERS.userId == this->user_id() &&
                                                                               G_USERS.domainId == this->domain_id()));
+    mc::User::set_status(status);
 }
 
 
@@ -231,7 +253,7 @@ Chat::Chat(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id)
     if (!result.empty())
     {
         const auto& row = result.front();
-        this->set_chatname_base(row.chatname);
+        mc::Chat::set_chatname(row.chatname);
     }
     else
     {
@@ -239,9 +261,9 @@ Chat::Chat(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id)
     }
 }
 
-std::vector<mc::User::Ptr> Chat::get_users() const
+std::vector<User> Chat::get_users() const
 {
-    std::vector<mc::User::Ptr> answer;
+    std::vector<User> answer;
     for (const auto& row : m_db(select(all_of(G_USERS)).from
                                 (
                                     G_CHATSUSERS.join(G_USERS).on
@@ -256,32 +278,33 @@ std::vector<mc::User::Ptr> Chat::get_users() const
                                 ))
          )
     {
-        answer.emplace_back(std::make_unique<User>(m_db, row.username, row.domainId));
+        answer.emplace_back(m_db, row.username, row.domainId);
     }
     return answer;
 }
 
-std::vector<mc::Message::Ptr> Chat::get_messages() const
+std::vector<Message> Chat::get_messages() const
 {
-    std::vector<mc::Message::Ptr> answer;
+    std::vector<Message> answer;
     for (const auto& row : m_db(select(all_of(G_MESSAGES)).from(G_MESSAGES).where(G_MESSAGES.chatId == this->chat_id() &&
                                                                                   G_MESSAGES.domainIdChat == this->domain_id())))
     {
-        answer.emplace_back(std::make_unique<Message>(m_db, row.messageId, row.chatId, row.domainIdChat));
+        answer.emplace_back(m_db, row.messageId, row.chatId, row.domainIdChat);
     }
     return answer;
-}
-
-void Chat::set_chatname_impl(const std::string& chatname)
-{
-    m_db(update(G_CHATS).set(G_CHATS.chatname = chatname).where(G_CHATS.chatId == this->chat_id() &&
-                                                                G_CHATS.domainId == this->domain_id()));
 }
 
 // Deletes chat: deletes messages from chat, all info in Chats_Users concearnig this chat
 void Chat::remove()
 {
     m_db(remove_from(G_CHATS).where(G_CHATS.chatId == this->chat_id() && G_CHATS.domainId == this->domain_id()));
+}
+
+void Chat::set_chatname(std::string chatname)
+{
+    m_db(update(G_CHATS).set(G_CHATS.chatname = chatname).where(G_CHATS.chatId == this->chat_id() &&
+                                                                G_CHATS.domainId == this->domain_id()));
+    mc::Chat::set_chatname(std::move(chatname));
 }
 
 
@@ -322,9 +345,9 @@ Message::Message(sqlpp::mysql::connection& db, id_t message_id, id_t chat_id, id
 
         this->set_user_id(row.userId);
         this->set_domain_id_user(row.domainIdUser);
-        this->set_text_base(row.text);
-        this->set_timestamp_base(row.sendtime.value());
-        this->set_status_base(status);
+        mc::Message::set_text(std::move(row.text));
+        mc::Message::set_timestamp(row.sendtime.value());
+        mc::Message::set_status(status);
     }
     else
     {
@@ -339,49 +362,26 @@ void Message::remove()
                                        G_MESSAGES.domainIdChat == this->domain_id_chat()));
 }
 
-void Message::set_text_impl(const std::string& text)
+void Message::set_text(std::string text)
 {
     m_db(update(G_MESSAGES).set(G_MESSAGES.text = text).where(G_MESSAGES.messageId == this->message_id() &&
                                                               G_MESSAGES.chatId == this->chat_id() &&
                                                               G_MESSAGES.domainIdChat == this->domain_id_chat()));
 }
 
-void Message::set_status_impl(Status status)
+void Message::set_status(Status status)
 {
     m_db(update(G_MESSAGES).set(G_MESSAGES.status = static_cast<std::uint8_t>(status)).where(G_MESSAGES.messageId == this->message_id() &&
                                                                                              G_MESSAGES.chatId == this->chat_id() &&
                                                                                              G_MESSAGES.domainIdChat == this->domain_id_chat()));
 }
 
-void Message::set_timestamp_impl(timestamp_t timestamp)
+void Message::set_timestamp(timestamp_t timestamp)
 {
     m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = timestamp).where(G_MESSAGES.messageId == this->message_id() &&
                                                                        G_MESSAGES.chatId == this->chat_id() &&
                                                                        G_MESSAGES.domainIdChat == this->domain_id_chat()));
 
-}
-
-
-/* Users */
-
-std::vector<std::string> get_all_usernames(sqlpp::mysql::connection& db)
-{
-    std::vector<std::string> answer;
-    for (const auto& row : db(select(G_USERS.username).from(G_USERS).unconditionally()))
-    {
-        answer.emplace_back(row.username);
-    }
-    return answer;
-}
-
-std::vector<mc::User::Ptr> get_online_users(sqlpp::mysql::connection& db)
-{
-    std::vector<mc::User::Ptr> answer;
-    for (const auto& row : db(select(all_of(G_USERS)).from(G_USERS).where(G_USERS.status == static_cast<std::uint8_t>(mc::User::Status::ONLINE))))
-    {
-        answer.emplace_back(std::make_unique<User>(db, row.username, row.domainId));
-    }
-    return answer;
 }
 
 }  // namespace melon::server::storage

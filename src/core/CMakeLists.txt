@@ -34,7 +34,6 @@ set(HEADERS
 )
 
 set(SOURCES
-    src/entities.cpp
     src/exception.cpp
     src/jni_tests.cpp
     src/melon_core.cpp
