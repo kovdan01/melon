@@ -23,6 +23,8 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      CATCH2_VERSION: "2.13.4"
+      CATCH2_INSTALL_PATH: "catch2-install"
       MINGW64_CACHE_VERSION: 14  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
@@ -898,6 +900,60 @@ jobs:
 
         os.chdir(repo)
 
+    - name: Catch2 cache
+      uses: actions/cache@v2
+      id: cache_catch2
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}
+
+    - name: Catch2
+      if: ${{ steps.cache_catch2.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python3 {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        def execute_msys_command(cmd):
+          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          execute_command(cmd_prefix + '"{}"'.format(cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+
+        os.chdir(root)
+
+        catch2_version = os.environ['CATCH2_VERSION']
+
+        catch2_source_dir  = os.path.normpath(os.path.join(root, "Catch2-{}".format(catch2_version)))
+        catch2_install_dir = os.path.normpath(os.path.join(root, "${{ env.CATCH2_INSTALL_PATH }}"))
+        os.mkdir(catch2_install_dir)
+
+        catch2_url = "https://github.com/catchorg/Catch2/archive/v{}.tar.gz".format(catch2_version)
+        open("catch2.tar.gz", "wb").write(requests.get(catch2_url, allow_redirects=True).content)
+        execute_msys_command("tar -xf catch2.tar.gz")
+
+        os.chdir(catch2_source_dir)
+
+        execute_msys_command("{} -B build -DBUILD_TESTING=OFF -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={}  "
+                             ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
+                                        os.path.join(root, ninja_tool_path, "ninja"),
+                                        catch2_install_dir))
+        execute_msys_command("{} --build build --target all".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        execute_msys_command("{} --build build --target install".format(os.path.join(cmake_tool_binary_path, "cmake")))
+        os.chdir(repo)
+
     - name: Configure
       if: ${{ runner.os == 'Windows' }}
       env:
@@ -922,6 +978,7 @@ jobs:
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
         ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
