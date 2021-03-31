@@ -266,17 +266,16 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       run: |
         # ntc-cmake
-        cd cmake/ntc
+        cd ${{ env.REPO_PATH }}/cmake/ntc
         mkdir build
         mkdir prefix
         cd build
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake -DCMAKE_INSTALL_PREFIX=`pwd`/../prefix ..
         cmake --build . --target all
         cmake --build . --target install
-        cd ${{ env.REPO_PATH }}
 
         # utils and asio-utils from cosec-examples
-        cd 3rd-party/lebedev-utils
+        cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
         mkdir build
         mkdir prefix
         cd build
