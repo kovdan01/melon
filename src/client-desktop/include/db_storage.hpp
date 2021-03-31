@@ -14,13 +14,15 @@ QString create_connection_with_db();
 class Message : public MessageRAM
 {
 public:
+    using id_t = melon::core::id_t;
+
     // For Insert
-    Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
-            std::uint64_t user_id, std::uint64_t domain_id_user,
+    Message(id_t chat_id, id_t domain_id_chat,
+            id_t user_id, id_t domain_id_user,
             const QString& text, timestamp_t timestamp, Status status);
 
     // For Select
-    Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat);
+    Message(id_t message_id, id_t chat_id, id_t domain_id_chat);
 
     // For incomplete message
     Message(const QString& text)
@@ -44,12 +46,13 @@ class Chat : public ChatRAM
 {
 public:
     using message_handle_t = std::list<Message>::iterator;
+    using id_t = melon::core::id_t;
 
     // For insert
-    Chat(std::uint64_t domain_id, const QString& chatname);
+    Chat(id_t domain_id, const QString& chatname);
 
     // For Select
-    Chat(std::uint64_t chat_id, std::uint64_t domain_id);
+    Chat(id_t chat_id, id_t domain_id);
 
     void remove_from_db();
 
@@ -125,7 +128,7 @@ public:
 
     chat_handle_t add_chat(const Chat& chat)
     {
-        m_chats.emplace_back(std::move(chat));
+        m_chats.emplace_back(chat);
         return std::prev(m_chats.end());
     }
 
@@ -144,8 +147,15 @@ public:
     {
         return m_chats;
     }
+
+    [[nodiscard]] QString db_name()
+    {
+        return m_db_name;
+    }
+
 private:
     std::list<Chat> m_chats;
+    QString m_db_name = QStringLiteral("test_db");
 
     StorageSingletone() = default;
     ~StorageSingletone() = default;
@@ -156,6 +166,6 @@ private:
 Q_DECLARE_METATYPE(melon::client_desktop::StorageSingletone::chat_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Message)
-Q_DECLARE_METATYPE(std::uint64_t)
+//Q_DECLARE_METATYPE(meloid_t)
 
 #endif // MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_

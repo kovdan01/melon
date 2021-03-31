@@ -34,6 +34,13 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
                             user_ap.timestamp_font_params().size,
                             user_ap.timestamp_font_params().weight };
 
+    QFontMetrics fm_sender = QFontMetrics(m_sender_font);
+    m_fm_sender.swap(fm_sender);
+    QFontMetrics fm_message_text = QFontMetrics(m_message_text_font);
+    m_fm_message_text.swap(fm_message_text);
+    QFontMetrics fm_timestamp = QFontMetrics(m_timestamp_font);
+    m_fm_timestamp.swap(fm_timestamp);
+
     m_sended_message_color = user_ap.sended_message_color();
     m_receive_message_color = user_ap.receive_message_color();
 
@@ -48,6 +55,7 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     m_selected_message_color = dev_ap.selected_message_color();
 
     m_pen_for_text.setColor(Qt::black);
+    m_pen_for_background.setStyle(Qt::NoPen);
 }
 
 void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
@@ -57,8 +65,6 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     bool is_previous_same = index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>();
 
     painter->setRenderHint(QPainter::Antialiasing);
-    QPen pen_for_background;
-    pen_for_background.setStyle(Qt::NoPen);
     QPen standart_pen = painter->pen();
 
     // Icon rect and render
@@ -72,7 +78,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 
         QPainterPath icon_rect_path;
         icon_rect_path.addEllipse(icon_rect);
-        painter->setPen(pen_for_background);
+        painter->setPen(m_pen_for_background);
 
         QColor icon_color;
         if (message->user_id() == MY_USER_ID)
@@ -159,7 +165,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     message_background_path.addRoundedRect(message_background_rect,
                                            m_message_round_radius,
                                            m_message_round_radius);
-    painter->setPen(pen_for_background);
+    painter->setPen(m_pen_for_background);
     painter->fillPath(message_background_path, color);
     painter->drawPath(message_background_path);
     painter->setPen(standart_pen);
@@ -204,7 +210,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Selection handling
     if (option.state & QStyle::State_Selected)
     {
-        painter->setPen(pen_for_background);
+        painter->setPen(m_pen_for_background);
         painter->fillPath(message_background_path, m_selected_message_color);
         painter->drawPath(message_background_path);
         painter->setPen(standart_pen);

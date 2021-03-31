@@ -33,11 +33,14 @@ private:
     QFont m_unread_counter_font;
     QFont m_sender_font;
 
-    QFontMetrics m_fm_chat_name = QFontMetrics(m_chat_name_font);
-    QFontMetrics m_fm_timestamp = QFontMetrics(m_timestamp_font);
-    QFontMetrics m_fm_last_message = QFontMetrics(m_last_message_font);
-    QFontMetrics m_fm_sender = QFontMetrics(m_sender_font);
-    QFontMetrics m_fm_unread_counter = QFontMetrics(m_unread_counter_font);
+    /* since QFontMetrics can not be initialized after creation,
+       but all members of the class must be initialized in constructor,
+       we put here fake initialization */
+    QFontMetrics m_fm_chat_name = QFontMetrics(QFont());
+    QFontMetrics m_fm_timestamp = QFontMetrics(QFont());
+    QFontMetrics m_fm_last_message = QFontMetrics(QFont());
+    QFontMetrics m_fm_sender = QFontMetrics(QFont());
+    QFontMetrics m_fm_unread_counter = QFontMetrics(QFont());
 
     int m_first_row_height;
     int m_second_row_height;

@@ -38,9 +38,12 @@ private:
     QColor m_receive_message_color;
     QColor m_selected_message_color;
 
-    QFontMetrics m_fm_sender = QFontMetrics(m_sender_font);
-    QFontMetrics m_fm_message_text = QFontMetrics(m_message_text_font);
-    QFontMetrics m_fm_timestamp= QFontMetrics(m_timestamp_font);
+    /* since QFontMetrics can not be initialized after creation,
+       but all members of the class must be initialized in constructor,
+       we put here fake initialization */
+    QFontMetrics m_fm_sender = QFontMetrics(QFont());
+    QFontMetrics m_fm_message_text = QFontMetrics(QFont());
+    QFontMetrics m_fm_timestamp= QFontMetrics(QFont());
 
     qreal m_scale_message_width;
     int m_min_message_width;
@@ -49,6 +52,7 @@ private:
     int m_message_round_radius;
 
     QPen m_pen_for_text;
+    QPen m_pen_for_background;
 };
 
 }  // namespace melon::client_desktop

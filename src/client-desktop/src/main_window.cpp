@@ -66,8 +66,11 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    QSqlQuery qry_for_chats(DB_NAME);
-    QSqlQuery qry_for_messages(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QString db_name = storage.db_name();
+    QSqlQuery qry_for_chats(db_name);
+    QSqlQuery qry_for_messages(db_name);
     if (!qry_for_chats.exec(QStringLiteral("SELECT chat_id, domain_id FROM chats")))
     {
         std::cout << "Error while loading chats: " << std::flush;
@@ -76,8 +79,8 @@ void MainWindow::load_data_from_database()
     }
     while(qry_for_chats.next())
     {
-        std::uint64_t chat_id = qry_for_chats.value(0).value<std::uint64_t>();
-        std::uint64_t domain_id = qry_for_chats.value(1).value<std::uint64_t>();
+        auto chat_id = qry_for_chats.value(0).value<std::uint64_t>();
+        auto domain_id = qry_for_chats.value(1).value<std::uint64_t>();
         Chat chat(chat_id, domain_id);
 
         QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") +QString::number(chat_id)
@@ -90,7 +93,7 @@ void MainWindow::load_data_from_database()
         }
         while(qry_for_messages.next())
         {
-            std::uint64_t message_id = qry_for_messages.value(0).value<std::uint64_t>();
+            auto message_id = qry_for_messages.value(0).value<std::uint64_t>();
             Message message(message_id, chat_id, domain_id);
             chat.add_message(message);
         }
@@ -124,7 +127,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     qry.exec(QStringLiteral("SELECT COUNT(chat_id) from chats"));
     qry.next();
     if (qry.value(0).toInt() > 0)

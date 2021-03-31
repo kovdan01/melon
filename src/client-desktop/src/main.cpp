@@ -12,17 +12,16 @@ namespace melon::client_desktop
 QString create_connection_with_db()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
-    db.setDatabaseName(DB_NAME);
 
-    auto error = [&](QString message)
-    {
-        return message.arg(db.lastError().text());
-    };
+    auto& storage = StorageSingletone::get_instance();
+    QString db_name = storage.db_name();
 
-    bool is_exist = QFile::exists(DB_NAME);
+    db.setDatabaseName(db_name);
+
+    bool is_exist = QFile::exists(db_name);
 
     if(!db.open())
-        return error(qApp->translate("OpenDB", "Couldn't open database! %1"));
+        return qApp->translate("OpenDB", "Couldn't open database! %1");
 
     if (!is_exist)
     {
@@ -31,7 +30,7 @@ QString create_connection_with_db()
         if (!query.exec(QStringLiteral("PRAGMA foreign_keys = ON")))
         {
             std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
-            return error(qApp->translate("CreateDB", "Couldn't create messages table: %1"));
+            return qApp->translate("CreateDB", "Couldn't create messages table!");
         }
 
         if(!query.exec(QStringLiteral("CREATE TABLE [chats]"
@@ -41,7 +40,7 @@ QString create_connection_with_db()
                                       " PRIMARY KEY (chat_id, domain_id))")))
         {
             std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
-            return error(qApp->translate("CreateDB", "Couldn't create chats table"));
+            return qApp->translate("CreateDB", "Couldn't create chats table");
         }
 
         if(!query.exec(QStringLiteral("CREATE TABLE [messages]"
@@ -56,7 +55,7 @@ QString create_connection_with_db()
                                       " FOREIGN KEY (chat_id, domain_id) REFERENCES chats(chat_id, domain_id) ON DELETE CASCADE)")))
         {
             std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
-            return error(qApp->translate("CreateDB", "Couldn't create messages table: %1"));
+            return qApp->translate("CreateDB", "Couldn't create messages table!");
         }
     }
 

@@ -9,8 +9,8 @@ namespace mc = melon::core;
 
 /* Helpers */
 
-std::uint64_t max_message_id(std::uint64_t chat_id, std::uint64_t domain_id);
-std::uint64_t max_chat_id(std::uint64_t domain_id);
+melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id);
+melon::core::id_t max_chat_id(melon::core::id_t domain_id);
 int status_to_int(melon::core::Message::Status status);
 melon::core::Message::Status int_to_status(int status);
 
@@ -18,14 +18,16 @@ melon::core::Message::Status int_to_status(int status);
 /* Message */
 
 // For Insert
-Message::Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
-                 std::uint64_t user_id, std::uint64_t domain_id_user,
+Message::Message(id_t chat_id, id_t domain_id_chat,
+                 id_t user_id, id_t domain_id_user,
                  const QString& text, timestamp_t timestamp, Status status)
     : MessageRAM(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
 
-    QSqlQuery qry(QSqlDatabase::database(DB_NAME));
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     if (!qry.prepare(QStringLiteral("INSERT INTO messages"
                                    " VALUES("
                                    " :msg_id,"
@@ -60,10 +62,12 @@ Message::Message(std::uint64_t chat_id, std::uint64_t domain_id_chat,
 }
 
 //For Select
-Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t domain_id_chat)
+Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     : MessageRAM(message_id, chat_id, domain_id_chat)
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT user_id, timestamp, text, status FROM messages"
 "                                            WHERE (message_id=")
                         + QString::number(this->message_id())
@@ -80,8 +84,8 @@ Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t 
     else
     {
         qry.next();
-        this->set_user_id(qry.value(0).value<std::uint64_t>());
-        std::uint64_t tp = qry.value(1).value<std::uint64_t>();
+        this->set_user_id(qry.value(0).value<id_t>());
+        auto tp = qry.value(1).value<std::uint64_t>();
         std::chrono::milliseconds dur(tp);
         std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
         this->set_timestamp(tp_ms);
@@ -93,7 +97,9 @@ Message::Message(std::uint64_t message_id, std::uint64_t chat_id, std::uint64_t 
 
 void Message::set_text(const QString& text)
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE messages SET text='") + text +
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id())
                         + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
@@ -108,8 +114,9 @@ void Message::set_text(const QString& text)
 
 void Message::remove_from_db()
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
 
+    QSqlQuery qry(storage.db_name());
     QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id())
                            + QStringLiteral(" and chat_id=") + QString::number(this->chat_id())
                            + QStringLiteral(" and domain_id=") + QString::number(this->domain_id_chat());
@@ -125,12 +132,15 @@ void Message::remove_from_db()
 /* Chat */
 
 // For Insert
-Chat::Chat(std::uint64_t domain_id, const QString& name)
+Chat::Chat(id_t domain_id, const QString& name)
     : ChatRAM(domain_id, name)
     , m_incomplete_message(QLatin1String(""))
 {
     this->set_chat_id(max_chat_id(this->domain_id()) + 1);
-    QSqlQuery qry(QSqlDatabase::database(DB_NAME));
+
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     if(!qry.prepare(QStringLiteral("INSERT INTO chats"
                                    " VALUES(:chat_id, :domain_id, :name)")))
     {
@@ -149,10 +159,12 @@ Chat::Chat(std::uint64_t domain_id, const QString& name)
 }
 
 // For Select
-Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id)
+Chat::Chat(id_t chat_id, id_t domain_id)
     : ChatRAM(chat_id, domain_id)
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
     if (!qry.exec(qry_string))
@@ -169,8 +181,9 @@ Chat::Chat(std::uint64_t chat_id, std::uint64_t domain_id)
 
 void Chat::remove_from_db()
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
 
+    QSqlQuery qry(storage.db_name());
     QString query_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id())
                            + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
@@ -192,7 +205,9 @@ void Chat::remove_from_db()
 
 void Chat::set_chatname(const QString& chatname)
 {
-    QSqlQuery qry(DB_NAME);
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname
                         + QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id())
                         + QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
@@ -208,9 +223,11 @@ void Chat::set_chatname(const QString& chatname)
 
 /* Helpers */
 
-std::uint64_t max_message_id(std::uint64_t chat_id, std::uint64_t domain_id)
+melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
 {
-    QSqlQuery qry(QSqlDatabase::database(DB_NAME));
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id)
                          + QStringLiteral(" and domain_id=") + QString::number(domain_id);
     if (!qry.exec(qry_string))
@@ -225,14 +242,16 @@ std::uint64_t max_message_id(std::uint64_t chat_id, std::uint64_t domain_id)
         std::cout << "message_id is null!" << std::endl;
         return 0;
     }
-    std::uint64_t msg_id = msg_id_qvar.value<std::uint64_t>();
+    auto msg_id = msg_id_qvar.value<id_t>();
 
     return msg_id;
 }
 
-std::uint64_t max_chat_id(std::uint64_t domain_id)
+melon::core::id_t max_chat_id(melon::core::id_t domain_id)
 {
-    QSqlQuery qry(QSqlDatabase::database(DB_NAME));
+    auto& storage = StorageSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(chat_id) FROM chats WHERE domain_id=") + QString::number(domain_id);
     if (!qry.exec(qry_string))
     {
@@ -246,7 +265,7 @@ std::uint64_t max_chat_id(std::uint64_t domain_id)
         std::cout << "chat_id is null!" << std::endl;
         return 0;
     }
-    std::uint64_t chat_id = chat_id_qvar.value<std::uint64_t>();
+    auto chat_id = chat_id_qvar.value<id_t>();
 
     return chat_id;
 }
@@ -263,8 +282,9 @@ int status_to_int(melon::core::Message::Status status)
         return 2;
     case melon::core::Message::Status::SENT:
         return 3;
+    default:
+        return 5;
     }
-    return 5;
 }
 
 melon::core::Message::Status int_to_status(int status)
@@ -279,8 +299,9 @@ melon::core::Message::Status int_to_status(int status)
         return melon::core::Message::Status::RECEIVED;
     case 3:
         return melon::core::Message::Status::SENT;
+    default:
+        return melon::core::Message::Status::FAIL;
     }
-    return melon::core::Message::Status::FAIL;
 }
 
 }  // namespace melon::client_desktop
