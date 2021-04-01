@@ -939,7 +939,7 @@ jobs:
         catch2_version = os.environ['CATCH2_VERSION']
 
         catch2_source_dir  = os.path.normpath(os.path.join(root, "Catch2-{}".format(catch2_version)))
-        catch2_install_dir = os.path.normpath(os.path.join(root, "${{ env.CATCH2_INSTALL_PATH }}"))
+        catch2_install_dir = os.path.normpath(os.path.join(root, "${{ env.CATCH2_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(catch2_install_dir)
 
         catch2_url = "https://github.com/catchorg/Catch2/archive/v{}.tar.gz".format(catch2_version)
