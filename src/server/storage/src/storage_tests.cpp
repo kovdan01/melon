@@ -6,10 +6,10 @@ namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
 
-TEST_CASE( "Test storage entities", "[somelabel]" )
+TEST_CASE( "Test storage service", "[storage]" )
 {
     mysql::connection db(mss::config_db());
-    db.execute(R"(set autocommit=0)");
+    db.execute(R"(SET autocommit=0)");
 
     SECTION( "Test domains" )
     {
@@ -90,7 +90,7 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                     found_chat1.add_user(user1);
                     found_chat1.add_user(user2);
                     std::vector<mss::User> users_in_chat = found_chat1.get_users();
-                    //std::vector<mss::User>::iterator it = std::find(users_in_chat.begin(), users_in_chat.end(), user1);
+                    //std::vector<mss::User>::const_iterator it = std::find(users_in_chat.begin(), users_in_chat.end(), user1);
                     //REQUIRE(it != users_in_chat.end());
                     //it = std::find(users_in_chat.begin(), users_in_chat.end(), user2);
                     //REQUIRE(it != users_in_chat.end());
