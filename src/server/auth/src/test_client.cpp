@@ -20,10 +20,10 @@ std::string get_client_response(const std::string& server_response, mca::SaslCli
 
 }
 
-std::string read_buffered_string(std::size_t n, std::string& in_buf)
+std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)  // The func copies string read before the delimiter and erases that part of buffer
 {
     std::string before_separator = std::move(in_buf);
-    in_buf = std::string(before_separator[n + 1], before_separator.size() - n);
+    in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
     before_separator.erase(n - 1,  before_separator.size() - 1);
     return before_separator;
 }
@@ -45,12 +45,12 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
 
     std::string in_buf;
     std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
-    read_buffered_string(n, in_buf);
+    read_erase_buffered_string(n, in_buf);
 
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
-    reply = read_buffered_string(n, in_buf);
+    reply = read_erase_buffered_string(n, in_buf);
     int counter = 0;
 
     for (;;)
@@ -58,7 +58,7 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
         to_send = get_client_response(reply, client, counter);
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
         std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
-        reply = read_buffered_string(n, in_buf);
+        reply = read_erase_buffered_string(n, in_buf);
         if (reply == mca::TOKEN_CONFIRMATION_STRING)
         {
             confirmation_recieved = true;

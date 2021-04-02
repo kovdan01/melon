@@ -68,7 +68,7 @@ public:
                 BOOST_LOG_SEV(log(), info) << "Connection closed";
                 return;
             }
-            std::string wanted_mechanism = read_buffered_string(n);
+            std::string wanted_mechanism = read_erase_buffered_string(n);
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
@@ -77,7 +77,7 @@ public:
 
             stream_.expires_after(TIME_LIMIT);
             n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-            std::string client_response = read_buffered_string(n);
+            std::string client_response = read_erase_buffered_string(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response) += "\n";
             stream_.expires_after(TIME_LIMIT);
@@ -86,7 +86,7 @@ public:
                 async_write(stream_, ba::buffer(m_out_buf), yc, 0);
                 stream_.expires_after(TIME_LIMIT);
                 n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-                client_response = read_buffered_string(n);
+                client_response = read_erase_buffered_string(n);
                 mca::StepResult server_step_res = server.step(client_response);
                 server_response = server_step_res.response;
                 server_completness = server_step_res.completness;
@@ -114,10 +114,10 @@ public:
 
 private:
     std::string m_in_buf, m_out_buf;
-    std::string read_buffered_string(std::size_t n)
+    std::string read_erase_buffered_string(std::size_t n)  // The func copies string read before the delimiter and erases that part of buffer
     {
         std::string before_separator = std::move(m_in_buf);
-        m_in_buf = std::string(before_separator[n + 1], before_separator.size() - n);
+        m_in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
         before_separator.erase(n - 1,  before_separator.size() - 1);
         return before_separator;
     }
