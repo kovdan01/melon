@@ -6,7 +6,6 @@ namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
 
-
 TEST_CASE( "Test storage entities", "[somelabel]" )
 {
     mysql::connection db(mss::config_db());
@@ -49,7 +48,7 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
             SECTION("Get online users")
             {
                  std::vector<mss::User> answer = mss::get_online_users(db);
-                 REQUIRE(answer.size() == 2); // change I do not now maybe in database preciosly were  added online users
+                 REQUIRE_FALSE(answer.size() < 2);
             }
 
             SECTION("Change status")
@@ -58,83 +57,70 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                 REQUIRE(user2.status() == mc::User::Status::OFFLINE);
 
                 std::vector answer = mss::get_online_users(db);
-                REQUIRE(answer.size() == 1); // change I do not now maybe in database preciosly were  added online users
+                REQUIRE_FALSE(answer.size() < 1);
             }
 
-        }
+            SECTION( "Test chats")
+            {
+                mss::Chat chat1(db, domain1.domain_id(), "secret_chat");
+                mss::Chat chat2(db, domain2.domain_id(), "On domain2");
 
+                REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat1.chat_id(), chat1.domain_id()));
+                mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+                REQUIRE(chat1.chat_id() == found_chat1.chat_id());
+                REQUIRE(chat1.domain_id() == found_chat1.domain_id());
+                REQUIRE(chat1.chatname() == found_chat1.chatname());
+
+                SECTION("Change chatname")
+                {
+                    found_chat1.set_chatname("new name");
+                    REQUIRE(found_chat1.chatname() == "new name");
+                }
+
+                SECTION("Add users to chat")
+                {
+                    found_chat1.add_user(user1);
+                    found_chat1.add_user(user2);
+                    std::vector<mss::User> users_in_chat = found_chat1.get_users();
+                    //std::vector<mss::User>::iterator it = std::find(users_in_chat.begin(), users_in_chat.end(), user1);
+                    //REQUIRE(it != users_in_chat.end());
+                    //it = std::find(users_in_chat.begin(), users_in_chat.end(), user2);
+                    //REQUIRE(it != users_in_chat.end());
+                    REQUIRE(users_in_chat.size() == 2);
+                }
+
+                mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                mss::Message message2(db, chat2.chat_id(), chat2.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                SECTION("Test messages")
+                {
+                    mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+
+                    SECTION("Change status")
+                    {
+                        found_message1.set_status(mc::Message::Status::SEEN);
+                        REQUIRE(found_message1.status() == mc::Message::Status::SEEN);
+                    }
+
+                    SECTION("Change text")
+                    {
+                        found_message1.set_text("((((((");
+                        REQUIRE(found_message1.text() == "((((((");
+                    }
+
+                    SECTION( "Test get_messages() for Chat")
+                    {
+                        mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+                        mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                        mss::Message message2(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                        std::vector<mss::Message> messages_in_chat = found_chat1.get_messages();
+                        // I need smth like this maybe
+                        //REQUIRE_THAT(messages_in_chat, Catch::Matchers::Equals(std::vector<mss::Message>{message1, message2}));
+                    }
+                }
+            }
+        }
         db.execute(R"(ROLLBACK)");
         db.execute(R"(COMMIT)");
-
     }
-
-
-
-//    mss::Chat chat1(db, domain1.domain_id(), "secret_chat");
-//    mss::Chat chat2(db, domain2.domain_id(), "On domain2");
-
-//    SECTION( "Test Chat")
-//    {
-//        REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat1.chat_id(), chat1.domain_id()));
-//        mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
-//        REQUIRE(chat1.chat_id() == found_chat1.chat_id());
-//        REQUIRE(chat1.domain_id() == found_chat1.domain_id());
-//        REQUIRE(chat1.chatname() == found_chat1.chatname());
-
-//        SECTION("Change chatname")
-//        {
-//            found_chat1.set_chatname("new name");
-//            REQUIRE(found_chat1.chatname() == "new name");
-//        }
-
-//        SECTION("Add users to chat")
-//        {
-//            found_chat1.add_user(user1);
-//            found_chat1.add_user(user2);
-//            std::vector<mss::User> users_in_chat = found_chat1.get_users();
-//            //REQUIRE_THAT(users_in_chat, Catch::Matchers::Equals(std::vector<mss::User>{user1, user2}));
-//        }
-//    }
-
-//    mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-//    mss::Message message2(db, chat2.chat_id(), chat2.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-//    SECTION("Test Message")
-//    {
-//        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
-
-//        SECTION("Change status")
-//        {
-//            found_message1.set_status(mc::Message::Status::SEEN);
-//            REQUIRE(found_message1.status() == mc::Message::Status::SEEN);
-//        }
-
-//        SECTION("Change text")
-//        {
-//            found_message1.set_text("((((((");
-//            REQUIRE(found_message1.text() == "((((((");
-//        }
-//    }
-
-
-//    SECTION( "Test get_messages() for Chat")
-//    {
-//        mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
-
-//        mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-//        mss::Message message2(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-//        std::vector<mss::Message> messages_in_chat = found_chat1.get_messages();
-//        //REQUIRE_THAT(messages_in_chat, Catch::Matchers::Equals(std::vector<mss::Message>{message1, message2}));
-//    }
-
-//    SECTION("Test deletions")
-//    {
-//        SECTION("Delete message")
-//        {
-//             mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
-//             found_message1.remove();
-//        }
-
-//    }
-
 
 }

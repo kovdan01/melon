@@ -139,17 +139,17 @@ int main() try
     mss::Domain found_domain1(db, domain1.hostname());
     std::cout << "Found domain1: " << found_domain1 << '\n';
 
-    mss::Domain domain2(db, "some_melon.org", false);
+    mss::Domain domain2(db, "melon.org", false);
     std::cout << "Created domain2: " << domain2 << '\n';
 
     // Users
-    mss::User user1(db, "Mr Fudge", domain1.domain_id(), mc::User::Status::ONLINE);
+    mss::User user1(db, "Fudge", domain1.domain_id(), mc::User::Status::ONLINE);
     std::cout << "Created user1: " << user1 << '\n';
 
     mss::User found_user1(db, user1.username(), user1.domain_id());
     std::cout << "Found user1:   " << found_user1 << '\n';
 
-    mss::User user2(db, "Queen Anna", domain1.domain_id(), mc::User::Status::ONLINE);
+    mss::User user2(db, "Anna", domain1.domain_id(), mc::User::Status::ONLINE);
     std::cout << "Created user2: " << user2 << '\n';
 
     mss::User found_user2(db, user2.username(), user2.domain_id());
@@ -184,7 +184,7 @@ int main() try
     get_online_users(db);
 
     // Chats
-    mss::Chat chat1(db, domain1.domain_id(), "secret_chat6");
+    mss::Chat chat1(db, domain1.domain_id(), "secret_chat");
     std::cout << "Created chat1: " << chat1 << '\n';
 
     mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
