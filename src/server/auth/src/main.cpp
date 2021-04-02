@@ -182,9 +182,7 @@ int main(int argc, char* argv[]) try
 
         for (unsigned i = 1; i < threads; ++i)
         {
-            bae::execute(tp.get_executor(), [&]{
-                ctx.run();
-            });
+            bae::execute(tp.get_executor(), [&ctx]{ ctx.run(); });
         }
         ctx.run();
         return 0;

@@ -61,17 +61,11 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
 
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
     reply = read_buffered_string(n, in_buf);
-
-    auto cli_resp = client.start(wanted_mech);
-    mca::StepResult cli_resp2;
     int counter = 0;
 
     for (;;)
     {
-        if (counter == 0)
-            to_send = cli_resp.response;
-        else
-            to_send = cli_resp2.response;
+        to_send = get_cli_response(reply, client, counter);
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() +1));
         size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
         reply = read_buffered_string(n, in_buf);
@@ -80,7 +74,6 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
             confirmation_recieved = true;
             break;
         }
-        cli_resp2 = client.step(reply);
         ++counter;
     }
     in_buf.erase(0, n);
