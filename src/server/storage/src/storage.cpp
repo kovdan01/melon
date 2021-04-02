@@ -30,7 +30,7 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_db()
     config->host = "localhost";
     config->password = "melonpass";
 #ifndef NDEBUG
-    //config->debug = true;
+    config->debug = true;
 #else
     config->debug = false;
 #endif

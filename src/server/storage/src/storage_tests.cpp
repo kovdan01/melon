@@ -10,6 +10,7 @@ namespace mysql = sqlpp::mysql;
 TEST_CASE( "Test storage entities", "[somelabel]" )
 {
     mysql::connection db(mss::config_db());
+    db.execute(R"(set autocommit=0)");
 
     SECTION( "Test domains" )
     {
@@ -30,7 +31,7 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
 
         SECTION( "Test users")
         {
-            mss::User user1(db, "queen Ann", domain1.domain_id(), mc::User::Status::ONLINE);
+            mss::User user1(db, "Anna", domain1.domain_id(), mc::User::Status::ONLINE);
             mss::User user2(db, "Erick", domain1.domain_id(), mc::User::Status::ONLINE);
 
             mss::User found_user1(db, user1.username(), user1.domain_id());
@@ -48,7 +49,7 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
             SECTION("Get online users")
             {
                  std::vector<mss::User> answer = mss::get_online_users(db);
-                 REQUIRE(answer.size() == 2);
+                 REQUIRE(answer.size() == 2); // change I do not now maybe in database preciosly were  added online users
             }
 
             SECTION("Change status")
@@ -57,12 +58,13 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                 REQUIRE(user2.status() == mc::User::Status::OFFLINE);
 
                 std::vector answer = mss::get_online_users(db);
-                REQUIRE(answer.size() == 1);
+                REQUIRE(answer.size() == 1); // change I do not now maybe in database preciosly were  added online users
             }
 
-            domain1.remove();
-            domain2.remove();
         }
+
+        db.execute(R"(ROLLBACK)");
+        db.execute(R"(COMMIT)");
 
     }
 
