@@ -115,5 +115,5 @@ ntc_target(${PROJECT_NAME})
 # register tests with CTest
 
 include(CTest)
-include(ParseAndAddCatchTests)
-ParseAndAddCatchTests(melon-auth-test-client)
+include(Catch)
+catch_discover_tests(melon-auth-test-client)
