@@ -312,8 +312,8 @@ void Chat::add_user(User user)
     m_db(insert_into(G_CHATSUSERS).set(
         G_CHATSUSERS.chatId = this->chat_id(),
         G_CHATSUSERS.domainIdChat = this->domain_id(),
-        G_CHATSUSERS.userId = user.user_id(),
-        G_CHATSUSERS.domainIdUser = user.domain_id()));
+        G_CHATSUSERS.userId = std::move(user.user_id()),
+        G_CHATSUSERS.domainIdUser = std::move(user.domain_id())));
 }
 
 

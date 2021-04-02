@@ -33,17 +33,20 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
             mss::User user1(db, "Anna", domain1.domain_id(), mc::User::Status::ONLINE);
             mss::User user2(db, "Erick", domain1.domain_id(), mc::User::Status::ONLINE);
 
-            mss::User found_user1(db, user1.username(), user1.domain_id());
-            REQUIRE(user1.user_id() == found_user1.user_id());
-            REQUIRE(user1.username() == found_user1.username());
-            REQUIRE(user1.domain_id() == found_user1.domain_id());
-            REQUIRE(user1.status() == found_user1.status());
+            SECTION("Select inserted users")
+            {
+                mss::User found_user1(db, user1.username(), user1.domain_id());
+                REQUIRE(user1.user_id() == found_user1.user_id());
+                REQUIRE(user1.username() == found_user1.username());
+                REQUIRE(user1.domain_id() == found_user1.domain_id());
+                REQUIRE(user1.status() == found_user1.status());
 
-            mss::User found_user2(db, user2.username(), user2.domain_id());
-            REQUIRE(user2.user_id() == found_user2.user_id());
-            REQUIRE(user2.username() == found_user2.username());
-            REQUIRE(user2.domain_id() == found_user2.domain_id());
-            REQUIRE(user2.status() == found_user2.status());
+                mss::User found_user2(db, user2.username(), user2.domain_id());
+                REQUIRE(user2.user_id() == found_user2.user_id());
+                REQUIRE(user2.username() == found_user2.username());
+                REQUIRE(user2.domain_id() == found_user2.domain_id());
+                REQUIRE(user2.status() == found_user2.status());
+            }
 
             SECTION("Get online users")
             {
@@ -57,7 +60,7 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                 REQUIRE(user2.status() == mc::User::Status::OFFLINE);
 
                 std::vector answer = mss::get_online_users(db);
-                REQUIRE_FALSE(answer.size() < 1);
+                REQUIRE_FALSE(answer.empty());
             }
 
             SECTION( "Test chats")
@@ -65,20 +68,25 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                 mss::Chat chat1(db, domain1.domain_id(), "secret_chat");
                 mss::Chat chat2(db, domain2.domain_id(), "On domain2");
 
-                REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat1.chat_id(), chat1.domain_id()));
-                mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
-                REQUIRE(chat1.chat_id() == found_chat1.chat_id());
-                REQUIRE(chat1.domain_id() == found_chat1.domain_id());
-                REQUIRE(chat1.chatname() == found_chat1.chatname());
+                SECTION("Select inserted chats")
+                {
+                    REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat1.chat_id(), chat1.domain_id()));
+                    mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+                    REQUIRE(chat1.chat_id() == found_chat1.chat_id());
+                    REQUIRE(chat1.domain_id() == found_chat1.domain_id());
+                    REQUIRE(chat1.chatname() == found_chat1.chatname());
+                }
 
                 SECTION("Change chatname")
                 {
+                    mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
                     found_chat1.set_chatname("new name");
                     REQUIRE(found_chat1.chatname() == "new name");
                 }
 
                 SECTION("Add users to chat")
                 {
+                    mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
                     found_chat1.add_user(user1);
                     found_chat1.add_user(user2);
                     std::vector<mss::User> users_in_chat = found_chat1.get_users();
@@ -89,20 +97,31 @@ TEST_CASE( "Test storage entities", "[somelabel]" )
                     REQUIRE(users_in_chat.size() == 2);
                 }
 
-                mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-                mss::Message message2(db, chat2.chat_id(), chat2.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
                 SECTION("Test messages")
                 {
-                    mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+                    mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                    mss::Message message2(db, chat2.chat_id(), chat2.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+
+                    SECTION("Select inserted messages")
+                    {
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+                        REQUIRE(message1.message_id() == found_message1.message_id());
+                        REQUIRE(message1.chat_id() == found_message1.chat_id());
+                        REQUIRE(message1.domain_id_chat() == found_message1.domain_id_chat());
+                        REQUIRE(message1.user_id() == found_message1.user_id());
+                        REQUIRE(message1.domain_id_user() == found_message1.domain_id_user());
+                    }
 
                     SECTION("Change status")
                     {
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
                         found_message1.set_status(mc::Message::Status::SEEN);
                         REQUIRE(found_message1.status() == mc::Message::Status::SEEN);
                     }
 
                     SECTION("Change text")
                     {
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
                         found_message1.set_text("((((((");
                         REQUIRE(found_message1.text() == "((((((");
                     }
