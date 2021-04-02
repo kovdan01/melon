@@ -114,7 +114,7 @@ public:
 
 private:
     std::string m_in_buf, m_out_buf;
-    std::string read_erase_buffered_string(std::size_t n)  // The func copies string read before the delimiter and erases that part of buffer
+    std::string read_erase_buffered_string(std::size_t n)  // The function copies string read before the delimiter and erases that part of buffer
     {
         std::string before_separator = std::move(m_in_buf);
         m_in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);

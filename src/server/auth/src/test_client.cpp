@@ -20,7 +20,7 @@ std::string get_client_response(const std::string& server_response, mca::SaslCli
 
 }
 
-std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)  // The func copies string read before the delimiter and erases that part of buffer
+std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)  // The function copies string read before the delimiter and erases that part of buffer
 {
     std::string before_separator = std::move(in_buf);
     in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
