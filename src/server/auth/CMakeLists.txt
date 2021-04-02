@@ -84,7 +84,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
-# melon-auth executable
+# compile test main only once to speed up compilation
+set(TESTS_MAIN_NAME tests-main)
+
+add_library(${TESTS_MAIN_NAME} OBJECT
+    src/test_main.cpp)
+
+target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
+target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
+
+# melon-auth-test executable
 
 add_executable(${TEST_CLIENT_NAME}
     ${HEADERS}
@@ -99,6 +108,7 @@ target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::sasl_wrappers)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Catch2::Catch2)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE ${TESTS_MAIN_NAME})
 
 ntc_target(${PROJECT_NAME})
 

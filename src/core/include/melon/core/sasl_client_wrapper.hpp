@@ -15,6 +15,8 @@
 namespace melon::core::auth
 {
 
+const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
+
 using sasl_res = int;
 
 class Credentials

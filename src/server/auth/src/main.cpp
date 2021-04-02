@@ -30,8 +30,6 @@ using tcp_stream = bb::basic_stream<ba::ip::tcp,
                                     socket_executor_t,
                                     bb::simple_rate_policy>;
 
-const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
-
 class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
     constexpr static std::size_t NUMBER_LIMIT = 1024,
@@ -62,10 +60,10 @@ public:
             stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
             stream_.expires_after(TIME_LIMIT);
-            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
+            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             if (ec)
             {
-                if (ec!=boost::asio::error::eof)
+                if (ec != boost::asio::error::eof)
                     throw boost::system::system_error{ec};
                 BOOST_LOG_SEV(log(), info) << "Connection closed";
                 return;
@@ -75,19 +73,19 @@ public:
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
+            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
 
             stream_.expires_after(TIME_LIMIT);
-            n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
+            n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             std::string client_response = read_buffered_string(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response) += "\n";
             stream_.expires_after(TIME_LIMIT);
             while (server_completness == mca::AuthCompletness::INCOMPLETE)
             {
-                async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
+                async_write(stream_, ba::buffer(m_out_buf), yc, 0);
                 stream_.expires_after(TIME_LIMIT);
-                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], /*nullptr*/ 0);
+                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
                 client_response = read_buffered_string(n);
                 mca::StepResult server_step_res = server.step(client_response);
                 server_response = server_step_res.response;
@@ -103,24 +101,25 @@ public:
 
                 stream_.expires_after(TIME_LIMIT);
             }
-            m_out_buf = TOKEN_CONFIRMATION_STRING + '\n';
+            m_out_buf = mca::TOKEN_CONFIRMATION_STRING + '\n';
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
+            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
             if (e)
                 std::rethrow_exception(e);
-        }/*, nullptr*/));
+        }));
     }
 
 private:
     std::string m_in_buf, m_out_buf;
     std::string read_buffered_string(std::size_t n)
     {
-        std::string x = m_in_buf.substr(0, n-1);
-        m_in_buf.erase(0, n);
-        return x;
+        std::string before_separator = std::move(m_in_buf);
+        m_in_buf = std::string(before_separator[n + 1], before_separator.size() - n);
+        before_separator.erase(n - 1,  before_separator.size() - 1);
+        return before_separator;
     }
 };
 
@@ -178,7 +177,7 @@ int main(int argc, char* argv[]) try
         ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
         ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), port};
-        ba::static_thread_pool tp{threads-1};
+        ba::static_thread_pool tp{threads - 1};
 
         for (unsigned i = 1; i < threads; ++i)
         {

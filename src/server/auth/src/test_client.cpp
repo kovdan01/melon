@@ -1,5 +1,3 @@
-#define CATCH_CONFIG_MAIN
-
 #include <sasl_server_wrapper.hpp>
 
 #include <boost/asio.hpp>
@@ -10,36 +8,28 @@
 
 using boost::asio::ip::tcp;
 
+namespace mca = melon::core::auth;
+
 constexpr std::size_t BUFFER_LIMIT = 3000;
-const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
 
-std::string get_cli_response(const std::string& serv_response, melon::core::auth::SaslClientConnection& conn, int counter)
+std::string get_client_response(const std::string& server_response, mca::SaslClientConnection& conn, int counter)
 {
-   std::string res;
-   if (counter == 0)
-   {
-       melon::core::auth::SaslClientConnection::StartResult step_res = conn.start(serv_response);
-       res = step_res.response;
-   }
-   else
-   {
-       melon::core::auth::StepResult step_res = conn.step(serv_response);
-       res = step_res.response;
-   }
+    if (counter == 0)
+        return std::string(conn.start(server_response).response);
+    return std::string(conn.step(server_response).response);
 
-   return res;
 }
 
 std::string read_buffered_string(std::size_t n, std::string& in_buf)
 {
-    std::string x = in_buf.substr(0, n - 1);
-    in_buf.erase(0, n);
-    return x;
+    std::string before_separator = std::move(in_buf);
+    in_buf = std::string(before_separator[n + 1], before_separator.size() - n);
+    before_separator.erase(n - 1,  before_separator.size() - 1);
+    return before_separator;
 }
 
 bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
-    namespace mca = melon::core::auth;
     mca::SaslClientConnection client("melon");
 
     boost::asio::io_service io_service;
@@ -54,22 +44,22 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     bool confirmation_recieved = false;
 
     std::string in_buf;
-    size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
+    std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
     read_buffered_string(n, in_buf);
 
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
-    n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
+    n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
     reply = read_buffered_string(n, in_buf);
     int counter = 0;
 
     for (;;)
     {
-        to_send = get_cli_response(reply, client, counter);
-        boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() +1));
-        size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT},'\n');
+        to_send = get_client_response(reply, client, counter);
+        boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
+        std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
         reply = read_buffered_string(n, in_buf);
-        if (reply == TOKEN_CONFIRMATION_STRING)
+        if (reply == mca::TOKEN_CONFIRMATION_STRING)
         {
             confirmation_recieved = true;
             break;
@@ -85,7 +75,6 @@ TEST_CASE("credential-based tests", "[creds]")
     const std::string ip = "localhost";
     const std::string port = "6666";
 
-    namespace mca = melon::core::auth;
     auto& client_singletone = mca::SaslClientSingleton::get_instance();
     std::string wanted_mech;
     bool confirmation_recieved;
