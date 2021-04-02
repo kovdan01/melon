@@ -30,7 +30,7 @@ std::shared_ptr<sqlpp::mysql::connection_config> config_db()
     config->host = "localhost";
     config->password = "melonpass";
 #ifndef NDEBUG
-    config->debug = true;
+    //config->debug = true;
 #else
     config->debug = false;
 #endif
@@ -305,6 +305,15 @@ void Chat::set_chatname(std::string chatname)
     m_db(update(G_CHATS).set(G_CHATS.chatname = chatname).where(G_CHATS.chatId == this->chat_id() &&
                                                                 G_CHATS.domainId == this->domain_id()));
     mc::Chat::set_chatname(std::move(chatname));
+}
+
+void Chat::add_user(User user)
+{
+    m_db(insert_into(G_CHATSUSERS).set(
+        G_CHATSUSERS.chatId = this->chat_id(),
+        G_CHATSUSERS.domainIdChat = this->domain_id(),
+        G_CHATSUSERS.userId = user.user_id(),
+        G_CHATSUSERS.domainIdUser = user.domain_id()));
 }
 
 

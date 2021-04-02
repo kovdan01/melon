@@ -25,6 +25,9 @@ pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET libmariadb)
 find_package(Sqlpp11 REQUIRED)
 find_package(Sqlpp11ConnectorMysql REQUIRED)
 
+# Catch2
+find_package(Catch2 REQUIRED)
+
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -41,13 +44,23 @@ add_custom_command(
     DEPENDS script/ddl2cpp.py
 )
 
+# compile main only once to speed up compilation
+set(TESTS_MAIN_NAME tests-main)
+
+add_library(${TESTS_MAIN_NAME} OBJECT
+    src/test_main.cpp)
+
+target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
+target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
+
 set(HEADERS
     include/storage.hpp
 )
 
 set(SOURCES
     src/storage.cpp
-    src/main.cpp
+    src/storage_tests.cpp
+    #src/main.cpp
 )
 
 add_executable(${PROJECT_NAME}
@@ -67,5 +80,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::connector-mysql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TESTS_MAIN_NAME})
+target_link_libraries(${PROJECT_NAME} PRIVATE Catch2::Catch2)
 
 ntc_target(${PROJECT_NAME})
+
