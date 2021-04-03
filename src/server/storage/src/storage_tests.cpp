@@ -21,7 +21,10 @@ bool operator == (const mss::Chat& lhs, const mss::Chat& rhs)
 
 bool operator == (const mss::Message& lhs, const mss::Message& rhs)
 {
-    return std::make_tuple(lhs.message_id(), lhs.chat_id(), lhs.domain_id_chat(), lhs.user_id(), lhs.domain_id_user()) == std::make_tuple(rhs.message_id(), rhs.chat_id(), rhs.domain_id_chat(), rhs.user_id(), rhs.domain_id_user());
+    return std::make_tuple(lhs.message_id(), lhs.chat_id(), lhs.domain_id_chat(),
+                           lhs.user_id(), lhs.domain_id_user(), lhs.text(), std::chrono::system_clock::to_time_t(lhs.timestamp()), lhs.status()) ==
+           std::make_tuple(rhs.message_id(), rhs.chat_id(), rhs.domain_id_chat(),
+                           rhs.user_id(), rhs.domain_id_user(), rhs.text(), std::chrono::system_clock::to_time_t(rhs.timestamp()), rhs.status());
 }
 
 template <class T>
@@ -176,5 +179,4 @@ TEST_CASE( "Test storage service", "[storage]" )
         db.execute(R"(ROLLBACK)");
         db.execute(R"(COMMIT)");
     }
-
 }
