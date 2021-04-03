@@ -45,17 +45,20 @@ TEST_CASE( "Test storage service", "[storage]" )
         mss::Domain domain1(db, "Paul server", false);
         mss::Domain domain2(db, "Blaze server", false);
 
-        REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain1.domain_id()));
-        mss::Domain found_domain1(db, domain1.hostname());
-        REQUIRE(domain1.domain_id() == found_domain1.domain_id());
-        REQUIRE(domain1.hostname() == found_domain1.hostname());
-        REQUIRE(domain1.external() == found_domain1.external());
+        SECTION("Select inserted domains")
+        {
+            REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain1.domain_id()));
+            mss::Domain found_domain1(db, domain1.hostname());
+            REQUIRE(domain1.domain_id() == found_domain1.domain_id());
+            REQUIRE(domain1.hostname() == found_domain1.hostname());
+            REQUIRE(domain1.external() == found_domain1.external());
 
-        REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain2.domain_id()));
-        mss::Domain found_domain2(db, domain2.hostname());
-        REQUIRE(domain2.domain_id() == found_domain2.domain_id());
-        REQUIRE(domain2.hostname() == found_domain2.hostname());
-        REQUIRE(domain2.external() == found_domain2.external());
+            REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain2.domain_id()));
+            mss::Domain found_domain2(db, domain2.hostname());
+            REQUIRE(domain2.domain_id() == found_domain2.domain_id());
+            REQUIRE(domain2.hostname() == found_domain2.hostname());
+            REQUIRE(domain2.external() == found_domain2.external());
+        }
 
         SECTION( "Test users")
         {
@@ -138,7 +141,9 @@ TEST_CASE( "Test storage service", "[storage]" )
                         REQUIRE(message1.user_id() == found_message1.user_id());
                         REQUIRE(message1.domain_id_user() == found_message1.domain_id_user());
                         REQUIRE(message1.text() == found_message1.text());
-                        //REQUIRE(message1.timestamp() == found_message1.timestamp());
+                        std::time_t time1 = std::chrono::system_clock::to_time_t(message1.timestamp());
+                        std::time_t time2 = std::chrono::system_clock::to_time_t(found_message1.timestamp());
+                        REQUIRE(time1 == time2);
                         REQUIRE(message1.status() == found_message1.status());
                     }
 
