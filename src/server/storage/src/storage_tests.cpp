@@ -28,7 +28,7 @@ bool operator == (const mss::Message& lhs, const mss::Message& rhs)
 }
 
 template <class T>
-bool find(std::vector<T> vec, T obj)
+bool find(const std::vector<T>& vec, const T& obj)
 {
     for (auto& a: vec)
     {
