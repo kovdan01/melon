@@ -307,7 +307,7 @@ void Chat::set_chatname(std::string chatname)
     mc::Chat::set_chatname(std::move(chatname));
 }
 
-void Chat::add_user(User user)
+void Chat::add_user(User& user)
 {
     m_db(insert_into(G_CHATSUSERS).set(
         G_CHATSUSERS.chatId = this->chat_id(),

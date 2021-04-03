@@ -92,7 +92,7 @@ public:
 
     void set_chatname(std::string chatname);
 
-    void add_user(User user);
+    void add_user(User& user);
 
 private:
     sqlpp::mysql::connection& m_db;
