@@ -60,11 +60,11 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
 
 - **Domain**
   - `domain_id`:
-    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
+    - *MariaDB type:* `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT `
     - *C++ type:* `std::uint64_t`
     - *aim:* unique and auto-incremented value to identify domain name on server locally
   - `hostname`:
-    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL` UNIQUE KEY 
+    - *MariaDB type:* `VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE KEY`
     - *C++ type:* `std::string`
     - *aim:* unique domain name
   - `external`:
@@ -73,6 +73,7 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
     - *aim:* flag to distinguish affiliation of domains
 
 - **User**
+  - `user_id` + `domain_id` - unique value to identify user globally
   - `user_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -110,7 +111,7 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
   - *aim*: matchs chats with participants (many-to-many relationship) 
 
 - **Message**
-  - `message_id` + `chat_id` + ``domain_id_chat` - unique value to identify message globally
+  - `message_id` + `chat_id` + `domain_id_chat` - unique value to identify message globally
   - `message_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
@@ -138,8 +139,8 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
   - `user_id`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* value to identify author of message on server `user_id` + `domain_id_user`
+    - *aim:* value to identify author of message `user_id` + `domain_id_user`
   - `domain_id_user`:
     - *MariaDB type:* `BIGINT UNSIGNED NOT NULL`
     - *C++ type:* `std::uint64_t`
-    - *aim:* value to identify author of message on server `user_id` + `domain_id_user`
+    - *aim:* value to identify author of message `user_id` + `domain_id_user`
