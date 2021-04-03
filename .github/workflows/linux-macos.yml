@@ -99,6 +99,7 @@ jobs:
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
         sudo apt install python3 python3-pip -y
+        sudo apt install libssl-dev
         sudo apt install libgdbm-dev -y  # for SASL DB utils
 
     - name: Create necessary symlinks (Linux)
@@ -295,7 +296,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-5
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-6
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -329,6 +330,8 @@ jobs:
         execute_command("tar -xf sasl.tar.gz")
 
         os.chdir(sasl_source_dir)
+
+        execute_command("patch -p1 < {}/build-config/patches/cyrus-sasl-2.1.27/gdbm_errno.patch".format(repo))
 
         execute_command("chmod +x ./configure")
         execute_command("./configure --with-dblib=gdbm --prefix={}".format(sasl_install_dir))
