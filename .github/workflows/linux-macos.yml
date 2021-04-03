@@ -649,14 +649,15 @@ jobs:
 
         ../src/server/auth/scripts/setupserver.sh
 
-        cd src/server/auth
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
+        ./src/server/auth/melon-auth 6666 &
         MELON_AUTH_PID=$!
-        cd ../../..
 
         ctest
 
         kill -2 $MELON_AUTH_PID
+
+        echo "TEST OUTPUT"
+        cat /home/runner/work/melon/melon/build/Testing/Temporary/LastTest.log
 
         PATH=$PATH_BEFORE
         cd ..
