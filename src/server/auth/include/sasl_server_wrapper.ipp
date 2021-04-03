@@ -7,9 +7,7 @@
 #include <string>
 #include <string_view>
 
-// debug headers
-#include <iostream>
-#include <cstdlib>
+
 namespace melon::server::auth
 {
 
@@ -40,7 +38,6 @@ inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mecha
 {
     const char* serverout;
     unsigned serverout_len;
-    std::cerr<< std::system("sasldblistusers2 -f ~/.melon/sasldb2") << std::endl;
     mca::sasl_res res = sasl_server_start(m_conn, chosen_mechanism.data(), client_initial_response.data(),
                                      static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
 

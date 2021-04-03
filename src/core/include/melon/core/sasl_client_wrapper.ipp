@@ -1,3 +1,5 @@
+#include <melon/core/exception.hpp>
+
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -44,8 +46,8 @@ inline void check_sasl_result(sasl_res res, std::string_view function_name)
 {
     if (res != SASL_OK && res != SASL_CONTINUE)
     {
-        throw std::runtime_error("Sasl " + std::string(function_name) + " exit code " +
-                                 std::to_string(res) + ": " + sasl_errstring(res, nullptr, nullptr));
+        throw melon::core::Exception("Sasl " + std::string(function_name) + " exit code " +
+                                     std::to_string(res) + ": " + sasl_errstring(res, nullptr, nullptr));
     }
 }
 

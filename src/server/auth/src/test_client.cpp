@@ -105,6 +105,6 @@ TEST_CASE("credential-based tests", "[creds]")
         }
         mca::Credentials credentials = { "Igor", "Shcherbakov" };
         client_singletone.set_credentials(&credentials);
-        REQUIRE_THROWS(confirmation_recieved = run_auth(ip, port, wanted_mech));
+        REQUIRE_THROWS_AS(confirmation_recieved = run_auth(ip, port, wanted_mech), melon::core::Exception);
     }
 }

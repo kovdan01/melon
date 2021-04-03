@@ -650,7 +650,7 @@ jobs:
         ../src/server/auth/scripts/setupserver.sh
 
         cd src/server/auth
-        sudo LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./melon-auth 6666 &
         MELON_AUTH_PID=$!
         cd ../../..
 
