@@ -20,7 +20,7 @@ QString create_connection_with_db()
 
     bool exists = QFile::exists(db_name);
 
-    if( !db.open())
+    if (!db.open())
         return qApp->translate("OpenDB", "Couldn't open database! %1");
 
     if (exists)
@@ -34,11 +34,34 @@ QString create_connection_with_db()
         return qApp->translate("CreateDB", "Couldn't create messages table!");
     }
 
+    if (!query.exec(QStringLiteral("CREATE TABLE [domains]"
+                                  "(domain_id INT NOT NULL,"
+                                  " hostname TEXT,"
+                                  " external INT,"
+                                  " PRIMARY KEY (domain_id))")))
+    {
+        std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
+        return qApp->translate("CreateDB", "Couldn't create domains table");
+    }
+
+    if (!query.exec(QStringLiteral("CREATE TABLE [users]"
+                                  "(user_id INT NOT NULL,"
+                                  " username TEXT,"
+                                  " status INT,"
+                                  " domain_id INT NOT NULL,"
+                                  " PRIMARY KEY (user_id, domain_id),"
+                                  " FOREIGN KEY (domain_id) REFERENCES domains(domain_id) ON DELETE CASCADE)")))
+    {
+        std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
+        return qApp->translate("CreateDB", "Couldn't create users table");
+    }
+
     if (!query.exec(QStringLiteral("CREATE TABLE [chats]"
-                                  "(chat_id int NOT NULL,"
+                                  "(chat_id INT NOT NULL,"
                                   " domain_id INT NOT NULL,"
                                   " name TEXT,"
-                                  " PRIMARY KEY (chat_id, domain_id))")))
+                                  " PRIMARY KEY (chat_id, domain_id),"
+                                  " FOREIGN KEY (domain_id) REFERENCES domains(domain_id) ON DELETE CASCADE)")))
     {
         std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
         return qApp->translate("CreateDB", "Couldn't create chats table");
@@ -47,16 +70,32 @@ QString create_connection_with_db()
     if (!query.exec(QStringLiteral("CREATE TABLE [messages]"
                                   "(message_id int NOT NULL,"
                                   " chat_id INT NOT NULL,"
-                                  " domain_id INT NOT NULL,"
+                                  " domain_id_chat INT NOT NULL,"
                                   " user_id INT,"
+                                  " domain_id_user INT,"
                                   " timestamp INT,"
                                   " text TEXT,"
                                   " status INT, "
-                                  " PRIMARY KEY (message_id, chat_id, domain_id),"
-                                  " FOREIGN KEY (chat_id, domain_id) REFERENCES chats(chat_id, domain_id) ON DELETE CASCADE)")))
+                                  " PRIMARY KEY (message_id, chat_id, domain_id_chat),"
+                                  " FOREIGN KEY (chat_id, domain_id_chat) REFERENCES chats(chat_id, domain_id) ON DELETE CASCADE,"
+                                  " FOREIGN KEY (user_id, domain_id_user) REFERENCES users(user_id, domain_id) ON DELETE CASCADE)")))
     {
         std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
         return qApp->translate("CreateDB", "Couldn't create messages table!");
+    }
+
+    if (!query.exec(QStringLiteral("INSERT INTO domains VALUES (1, 'melon', 0)")))
+    {
+        std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
+        return qApp->translate("CreateDB", "Couldn't insert into domains table!");
+    }
+
+    if (!query.exec(QStringLiteral("INSERT INTO users VALUES "
+                                   "(1, 'MelonUser', 0, 1),"
+                                   "(2, 'SomeSender', 0, 1)")))
+    {
+        std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
+        return qApp->translate("CreateDB", "Couldn't insert into users table!");
     }
 
     return {};

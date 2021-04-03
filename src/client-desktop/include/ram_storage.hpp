@@ -22,6 +22,50 @@ inline constexpr melon::core::id_t DOMAIN_ID = 1;
 namespace ram
 {
 
+class Domain : public melon::core::Domain
+{
+public:
+
+    // For Insert
+    Domain (QString hostname, bool external)
+        : melon::core::Domain(hostname.toStdString(), external)
+    {
+    }
+
+    // For Select
+    Domain (QString hostname)
+        : melon::core::Domain(hostname.toStdString())
+    {
+    }
+
+    [[nodiscard]] QString hostname() const noexcept
+    {
+        return QString::fromStdString(melon::core::Domain::hostname());
+    }
+};
+
+class User : public melon::core::User
+{
+public:
+
+    // For Insert
+    User (QString username, id_t domain_id, Status status)
+        : melon::core::User(username.toStdString(), domain_id, status)
+    {
+    }
+
+    // For Select
+    User (QString username, id_t domain_id)
+        : melon::core::User(username.toStdString(), domain_id)
+    {
+    }
+
+    [[nodiscard]] QString username() const noexcept
+    {
+        return QString::fromStdString(melon::core::User::username());
+    }
+};
+
 class Message : public melon::core::Message
 {
 public:
@@ -29,8 +73,8 @@ public:
 
     // For Insert
     Message(id_t chat_id, id_t domain_id_chat,
-               id_t user_id, id_t domain_id_user,
-               const QString& text, timestamp_t timestamp, Status status)
+            id_t user_id, id_t domain_id_user,
+            const QString& text, timestamp_t timestamp, Status status)
         : melon::core::Message(chat_id, domain_id_chat, user_id, domain_id_user, text.toStdString(), timestamp, status)
     {
         this->set_from();

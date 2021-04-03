@@ -11,6 +11,32 @@ namespace melon::client_desktop
 
 QString create_connection_with_db();
 
+class Domain : public ram::Domain
+{
+public:
+
+    // For Insert
+    Domain(QString hostname, bool external);
+
+    // For Select
+    Domain(QString hostname);
+
+    void remove_from_db();
+};
+
+class User : public ram::User
+{
+public:
+
+    // For Insert
+    User(QString username, id_t domain_id, Status status);
+
+    // For Select
+    User(QString username, id_t domain_id);
+
+    void remove_from_db();
+};
+
 class Message : public ram::Message
 {
 public:

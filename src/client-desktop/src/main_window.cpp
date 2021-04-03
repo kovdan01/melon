@@ -84,7 +84,7 @@ void MainWindow::load_data_from_database()
         Chat chat(chat_id, domain_id);
 
         QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") +QString::number(chat_id)
-                         + QStringLiteral(" and domain_id=") + QString::number(domain_id);
+                         + QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
         if (!qry_for_messages.exec(qry_str))
         {
             std::cout << "Error while loading messages: " << std::flush;
