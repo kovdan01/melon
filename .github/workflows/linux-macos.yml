@@ -646,6 +646,7 @@ jobs:
         cd build
         PATH_BEFORE=$PATH
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib
 
         ../src/server/auth/scripts/setupserver.sh
 
@@ -655,9 +656,6 @@ jobs:
         ctest
 
         kill -2 $MELON_AUTH_PID
-
-        echo "TEST OUTPUT"
-        cat /home/runner/work/melon/melon/build/Testing/Temporary/LastTest.log
 
         PATH=$PATH_BEFORE
         cd ..
