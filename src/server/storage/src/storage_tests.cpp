@@ -1,10 +1,39 @@
 #include <catch2/catch.hpp>
 
+#include <tuple>
+
 #include <storage.hpp>
 
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
+
+
+bool operator == (const mss::User& lhs, const mss::User& rhs)
+{
+    return std::make_tuple(lhs.user_id(), lhs.username(), lhs.domain_id(), lhs.status()) == std::make_tuple(rhs.user_id(), rhs.username(), rhs.domain_id(), rhs.status());
+}
+
+bool operator == (const mss::Chat& lhs, const mss::Chat& rhs)
+{
+    return std::make_tuple(lhs.chat_id(), lhs.domain_id(), lhs.chatname()) == std::make_tuple(rhs.chat_id(), rhs.domain_id(), rhs.chatname());
+}
+
+bool operator == (const mss::Message& lhs, const mss::Message& rhs)
+{
+    return std::make_tuple(lhs.message_id(), lhs.chat_id(), lhs.domain_id_chat(), lhs.user_id(), lhs.domain_id_user()) == std::make_tuple(rhs.message_id(), rhs.chat_id(), rhs.domain_id_chat(), rhs.user_id(), rhs.domain_id_user());
+}
+
+template <class T>
+bool find(std::vector<T> vec, T obj)
+{
+    for (auto& a: vec)
+    {
+        if (a == obj)
+            return true;
+    }
+    return false;
+}
 
 TEST_CASE( "Test storage service", "[storage]" )
 {
@@ -90,10 +119,8 @@ TEST_CASE( "Test storage service", "[storage]" )
                     found_chat1.add_user(user1);
                     found_chat1.add_user(user2);
                     std::vector<mss::User> users_in_chat = found_chat1.get_users();
-                    //std::vector<mss::User>::const_iterator it = std::find(users_in_chat.begin(), users_in_chat.end(), user1);
-                    //REQUIRE(it != users_in_chat.end());
-                    //it = std::find(users_in_chat.begin(), users_in_chat.end(), user2);
-                    //REQUIRE(it != users_in_chat.end());
+                    REQUIRE(find(users_in_chat, user1));
+                    REQUIRE(find(users_in_chat, user2));
                     REQUIRE(users_in_chat.size() == 2);
                 }
 
@@ -110,6 +137,9 @@ TEST_CASE( "Test storage service", "[storage]" )
                         REQUIRE(message1.domain_id_chat() == found_message1.domain_id_chat());
                         REQUIRE(message1.user_id() == found_message1.user_id());
                         REQUIRE(message1.domain_id_user() == found_message1.domain_id_user());
+                        REQUIRE(message1.text() == found_message1.text());
+                        //REQUIRE(message1.timestamp() == found_message1.timestamp());
+                        REQUIRE(message1.status() == found_message1.status());
                     }
 
                     SECTION("Change status")
@@ -132,8 +162,8 @@ TEST_CASE( "Test storage service", "[storage]" )
                         mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
                         mss::Message message2(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(), "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
                         std::vector<mss::Message> messages_in_chat = found_chat1.get_messages();
-                        // I need smth like this maybe
-                        //REQUIRE_THAT(messages_in_chat, Catch::Matchers::Equals(std::vector<mss::Message>{message1, message2}));
+                        REQUIRE(find(messages_in_chat, message1));
+                        REQUIRE(find(messages_in_chat, message2));
                     }
                 }
             }
