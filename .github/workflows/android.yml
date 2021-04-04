@@ -28,10 +28,14 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: DEBUG PRINTS
-      run:
+      run: |
+        echo $ANDROID_NDK_HOME
         ls -al $ANDROID_NDK_HOME
+        echo $ANDROID_NDK_LATEST_HOME
         ls -al $ANDROID_NDK_LATEST_HOME
+        echo $ANDROID_NDK_ROOT
         ls -al $ANDROID_NDK_ROOT
+        echo $ANDROID_NDK_ROOT/toolchains
         ls -al $ANDROID_NDK_ROOT/toolchains
 
     - name: Build
