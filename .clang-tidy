@@ -37,6 +37,7 @@ Checks: >
   -llvm-header-guard,
   -llvm-include-order,
   misc-*,
+  -misc-no-recursion,
   modernize-*,
   -modernize-use-trailing-return-type,
   performance-*,

@@ -24,7 +24,8 @@ function(ntc_target TARGET_NAME)
     endif()
 
     get_target_property(project_type ${TARGET_NAME} TYPE)
-    get_filename_component(generated_header_path "${args_HEADER_PREFIX}" DIRECTORY)
+    #get_filename_component(generated_header_path "${args_HEADER_PREFIX}" DIRECTORY)
+    set(generated_header_path ${args_HEADER_PREFIX})
 
     if(project_type STREQUAL OBJECT_LIBRARY)
         message(FATAL_ERROR "ntc_setup doesn't support object libraries")
