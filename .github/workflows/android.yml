@@ -79,10 +79,18 @@ jobs:
       with:
         name: ${{ env.CORE_ARM_RELEASE_ARTIFACT }}
 
+    - name: Install NDK 22.0.7026061
+      run: |
+        sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;22.0.7026061"
+        echo /usr/local/lib/android/sdk/ndk
+        ls -al /usr/local/lib/android/sdk/ndk
+        echo "\n\n\n"
+        ls -al /usr/local/lib/android/sdk
+
     - name: Copy core library to NDK toolchains
       run: |
         tar -xvf install.tar
-        sudo cp -r install/* `realpath $ANDROID_NDK_LATEST_HOME`/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
+        sudo cp -r install/* /usr/local/lib/android/sdk/ndk/22.0.7026061/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2
