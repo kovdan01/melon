@@ -60,7 +60,7 @@ jobs:
     - name: Copy core library to NDK toolchains
       run: |
         tar -xvf install.tar
-        sudo cp -r install/* $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
+        sudo cp -r install/* $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2
