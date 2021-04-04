@@ -34,10 +34,9 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
                 ?.let(viewModel::onChatRenamed)
         }
 
-        //TODO: remade it maybe with shared view model
+        //TODO: remade it maybe with shared view model or sth
         setFragmentResultListener(ChatContentFragment.REQUEST_KEY_CHAT_UPDATE) { requestKey, bundle ->
             viewModel.onUpdateChatInfo(
-                bundle.getInt(ChatContentFragment.BUNDLE_KEY_CHAT_ID),
                 bundle.getParcelable(ChatContentFragment.BUNDLE_KEY_MESSAGE_UI)!!
             )
         }
@@ -117,6 +116,8 @@ class ChatsListFragment : BaseFragment(R.layout.fragment_chats_list) {
                 true
             }
         }
+
+        viewModel.onViewCreated()
     }
 
     sealed class ChatEditAction(val index: Int) {

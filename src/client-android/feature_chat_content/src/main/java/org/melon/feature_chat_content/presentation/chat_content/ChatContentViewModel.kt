@@ -3,115 +3,115 @@ package org.melon.feature_chat_content.presentation.chat_content
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.*
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.melon.feature_chat_content.domain.chat_content.ChatContentUseCase
 import javax.inject.Inject
-import kotlin.random.Random
 
-class ChatContentViewModel @Inject constructor() : ViewModel() {
-    private var messageToBeSend: String? = null
+@HiltViewModel
+class ChatContentViewModel @Inject constructor(
+        private val chatContentUseCase: ChatContentUseCase,
+        private val chatContentUiTransformer: ChatContentUiTransformer
+) : ViewModel() {
 
-    private val messagesList: MutableList<MessageUi> = mutableListOf()
-    private val selectedMessagesList: MutableList<MessageUi> = mutableListOf()
+    private var chatId: Int? = null
+
+    private var messagesList: MutableList<MessageUi> = mutableListOf()
     private var messageToEdit: MessageUi? = null
 
     private val _liveMessagesList: MutableLiveData<List<MessageUi>> = MutableLiveData()
     val liveMessagesList: LiveData<List<MessageUi>>
         get() = _liveMessagesList
 
-    private val _liveActionMode: MutableLiveData<List<MessageUi?>> = MutableLiveData()
-    val liveActionMode: LiveData<List<MessageUi?>>
+    private val _liveActionMode: MutableLiveData<Boolean> = MutableLiveData()
+    val liveActionMode: LiveData<Boolean>
         get() = _liveActionMode
 
     private val _liveMessageToEdit: MutableLiveData<MessageUi?> = MutableLiveData()
     val liveMessageToEdit: LiveData<MessageUi?>
         get() = _liveMessageToEdit
 
-    fun onViewCreated() {
+    private val _liveChatDraft: MutableLiveData<String?> = MutableLiveData()
+    val liveChatDraft: LiveData<String?>
+        get() = _liveChatDraft
 
+    fun onViewCreated(chatId: Int) {
+        this.chatId = chatId
+        viewModelScope.launch {
+            chatContentUseCase.getMessage(chatId).collect {
+                messagesList = it.map(chatContentUiTransformer::transform).toMutableList()
+                _liveMessagesList.value = messagesList
+            }
+
+            _liveChatDraft.value = chatContentUseCase.getChatDraft(chatId)
+        }
     }
 
-    fun onMessageChanged(messageText: String?) {
-        this.messageToBeSend = messageText
+    fun onSendClick(messageText: String?) {
+        if (messageText.isNullOrBlank().not()) {
+            viewModelScope.launch {
+                if (messageToEdit != null) {
+
+                    chatContentUseCase.editMessage(
+                            chatContentUiTransformer.transform(
+                                    messageToEdit!!.copy(
+                                            messageText = messageText!!
+                                    )
+                            )
+                    )
+
+                    _liveMessageToEdit.value = null
+                } else {
+                    chatContentUseCase.sendMessage(messageText!!, chatId!!)
+                }
+            }
+        }
+    }
+
+    fun onDraftMessageChanged(messageText: String?) {
+        viewModelScope.launch {
+            chatContentUseCase.saveChatDraft(chatId!!, messageText)
+        }
     }
 
     fun onMessageClick(message: MessageUi) {
-        if (selectedMessagesList.isEmpty().not()) {
-            selectedMessagesList.addOrRemoveMessageSelection(message)
+        if (messagesList.any { it.isSelected }) {
             messagesList.toggleMessageSelection(message)
 
-            _liveActionMode.value = selectedMessagesList
             _liveMessagesList.value = messagesList
         }
     }
 
     fun onMessageLongClick(message: MessageUi) {
-        selectedMessagesList.add(message)
         messagesList.toggleMessageSelection(message)
 
-        _liveActionMode.value = selectedMessagesList
         _liveMessagesList.value = messagesList
     }
 
     fun onActionModeDestroy() {
-        if (selectedMessagesList.isEmpty().not()) {
-            selectedMessagesList.clear()
+        if (messagesList.any { it.isSelected }) {
             messagesList.deselectAll()
-
-            _liveActionMode.value = selectedMessagesList
             _liveMessagesList.value = messagesList
         }
     }
 
     fun onActionDeleteClick() {
-        selectedMessagesList.forEach { selectedMessage ->
-            messagesList.removeAll { it.messageId == selectedMessage.messageId }
+        viewModelScope.launch {
+            chatContentUseCase.deleteMessages(
+                    messagesList
+                            .filter { it.isSelected }
+                            .map(chatContentUiTransformer::transform)
+            )
         }
-        selectedMessagesList.clear()
-
-        _liveActionMode.value = selectedMessagesList
-        _liveMessagesList.value = messagesList
     }
 
     fun onActionEditClick() {
-        messageToEdit = selectedMessagesList.first()
-
-        selectedMessagesList.clear()
+        messageToEdit = messagesList.first { it.isSelected }
         messagesList.deselectAll()
 
-        _liveActionMode.value = selectedMessagesList
         _liveMessagesList.value = messagesList
         _liveMessageToEdit.value = messageToEdit
-    }
-
-    fun onSendClick() {
-        if (messageToBeSend.isNullOrEmpty().not()) {
-            if (messageToEdit == null) {
-                messagesList.add(
-                    MessageUi(
-                        messageId = messagesList.getAvailableMessageId(),
-                        messageText = messageToBeSend!!,
-                        messageDate = Date(),
-                        isUserMessage = true,
-                        isRead = true
-                    )
-                )
-            } else {
-                messagesList[messagesList.indexOf(messageToEdit)] = messageToEdit!!.copy(messageText = messageToBeSend!!)
-                messageToEdit = null
-                _liveMessageToEdit.value = null
-            }
-        } else {
-            messagesList.add(
-                MessageUi(
-                    messageId = messagesList.getAvailableMessageId(),
-                    messageText = "Stub",
-                    messageDate = Date(),
-                    isUserMessage = Random.nextBoolean(),
-                    isRead = true
-                )
-            )
-        }
-
-        _liveMessagesList.value = messagesList
     }
 }
