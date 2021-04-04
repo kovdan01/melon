@@ -107,7 +107,10 @@ void ChatWidget::send_message()
     }
 
 
-    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, MY_USER_ID, DOMAIN_ID,
+    auto& storage = UserDomainSingletone::get_instance();
+
+    Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
+                        storage.me().user_id(), storage.my_domain().domain_id(),
                         message_text,
                         std::chrono::system_clock::now(),
                         Message::Status::SENT);
@@ -123,7 +126,9 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    Message new_message(m_current_chat_it->chat_id(), DOMAIN_ID, ANOTHER_USER_ID, DOMAIN_ID,
+    auto& storage = UserDomainSingletone::get_instance();
+    Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
+                        storage.another_user().user_id(), storage.another_user().domain_id(),
                         QStringLiteral("I wish I could hear you."),
                         std::chrono::system_clock::now(),
                         Message::Status::RECEIVED);

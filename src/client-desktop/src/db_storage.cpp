@@ -9,9 +9,140 @@ namespace mc = melon::core;
 
 /* Helpers */
 
-melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id);
-melon::core::id_t max_chat_id(melon::core::id_t domain_id);
+melon::core::id_t max_domain_id();
+melon::core::id_t max_user_id(id_t domain_id);
+melon::core::id_t max_message_id(id_t chat_id, id_t domain_id);
+melon::core::id_t max_chat_id(id_t domain_id);
 
+/* Domain */
+
+// For Insert
+Domain::Domain(QString hostname, bool external)
+    :ram::Domain(hostname, external)
+{
+    this->set_domain_id(max_domain_id() + 1);
+
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    if (!qry.prepare(QStringLiteral("INSERT INTO domains VALUES(:domain_id, :hostname)")))
+    {
+        std::cout << "Fail preparing inserting domains!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
+    qry.bindValue(QStringLiteral(":hostname"), this->hostname());
+
+    if (!qry.exec())
+    {
+        std::cout << "Fail inserting domain!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+}
+
+// For Select
+Domain::Domain(QString hostname)
+    :ram::Domain(hostname)
+{
+    std::cerr << "In the Domain constructor!" << std::endl;
+
+    auto& storage = DBSingletone::get_instance();
+    QSqlQuery qry(storage.db_name());
+
+    QString qry_string = QStringLiteral("SELECT domain_id, external FROM domains WHERE hostname='") + this->hostname() + QStringLiteral("'");
+    if (!qry.exec(qry_string))
+    {
+        std::cout << "Fail loading domain!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    else
+    {
+        qry.next();
+        this->set_domain_id(qry.value(0).value<id_t>());
+        this->set_external(qry.value(1).value<bool>());
+    }
+    std::cerr << "In the end of Domain constructor!" << std::endl;
+}
+
+void Domain::remove_from_db()
+{
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    QString query_string = QStringLiteral("DELETE FROM domains WHERE domain_id=") + QString::number(this->domain_id());
+
+    if (!qry.exec(query_string))
+    {
+        std::cout << "Fail deleting domain!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+}
+
+
+/* User */
+
+// For Insert
+User::User(QString username, id_t domain_id, Status status)
+    :ram::User(username, domain_id, status)
+{
+    this->set_user_id(max_user_id(this->domain_id()) + 1);
+
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    if (!qry.prepare(QStringLiteral("INSERT INTO users VALUES(:username, :domain_id, :status)")))
+    {
+        std::cout << "Fail preparing inserting users!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    qry.bindValue(QStringLiteral(":username"), this->username());
+    qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
+    qry.bindValue(QStringLiteral(":status"), static_cast<int>(this->status()));
+
+    if (!qry.exec())
+    {
+        std::cout << "Fail inserting user!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+}
+
+// For Select
+User::User(QString username, id_t domain_id)
+    :ram::User(username, domain_id)
+{
+    std::cerr << "In the User constructor!" << std::endl;
+    auto& storage = DBSingletone::get_instance();
+    QSqlQuery qry(storage.db_name());
+
+    QString qry_string = QStringLiteral("SELECT user_id, status FROM users WHERE username='") + this->username() +
+                         QStringLiteral("' and domain_id=") + QString::number(this->domain_id());
+    if (!qry.exec(qry_string))
+    {
+        std::cout << "Fail loading user" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    else
+    {
+        qry.next();
+        this->set_user_id(qry.value(0).value<id_t>());
+        this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
+    }
+}
+
+void User::remove_from_db()
+{
+    auto& storage = DBSingletone::get_instance();
+    QSqlQuery qry(storage.db_name());
+
+    QString query_string = QStringLiteral("DELETE FROM users WHERE user_id=") + QString::number(this->user_id()) +
+                           QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
+
+    if (!qry.exec(query_string))
+    {
+        std::cout << "Fail deleting user!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+}
 
 /* Message */
 
@@ -23,7 +154,7 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
 {
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
 
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     if (!qry.prepare(QStringLiteral("INSERT INTO messages"
@@ -58,14 +189,15 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     {
         std::cout << "Fail inserting message!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    }    
+    this->set_from();
 }
 
 //For Select
 Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     : ram::Message(message_id, chat_id, domain_id_chat)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT user_id, domain_id_user, timestamp, text, status FROM messages"
@@ -98,7 +230,7 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
 
 void Message::set_text(const QString& text)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE messages SET text='") + text +
@@ -113,9 +245,18 @@ void Message::set_text(const QString& text)
     mc::Message::set_text(text.toStdString());
 }
 
+void Message::set_from()
+{
+    auto& storage = UserDomainSingletone::get_instance();
+    if (this->user_id() == storage.me().user_id())
+        m_from = QObject::tr("Me");
+    else
+        m_from = storage.another_user().username();
+}
+
 void Message::remove_from_db()
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
@@ -139,7 +280,7 @@ Chat::Chat(id_t domain_id, const QString& name)
 {
     this->set_chat_id(max_chat_id(this->domain_id()) + 1);
 
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     if (!qry.prepare(QStringLiteral("INSERT INTO chats VALUES(:chat_id, :domain_id, :name)")))
@@ -162,7 +303,7 @@ Chat::Chat(id_t domain_id, const QString& name)
 Chat::Chat(id_t chat_id, id_t domain_id)
     : ram::Chat(chat_id, domain_id)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
@@ -181,7 +322,7 @@ Chat::Chat(id_t chat_id, id_t domain_id)
 
 void Chat::remove_from_db()
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString query_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
@@ -192,20 +333,11 @@ void Chat::remove_from_db()
         std::cout << "Fail deleting chat!" << std::endl;
         std::cout << qry.lastError().text().toStdString() << std::endl;
     }
-
-    // Deleting messages, because cascade deleting seems not working
-    query_string = QStringLiteral("DELETE FROM messages WHERE chat_id=") + QString::number(this->chat_id()) +
-                   QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
-    if (!qry.exec(query_string))
-    {
-        std::cout << "Fail deleting messages on cascade chat!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
 }
 
 void Chat::set_chatname(const QString& chatname)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname +
@@ -223,9 +355,55 @@ void Chat::set_chatname(const QString& chatname)
 
 /* Helpers */
 
+melon::core::id_t max_domain_id()
+{
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    QString qry_string = QStringLiteral("SELECT MAX(domain_id) FROM domains");
+    if (!qry.exec(qry_string))
+    {
+        std::cout << "Fail selecting domain_id!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    qry.next();
+    QVariant chat_id_qvar = qry.value(0);
+    if (!chat_id_qvar.isValid())
+    {
+        std::cout << "domain_id is null!" << std::endl;
+        return 0;
+    }
+    auto chat_id = chat_id_qvar.value<id_t>();
+
+    return chat_id;
+}
+
+melon::core::id_t max_user_id(id_t domain_id)
+{
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    QString qry_string = QStringLiteral("SELECT MAX(user_id) FROM users WHERE domain_id=") + QString::number(domain_id);
+    if (!qry.exec(qry_string))
+    {
+        std::cout << "Fail selecting user_id!" << std::endl;
+        std::cout << qry.lastError().text().toStdString() << std::endl;
+    }
+    qry.next();
+    QVariant chat_id_qvar = qry.value(0);
+    if (!chat_id_qvar.isValid())
+    {
+        std::cout << "user_id is null!" << std::endl;
+        return 0;
+    }
+    auto chat_id = chat_id_qvar.value<id_t>();
+
+    return chat_id;
+}
+
 melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id) +
@@ -249,7 +427,7 @@ melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t do
 
 melon::core::id_t max_chat_id(melon::core::id_t domain_id)
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(chat_id) FROM chats WHERE domain_id=") + QString::number(domain_id);

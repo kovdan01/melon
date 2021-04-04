@@ -66,7 +66,7 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QString db_name = storage.db_name();
     QSqlQuery qry_for_chats(db_name);
@@ -127,7 +127,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 
-    auto& storage = StorageSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     qry.exec(QStringLiteral("SELECT COUNT(chat_id) from chats"));
@@ -178,7 +178,8 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        Chat chat(DOMAIN_ID, name);
+        auto& storage = UserDomainSingletone::get_instance();
+        Chat chat(storage.my_domain().domain_id(), name);
         m_model_chat_list->add_chat(chat);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
         QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);

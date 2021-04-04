@@ -13,8 +13,9 @@ QString create_connection_with_db()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
 
-    auto& storage = StorageSingletone::get_instance();
-    QString db_name = storage.db_name();
+//    auto& storage = StorageSingletone::get_instance();
+//    QString db_name = storage.db_name();
+    QString db_name = QStringLiteral("test_db");
 
     db.setDatabaseName(db_name);
 
@@ -23,16 +24,17 @@ QString create_connection_with_db()
     if (!db.open())
         return qApp->translate("OpenDB", "Couldn't open database! %1");
 
-    if (exists)
-        return {};
-
     QSqlQuery query(db);
 
-    if (!query.exec(QStringLiteral("PRAGMA foreign_keys = ON")))
+    if (!query.exec(QStringLiteral("PRAGMA foreign_keys=ON")))
     {
         std::cout << "Error: " << query.lastError().text().toStdString() << std::endl;
         return qApp->translate("CreateDB", "Couldn't create messages table!");
     }
+
+    if (exists)
+        return {};
+
 
     if (!query.exec(QStringLiteral("CREATE TABLE [domains]"
                                   "(domain_id INT NOT NULL,"

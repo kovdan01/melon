@@ -6,6 +6,8 @@
 #include <QtSql/QtSql>
 #include <QtWidgets>
 
+#include <iostream>
+
 namespace melon::client_desktop
 {
 
@@ -54,6 +56,11 @@ public:
         this->set_text(text);
     }
 
+    [[nodiscard]] const QString& from() const noexcept
+    {
+        return m_from;
+    }
+
     // for QVariant
     Message() = default;
 
@@ -61,7 +68,10 @@ public:
 
     void set_text(const QString& text);
 
+    void set_from();
+
 private:
+    QString m_from;
     void set_text(std::string text);  // hide base class function
 };
 
@@ -171,17 +181,78 @@ public:
         return m_chats;
     }
 
+private:
+    std::list<Chat> m_chats;
+
+    StorageSingletone() = default;
+    ~StorageSingletone() = default;
+};
+
+class UserDomainSingletone
+{
+public:
+
+    [[nodiscard]] static UserDomainSingletone& get_instance()
+    {
+        static UserDomainSingletone instance;
+        return instance;
+    }
+
+    UserDomainSingletone(const UserDomainSingletone&) = delete;
+    UserDomainSingletone& operator=(const UserDomainSingletone&) = delete;
+    UserDomainSingletone(UserDomainSingletone&&) = delete;
+    UserDomainSingletone& operator=(UserDomainSingletone&&) = delete;
+
+    [[nodiscard]] User me()
+    {
+        return m_me;
+    }
+
+    [[nodiscard]] User another_user()
+    {
+        return m_another_user;
+    }
+
+    [[nodiscard]] Domain my_domain()
+    {
+        return m_my_domain;
+    }
+
+private:
+
+    User m_me{QStringLiteral("MelonUser"), 1};
+    User m_another_user{QStringLiteral("SomeSender"), 1};
+    Domain m_my_domain{QStringLiteral("melon")};
+
+    UserDomainSingletone() = default;
+    ~UserDomainSingletone() = default;
+};
+
+class DBSingletone
+{
+public:
+
+    [[nodiscard]] static DBSingletone& get_instance()
+    {
+        static DBSingletone instance;
+        return instance;
+    }
+
+    DBSingletone(const DBSingletone&) = delete;
+    DBSingletone& operator=(const DBSingletone&) = delete;
+    DBSingletone(DBSingletone&&) = delete;
+    DBSingletone& operator=(DBSingletone&&) = delete;
+
     [[nodiscard]] QString db_name()
     {
         return m_db_name;
     }
 
 private:
-    std::list<Chat> m_chats;
     QString m_db_name = QStringLiteral("test_db");
 
-    StorageSingletone() = default;
-    ~StorageSingletone() = default;
+    DBSingletone() = default;
+    ~DBSingletone() = default;
 };
 
 }  // namespace melon::client_desktop
@@ -189,6 +260,5 @@ private:
 Q_DECLARE_METATYPE(melon::client_desktop::StorageSingletone::chat_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Message)
-//Q_DECLARE_METATYPE(meloid_t)
 
 #endif // MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_

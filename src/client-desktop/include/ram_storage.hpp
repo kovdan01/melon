@@ -15,9 +15,9 @@ namespace melon::client_desktop
 {
 
 using id_t = melon::core::id_t;
-inline constexpr melon::core::id_t MY_USER_ID = 1;
-inline constexpr melon::core::id_t ANOTHER_USER_ID = 2;
-inline constexpr melon::core::id_t DOMAIN_ID = 1;
+//inline constexpr melon::core::id_t MY_USER_ID = 1;
+//inline constexpr melon::core::id_t ANOTHER_USER_ID = 2;
+//inline constexpr melon::core::id_t DOMAIN_ID = 1;
 
 namespace ram
 {
@@ -27,13 +27,13 @@ class Domain : public melon::core::Domain
 public:
 
     // For Insert
-    Domain (QString hostname, bool external)
+    Domain (const QString& hostname, bool external)
         : melon::core::Domain(hostname.toStdString(), external)
     {
     }
 
     // For Select
-    Domain (QString hostname)
+    Domain (const QString& hostname)
         : melon::core::Domain(hostname.toStdString())
     {
     }
@@ -49,13 +49,13 @@ class User : public melon::core::User
 public:
 
     // For Insert
-    User (QString username, id_t domain_id, Status status)
+    User (const QString& username, id_t domain_id, Status status)
         : melon::core::User(username.toStdString(), domain_id, status)
     {
     }
 
     // For Select
-    User (QString username, id_t domain_id)
+    User (const QString& username, id_t domain_id)
         : melon::core::User(username.toStdString(), domain_id)
     {
     }
@@ -77,7 +77,6 @@ public:
             const QString& text, timestamp_t timestamp, Status status)
         : melon::core::Message(chat_id, domain_id_chat, user_id, domain_id_user, text.toStdString(), timestamp, status)
     {
-        this->set_from();
     }
 
     // For Select
@@ -88,11 +87,6 @@ public:
 
     // for QVariant
     Message() = default;
-
-    [[nodiscard]] const QString& from() const noexcept
-    {
-        return m_from;
-    }
 
     [[nodiscard]] QString text() const noexcept
     {
@@ -114,17 +108,7 @@ public:
         m_is_edit = is_edit;
     }
 
-protected:
-    void set_from()
-    {
-        if (this->user_id() == MY_USER_ID)
-            m_from = QStringLiteral("Me");
-        else
-            m_from = QStringLiteral("Some Sender");
-    }
-
 private:
-    QString m_from;
     bool m_is_edit = false;
 };
 

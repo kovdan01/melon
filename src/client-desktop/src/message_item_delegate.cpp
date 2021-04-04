@@ -81,7 +81,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         painter->setPen(m_pen_for_background);
 
         QColor icon_color;
-        if (message->user_id() == MY_USER_ID)
+        if (message->from() == tr("Me"))
             icon_color = Qt::darkCyan;
         else
             icon_color = Qt::darkGreen;

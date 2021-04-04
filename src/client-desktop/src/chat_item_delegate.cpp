@@ -202,7 +202,7 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     // Sender rect and render
     QString sender(last_message->from());
-    if (sender == QStringLiteral("Me"))
+    if (sender == tr("Me"))
         sender = tr("You");
     sender += QStringLiteral(": ");
 
