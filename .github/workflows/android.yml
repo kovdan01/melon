@@ -91,7 +91,7 @@ jobs:
       shell: sh {0}
       run: |
         cd src/client-android
-        ANDROID_NDK_HOME=`realpath $ANDROID_NDK_LATEST_HOME` ./gradlew --no-daemon --parallel --build-cache :app:packageDebugUniversalApk
+        ./gradlew --no-daemon --parallel --build-cache :app:packageDebugUniversalApk
 
     - name: Upload app universal apk
       uses: actions/upload-artifact@v2
