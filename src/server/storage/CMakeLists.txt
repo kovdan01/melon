@@ -25,7 +25,7 @@ pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET libmariadb)
 find_package(Sqlpp11 REQUIRED)
 find_package(Sqlpp11ConnectorMysql REQUIRED)
 
-# Catch2
+# catch2
 find_package(Catch2 REQUIRED)
 
 # thread support
@@ -72,15 +72,9 @@ ntc_target(storage-wrappers
     ALIAS_NAME melon::storage_wrappers
 )
 
-##set(HEADERS
-##    include/storage.hpp
-##)
-
 set(HEADERS)
 
 set(SOURCES
-#    src/storage.cpp
-#    src/storage_tests.cpp
     src/main.cpp
 )
 
@@ -114,15 +108,15 @@ target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
 
 set(TEST_STORAGE_NAME melon-storage-tests)
 
-set(HEADERS)
+set(TEST_HEADERS)
 
-set(SOURCES
+set(TEST_SOURCES
     src/storage_tests.cpp
 )
 
 add_executable(${TEST_STORAGE_NAME}
-    ${HEADERS}
-    ${SOURCES}
+    ${TEST_HEADERS}
+    ${TEST_SOURCES}
 )
 
 target_link_libraries(${TEST_STORAGE_NAME} PRIVATE melon::storage_wrappers)
