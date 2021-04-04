@@ -27,6 +27,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: DEBUG PRINTS
+      run:
+        ls -al $ANDROID_NDK_HOME
+        ls -al $ANDROID_NDK_LATEST_HOME
+        ls -al $ANDROID_NDK_ROOT
+        ls -al $ANDROID_NDK_ROOT/toolchains
+
     - name: Build
       run: |
         docker build -f build-config/android/Dockerfile . -t build-android
