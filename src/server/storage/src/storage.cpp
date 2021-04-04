@@ -9,7 +9,6 @@
 
 #include <vector>
 
-
 namespace melon::server::storage
 {
 

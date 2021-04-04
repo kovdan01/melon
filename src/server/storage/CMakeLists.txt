@@ -44,23 +44,44 @@ add_custom_command(
     DEPENDS script/ddl2cpp.py
 )
 
-# compile main only once to speed up compilation
-set(TESTS_MAIN_NAME tests-main)
-
-add_library(${TESTS_MAIN_NAME} OBJECT
-    src/test_main.cpp)
-
-target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
-
-set(HEADERS
+# melon storage wrappers
+set(LIB_HEADERS
     include/storage.hpp
 )
 
-set(SOURCES
+set(LIB_SOURCES
     src/storage.cpp
-    src/storage_tests.cpp
-    #src/main.cpp
+)
+
+add_library(storage-wrappers STATIC
+    ${LIB_HEADERS}
+    ${LIB_SOURCES}
+)
+
+target_include_directories(storage-wrappers PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/autogen)
+target_sources(storage-wrappers PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
+
+target_compile_features(storage-wrappers PUBLIC cxx_std_20)
+
+target_link_libraries(storage-wrappers PUBLIC melon::core)
+target_link_libraries(storage-wrappers PUBLIC PkgConfig::mariadb)
+target_link_libraries(storage-wrappers PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(storage-wrappers PUBLIC sqlpp11::connector-mysql)
+
+ntc_target(storage-wrappers
+    ALIAS_NAME melon::storage_wrappers
+)
+
+##set(HEADERS
+##    include/storage.hpp
+##)
+
+set(HEADERS)
+
+set(SOURCES
+#    src/storage.cpp
+#    src/storage_tests.cpp
+    src/main.cpp
 )
 
 add_executable(${PROJECT_NAME}
@@ -80,8 +101,33 @@ target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::connector-mysql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${TESTS_MAIN_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE Catch2::Catch2)
+target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_wrappers)
+
+# compile main only once to speed up compilation
+set(TESTS_MAIN_NAME tests-main)
+
+add_library(${TESTS_MAIN_NAME} OBJECT
+    src/test_main.cpp)
+
+target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
+target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
+
+set(TEST_STORAGE_NAME melon-storage-tests)
+
+set(HEADERS)
+
+set(SOURCES
+    src/storage_tests.cpp
+)
+
+add_executable(${TEST_STORAGE_NAME}
+    ${HEADERS}
+    ${SOURCES}
+)
+
+target_link_libraries(${TEST_STORAGE_NAME} PRIVATE melon::storage_wrappers)
+target_link_libraries(${TEST_STORAGE_NAME} PRIVATE ${TESTS_MAIN_NAME})
+target_link_libraries(${TEST_STORAGE_NAME} PRIVATE Catch2::Catch2)
 
 ntc_target(${PROJECT_NAME})
 
