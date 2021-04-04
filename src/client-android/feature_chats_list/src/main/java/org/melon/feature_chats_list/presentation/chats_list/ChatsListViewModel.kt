@@ -3,19 +3,22 @@ package org.melon.feature_chats_list.presentation.chats_list
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.melon.feature_chat_content.presentation.chat_content.ChatContentUiTransformer
 import org.melon.feature_chat_content.presentation.chat_content.MessageUi
 import org.melon.feature_chats_list.domain.ChatsListUseCase
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
 class ChatsListViewModel @Inject constructor(
-    private val chatsListUseCase: ChatsListUseCase
+    private val chatsListUseCase: ChatsListUseCase,
+    private val chatsListUiTransformer: ChatsListUiTransformer,
+    private val chatContentUiTransformer: ChatContentUiTransformer
 ) : ViewModel() {
-
-    private val chatsList: MutableList<ChatUi> = mutableListOf()
 
     private val _chatsLiveData: MutableLiveData<List<ChatUi>> = MutableLiveData()
     val chatsLiveData: LiveData<List<ChatUi>>
@@ -33,46 +36,61 @@ class ChatsListViewModel @Inject constructor(
     val openCreateChatFragment: LiveData<Boolean>
         get() = _openCreateChatFragment
 
+    init {
+        viewModelScope.launch {
+            chatsListUseCase.getChatsList().collect {
+                _chatsLiveData.value = it.map(chatsListUiTransformer::transform)
+            }
+        }
+    }
+
+    fun onViewCreated() {
+
+    }
+
     fun onNewChatClick() {
         _openCreateChatFragment.value = true
     }
 
     fun onNewChatCreated(chatName: String) {
-        chatsList.add(0, ChatUi(chatsList.getAvailableChatId(), chatName, null, null, true))
-        _chatsLiveData.value = chatsList
+        viewModelScope.launch {
+            chatsListUseCase.createChat(chatName)
+        }
     }
 
     fun onChatRenamed(chatUi: ChatUi) {
-        val chatIndex = chatsList.indexOfFirst { it.chatId == chatUi.chatId }
-        chatsList[chatIndex] =
-            chatsList[chatIndex].copy(chatName = chatUi.chatName)
-        _chatsLiveData.value = chatsList
+        viewModelScope.launch {
+            chatsListUseCase.renameChat(chatsListUiTransformer.transform(chatUi))
+        }
     }
 
     fun onChatDelete(chatUi: ChatUi) {
-        chatsList.remove(chatUi)
-        _chatsLiveData.value = chatsList
+        viewModelScope.launch {
+            chatsListUseCase.deleteChat(chatsListUiTransformer.transform(chatUi))
+        }
     }
 
     fun onChatMarkAsUnread(chatUi: ChatUi) {
-        val chatIndex = chatsList.indexOfFirst { it.chatId == chatUi.chatId }
-        chatsList[chatIndex] =
-            chatsList[chatIndex].copy(isRead = false)
-        _chatsLiveData.value = chatsList
+        viewModelScope.launch {
+            chatsListUseCase.markChatUnread(chatsListUiTransformer.transform(chatUi))
+        }
+    }
+
+    fun onUpdateChatInfo(messageUi: MessageUi) {
+        viewModelScope.launch {
+            chatsListUseCase.changeChatPreview(chatContentUiTransformer.transform(messageUi))
+        }
+    }
+
+    fun onChatClick(chatUi: ChatUi) {
+        viewModelScope.launch {
+            chatsListUseCase.markChatRead(chatsListUiTransformer.transform(chatUi))
+        }
+        _openChatFragment.value = chatUi
     }
 
     fun createStubChat() {
         onNewChatCreated(Random.nextInt(1000000).toString())
-    }
-
-    fun onChatClick(chatUi: ChatUi) {
-        val chatIndex = chatsList.indexOfFirst { it.chatId == chatUi.chatId }
-        chatsList[chatIndex] =
-            chatsList[chatIndex].copy(isRead = true)
-
-        _chatsLiveData.value = chatsList
-        _openChatFragment.value = chatUi
-        Timber.tag("LOL").i("onChatClick $chatsList")
     }
 
     fun onChatLongClick(chatUi: ChatUi) {
@@ -89,18 +107,5 @@ class ChatsListViewModel @Inject constructor(
 
     fun onNavigateToChatCreate() {
         _openCreateChatFragment.value = false
-    }
-
-    fun onUpdateChatInfo(chatId: Int, messageUi: MessageUi) {
-        chatsList[chatsList.indexOfFirst { it.chatId == chatId }] =
-            chatsList[chatsList.indexOfFirst { it.chatId == chatId }].copy(
-                chatPreview = messageUi.messageText,
-                lastMessageDate = messageUi.messageDate
-            )
-
-        chatsList.sortBy { it.lastMessageDate?.time }
-        chatsList.reverse()
-
-        _chatsLiveData.value = chatsList
     }
 }
