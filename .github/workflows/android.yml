@@ -29,6 +29,9 @@ jobs:
 
     - name: DEBUG PRINTS
       run: |
+        echo /usr/local/lib/android/sdk/ndk
+        ls -al /usr/local/lib/android/sdk/ndk
+        echo "\n\n\n"
         echo $ANDROID_NDK_HOME/
         ls -al $ANDROID_NDK_HOME
         echo $ANDROID_NDK_LATEST_HOME
