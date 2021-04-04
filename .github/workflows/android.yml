@@ -82,7 +82,7 @@ jobs:
     - name: Copy core library to NDK toolchains
       run: |
         tar -xvf install.tar
-        sudo cp -r install/* $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
+        sudo cp -r install/* `realpath $ANDROID_NDK_LATEST_HOME`/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2
@@ -108,7 +108,7 @@ jobs:
       shell: sh {0}
       run: |
         cd src/client-android
-        ./gradlew --no-daemon --parallel --build-cache :app:packageDebugUniversalApk
+        ANDROID_NDK_HOME=`realpath $ANDROID_NDK_LATEST_HOME` ./gradlew --no-daemon --parallel --build-cache :app:packageDebugUniversalApk
 
     - name: Upload app universal apk
       uses: actions/upload-artifact@v2
