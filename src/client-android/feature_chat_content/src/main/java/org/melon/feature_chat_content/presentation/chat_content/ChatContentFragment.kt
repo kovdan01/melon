@@ -9,36 +9,29 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_chat_content.*
 import org.melon.core.presentation.base.BaseFragment
 import org.melon.feature_chat_content.R
-import org.melon.feature_chat_content.di.DaggerChatContentComponent
-import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
 
-    companion object{
+    companion object {
         const val REQUEST_KEY_CHAT_UPDATE = "chat_update_key"
-        const val BUNDLE_KEY_CHAT_ID = "key_chat_id"
         const val BUNDLE_KEY_MESSAGE_UI = "key_message_ui"
     }
 
-    @Inject
-    lateinit var viewModel: ChatContentViewModel
+    private val viewModel: ChatContentViewModel by viewModels()
 
     private var actionMode: ActionMode? = null
 
     private val args: ChatContentFragmentArgs by navArgs()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        DaggerChatContentComponent.builder().context(requireContext()).build().inject(this)
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,12 +75,12 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
         }
 
         sendMsgBtn.setOnClickListener {
-            viewModel.onSendClick()
+            viewModel.onSendClick(messageEt.text.toString())
             layoutManager.scrollToPosition(adapter.itemCount - 1)
         }
 
         messageEt.addTextChangedListener {
-            viewModel.onMessageChanged(it?.toString())
+            viewModel.onDraftMessageChanged(it?.toString())
         }
 
         viewModel.liveMessagesList.observe(
@@ -109,34 +102,38 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
                             }
                     )
 
-                    messageEt.clearFocus()
-                    messageEt.setText("")
+                    if (it.any { chatsUi -> chatsUi.isSelected }) {
+                        if (actionMode == null) {
+                            actionMode = activity.startSupportActionMode(actionModeCallback)
+                        }
 
-                    //TODO: maybe erro if list if empty
-                    setFragmentResult(REQUEST_KEY_CHAT_UPDATE, bundleOf(
-                            BUNDLE_KEY_CHAT_ID  to args.chatId,
-                            BUNDLE_KEY_MESSAGE_UI to it.last()
-                    ))
-                }
-        )
+                        actionMode?.title =
+                                getString(
+                                        R.string.action_mode_selected_placeholder,
+                                        it.count { chatUi -> chatUi.isSelected }
+                                )
 
-        viewModel.liveActionMode.observe(
-                viewLifecycleOwner,
-                {
-                    if (actionMode == null) {
-                        actionMode = activity.startSupportActionMode(actionModeCallback)
-                    }
-
-                    actionMode?.title = getString(R.string.action_mode_selected_placeholder, it.size)
-
-                    if (it.isEmpty()) {
+                        actionMode?.menu?.findItem(R.id.edit)?.isVisible =
+                                it.count { chatUi -> chatUi.isSelected } == 1
+                    } else {
                         actionMode?.finish()
                         actionMode = null
                     }
 
-                    actionMode?.menu?.findItem(R.id.edit)?.isVisible = it.size == 1
+                    messageEt.clearFocus()
+                    messageEt.setText("")
+
+
+                    if (it.isNotEmpty()) {
+                        setFragmentResult(
+                                REQUEST_KEY_CHAT_UPDATE, bundleOf(
+                                BUNDLE_KEY_MESSAGE_UI to it.last()
+                        )
+                        )
+                    }
                 }
         )
+
 
         viewModel.liveMessageToEdit.observe(
                 viewLifecycleOwner,
@@ -148,6 +145,15 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
                 }
         )
 
-        viewModel.onViewCreated()
+        viewModel.liveChatDraft.observe(
+                viewLifecycleOwner,
+                { chatDraft ->
+                    chatDraft?.let {
+                        messageEt.setText(it)
+                    }
+                }
+        )
+
+        viewModel.onViewCreated(args.chatId)
     }
 }
