@@ -133,5 +133,4 @@ ntc_target(${PROJECT_NAME})
 
 include(CTest)
 include(Catch)
-catch_discover_tests(${PROJECT_NAME})
-
+catch_discover_tests(${TEST_STORAGE_NAME})
