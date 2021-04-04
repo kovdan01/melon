@@ -8,6 +8,7 @@ on:
 
 env:
   CORE_ARM_RELEASE_ARTIFACT: "core-arm-release-android"
+  EXACT_NDK_VERSION: "22.0.7026061"
 
 jobs:
   build-core-arm:
@@ -18,7 +19,7 @@ jobs:
       matrix:
         config:
         - {
-            os: ubuntu-20.04,
+            os: ubuntu-latest,
             prefix: "Android Core ARM64",
             suffix: "",
             build_type: "Release",
@@ -44,7 +45,7 @@ jobs:
 
   build-android:
     name: Android App Debug
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: build-core-arm
     env:
       GRADLE_AND_BUILD_CACHE_VERSION: 5  # increment when need to update gradle & build cache
@@ -57,10 +58,14 @@ jobs:
       with:
         name: ${{ env.CORE_ARM_RELEASE_ARTIFACT }}
 
+    - name: Install NDK ${{ env.EXACT_NDK_VERSION }}
+      run: |
+        sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;${{ env.EXACT_NDK_VERSION }}"
+
     - name: Copy core library to NDK toolchains
       run: |
         tar -xvf install.tar
-        sudo cp -r install/* $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
+        sudo cp -r install/* /usr/local/lib/android/sdk/ndk/${{ env.EXACT_NDK_VERSION }}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/
 
     - name: Gradle & build cache
       uses: actions/cache@v2

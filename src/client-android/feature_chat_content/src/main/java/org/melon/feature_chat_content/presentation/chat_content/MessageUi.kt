@@ -7,6 +7,7 @@ import java.util.*
 @Parcelize
 data class MessageUi(
         val messageId: Int,
+        val chatId: Int,
         val messageText: String,
         val messageDate: Date,
         val isUserMessage: Boolean,
