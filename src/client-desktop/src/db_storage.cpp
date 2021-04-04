@@ -17,7 +17,7 @@ melon::core::id_t max_chat_id(id_t domain_id);
 /* Domain */
 
 // For Insert
-Domain::Domain(QString hostname, bool external)
+Domain::Domain(const QString& hostname, bool external)
     :ram::Domain(hostname, external)
 {
     this->set_domain_id(max_domain_id() + 1);
@@ -41,11 +41,9 @@ Domain::Domain(QString hostname, bool external)
 }
 
 // For Select
-Domain::Domain(QString hostname)
+Domain::Domain(const QString& hostname)
     :ram::Domain(hostname)
 {
-    std::cerr << "In the Domain constructor!" << std::endl;
-
     auto& storage = DBSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
@@ -61,7 +59,6 @@ Domain::Domain(QString hostname)
         this->set_domain_id(qry.value(0).value<id_t>());
         this->set_external(qry.value(1).value<bool>());
     }
-    std::cerr << "In the end of Domain constructor!" << std::endl;
 }
 
 void Domain::remove_from_db()
@@ -82,7 +79,7 @@ void Domain::remove_from_db()
 /* User */
 
 // For Insert
-User::User(QString username, id_t domain_id, Status status)
+User::User(const QString& username, id_t domain_id, Status status)
     :ram::User(username, domain_id, status)
 {
     this->set_user_id(max_user_id(this->domain_id()) + 1);
@@ -107,10 +104,9 @@ User::User(QString username, id_t domain_id, Status status)
 }
 
 // For Select
-User::User(QString username, id_t domain_id)
+User::User(const QString& username, id_t domain_id)
     :ram::User(username, domain_id)
 {
-    std::cerr << "In the User constructor!" << std::endl;
     auto& storage = DBSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 

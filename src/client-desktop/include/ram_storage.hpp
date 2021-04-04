@@ -15,9 +15,6 @@ namespace melon::client_desktop
 {
 
 using id_t = melon::core::id_t;
-//inline constexpr melon::core::id_t MY_USER_ID = 1;
-//inline constexpr melon::core::id_t ANOTHER_USER_ID = 2;
-//inline constexpr melon::core::id_t DOMAIN_ID = 1;
 
 namespace ram
 {

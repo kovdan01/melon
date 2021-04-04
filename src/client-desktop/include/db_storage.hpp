@@ -6,8 +6,6 @@
 #include <QtSql/QtSql>
 #include <QtWidgets>
 
-#include <iostream>
-
 namespace melon::client_desktop
 {
 
@@ -18,10 +16,10 @@ class Domain : public ram::Domain
 public:
 
     // For Insert
-    Domain(QString hostname, bool external);
+    Domain(const QString& hostname, bool external);
 
     // For Select
-    Domain(QString hostname);
+    Domain(const QString& hostname);
 
     void remove_from_db();
 };
@@ -31,10 +29,10 @@ class User : public ram::User
 public:
 
     // For Insert
-    User(QString username, id_t domain_id, Status status);
+    User(const QString& username, id_t domain_id, Status status);
 
     // For Select
-    User(QString username, id_t domain_id);
+    User(const QString& username, id_t domain_id);
 
     void remove_from_db();
 };
