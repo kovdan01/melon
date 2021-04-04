@@ -29,14 +29,22 @@ jobs:
 
     - name: DEBUG PRINTS
       run: |
-        echo $ANDROID_NDK_HOME
+        echo $ANDROID_NDK_HOME/
         ls -al $ANDROID_NDK_HOME
         echo $ANDROID_NDK_LATEST_HOME
         ls -al $ANDROID_NDK_LATEST_HOME
-        echo $ANDROID_NDK_ROOT
+        echo $ANDROID_NDK_ROOT/
         ls -al $ANDROID_NDK_ROOT
         echo $ANDROID_NDK_ROOT/toolchains
         ls -al $ANDROID_NDK_ROOT/toolchains
+        echo $ANDROID_NDK_ROOT/toolchains/llvm
+        ls -al $ANDROID_NDK_ROOT/toolchains/llvm
+        echo $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt
+        ls -al $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt
+        echo $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64
+        ls -al $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64
+        echo $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        ls -al $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 
     - name: Build
       run: |
