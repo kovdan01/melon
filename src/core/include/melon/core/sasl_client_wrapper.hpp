@@ -90,6 +90,7 @@ private:
     const std::string m_service;
     std::size_t m_step_count = 0;
     sasl_conn_t* m_conn;
+    char m_hostname[1024];
 };
 
 class SaslClientSingleton

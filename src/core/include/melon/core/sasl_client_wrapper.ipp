@@ -4,7 +4,10 @@
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
 
+#include <unistd.h>
+
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -87,7 +90,9 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 inline SaslClientConnection::SaslClientConnection(std::string service)
     : m_service(std::move(service))
 {
-    sasl_res res = sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
+    gethostname(m_hostname, 1024);
+    std::cerr << "HOSTNAME: \"" << std::string(m_hostname) << "\", len: " << std::strlen(m_hostname) << std::endl;
+    sasl_res res = sasl_client_new(m_service.c_str(), m_hostname, nullptr, nullptr, nullptr, 0, &m_conn);
     detail::check_sasl_result(res, "client new");
 }
 
