@@ -641,7 +641,7 @@ jobs:
 
     - name: Run tests
       run: |
-        sudo systemctl start mariadb
+        sudo systemctl status mariadb
         sudo mysql -u root
         mysql -e "CREATE DATABASE melon;"
         mysql -e "SHOW DATABASES LIKE 'melon';"
