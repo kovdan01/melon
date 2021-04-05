@@ -641,6 +641,12 @@ jobs:
 
     - name: Run tests
       run: |
+        sudo systemctl start mariadb
+        sudo mysql -u root
+        mysql -e "CREATE DATABASE melon;"
+        mysql -e "SHOW DATABASES LIKE 'melon';"
+        mysql -e "QUIT;"
+        mysql -u root melon < sql/db_scheme_dump.sql
         cd build
         ctest
         cd ..
