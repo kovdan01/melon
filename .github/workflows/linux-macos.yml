@@ -651,7 +651,9 @@ jobs:
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
         MELON_AUTH_PID=$!
-
+        
+        sleep 5
+        
         #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ${{ env.CMAKE_TOOL_BINARY_PATH }}/ctest
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
 
