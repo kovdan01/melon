@@ -1,7 +1,5 @@
 #include <db_storage.hpp>
 
-#include <iostream>
-
 namespace melon::client_desktop
 {
 
@@ -25,19 +23,13 @@ Domain::Domain(const QString& hostname, bool external)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    if (!qry.prepare(QStringLiteral("INSERT INTO domains VALUES(:domain_id, :hostname)")))
-    {
-        std::cout << "Fail preparing inserting domains!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO domains VALUES(:domain_id, :hostname)"),
+                                  "Prepare inserting domain");
+
     qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
     qry.bindValue(QStringLiteral(":hostname"), this->hostname());
 
-    if (!qry.exec())
-    {
-        std::cout << "Fail inserting domain!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, "Inserting domain");
 }
 
 // For Select
@@ -48,17 +40,10 @@ Domain::Domain(const QString& hostname)
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("SELECT domain_id, external FROM domains WHERE hostname='") + this->hostname() + QStringLiteral("'");
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail loading domain!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
-    else
-    {
-        qry.next();
-        this->set_domain_id(qry.value(0).value<id_t>());
-        this->set_external(qry.value(1).value<bool>());
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Loading domain");
+    qry.next();
+    this->set_domain_id(qry.value(0).value<id_t>());
+    this->set_external(qry.value(1).value<bool>());
 }
 
 void Domain::remove_from_db()
@@ -66,13 +51,9 @@ void Domain::remove_from_db()
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString query_string = QStringLiteral("DELETE FROM domains WHERE domain_id=") + QString::number(this->domain_id());
+    QString qry_string = QStringLiteral("DELETE FROM domains WHERE domain_id=") + QString::number(this->domain_id());
 
-    if (!qry.exec(query_string))
-    {
-        std::cout << "Fail deleting domain!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Deleting domain");
 }
 
 
@@ -87,20 +68,14 @@ User::User(const QString& username, id_t domain_id, Status status)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    if (!qry.prepare(QStringLiteral("INSERT INTO users VALUES(:username, :domain_id, :status)")))
-    {
-        std::cout << "Fail preparing inserting users!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO users VALUES(:username, :domain_id, :status)"),
+                                  "Prepare inserting user");
+
     qry.bindValue(QStringLiteral(":username"), this->username());
     qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
     qry.bindValue(QStringLiteral(":status"), static_cast<int>(this->status()));
 
-    if (!qry.exec())
-    {
-        std::cout << "Fail inserting user!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, "Inserting user");
 }
 
 // For Select
@@ -112,17 +87,11 @@ User::User(const QString& username, id_t domain_id)
 
     QString qry_string = QStringLiteral("SELECT user_id, status FROM users WHERE username='") + this->username() +
                          QStringLiteral("' and domain_id=") + QString::number(this->domain_id());
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail loading user" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
-    else
-    {
-        qry.next();
-        this->set_user_id(qry.value(0).value<id_t>());
-        this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Loading user");
+
+    qry.next();
+    this->set_user_id(qry.value(0).value<id_t>());
+    this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
 }
 
 void User::remove_from_db()
@@ -130,14 +99,10 @@ void User::remove_from_db()
     auto& storage = DBSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
-    QString query_string = QStringLiteral("DELETE FROM users WHERE user_id=") + QString::number(this->user_id()) +
+    QString qry_string = QStringLiteral("DELETE FROM users WHERE user_id=") + QString::number(this->user_id()) +
                            QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
-    if (!qry.exec(query_string))
-    {
-        std::cout << "Fail deleting user!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Deleting user");
 }
 
 /* Message */
@@ -153,20 +118,18 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    if (!qry.prepare(QStringLiteral("INSERT INTO messages"
-                                   " VALUES("
-                                   " :msg_id,"
-                                   " :chat_id,"
-                                   " :domain_id_chat,"
-                                   " :user_id,"
-                                   " :domain_id_user,"
-                                   " :timestamp,"
-                                   " :text,"
-                                   " :status)")))
-    {
-        std::cout << "Fail preparing inserting message!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    QString qry_string = QStringLiteral("INSERT INTO messages"
+                                        " VALUES("
+                                        " :msg_id,"
+                                        " :chat_id,"
+                                        " :domain_id_chat,"
+                                        " :user_id,"
+                                        " :domain_id_user,"
+                                        " :timestamp,"
+                                        " :text,"
+                                        " :status)");
+    prepare_and_check_qtsql_query(qry, qry_string, "Prepare inserting message");
+
     qry.bindValue(QStringLiteral(":msg_id"), QVariant::fromValue(this->message_id()));
     qry.bindValue(QStringLiteral(":chat_id"), QVariant::fromValue(this->chat_id()));
 
@@ -181,11 +144,8 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     qry.bindValue(QStringLiteral(":text"), this->text());
     qry.bindValue(QStringLiteral(":status"), static_cast<int>((this->status())));
 
-    if (!qry.exec())
-    {
-        std::cout << "Fail inserting message!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }    
+    exec_and_check_qtsql_query(qry, "Inserting message");
+
     this->set_from();
 }
 
@@ -204,23 +164,18 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
                          QStringLiteral(" and domain_id_chat=") +
                          QString::number(this->domain_id_chat()) +
                          QStringLiteral(")");
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail loading message!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
-    else
-    {
-        qry.next();
-        this->set_user_id(qry.value(0).value<id_t>());
-        this->set_domain_id_user(qry.value(1).value<id_t>());
-        auto tp = qry.value(2).value<std::uint64_t>();
-        std::chrono::milliseconds dur(tp);
-        std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
-        this->set_timestamp(tp_ms);
-        this->set_text(qry.value(3).toString());
-        this->set_status(static_cast<melon::core::Message::Status>((qry.value(4).toInt())));
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Loading message");
+
+    qry.next();
+    this->set_user_id(qry.value(0).value<id_t>());
+    this->set_domain_id_user(qry.value(1).value<id_t>());
+    auto tp = qry.value(2).value<std::uint64_t>();
+    std::chrono::milliseconds dur(tp);
+    std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
+    this->set_timestamp(tp_ms);
+    this->set_text(qry.value(3).toString());
+    this->set_status(static_cast<melon::core::Message::Status>((qry.value(4).toInt())));
+
     this->set_from();
 }
 
@@ -233,11 +188,8 @@ void Message::set_text(const QString& text)
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
                          QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail updating message text!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Updating message text");
+
     mc::Message::set_text(text.toStdString());
 }
 
@@ -255,15 +207,11 @@ void Message::remove_from_db()
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString query_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
+    QString qry_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
                            QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
                            QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
 
-    if (!qry.exec(query_string))
-    {
-        std::cout << "Fail deleting message!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Deleting message");
 }
 
 
@@ -279,20 +227,14 @@ Chat::Chat(id_t domain_id, const QString& name)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    if (!qry.prepare(QStringLiteral("INSERT INTO chats VALUES(:chat_id, :domain_id, :name)")))
-    {
-        std::cout << "Fail preparing inserting chat!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+
+    prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO chats VALUES(:chat_id, :domain_id, :name)"),
+                                  "Prepare inserting chat");
     qry.bindValue(QStringLiteral(":chat_id"), QVariant::fromValue(this->chat_id()));
     qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
     qry.bindValue(QStringLiteral(":name"), this->chatname());
 
-    if (!qry.exec())
-    {
-        std::cout << "Fail inserting chat!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, "Inserting chat");
 }
 
 // For Select
@@ -304,16 +246,9 @@ Chat::Chat(id_t chat_id, id_t domain_id)
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail loading chat!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
-    else
-    {
-        qry.next();
-        this->set_chatname(qry.value(0).toString());
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Loading chat");
+    qry.next();
+    this->set_chatname(qry.value(0).toString());
 }
 
 void Chat::remove_from_db()
@@ -321,14 +256,10 @@ void Chat::remove_from_db()
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString query_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
+    QString qry_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
                            QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
-    if (!qry.exec(query_string))
-    {
-        std::cout << "Fail deleting chat!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Deleting chat");
 }
 
 void Chat::set_chatname(const QString& chatname)
@@ -339,11 +270,8 @@ void Chat::set_chatname(const QString& chatname)
     QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname +
                          QStringLiteral("' WHERE chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail updating chatname!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Updating chatname");
+
     mc::Chat::set_chatname(chatname.toStdString());
 }
 
@@ -357,20 +285,13 @@ melon::core::id_t max_domain_id()
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(domain_id) FROM domains");
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail selecting domain_id!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Selecting max domain_id");
+
     qry.next();
     QVariant chat_id_qvar = qry.value(0);
     if (!chat_id_qvar.isValid())
-    {
-        std::cout << "domain_id is null!" << std::endl;
         return 0;
-    }
     auto chat_id = chat_id_qvar.value<id_t>();
-
     return chat_id;
 }
 
@@ -380,20 +301,13 @@ melon::core::id_t max_user_id(id_t domain_id)
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(user_id) FROM users WHERE domain_id=") + QString::number(domain_id);
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail selecting user_id!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Selecting max user_id");
+
     qry.next();
     QVariant chat_id_qvar = qry.value(0);
     if (!chat_id_qvar.isValid())
-    {
-        std::cout << "user_id is null!" << std::endl;
         return 0;
-    }
     auto chat_id = chat_id_qvar.value<id_t>();
-
     return chat_id;
 }
 
@@ -404,20 +318,13 @@ melon::core::id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t do
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id) +
                          QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail selecting message_id!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Selecting max message_id");
+
     qry.next();
     QVariant msg_id_qvar = qry.value(0);
     if (!msg_id_qvar.isValid())
-    {
-        std::cout << "message_id is null!" << std::endl;
         return 0;
-    }
     auto msg_id = msg_id_qvar.value<id_t>();
-
     return msg_id;
 }
 
@@ -427,21 +334,42 @@ melon::core::id_t max_chat_id(melon::core::id_t domain_id)
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(chat_id) FROM chats WHERE domain_id=") + QString::number(domain_id);
-    if (!qry.exec(qry_string))
-    {
-        std::cout << "Fail selecting chat_id!" << std::endl;
-        std::cout << qry.lastError().text().toStdString() << std::endl;
-    }
+    exec_and_check_qtsql_query(qry, qry_string, "Selecting max chat_id");
+
     qry.next();
     QVariant chat_id_qvar = qry.value(0);
     if (!chat_id_qvar.isValid())
-    {
-        std::cout << "chat_id is null!" << std::endl;
         return 0;
-    }
     auto chat_id = chat_id_qvar.value<id_t>();
-
     return chat_id;
+}
+
+
+void exec_and_check_qtsql_query(QSqlQuery& qry, const QString& qry_string, const std::string& action)
+{
+    if (!qry.exec(qry_string))
+    {
+        std::string error = action + ": " + qry.lastError().text().toStdString();
+        throw QtSqlException(error);
+    }
+}
+
+void exec_and_check_qtsql_query(QSqlQuery& qry, const std::string& action)
+{
+    if (!qry.exec())
+    {
+        std::string error = action + ": " + qry.lastError().text().toStdString();
+        throw QtSqlException(error);
+    }
+}
+
+void prepare_and_check_qtsql_query(QSqlQuery& qry, const QString& qry_string, const std::string& action)
+{
+    if (!qry.prepare(qry_string))
+    {
+        std::string error = action + ": " + qry.lastError().text().toStdString();
+        throw QtSqlException(error);
+    }
 }
 
 }  // namespace melon::client_desktop

@@ -71,12 +71,9 @@ void MainWindow::load_data_from_database()
     QString db_name = storage.db_name();
     QSqlQuery qry_for_chats(db_name);
     QSqlQuery qry_for_messages(db_name);
-    if (!qry_for_chats.exec(QStringLiteral("SELECT chat_id, domain_id FROM chats")))
-    {
-        std::cout << "Error while loading chats: " << std::flush;
-        std::cout << qry_for_chats.lastError().text().toStdString() << std::endl;
-        return;
-    }
+
+    exec_and_check_qtsql_query(qry_for_chats, QStringLiteral("SELECT chat_id, domain_id FROM chats"), "Loading chats");
+
     while (qry_for_chats.next())
     {
         auto chat_id = qry_for_chats.value(0).value<std::uint64_t>();
@@ -85,12 +82,8 @@ void MainWindow::load_data_from_database()
 
         QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") +QString::number(chat_id)
                          + QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
-        if (!qry_for_messages.exec(qry_str))
-        {
-            std::cout << "Error while loading messages: " << std::flush;
-            std::cout << qry_for_messages.lastError().text().toStdString() << std::endl;
-            return;
-        }
+        exec_and_check_qtsql_query(qry_for_messages, qry_str, "Loading messages");
+
         while (qry_for_messages.next())
         {
             auto message_id = qry_for_messages.value(0).value<std::uint64_t>();
@@ -130,7 +123,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    qry.exec(QStringLiteral("SELECT COUNT(chat_id) from chats"));
+    exec_and_check_qtsql_query(qry, QStringLiteral("SELECT COUNT(chat_id) from chats"), "Counting chats");
     qry.next();
     if (qry.value(0).toInt() > 0)
     {
@@ -150,6 +143,7 @@ class ChatNameException : public melon::Exception
 {
 public:
     using melon::Exception::Exception;
+    ~ChatNameException() = default;
 };
 
 }  // namespace
@@ -157,7 +151,7 @@ public:
 static void check_chat_name(const QString& text)
 {
     if (text.isEmpty() || text.size() > MAX_CHAT_NAME_SIZE)
-        throw ChatNameException("Name is incorrect");
+        throw ChatNameException("ChatName is incorrect");
 }
 
 void MainWindow::add_chat()

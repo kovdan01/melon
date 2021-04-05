@@ -1,6 +1,7 @@
 #ifndef MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_
 #define MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_
 
+#include <melon/core/exception.hpp>
 #include <ram_storage.hpp>
 
 #include <QtSql/QtSql>
@@ -9,7 +10,18 @@
 namespace melon::client_desktop
 {
 
-QString create_connection_with_db();
+class QtSqlException : public melon::Exception
+{
+public:
+    using melon::Exception::Exception;
+    ~QtSqlException() = default;
+};
+
+void create_connection_with_db();
+
+void exec_and_check_qtsql_query(QSqlQuery& qry, const QString& qry_string, const std::string& action);
+void exec_and_check_qtsql_query(QSqlQuery& qry, const std::string& action);
+void prepare_and_check_qtsql_query(QSqlQuery& qry, const QString& qry_string, const std::string& action);
 
 class Domain : public ram::Domain
 {
