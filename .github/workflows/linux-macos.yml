@@ -651,8 +651,8 @@ jobs:
         ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
 
         sleep 5
-        echo "LOCALSERVER"
-        cat ~/.melon/localserver.conf
+        echo "MELON.CONF"
+        cat ~/.melon/melon.conf
         echo "LISTUSERS"
         sasldblistusers2 -f ~/.melon/sasldb2
         echo "END"

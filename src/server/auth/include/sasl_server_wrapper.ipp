@@ -103,7 +103,7 @@ inline SaslServerSingleton::SaslServerSingleton()
     std::cerr << "CONFIG PATH: \"" << m_config_path.c_str() << "\"" << std::endl;
     std::cerr << "LIST FILES:\n" << capture_cmd_out(std::string("ls -al ") + m_config_path.c_str()) << std::endl;
     sasl_set_path(SASL_PATH_TYPE_CONFIG, const_cast<char*>(m_config_path.c_str()));
-    mca::sasl_res res = sasl_server_init(nullptr, "localserver");
+    mca::sasl_res res = sasl_server_init(nullptr, "melon");
     mca::detail::check_sasl_result(res, "server init");
 }
 
