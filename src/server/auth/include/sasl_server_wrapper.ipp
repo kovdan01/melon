@@ -8,8 +8,7 @@
 #include <string_view>
 
 // debug headers
-//#include <iostream>
-//#include <cstdlib>
+#include <iostream>
 #include <thread>
 
 namespace melon::server::auth
@@ -38,15 +37,32 @@ inline SaslServerConnection::~SaslServerConnection()
     return { data, plen };
 }
 
+inline std::string capture_cmd_out(const std::string& cmd)
+{
+    std::string data;
+    FILE* stream;
+    const int max_buffer = 1024;
+    char buffer[max_buffer];
+    std::string new_cmd = cmd + " 2>&1";
+
+    stream = ::popen(new_cmd.c_str(), "r");
+    if (stream != nullptr)
+    {
+        while (std::feof(stream) == 0)
+            if (std::fgets(buffer, max_buffer, stream) != nullptr)
+                data.append(buffer);
+        ::pclose(stream);
+    }
+    return data;
+}
+
 inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mechanism, std::string_view client_initial_response)
 {
     const char* serverout;
     unsigned serverout_len;
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(2000ms);
     mca::sasl_res res = sasl_server_start(m_conn, chosen_mechanism.data(), client_initial_response.data(),
-                                     static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
-//    std::cerr<< std::system("sasldblistusers2 -f ~/.melon/sasldb2") << std::endl << "Authorising with" << client_initial_response << std::endl;
+                                          static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
+    std::cerr << "LISTUSERS:" << std::endl << capture_cmd_out("sasldblistusers2 -f ~/.melon/sasldb2") << std::endl << "\n\nAuthorising with \"" << client_initial_response << "\"" << std::endl;
     mca::detail::check_sasl_result(res, "server start");
 
     return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthCompletness>(res) };
