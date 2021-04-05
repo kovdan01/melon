@@ -58,7 +58,7 @@ public:
             std::string_view supported_mechanisms = server.list_mechanisms();
             m_out_buf = std::string(supported_mechanisms) + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, /*nullptr*/ 0);
+            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
             stream_.expires_after(TIME_LIMIT);
             std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             if (ec)
