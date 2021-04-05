@@ -56,13 +56,13 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     for (;;)
     {
         to_send = get_client_response(reply, client, counter);
-        std::cerr << "COUNTER: " << counter << "\nTO SEND: \"" << to_send << "\"" << std::endl;
+        std::cerr << "COUNTER: " << counter << "\nTO SEND: \"" << to_send << "\", len: " << to_send.size() << std::endl;
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
         std::cerr << "AAA" << std::endl;
         std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
         std::cerr << "BBB" << std::endl;
         reply = read_erase_buffered_string(n, in_buf);
-        std::cerr << "REPLY: \"" << reply << "\"" << std::endl;
+        std::cerr << "REPLY: \"" << reply << "\", len: " << reply.size() << std::endl;
         if (reply == mca::TOKEN_CONFIRMATION_STRING)
         {
             confirmation_recieved = true;
