@@ -116,6 +116,7 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     : ram::Message(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
+    this->set_is_edit(false);
 
     auto& storage = DBSingletone::get_instance();
 
@@ -129,7 +130,8 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
                                         " :domain_id_user,"
                                         " :timestamp,"
                                         " :text,"
-                                        " :status)");
+                                        " :status,"
+                                        " :edit)");
     prepare_and_check_qtsql_query(qry, qry_string, "Prepare inserting message");
 
     qry.bindValue(QStringLiteral(":msg_id"), QVariant::fromValue(this->message_id()));
@@ -144,7 +146,8 @@ Message::Message(id_t chat_id, id_t domain_id_chat,
     qry.bindValue(QStringLiteral(":timestamp"), QVariant::fromValue(timestamp_ms_int));
 
     qry.bindValue(QStringLiteral(":text"), this->text());
-    qry.bindValue(QStringLiteral(":status"), static_cast<int>((this->status())));
+    qry.bindValue(QStringLiteral(":status"), static_cast<int>(this->status()));
+    qry.bindValue(QStringLiteral(":edit"), this->is_edit());
 
     exec_and_check_qtsql_query(qry, "Inserting message");
 
@@ -158,7 +161,7 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString qry_string = QStringLiteral("SELECT user_id, domain_id_user, timestamp, text, status FROM messages"
+    QString qry_string = QStringLiteral("SELECT user_id, domain_id_user, timestamp, text, status, edit FROM messages"
 "                                        WHERE (message_id=") +
                          QString::number(this->message_id()) +
                          QStringLiteral(" and chat_id=") +
@@ -176,7 +179,8 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     std::chrono::time_point<std::chrono::system_clock> tp_ms(dur);
     this->set_timestamp(tp_ms);
     this->set_text(qry.value(3).toString());
-    this->set_status(static_cast<melon::core::Message::Status>((qry.value(4).toInt())));
+    this->set_status(static_cast<melon::core::Message::Status>(qry.value(4).toInt()));
+    this->set_is_edit(qry.value(5).toBool());
 
     this->set_from();
 }
@@ -202,6 +206,19 @@ void Message::set_from()
         m_from = QObject::tr("Me");
     else
         m_from = storage.another_user().username();
+}
+
+void Message::set_is_edit(bool is_edit)
+{
+    auto& storage = DBSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    QString qry_string = QStringLiteral("UPDATE messages SET edit='") + QString::number(is_edit) +
+                         QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
+                         QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
+    exec_and_check_qtsql_query(qry, qry_string, "Updating message edit mark");
+    m_is_edit = is_edit;
 }
 
 void Message::remove_from_db()
@@ -370,6 +387,7 @@ void prepare_and_check_qtsql_query(QSqlQuery& qry, const QString& qry_string, co
     if (!qry.prepare(qry_string))
     {
         std::string error = action + ": " + qry.lastError().text().toStdString();
+        QMessageBox::critical(nullptr, QObject::tr("Error!"), QObject::tr("Error with local database!\nPlease contact us at bugreport@melon.com."));
         throw QtSqlException(error);
     }
 }

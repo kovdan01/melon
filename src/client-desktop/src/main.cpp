@@ -64,6 +64,7 @@ void create_connection_with_db()
                                 " timestamp INT,"
                                 " text TEXT,"
                                 " status INT, "
+                                " edit INT, "
                                 " PRIMARY KEY (message_id, chat_id, domain_id_chat),"
                                 " FOREIGN KEY (chat_id, domain_id_chat) REFERENCES chats(chat_id, domain_id) ON DELETE CASCADE,"
                                 " FOREIGN KEY (user_id, domain_id_user) REFERENCES users(user_id, domain_id) ON DELETE CASCADE)");

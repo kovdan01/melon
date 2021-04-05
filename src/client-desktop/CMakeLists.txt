@@ -36,10 +36,12 @@ set(HEADERS
     include/chat_widget.hpp
     include/config.hpp
     include/db_storage.hpp
+    include/db_storage.ipp
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
     include/ram_storage.hpp
+    include/ram_storage.ipp
     include/helpers.hpp
 )
 

@@ -80,17 +80,23 @@ QString ChatItemDelegate::date_number_handler(const int& num) const
 QString ChatItemDelegate::date_handler(const Message::timestamp_t& timestamp) const
 {
     Message::timestamp_t now = std::chrono::system_clock::now();
-    auto diff_time_days = std::chrono::duration_cast<std::chrono::days>(timestamp - now).count();
+    std::time_t now_tt = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_now;
+    ::localtime_r(&now_tt, &tm_now);
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
     std::tm tm;
     ::localtime_r(&time_tt, &tm);
 
-    if (diff_time_days == 0)
-        return this->date_number_handler(tm.tm_hour) + QStringLiteral(":") + this->date_number_handler(tm.tm_min);
+    if (tm.tm_year != tm_now.tm_year)
+        return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
+               m_month_names[to_size_t(tm.tm_mon)] + QStringLiteral(" ") +
+               this->date_number_handler(tm.tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
-    return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
-           m_month_names[to_size_t(tm.tm_mon)] + QStringLiteral(" ") +
-           this->date_number_handler(tm.tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    if (tm.tm_mday != tm_now.tm_mday)
+        return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
+               m_month_names[to_size_t(tm.tm_mon)];
+
+    return this->date_number_handler(tm.tm_hour) + QStringLiteral(":") + this->date_number_handler(tm.tm_min);
 }
 
 void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
