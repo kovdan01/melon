@@ -45,42 +45,42 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "PVS-Studio",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
-        - {
-            os: "macos-latest",
-            prefix: "macOS",
-            suffix: "",
-            artifact: "all-release-macos",
-            build_type: "Release",
-            cc: "clang",
-            cxx: "clang++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "PVS-Studio",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
+        #- {
+            #os: "macos-latest",
+            #prefix: "macOS",
+            #suffix: "",
+            #artifact: "all-release-macos",
+            #build_type: "Release",
+            #cc: "clang",
+            #cxx: "clang++",
+          #}
 
     steps:
     - uses: actions/checkout@v2
@@ -643,31 +643,31 @@ jobs:
 
     - name: Run tests
       run: |
-        cd build
-        PATH_BEFORE=$PATH
-        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+        #cd build
+        #PATH_BEFORE=$PATH
+        #PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        #${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
 
-        sleep 5
-        echo "LOCALSERVER"
-        cat ~/.melon/localserver.conf
-        echo "LISTUSERS"
-        sasldblistusers2 -f ~/.melon/sasldb2
-        echo "END"
+        #sleep 5
+        #echo "LOCALSERVER"
+        #cat ~/.melon/localserver.conf
+        #echo "LISTUSERS"
+        #sasldblistusers2 -f ~/.melon/sasldb2
+        #echo "END"
 
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
-        MELON_AUTH_PID=$!
+        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
+        #MELON_AUTH_PID=$!
         
-        sleep 5
+        #sleep 5
         
         #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ${{ env.CMAKE_TOOL_BINARY_PATH }}/ctest
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
+        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
 
-        kill -2 $MELON_AUTH_PID
+        #kill -2 $MELON_AUTH_PID
 
-        PATH=$PATH_BEFORE
-        cd ..
+        #PATH=$PATH_BEFORE
+        #cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
