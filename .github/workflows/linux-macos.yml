@@ -649,6 +649,8 @@ jobs:
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
         ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        chmod 0777 ~/.melon/melon.conf
+        chmod 0777 ~/.melon/sasldb2
 
         sleep 5
         echo "MELON.CONF"
