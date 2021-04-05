@@ -180,7 +180,7 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     this->set_timestamp(tp_ms);
     this->set_text(qry.value(3).toString());
     this->set_status(static_cast<melon::core::Message::Status>(qry.value(4).toInt()));
-    this->set_is_edit(qry.value(5).toBool());
+    this->set_is_edit(qry.value(5).toBool());  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
     this->set_from();
 }
@@ -213,7 +213,7 @@ void Message::set_is_edit(bool is_edit)
     auto& storage = DBSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
-    QString qry_string = QStringLiteral("UPDATE messages SET edit='") + QString::number(is_edit) +
+    QString qry_string = QStringLiteral("UPDATE messages SET edit='") + QString::number(static_cast<int>(is_edit)) +
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
                          QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
@@ -227,8 +227,8 @@ void Message::remove_from_db()
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
-                           QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
-                           QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
+                         QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
+                         QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
 
     exec_and_check_qtsql_query(qry, qry_string, "Deleting message");
 }
