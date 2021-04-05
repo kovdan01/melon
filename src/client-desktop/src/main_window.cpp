@@ -136,17 +136,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 }
 
-namespace
-{
-
-class ChatNameException : public melon::Exception
-{
-public:
-    using melon::Exception::Exception;
-    ~ChatNameException() = default;
-};
-
-}  // namespace
+ChatNameException::~ChatNameException() = default;
 
 static void check_chat_name(const QString& text)
 {

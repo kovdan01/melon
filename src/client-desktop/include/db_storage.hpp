@@ -14,7 +14,7 @@ class QtSqlException : public melon::Exception
 {
 public:
     using melon::Exception::Exception;
-    ~QtSqlException() = default;
+    ~QtSqlException() override;
 };
 
 void create_connection_with_db();

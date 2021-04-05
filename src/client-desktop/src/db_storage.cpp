@@ -5,6 +5,8 @@ namespace melon::client_desktop
 
 namespace mc = melon::core;
 
+QtSqlException::~QtSqlException() = default;
+
 /* Helpers */
 
 melon::core::id_t max_domain_id();
