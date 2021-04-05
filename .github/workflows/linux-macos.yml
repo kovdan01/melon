@@ -656,16 +656,16 @@ jobs:
         sasldblistusers2 -f ~/.melon/sasldb2
         echo "END"
 
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
-        #MELON_AUTH_PID=$!
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
+        MELON_AUTH_PID=$!
 
-        #sleep 5
+        sleep 5
 
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
 
-        #kill -2 $MELON_AUTH_PID
+        kill -2 $MELON_AUTH_PID
 
-        #PATH=$PATH_BEFORE
+        PATH=$PATH_BEFORE
         cd ..
 
     - name: Install Strip
@@ -691,7 +691,7 @@ jobs:
       if: ${{ matrix.config.suffix == '' }}
       uses: actions/upload-artifact@v2
       with:
-        path: ~/.melon
+        path: ./install.tar
         name: ${{ matrix.config.artifact }}
 
     - name: Prepare to run static analysis
