@@ -51,9 +51,9 @@ public:
     DBSingletone(DBSingletone&&) = delete;
     DBSingletone& operator=(DBSingletone&&) = delete;
 
-    [[nodiscard]] User me();
-    [[nodiscard]] User another_user();
-    [[nodiscard]] Domain my_domain();
+    [[nodiscard]] const User& me();
+    [[nodiscard]] const User& another_user();
+    [[nodiscard]] const Domain& my_domain();
 
 private:
     User m_me;
@@ -61,7 +61,6 @@ private:
     Domain m_my_domain;
 
     DBSingletone();
-    ~DBSingletone() = default;
 };
 
 class DBNameSingletone

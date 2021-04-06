@@ -23,17 +23,17 @@ inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSi
     return m_chats.erase(chat_handle);
 }
 
-[[nodiscard]] inline User DBSingletone::me()
+[[nodiscard]] inline const User& DBSingletone::me()
 {
     return m_me;
 }
 
-[[nodiscard]] inline User DBSingletone::another_user()
+[[nodiscard]] inline const User& DBSingletone::another_user()
 {
     return m_another_user;
 }
 
-[[nodiscard]] inline Domain DBSingletone::my_domain()
+[[nodiscard]] inline const Domain& DBSingletone::my_domain()
 {
     return m_my_domain;
 }

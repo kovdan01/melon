@@ -95,7 +95,7 @@ inline void Chat::set_scrolling_position(int scrollbar) noexcept
     return true;
 }
 
-}  // namespace ram
+}  // namespace detail
 
 }  // namespace melon::client_desktop
 

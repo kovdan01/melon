@@ -11,8 +11,6 @@ int main(int argc, char* argv[]) try
 {
     QApplication application(argc, argv);
 
-    //melon::client_desktop::create_connection_with_db();
-
     [[maybe_unused]] const auto& storage = melon::client_desktop::DBSingletone::get_instance();
 
     melon::client_desktop::MainWindow window;
