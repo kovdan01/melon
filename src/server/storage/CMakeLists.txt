@@ -87,6 +87,7 @@ add_library(${TESTS_MAIN} OBJECT
 
 target_compile_features(${TESTS_MAIN} PRIVATE cxx_std_20)
 
+target_link_libraries(${TESTS_MAIN} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${TESTS_MAIN} PRIVATE Catch2::Catch2)
 
 # test cases itself
