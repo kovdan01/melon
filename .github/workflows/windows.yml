@@ -23,7 +23,7 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MINGW64_CACHE_VERSION: 14  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 15  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -723,64 +723,12 @@ jobs:
           C:/msys64/mingw64/share/qt5/plugins/
           C:/msys64/mingw64/share/qt5/translations/
 
-          C:/msys64/mingw64/
-          C:/msys64/mingw64/include/
           C:/msys64/mingw64/include/catch2/
-          C:/msys64/mingw64/include/catch2/catch.hpp
-          C:/msys64/mingw64/include/catch2/catch_reporter_automake.hpp
-          C:/msys64/mingw64/include/catch2/catch_reporter_sonarqube.hpp
-          C:/msys64/mingw64/include/catch2/catch_reporter_tap.hpp
-          C:/msys64/mingw64/include/catch2/catch_reporter_teamcity.hpp
-          C:/msys64/mingw64/lib/
-          C:/msys64/mingw64/lib/cmake/
           C:/msys64/mingw64/lib/cmake/Catch2/
-          C:/msys64/mingw64/lib/cmake/Catch2/Catch.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/Catch2Config.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/Catch2ConfigVersion.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/Catch2Targets-release.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/Catch2Targets.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/CatchAddTests.cmake
-          C:/msys64/mingw64/lib/cmake/Catch2/ParseAndAddCatchTests.cmake
           C:/msys64/mingw64/lib/libCatch2WithMain.a
-          C:/msys64/mingw64/share/
           C:/msys64/mingw64/share/Catch2/
-          C:/msys64/mingw64/share/Catch2/gdbinit
-          C:/msys64/mingw64/share/Catch2/lldbinit
-          C:/msys64/mingw64/share/doc/
-          C:/msys64/mingw64/share/doc/Catch2/
-          C:/msys64/mingw64/share/doc/Catch2/assertions.md
-          C:/msys64/mingw64/share/doc/Catch2/benchmarks.md
-          C:/msys64/mingw64/share/doc/Catch2/ci-and-misc.md
-          C:/msys64/mingw64/share/doc/Catch2/cmake-integration.md
-          C:/msys64/mingw64/share/doc/Catch2/command-line.md
-          C:/msys64/mingw64/share/doc/Catch2/commercial-users.md
-          C:/msys64/mingw64/share/doc/Catch2/configuration.md
-          C:/msys64/mingw64/share/doc/Catch2/contributing.md
-          C:/msys64/mingw64/share/doc/Catch2/deprecations.md
-          C:/msys64/mingw64/share/doc/Catch2/event-listeners.md
-          C:/msys64/mingw64/share/doc/Catch2/generators.md
-          C:/msys64/mingw64/share/doc/Catch2/limitations.md
-          C:/msys64/mingw64/share/doc/Catch2/list-of-examples.md
-          C:/msys64/mingw64/share/doc/Catch2/logging.md
-          C:/msys64/mingw64/share/doc/Catch2/matchers.md
-          C:/msys64/mingw64/share/doc/Catch2/opensource-users.md
-          C:/msys64/mingw64/share/doc/Catch2/other-macros.md
-          C:/msys64/mingw64/share/doc/Catch2/own-main.md
-          C:/msys64/mingw64/share/doc/Catch2/Readme.md
-          C:/msys64/mingw64/share/doc/Catch2/release-notes.md
-          C:/msys64/mingw64/share/doc/Catch2/release-process.md
-          C:/msys64/mingw64/share/doc/Catch2/reporters.md
-          C:/msys64/mingw64/share/doc/Catch2/slow-compiles.md
-          C:/msys64/mingw64/share/doc/Catch2/test-cases-and-sections.md
-          C:/msys64/mingw64/share/doc/Catch2/test-fixtures.md
-          C:/msys64/mingw64/share/doc/Catch2/tostring.md
-          C:/msys64/mingw64/share/doc/Catch2/tutorial.md
-          C:/msys64/mingw64/share/doc/Catch2/why-catch.md
           C:/msys64/mingw64/share/licenses/
-          C:/msys64/mingw64/share/licenses/catch/
-          C:/msys64/mingw64/share/licenses/catch/LICENSE.txt
           C:/msys64/mingw64/share/pkgconfig/
-          C:/msys64/mingw64/share/pkgconfig/catch2.pc
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL
