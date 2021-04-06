@@ -45,15 +45,15 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "all-debug-linux",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "all-debug-linux",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
         - {
             os: "ubuntu-latest",
             prefix: "Linux",
@@ -63,15 +63,15 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "clang-tidy",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "clang-tidy",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
         #- {
             #os: "macos-latest",
             #prefix: "macOS",
@@ -772,6 +772,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set environment variables
+      shell: python3 {0}
+      run: |
+        import os
+
+        repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
+        root = os.path.normpath(os.path.dirname(repo))
+
+        with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+          env_file.write("REPO_PATH={}\n".format(repo))
+          env_file.write("ROOT_PATH={}\n".format(root))
+
     - name: Uninstall MySQL (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
@@ -845,7 +857,7 @@ jobs:
         DB_HOST: "127.0.0.1"
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < ./src/server/storage/sql/db_scheme_dump.sql
+        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
         cd install
         #ctest
         ./bin/melon-storage-tests
