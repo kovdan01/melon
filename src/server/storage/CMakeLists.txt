@@ -39,9 +39,9 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/melon/db_scheme.h)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h
-    COMMAND ${PYTHON_EXECUTABLE} script/ddl2cpp.py sql/db_scheme_dump.sql ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme melon
+    COMMAND ${PYTHON_EXECUTABLE} scripts/ddl2cpp.py sql/db_scheme_dump.sql ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme melon
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS script/ddl2cpp.py
+    DEPENDS scripts/ddl2cpp.py
 )
 
 # melon storage wrappers

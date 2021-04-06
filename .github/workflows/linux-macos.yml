@@ -32,6 +32,15 @@ jobs:
       QT_SHORT_VERSION: "5.15"
       QT_VERSION: "5.15.1"
       QT_INSTALL_PATH: "qt-install"
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: melon
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
     strategy:
       fail-fast: false
       matrix:
@@ -85,21 +94,24 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Uninstall MySQL (Linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: |
-        sudo apt --purge remove *mysql* -y
+#     - name: Uninstall MySQL (Linux)
+#       if: ${{ runner.os == 'Linux' }}
+#       run: |
+#         sudo systemctl stop mysql
+#         sudo apt purge *mysql* -y
+#         sudo systemctl daemon-reload
 
     - name: Install required packages (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
         sudo apt update
         sudo apt install libstdc++-10-dev gcc-10 g++-10 -y
-        sudo apt install mariadb-server libmariadb-dev libmariadb-dev-compat -y
         sudo apt install cmake ninja-build pkg-config -y
         sudo apt install p7zip-full -y
         sudo apt install python3 python3-pip -y
         sudo apt install libgdbm-dev -y  # for SASL DB utils
+        sudo apt install libmariadb-dev libmariadb-dev-compat -y
+        sudo apt install expect -y  # for interactive MariaDB secure installation
 
     - name: Create necessary symlinks (Linux)
       if: ${{ runner.os == 'Linux' }}
@@ -640,13 +652,13 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Run tests
+      env:
+        PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        sudo systemctl status mariadb
-        sudo mysql -u root
-        mysql -e "CREATE DATABASE melon;"
-        mysql -e "SHOW DATABASES LIKE 'melon';"
-        mysql -e "QUIT;"
-        mysql -u root melon < sql/db_scheme_dump.sql
+        while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+          sleep 1
+        done
+        mysql --host 127.0.0.1 --port $PORT -u root --database melon < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
         cd build
         ctest
         cd ..
