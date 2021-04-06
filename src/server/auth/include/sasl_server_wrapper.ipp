@@ -20,6 +20,7 @@ inline SaslServerConnection::SaslServerConnection(std::string service)
     : m_service(std::move(service))
 {
     // want to rerun
+    // even more
     ::gethostname(m_hostname, 1024);
     std::cerr << "HOSTNAME (on server): \"" << std::string(m_hostname) << "\", len: " << std::strlen(m_hostname) << std::endl;
     mca::sasl_res res = sasl_server_new(m_service.c_str(), m_hostname, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
