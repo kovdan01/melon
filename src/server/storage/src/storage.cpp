@@ -24,12 +24,13 @@ const melon::ChatsUsers G_CHATSUSERS;
 
 std::shared_ptr<sqlpp::mysql::connection_config> config_db()
 {
+    static constexpr int default_port = 3306;
     auto config = std::make_shared<sqlpp::mysql::connection_config>();
-    config->user     = (std::getenv("DB_USER")     == std::string{""} ? "melon"     : std::getenv("DB_USER"));
-    config->password = (std::getenv("DB_PASSWORD") == std::string{""} ? "melonpass" : std::getenv("DB_PASSWORD"));
-    config->database = (std::getenv("DB_DATABASE") == std::string{""} ? "melon"     : std::getenv("DB_DATABASE"));
-    config->host     = (std::getenv("DB_HOST")     == std::string{""} ? "localhost" : std::getenv("DB_HOST"));
-    config->port     = (std::getenv("DB_PORT")     == std::string{""} ? 3306        : std::stoi(std::getenv("DB_PORT")));
+    config->user     = (std::getenv("DB_USER")     == std::string{""} ? "melon"      : std::getenv("DB_USER"));
+    config->password = (std::getenv("DB_PASSWORD") == std::string{""} ? "melonpass"  : std::getenv("DB_PASSWORD"));
+    config->database = (std::getenv("DB_DATABASE") == std::string{""} ? "melon"      : std::getenv("DB_DATABASE"));
+    config->host     = (std::getenv("DB_HOST")     == std::string{""} ? "localhost"  : std::getenv("DB_HOST"));
+    config->port     = (std::getenv("DB_PORT")     == std::string{""} ? default_port : std::stoi(std::getenv("DB_PORT")));
 #ifndef NDEBUG
     config->debug = true;
 #else
