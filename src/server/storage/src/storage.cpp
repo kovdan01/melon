@@ -7,6 +7,7 @@
 #include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/update.h>
 
+#include <cstdlib>
 #include <vector>
 
 namespace melon::server::storage
