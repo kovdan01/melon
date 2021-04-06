@@ -60,7 +60,7 @@ private:
     User m_another_user;
     Domain m_my_domain;
 
-    DBSingletone();
+    DBSingletone();  // NOLINT (modernize-use-equals-delete)
 };
 
 class DBNameSingletone
