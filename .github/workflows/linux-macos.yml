@@ -661,7 +661,7 @@ jobs:
         DB_HOST: "127.0.0.1"
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+        while ! mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" --silent; do
           sleep 1
         done
         mysql --host $DB_HOST --port $DB_PORT -u $DB_USER -p $DB_PASSWORD --database $DB_DATABASE < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
