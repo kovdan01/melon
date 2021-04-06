@@ -38,7 +38,9 @@ jobs:
         ports:
           - 3306
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: melon
+          MYSQL_PASSWORD: melonpass
+          MYSQL_ROOT_PASSWORD: melonpass
           MYSQL_DATABASE: melon
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
     strategy:
@@ -653,9 +655,8 @@ jobs:
 
     - name: Run tests
       env:
-        PORT: ${{ job.services.mariadb.ports[3306] }}
-        DB_USER: "root"
-        DB_PASSWORD: "root"
+        DB_USER: "melon"
+        DB_PASSWORD: "melonpass"
         DB_DATABASE: "melon"
         DB_HOST: "127.0.0.1"
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
@@ -663,7 +664,7 @@ jobs:
         while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
           sleep 1
         done
-        mysql --host 127.0.0.1 --port $PORT -u root --database melon < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
+        mysql --host $DB_HOST --port $DB_PORT -u $DB_USER -p $DB_PASSWORD --database $DB_DATABASE < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
         cd build
         #ctest
         ./src/server/storage/melon-storage-tests
