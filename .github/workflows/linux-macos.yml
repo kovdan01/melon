@@ -45,42 +45,42 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "all-debug-linux",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
         - {
             os: "ubuntu-latest",
             prefix: "Linux",
-            suffix: "PVS-Studio",
+            suffix: "CodeQL",
             artifact: "",
             build_type: "Debug",
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "macos-latest",
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "clang",
-            #cxx: "clang++",
-          #}
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "all-debug-linux",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "macos-latest",
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -214,7 +214,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-5
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-7
 
     - name: Boost
       id: boost
@@ -298,7 +298,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-5
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -345,7 +345,7 @@ jobs:
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-5
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-7
 
     - name: Yaml CPP
       if: ${{ steps.cache_yaml_cpp_unix.outputs.cache-hit != 'true' }}
@@ -396,7 +396,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-6
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-7
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -491,7 +491,7 @@ jobs:
       id: cache_catch2_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-5
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-7
 
     - name: Catch2
       if: ${{ steps.cache_catch2_unix.outputs.cache-hit != 'true' }}
@@ -541,7 +541,7 @@ jobs:
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-5
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-7
 
     - name: Qt5
       if: ${{ steps.cache_qt_unix.outputs.cache-hit != 'true' }}
@@ -803,42 +803,42 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-5
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-7
 
     - name: Cyrus SASL cache
       uses: actions/cache@v2
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-5
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
 
     - name: Yaml CPP cache
       uses: actions/cache@v2
       id: cache_yaml_cpp_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-5
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-7
 
     - name: SQLPP11 cache
       uses: actions/cache@v2
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-6
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-7
 
     - name: Catch2 cache
       uses: actions/cache@v2
       id: cache_catch2_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-5
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-7
 
     - name: Qt5 cache
       uses: actions/cache@v2
       id: cache_qt_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-5
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-7
 
     - name: Download pre-built binaries from artifacts
       uses: actions/download-artifact@v2
