@@ -94,12 +94,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-#     - name: Uninstall MySQL (Linux)
-#       if: ${{ runner.os == 'Linux' }}
-#       run: |
-#         sudo systemctl stop mysql
-#         sudo apt purge *mysql* -y
-#         sudo systemctl daemon-reload
+    - name: Uninstall MySQL (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo systemctl stop mysql
+        sudo apt purge *mysql* -y
 
     - name: Install required packages (Linux)
       if: ${{ runner.os == 'Linux' }}
@@ -660,7 +659,8 @@ jobs:
         done
         mysql --host 127.0.0.1 --port $PORT -u root --database melon < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
         cd build
-        ctest
+        #ctest
+        ./src/server/storage/melon-storage-tests
         cd ..
 
     - name: Install Strip
