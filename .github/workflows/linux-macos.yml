@@ -32,17 +32,17 @@ jobs:
       QT_SHORT_VERSION: "5.15"
       QT_VERSION: "5.15.1"
       QT_INSTALL_PATH: "qt-install"
-#     services:
-#       mariadb:
-#         image: mariadb:latest
-#         ports:
-#           - 3306
-#         env:
-#           MYSQL_USER: melon
-#           MYSQL_PASSWORD: melonpass
-#           MYSQL_ROOT_PASSWORD: melonpass
-#           MYSQL_DATABASE: melon
-#         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: melon
+          MYSQL_PASSWORD: melonpass
+          MYSQL_ROOT_PASSWORD: melonpass
+          MYSQL_DATABASE: melon
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
     strategy:
       fail-fast: false
       matrix:
@@ -406,7 +406,7 @@ jobs:
       id: cache_sqlpp11_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-5
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-6
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11_unix.outputs.cache-hit != 'true' && runner.os != 'macOS' }}
@@ -485,7 +485,7 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release "
+                        "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
@@ -652,19 +652,17 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Run tests
+      env:
+        DB_USER: melon
+        DB_PASSWORD: melonpass
+        DB_DATABASE: melon
+        DB_HOST: "127.0.0.1"
+        DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        echo "Nothing"
-#       env:
-#         DB_USER: melon
-#         DB_PASSWORD: melonpass
-#         DB_DATABASE: melon
-#         DB_HOST: "127.0.0.1"
-#         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
-#       run: |
-#         mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
-#         cd build
-#         ctest
-#         cd ..
+        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
+        cd build
+        ctest
+        cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
