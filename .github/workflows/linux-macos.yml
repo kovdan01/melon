@@ -485,7 +485,7 @@ jobs:
         os.chdir(sqlpp11_conn_source_dir)
 
         execute_command("{} -GNinja -DCMAKE_MAKE_PROGRAM={} "
-                        "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
+                        "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON "
                         "-DCMAKE_INSTALL_PREFIX={} -DCMAKE_PREFIX_PATH=/usr/local/Cellar/mariadb/10.5.8 "
                         "-DUSE_MARIADB=TRUE -DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
