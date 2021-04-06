@@ -32,17 +32,17 @@ jobs:
       QT_SHORT_VERSION: "5.15"
       QT_VERSION: "5.15.1"
       QT_INSTALL_PATH: "qt-install"
-    services:
-      mariadb:
-        image: mariadb:latest
-        ports:
-          - 3306
-        env:
-          MYSQL_USER: melon
-          MYSQL_PASSWORD: melonpass
-          MYSQL_ROOT_PASSWORD: melonpass
-          MYSQL_DATABASE: melon
-        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
+#     services:
+#       mariadb:
+#         image: mariadb:latest
+#         ports:
+#           - 3306
+#         env:
+#           MYSQL_USER: melon
+#           MYSQL_PASSWORD: melonpass
+#           MYSQL_ROOT_PASSWORD: melonpass
+#           MYSQL_DATABASE: melon
+#         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
     strategy:
       fail-fast: false
       matrix:
@@ -111,7 +111,6 @@ jobs:
         sudo apt install p7zip-full -y
         sudo apt install python3 python3-pip -y
         sudo apt install libgdbm-dev -y  # for SASL DB utils
-        sudo apt install mariadb-server -y
         sudo apt install libmariadb-dev libmariadb-dev-compat -y
 
     - name: Create necessary symlinks (Linux)
@@ -653,17 +652,19 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Run tests
-      env:
-        DB_USER: melon
-        DB_PASSWORD: melonpass
-        DB_DATABASE: melon
-        DB_HOST: "127.0.0.1"
-        DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
-        cd build
-        ctest
-        cd ..
+        echo "Nothing"
+#       env:
+#         DB_USER: melon
+#         DB_PASSWORD: melonpass
+#         DB_DATABASE: melon
+#         DB_HOST: "127.0.0.1"
+#         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
+#       run: |
+#         mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
+#         cd build
+#         ctest
+#         cd ..
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
