@@ -41,7 +41,7 @@ jobs:
             prefix: "Linux",
             suffix: "",
             artifact: "all-release-linux",
-            build_type: "Debug",
+            build_type: "Release",
             cc: "gcc",
             cxx: "g++",
           }
@@ -615,7 +615,6 @@ jobs:
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        -D CMAKE_CXX_FLAGS="-g -fsanitize=undefined" \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
@@ -659,7 +658,7 @@ jobs:
         sasldblistusers2 -f ~/.melon/sasldb2
         echo "END"
 
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 1 &
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
         MELON_AUTH_PID=$!
 
         sleep 5
