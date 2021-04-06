@@ -654,9 +654,9 @@ jobs:
 
     - name: Run tests
       env:
-        DB_USER: ${{ job.services.mariadb.env.MYSQL_USER }}
-        DB_PASSWORD: ${{ job.services.mariadb.env.MYSQL_PASSWORD }}
-        DB_DATABASE: ${{ job.services.mariadb.env.MYSQL_DATABASE }}
+        DB_USER: melon
+        DB_PASSWORD: melonpass
+        DB_DATABASE: melon
         DB_HOST: "127.0.0.1"
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
