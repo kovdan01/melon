@@ -90,8 +90,8 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 inline SaslClientConnection::SaslClientConnection(std::string service)
     : m_service(std::move(service))
 {
-    gethostname(m_hostname, 1024);
-    std::cerr << "HOSTNAME: \"" << std::string(m_hostname) << "\", len: " << std::strlen(m_hostname) << std::endl;
+    ::gethostname(m_hostname, 1024);
+    std::cerr << "HOSTNAME (on client): \"" << std::string(m_hostname) << "\", len: " << std::strlen(m_hostname) << std::endl;
     sasl_res res = sasl_client_new(m_service.c_str(), m_hostname, nullptr, nullptr, nullptr, 0, &m_conn);
     detail::check_sasl_result(res, "client new");
 }

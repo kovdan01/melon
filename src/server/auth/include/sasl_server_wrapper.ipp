@@ -7,6 +7,8 @@
 #include <string>
 #include <string_view>
 
+#include <unistd.h>
+
 // debug headers
 #include <iostream>
 #include <thread>
@@ -17,7 +19,9 @@ namespace melon::server::auth
 inline SaslServerConnection::SaslServerConnection(std::string service)
     : m_service(std::move(service))
 {
-    mca::sasl_res res = sasl_server_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
+    ::gethostname(m_hostname, 1024);
+    std::cerr << "HOSTNAME (on server): \"" << std::string(m_hostname) << "\", len: " << std::strlen(m_hostname) << std::endl;
+    mca::sasl_res res = sasl_server_new(m_service.c_str(), m_hostname, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
     mca::detail::check_sasl_result(res, "server new");
 }
 
