@@ -64,15 +64,13 @@ target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC sqlpp11::connector-mysql)
 
 ntc_target(${STORAGE_WRAPPERS_LIB}
     ALIAS_NAME melon::storage_wrappers
+    HEADER_PREFIX melon/server/storage/wrappers/
 )
 
 # storage service itself
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
-target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
