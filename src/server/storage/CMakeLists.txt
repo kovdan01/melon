@@ -44,43 +44,31 @@ add_custom_command(
     DEPENDS scripts/ddl2cpp.py
 )
 
-# melon storage wrappers
-set(LIB_HEADERS
-    include/storage.hpp
-)
+# storage wrappers
+set(STORAGE_WRAPPERS_LIB storage-wrappers)
 
-set(LIB_SOURCES
+add_library(${STORAGE_WRAPPERS_LIB}
+    include/storage.hpp
     src/storage.cpp
 )
 
-add_library(storage-wrappers STATIC
-    ${LIB_HEADERS}
-    ${LIB_SOURCES}
-)
+target_include_directories(${STORAGE_WRAPPERS_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
+target_sources(${STORAGE_WRAPPERS_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
 
-target_include_directories(storage-wrappers PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/autogen)
-target_sources(storage-wrappers PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
+target_compile_features(${STORAGE_WRAPPERS_LIB} PRIVATE cxx_std_20)
 
-target_compile_features(storage-wrappers PUBLIC cxx_std_20)
+target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC melon::core)
+target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC PkgConfig::mariadb)
+target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC sqlpp11::connector-mysql)
 
-target_link_libraries(storage-wrappers PUBLIC melon::core)
-target_link_libraries(storage-wrappers PUBLIC PkgConfig::mariadb)
-target_link_libraries(storage-wrappers PUBLIC sqlpp11::sqlpp11)
-target_link_libraries(storage-wrappers PUBLIC sqlpp11::connector-mysql)
-
-ntc_target(storage-wrappers
+ntc_target(${STORAGE_WRAPPERS_LIB}
     ALIAS_NAME melon::storage_wrappers
 )
 
-set(HEADERS)
-
-set(SOURCES
-    src/main.cpp
-)
-
+# storage service itself
 add_executable(${PROJECT_NAME}
-    ${HEADERS}
-    ${SOURCES}
+    src/main.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
@@ -88,43 +76,36 @@ target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
-target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
-target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::connector-mysql)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_wrappers)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
+target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 # compile main only once to speed up compilation
-set(TESTS_MAIN_NAME tests-main)
+set(TESTS_MAIN tests-main)
 
-add_library(${TESTS_MAIN_NAME} OBJECT
-    src/test_main.cpp)
+add_library(${TESTS_MAIN} OBJECT
+    src/test_main.cpp
+)
 
-target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
+target_compile_features(${TESTS_MAIN} PRIVATE cxx_std_20)
 
-set(TEST_STORAGE_NAME melon-storage-tests)
+target_link_libraries(${TESTS_MAIN} PRIVATE Catch2::Catch2)
 
-set(TEST_HEADERS)
+# test cases itself
+set(STORAGE_TESTS melon-storage-tests)
 
-set(TEST_SOURCES
+add_executable(${STORAGE_TESTS}
     src/storage_tests.cpp
 )
 
-add_executable(${TEST_STORAGE_NAME}
-    ${TEST_HEADERS}
-    ${TEST_SOURCES}
-)
+target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
 
-target_link_libraries(${TEST_STORAGE_NAME} PRIVATE melon::storage_wrappers)
-target_link_libraries(${TEST_STORAGE_NAME} PRIVATE ${TESTS_MAIN_NAME})
-target_link_libraries(${TEST_STORAGE_NAME} PRIVATE Catch2::Catch2)
+target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_wrappers)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
+target_link_libraries(${STORAGE_TESTS} PRIVATE ${TESTS_MAIN})
 
-ntc_target(${PROJECT_NAME})
+ntc_target(${STORAGE_TESTS})
 
 include(CTest)
 include(Catch)
-catch_discover_tests(${TEST_STORAGE_NAME})
+catch_discover_tests(${STORAGE_TESTS})
