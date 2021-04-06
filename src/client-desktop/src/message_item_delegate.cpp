@@ -1,6 +1,6 @@
 #include <chat_widget.hpp>
 #include <config.hpp>
-#include <db_storage.hpp>
+#include <entities_db.hpp>
 #include <helpers.hpp>
 #include <message_item_delegate.hpp>
 
@@ -34,12 +34,10 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
                             user_ap.timestamp_font_params().size,
                             user_ap.timestamp_font_params().weight };
 
-    QFontMetrics fm_sender = QFontMetrics(m_sender_font);
-    m_fm_sender.swap(fm_sender);
-    QFontMetrics fm_message_text = QFontMetrics(m_message_text_font);
-    m_fm_message_text.swap(fm_message_text);
-    QFontMetrics fm_timestamp = QFontMetrics(m_timestamp_font);
-    m_fm_timestamp.swap(fm_timestamp);
+
+    m_fm_sender = QFontMetrics(m_sender_font);
+    m_fm_message_text = QFontMetrics(m_message_text_font);
+    m_fm_timestamp = QFontMetrics(m_timestamp_font);
 
     m_sended_message_color = user_ap.sended_message_color();
     m_receive_message_color = user_ap.receive_message_color();
@@ -81,7 +79,9 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         painter->setPen(m_pen_for_background);
 
         QColor icon_color;
-        if (message->from() == tr("Me"))
+
+        auto& storage = DBSingletone::get_instance();
+        if ((message->user_id() == storage.me().user_id()) && (message->domain_id_user() == storage.me().domain_id()))
             icon_color = Qt::darkCyan;
         else
             icon_color = Qt::darkGreen;
@@ -104,8 +104,8 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
     QRect message_text_rect = m_fm_message_text.boundingRect(message_max_rect,
-                                                           Qt::AlignLeft | Qt::TextWordWrap,
-                                                           message_text);
+                                                             Qt::AlignLeft | Qt::TextWordWrap,
+                                                             message_text);
     if (!is_previous_same)
     {
         int message_text_height = message_text_rect.height();
@@ -140,6 +140,8 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Rendering
     // Background rendering
     QRect message_background_rect = message_text_rect;
+    message_background_rect.setWidth(std::max(message_text_rect.width(), sender_rect.width()));
+    message_background_rect.setHeight(message_text_rect.height());
 
     if (!is_previous_same)
     {

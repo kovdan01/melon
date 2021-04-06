@@ -1,7 +1,7 @@
 #include <ui_chat_widget.h>
 
 #include <chat_widget.hpp>
-#include <db_storage.hpp>
+#include <entities_db.hpp>
 #include <message_list_model.hpp>
 
 #include <QMainWindow>
@@ -107,7 +107,7 @@ void ChatWidget::send_message()
     }
 
 
-    auto& storage = UserDomainSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
 
     Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
                         storage.me().user_id(), storage.my_domain().domain_id(),
@@ -126,7 +126,7 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    auto& storage = UserDomainSingletone::get_instance();
+    auto& storage = DBSingletone::get_instance();
     Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
                         storage.another_user().user_id(), storage.another_user().domain_id(),
                         QStringLiteral("I wish I could hear you."),

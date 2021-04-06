@@ -1,6 +1,6 @@
 #include <chat_item_delegate.hpp>
 #include <config.hpp>
-#include <db_storage.hpp>
+#include <entities_db.hpp>
 #include <helpers.hpp>
 
 #include <QListView>
@@ -104,7 +104,6 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     painter->setRenderHint(QPainter::Antialiasing);
 
     auto chat = index.data(Qt::DisplayRole).value<StorageSingletone::chat_handle_t>();
-    auto last_message = chat->last_message();
 
     QPen standart_pen = painter->pen();
 
@@ -148,6 +147,8 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         painter->setPen(standart_pen);
         return;
     }
+
+    auto last_message = chat->last_message();
 
     // Timestamp rect and render
     QString time_str = date_handler(last_message->timestamp());

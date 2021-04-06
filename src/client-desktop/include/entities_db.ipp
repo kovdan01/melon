@@ -6,8 +6,6 @@ inline Message::Message(const QString& text)
     this->set_text(text);
 }
 
-inline Message::Message() = default;
-
 [[nodiscard]] inline const QString& Message::from() const noexcept
 {
     return m_from;
@@ -47,8 +45,7 @@ inline void Chat::set_incomplete_message(Message incomplete_message)
 
 [[nodiscard]] inline Chat::message_handle_t Chat::last_message()
 {
-    if (m_messages.empty())
-        return m_messages.begin();
+    assert(!m_messages.empty());
     return std::prev(m_messages.end());
 }
 
@@ -60,48 +57,6 @@ inline void Chat::set_incomplete_message(Message incomplete_message)
 [[nodiscard]] inline const Message& Chat::incomplete_message() const noexcept
 {
     return m_incomplete_message;
-}
-
-inline StorageSingletone::chat_handle_t StorageSingletone::add_chat(Chat chat)
-{
-    m_chats.emplace_back(std::move(chat));
-    return std::prev(m_chats.end());
-}
-
-inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSingletone::chat_handle_t chat_handle)
-{
-    chat_handle->remove_from_db();
-    return m_chats.erase(chat_handle);
-}
-
-[[nodiscard]] inline const std::list<Chat>& StorageSingletone::chats() const
-{
-    return m_chats;
-}
-
-[[nodiscard]] inline std::list<Chat>& StorageSingletone::chats()
-{
-    return m_chats;
-}
-
-[[nodiscard]] inline User UserDomainSingletone::me()
-{
-    return m_me;
-}
-
-[[nodiscard]] inline User UserDomainSingletone::another_user()
-{
-    return m_another_user;
-}
-
-[[nodiscard]] inline Domain UserDomainSingletone::my_domain()
-{
-    return m_my_domain;
-}
-
-[[nodiscard]] inline QString DBSingletone::db_name()
-{
-    return m_db_name;
 }
 
 }  // namespace melon::client_desktop

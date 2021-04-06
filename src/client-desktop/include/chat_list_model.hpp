@@ -1,7 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_MESSAGE_CHAT_LIST_MODEL_HPP_
 #define MELON_CLIENT_DESKTOP_MESSAGE_CHAT_LIST_MODEL_HPP_
 
-#include <db_storage.hpp>
+#include <entities_db.hpp>
+#include <storage_singletones.hpp>
 
 #include <QAbstractListModel>
 

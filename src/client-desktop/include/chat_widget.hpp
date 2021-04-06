@@ -1,9 +1,10 @@
 #ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
+#include <entities_db.hpp>
 #include <message_item_delegate.hpp>
 #include <message_list_model.hpp>
-#include <db_storage.hpp>
+#include <storage_singletones.hpp>
 
 #include <ui_chat_widget.h>
 

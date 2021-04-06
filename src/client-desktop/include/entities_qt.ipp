@@ -3,7 +3,7 @@ namespace melon::client_desktop
 
 using id_t = melon::core::id_t;
 
-namespace ram
+namespace detail
 {
 
 inline Domain::Domain (const QString& hostname, bool external)
@@ -16,7 +16,7 @@ inline Domain::Domain (const QString& hostname)
 {
 }
 
-[[nodiscard]] inline QString Domain::hostname() const noexcept
+[[nodiscard]] inline QString Domain::hostname() const
 {
     return QString::fromStdString(melon::core::Domain::hostname());
 }
@@ -31,7 +31,7 @@ inline User::User (const QString& username, id_t domain_id)
 {
 }
 
-[[nodiscard]] inline QString User::username() const noexcept
+[[nodiscard]] inline QString User::username() const
 {
     return QString::fromStdString(melon::core::User::username());
 }
@@ -50,7 +50,7 @@ inline Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
 
 inline Message::Message() = default;
 
-[[nodiscard]] inline QString Message::text() const noexcept
+[[nodiscard]] inline QString Message::text() const
 {
     return QString::fromStdString(melon::core::Message::text());
 }

@@ -35,14 +35,16 @@ set(HEADERS
     include/chat_list_view.hpp
     include/chat_widget.hpp
     include/config.hpp
-    include/db_storage.hpp
-    include/db_storage.ipp
+    include/entities_db.hpp
+    include/entities_db.ipp
+    include/entities_qt.hpp
+    include/entities_qt.ipp
+    include/helpers.hpp
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
-    include/ram_storage.hpp
-    include/ram_storage.ipp
-    include/helpers.hpp
+    include/storage_singletones.hpp
+    include/storage_singletones.ipp
 )
 
 set(SOURCES
@@ -50,11 +52,12 @@ set(SOURCES
     src/chat_list_model.cpp
     src/chat_list_view.cpp
     src/chat_widget.cpp
-    src/db_storage.cpp
+    src/entities_db.cpp
     src/main.cpp
     src/main_window.cpp
     src/message_item_delegate.cpp
     src/message_list_model.cpp
+    src/storage_singletones.cpp
 )
 
 set(UI_FILES

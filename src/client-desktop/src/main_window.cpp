@@ -1,7 +1,7 @@
 #include <chat_item_delegate.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
-#include <db_storage.hpp>
+#include <entities_db.hpp>
 #include <main_window.hpp>
 #include <melon/core/exception.hpp>
 
@@ -66,7 +66,7 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    auto& storage = DBSingletone::get_instance();
+    auto& storage = DBNameSingletone::get_instance();
 
     QString db_name = storage.db_name();
     QSqlQuery qry_for_chats(db_name);
@@ -80,8 +80,8 @@ void MainWindow::load_data_from_database()
         auto domain_id = qry_for_chats.value(1).value<std::uint64_t>();
         Chat chat(chat_id, domain_id);
 
-        QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") +QString::number(chat_id)
-                         + QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
+        QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") + QString::number(chat_id) +
+                          QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
         exec_and_check_qtsql_query(qry_for_messages, qry_str, "Loading messages");
 
         while (qry_for_messages.next())
@@ -120,12 +120,12 @@ MainWindow::MainWindow(QWidget* parent)
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 
-    auto& storage = DBSingletone::get_instance();
+    auto& storage = DBNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     exec_and_check_qtsql_query(qry, QStringLiteral("SELECT COUNT(chat_id) from chats"), "Counting chats");
     qry.next();
-    if (qry.value(0).toInt() > 0)
+    if (qry.value(0).toInt() > 0)  // If count of chats > 0
     {
         this->replace_spacer_with_chat_widget();
         this->load_data_from_database();
@@ -162,7 +162,7 @@ void MainWindow::add_chat()
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        auto& storage = UserDomainSingletone::get_instance();
+        auto& storage = DBSingletone::get_instance();
         Chat chat(storage.my_domain().domain_id(), name);
         m_model_chat_list->add_chat(chat);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;

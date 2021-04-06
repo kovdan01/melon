@@ -16,29 +16,34 @@ namespace melon::client_desktop
 
 using id_t = melon::core::id_t;
 
-namespace ram
+namespace detail
 {
 
 class Domain : public melon::core::Domain
 {
 public:
     // For Insert
-    Domain (const QString& hostname, bool external);
+    Domain(const QString& hostname, bool external);
     // For Select
-    Domain (const QString& hostname);
+    Domain(const QString& hostname);
+    // To be initialized in DBStorage constructor
+    Domain() = default;
 
-    [[nodiscard]] QString hostname() const noexcept;
+    [[nodiscard]] QString hostname() const;
 };
 
 class User : public melon::core::User
 {
 public:
     // For Insert
-    User (const QString& username, id_t domain_id, Status status);
+    User(const QString& username, id_t domain_id, Status status);
     // For Select
-    User (const QString& username, id_t domain_id);
+    User(const QString& username, id_t domain_id);
+    // To be initialized in DBStorage constructor
+    User() = default;
 
-    [[nodiscard]] QString username() const noexcept;
+
+    [[nodiscard]] QString username() const;
 };
 
 class Message : public melon::core::Message
@@ -55,7 +60,7 @@ public:
     // for QVariant
     Message();
 
-    [[nodiscard]] QString text() const noexcept;
+    [[nodiscard]] QString text() const;
     void set_text(const QString& text);
 };
 
@@ -82,10 +87,10 @@ private:
     int m_scrolling_position = 0;
 };
 
-}  // namespace ram
+}  // namespace detail
 
 }  // namespace melon::client_desktop
 
 
-#include "ram_storage.ipp"
+#include "entities_qt.ipp"
 #endif  // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_

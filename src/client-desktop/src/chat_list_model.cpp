@@ -1,5 +1,5 @@
 #include <chat_list_model.hpp>
-#include <db_storage.hpp>
+#include <entities_db.hpp>
 #include <helpers.hpp>
 
 namespace melon::client_desktop
