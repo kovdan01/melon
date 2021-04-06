@@ -662,12 +662,16 @@ jobs:
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
         while ! mysqladmin ping --host $DB_HOST --port $DB_PORT -u $DB_USER -p $DB_PASSWORD --silent; do
+          echo AAA
           sleep 1
         done
+        echo BBB
         mysql --host $DB_HOST --port $DB_PORT -u $DB_USER -p $DB_PASSWORD --database $DB_DATABASE < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
+        echo CCC
         cd build
         #ctest
         ./src/server/storage/melon-storage-tests
+        echo DDD
         cd ..
 
     - name: Install Strip
