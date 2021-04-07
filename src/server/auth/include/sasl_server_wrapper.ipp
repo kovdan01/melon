@@ -1,3 +1,4 @@
+#include <boost/asio/ip/host_name.hpp>
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -7,18 +8,14 @@
 #include <string>
 #include <string_view>
 
-// debug headers
-//#include <iostream>
-//#include <cstdlib>
-#include <thread>
-
 namespace melon::server::auth
 {
 
 inline SaslServerConnection::SaslServerConnection(std::string service)
     : m_service(std::move(service))
 {
-    mca::sasl_res res = sasl_server_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
+    m_hostname = boost::asio::ip::host_name();
+    mca::sasl_res res = sasl_server_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
     mca::detail::check_sasl_result(res, "server new");
 }
 
@@ -44,7 +41,6 @@ inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mecha
     unsigned serverout_len;
     mca::sasl_res res = sasl_server_start(m_conn, chosen_mechanism.data(), client_initial_response.data(),
                                      static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
-//    std::cerr<< std::system("sasldblistusers2 -f ~/.melon/sasldb2") << std::endl << "Authorising with" << client_initial_response << std::endl;
     mca::detail::check_sasl_result(res, "server start");
 
     return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthCompletness>(res) };

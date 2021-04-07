@@ -1,5 +1,6 @@
 #include <melon/core/exception.hpp>
 
+#include <boost/asio/ip/host_name.hpp>
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -87,7 +88,8 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 inline SaslClientConnection::SaslClientConnection(std::string service)
     : m_service(std::move(service))
 {
-    sasl_res res = sasl_client_new(m_service.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
+    m_hostname = boost::asio::ip::host_name();
+    sasl_res res = sasl_client_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, 0, &m_conn);
     detail::check_sasl_result(res, "client new");
 }
 
