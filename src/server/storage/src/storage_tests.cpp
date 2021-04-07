@@ -9,6 +9,9 @@ namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
 
+namespace melon::server::storage
+{
+
 static bool operator==(const mss::Domain& lhs, const mss::Domain& rhs)
 {
     return std::make_tuple(lhs.domain_id(), lhs.hostname(), lhs.external()) ==
@@ -36,6 +39,8 @@ static bool operator==(const mss::Message& lhs, const mss::Message& rhs)
                            rhs.user_id(), rhs.domain_id_user(), rhs.status(),
                            std::chrono::system_clock::to_time_t(rhs.timestamp()));
 }
+
+}  // namespace melon::server::storage
 
 TEST_CASE("Test storage service", "[storage]")
 {
