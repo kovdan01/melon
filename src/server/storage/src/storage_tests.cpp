@@ -1,7 +1,6 @@
 #include <catch2/catch.hpp>
 
 #include <algorithm>
-#include <iostream>
 #include <tuple>
 
 #include <storage.hpp>
@@ -28,46 +27,14 @@ static bool operator==(const mss::Chat& lhs, const mss::Chat& rhs)
            std::make_tuple(rhs.chat_id(), rhs.domain_id(), rhs.chatname());
 }
 
-static std::ostream& operator<<(std::ostream& o, const mc::Message::Status status)
-{
-    switch (status)
-    {
-    case mc::Message::Status::FAIL:
-        o << "FAIL";
-        break;
-    case mc::Message::Status::SENT:
-        o << "SENT";
-        break;
-    case mc::Message::Status::RECEIVED:
-        o << "RECEIVED";
-        break;
-    case mc::Message::Status::SEEN:
-        o << "SEEN";
-        break;
-    }
-    return o;
-}
-
-static std::ostream& operator<<(std::ostream& o, const mc::Message& message)
-{
-    o << "Message { "
-      << "message_id: " << message.message_id() << ", "
-      << "chat_id: " << message.chat_id() << ", "
-      << "domain_id_chat: " << message.domain_id_chat() << ", "
-      << "user_id: " << message.user_id() << ", "
-      << "domain_id_user: " << message.domain_id_user() << ", "
-      << "text: \"" << message.text() << "\", "
-      << "status: " << message.status() << " } ";
-    return o;
-}
-
 static bool operator==(const mss::Message& lhs, const mss::Message& rhs)
 {
-    std::cerr << "\nM1: " << lhs << std::endl << "M2: " << rhs << std::endl << std::endl;
     return std::make_tuple(lhs.message_id(), lhs.chat_id(), lhs.domain_id_chat(), lhs.text(),
-                           lhs.user_id(), lhs.domain_id_user(), lhs.status(), lhs.timestamp()) ==
+                           lhs.user_id(), lhs.domain_id_user(), lhs.status(),
+                           std::chrono::system_clock::to_time_t(lhs.timestamp())) ==
            std::make_tuple(rhs.message_id(), rhs.chat_id(), rhs.domain_id_chat(), rhs.text(),
-                           rhs.user_id(), rhs.domain_id_user(), rhs.status(), rhs.timestamp());
+                           rhs.user_id(), rhs.domain_id_user(), rhs.status(),
+                           std::chrono::system_clock::to_time_t(rhs.timestamp()));
 }
 
 TEST_CASE("Test storage service", "[storage]")
@@ -179,14 +146,11 @@ TEST_CASE("Test storage service", "[storage]")
 
                     SECTION("Test get_messages() for Chat")
                     {
-                        mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
-                        mss::Message message1(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(),
-                                              ":D", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-                        mss::Message message2(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(),
-                                              "Lorem ipsum", std::chrono::system_clock::now(), mc::Message::Status::SENT);
-                        std::vector<mss::Message> messages_in_chat = found_chat1.get_messages();
+                        mss::Message message3(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(),
+                                              "Sample text", std::chrono::system_clock::now(), mc::Message::Status::SENT);
+                        std::vector<mss::Message> messages_in_chat = chat1.get_messages();
                         REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message1](const mss::Message& m){ return m == message1; }) != messages_in_chat.end());
-                        REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message2](const mss::Message& m){ return m == message2; }) != messages_in_chat.end());
+                        REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message3](const mss::Message& m){ return m == message3; }) != messages_in_chat.end());
                         REQUIRE(messages_in_chat.size() == 2);
                     }
                 }
