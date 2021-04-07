@@ -133,7 +133,7 @@ int main() try
     mysql::connection db(mss::config_db());
 
     // Domains
-    mss::Domain domain1(db, "Brizil server", false);
+    mss::Domain domain1(db, "Brazil server", false);
     std::cout << "Created domain1: " << domain1 << '\n';
 
     mss::Domain found_domain1(db, domain1.hostname());
@@ -184,11 +184,14 @@ int main() try
     get_online_users(db);
 
     // Chats
-    mss::Chat chat1(db, domain1.domain_id(), "secret_chat6");
+    mss::Chat chat1(db, domain1.domain_id(), "secret_chat");
     std::cout << "Created chat1: " << chat1 << '\n';
 
     mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
     std::cout << "Found chat1:   " << found_chat1 << '\n';
+
+    found_chat1.add_user(user1);
+    found_chat1.add_user(user2);
 
     get_chat_participants(chat1);
 
