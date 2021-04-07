@@ -25,7 +25,7 @@ jobs:
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
-      MINGW64_CACHE_VERSION: 14  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 16  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -779,6 +779,13 @@ jobs:
           C:/msys64/mingw64/share/qt5/phrasebooks/
           C:/msys64/mingw64/share/qt5/plugins/
           C:/msys64/mingw64/share/qt5/translations/
+
+          C:/msys64/mingw64/include/catch2/
+          C:/msys64/mingw64/lib/cmake/Catch2/
+          C:/msys64/mingw64/lib/libCatch2WithMain.a
+          C:/msys64/mingw64/share/Catch2/
+          C:/msys64/mingw64/share/licenses/
+          C:/msys64/mingw64/share/pkgconfig/
         key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
 
     - name: Cyrus SASL
@@ -804,6 +811,12 @@ jobs:
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-x86_64-qt5
+
+    - name: Catch2
+      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-catch
 
     - name: SQLPP11 cache
       uses: actions/cache@v2

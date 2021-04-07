@@ -3,6 +3,7 @@
 
 #include <melon/core/entities.hpp>
 #include <melon/core/exception.hpp>
+#include <melon/server/storage/wrappers/export.h>
 
 #include <sqlpp11/mysql/mysql.h>
 #include <sqlpp11/remove.h>
@@ -22,9 +23,9 @@ class Message;
 
 using id_t = melon::core::id_t;
 
-std::shared_ptr<sqlpp::mysql::connection_config> config_db();
+STORAGE_WRAPPERS_EXPORT std::shared_ptr<sqlpp::mysql::connection_config> config_db();
 
-class IdNotFoundException : public melon::Exception
+class STORAGE_WRAPPERS_EXPORT IdNotFoundException : public melon::Exception
 {
 public:
     using melon::Exception::Exception;
@@ -32,17 +33,17 @@ public:
 };
 
 // The following functions throw IdNotFoundException if the requested entity is not found
-void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id);
-void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
+STORAGE_WRAPPERS_EXPORT void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id);
+STORAGE_WRAPPERS_EXPORT void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
-[[nodiscard]] id_t max_user_id(sqlpp::mysql::connection& db, id_t domain_id);
-[[nodiscard]] id_t max_chat_id(sqlpp::mysql::connection& db, id_t domain_id);
-[[nodiscard]] id_t max_message_id(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
+[[nodiscard]] STORAGE_WRAPPERS_EXPORT id_t max_user_id(sqlpp::mysql::connection& db, id_t domain_id);
+[[nodiscard]] STORAGE_WRAPPERS_EXPORT id_t max_chat_id(sqlpp::mysql::connection& db, id_t domain_id);
+[[nodiscard]] STORAGE_WRAPPERS_EXPORT id_t max_message_id(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
-[[nodiscard]] std::vector<std::string> get_all_usernames(sqlpp::mysql::connection& db);
-[[nodiscard]] std::vector<User> get_online_users(sqlpp::mysql::connection& db);
+[[nodiscard]] STORAGE_WRAPPERS_EXPORT std::vector<std::string> get_all_usernames(sqlpp::mysql::connection& db);
+[[nodiscard]] STORAGE_WRAPPERS_EXPORT std::vector<User> get_online_users(sqlpp::mysql::connection& db);
 
-class Domain : public melon::core::Domain
+class STORAGE_WRAPPERS_EXPORT Domain : public melon::core::Domain
 {
 public:
     // For Insert
@@ -59,7 +60,7 @@ private:
     sqlpp::mysql::connection& m_db;
 };
 
-class User : public melon::core::User
+class STORAGE_WRAPPERS_EXPORT User : public melon::core::User
 {
 public:
     // For Insert
@@ -77,7 +78,7 @@ private:
     sqlpp::mysql::connection& m_db;
 };
 
-class Chat : public melon::core::Chat
+class STORAGE_WRAPPERS_EXPORT Chat : public melon::core::Chat
 {
 public:
     // For Insert
@@ -92,11 +93,13 @@ public:
 
     void set_chatname(std::string chatname);
 
+    void add_user(User& user);
+
 private:
     sqlpp::mysql::connection& m_db;
 };
 
-class Message : public melon::core::Message
+class STORAGE_WRAPPERS_EXPORT Message : public melon::core::Message
 {
 public:
     // For Insert
