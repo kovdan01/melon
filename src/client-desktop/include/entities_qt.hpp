@@ -1,5 +1,5 @@
-#ifndef MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
-#define MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
+#ifndef MELON_CLIENT_DESKTOP_ENTITIES_QT_HPP_
+#define MELON_CLIENT_DESKTOP_ENTITIES_QT_HPP_
 
 #include <melon/core/entities.hpp>
 
@@ -41,7 +41,6 @@ public:
     User(const QString& username, id_t domain_id);
     // To be initialized in DBStorage constructor
     User() = default;
-
 
     [[nodiscard]] QString username() const;
 };
@@ -91,6 +90,6 @@ private:
 
 }  // namespace melon::client_desktop
 
-
 #include "entities_qt.ipp"
-#endif  // MELON_CLIENT_DESKTOP_RAM_STORAGE_HPP_
+
+#endif  // MELON_CLIENT_DESKTOP_ENTITIES_QT_HPP_

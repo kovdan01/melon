@@ -123,7 +123,7 @@ bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std:
 
     auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
 
-    return ((message1->user_id() == message2->user_id()) && (message1->domain_id_user() == message2->domain_id_user()) && (diff_time.count() < 2));
+    return (message1->user_id() == message2->user_id() && message1->domain_id_user() == message2->domain_id_user() && diff_time.count() < 2);
 }
 
 void MessageListModel::clear()

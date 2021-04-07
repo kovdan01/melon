@@ -3,7 +3,6 @@
 #include <storage_singletones.hpp>
 
 #include <QApplication>
-#include <QFile>
 
 #include <iostream>
 

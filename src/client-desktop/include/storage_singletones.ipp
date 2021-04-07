@@ -1,6 +1,12 @@
 namespace melon::client_desktop
 {
 
+[[nodiscard]] inline StorageSingletone& StorageSingletone::get_instance()
+{
+    static StorageSingletone instance;
+    return instance;
+}
+
 [[nodiscard]] inline const std::list<Chat>& StorageSingletone::chats() const
 {
     return m_chats;
@@ -23,6 +29,12 @@ inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSi
     return m_chats.erase(chat_handle);
 }
 
+[[nodiscard]] inline DBSingletone& DBSingletone::get_instance()
+{
+    static DBSingletone instance;
+    return instance;
+}
+
 [[nodiscard]] inline const User& DBSingletone::me()
 {
     return m_me;
@@ -36,6 +48,12 @@ inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSi
 [[nodiscard]] inline const Domain& DBSingletone::my_domain()
 {
     return m_my_domain;
+}
+
+[[nodiscard]] inline DBNameSingletone& DBNameSingletone::get_instance()
+{
+    static DBNameSingletone instance;
+    return instance;
 }
 
 [[nodiscard]] inline QString DBNameSingletone::db_name()

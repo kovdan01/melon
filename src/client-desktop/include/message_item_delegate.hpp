@@ -43,7 +43,7 @@ private:
        we put here fake initialization */
     QFontMetrics m_fm_sender = QFontMetrics(QFont());
     QFontMetrics m_fm_message_text = QFontMetrics(QFont());
-    QFontMetrics m_fm_timestamp= QFontMetrics(QFont());
+    QFontMetrics m_fm_timestamp = QFontMetrics(QFont());
 
     qreal m_scale_message_width;
     int m_min_message_width;

@@ -49,7 +49,7 @@ inline void Chat::set_incomplete_message(Message incomplete_message)
     return std::prev(m_messages.end());
 }
 
-[[nodiscard]] inline bool Chat::empty() const
+[[nodiscard]] inline bool Chat::empty() const noexcept
 {
     return m_messages.empty();
 }

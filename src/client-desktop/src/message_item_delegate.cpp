@@ -61,6 +61,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 {
     auto message = index.data(Qt::DisplayRole).value<Chat::message_handle_t>();
     bool is_previous_same = index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>();
+    auto& storage = DBSingletone::get_instance();
 
     painter->setRenderHint(QPainter::Antialiasing);
     QPen standart_pen = painter->pen();
@@ -80,8 +81,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 
         QColor icon_color;
 
-        auto& storage = DBSingletone::get_instance();
-        if ((message->user_id() == storage.me().user_id()) && (message->domain_id_user() == storage.me().domain_id()))
+        if (message->user_id() == storage.me().user_id() && message->domain_id_user() == storage.me().domain_id())
             icon_color = Qt::darkCyan;
         else
             icon_color = Qt::darkGreen;
@@ -159,7 +159,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     }
     QPainterPath message_background_path;
     QColor color;
-    if (message->from() == QStringLiteral("Me"))
+    if (message->user_id() == storage.me().user_id() && message->domain_id_user() == storage.me().domain_id())
         color = m_sended_message_color;
     else
         color = m_receive_message_color;

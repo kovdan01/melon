@@ -110,7 +110,7 @@ void ChatWidget::send_message()
     auto& storage = DBSingletone::get_instance();
 
     Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
-                        storage.me().user_id(), storage.my_domain().domain_id(),
+                        storage.me().user_id(), storage.me().domain_id(),
                         message_text,
                         std::chrono::system_clock::now(),
                         Message::Status::SENT);

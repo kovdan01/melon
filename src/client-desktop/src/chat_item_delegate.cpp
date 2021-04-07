@@ -45,16 +45,11 @@ ChatItemDelegate::ChatItemDelegate(QObject* parent)
     const auto& dev_config = DevelopConfigSingletone::get_instance();
     const DevelopConfigSingletone::Appearance& dev_ap = dev_config.appearance();
 
-    QFontMetrics fm_chat_name = QFontMetrics(m_chat_name_font);
-    m_fm_chat_name.swap(fm_chat_name);
-    QFontMetrics fm_timestamp = QFontMetrics(m_timestamp_font);
-    m_fm_timestamp.swap(fm_timestamp);
-    QFontMetrics fm_last_message = QFontMetrics(m_last_message_font);
-    m_fm_last_message.swap(fm_last_message);
-    QFontMetrics fm_sender = QFontMetrics(m_sender_font);
-    m_fm_sender.swap(fm_sender);
-    QFontMetrics fm_unread_counter = QFontMetrics(m_unread_counter_font);
-    m_fm_unread_counter.swap(fm_unread_counter);
+    m_fm_chat_name = QFontMetrics(m_chat_name_font);
+    m_fm_timestamp = QFontMetrics(m_timestamp_font);
+    m_fm_last_message = QFontMetrics(m_last_message_font);
+    m_fm_sender = QFontMetrics(m_sender_font);
+    m_fm_unread_counter = QFontMetrics(m_unread_counter_font);
 
     m_item_under_mouse_background = dev_ap.item_under_mouse_color();
 
@@ -63,7 +58,7 @@ ChatItemDelegate::ChatItemDelegate(QObject* parent)
     m_icon_diameter = m_icon_radius * 2;
     m_unread_indicator_round = dev_ap.unread_indicator_round();
 
-    m_first_row_height = std::max(fm_chat_name.height(), m_fm_timestamp.height()) + m_base_margin;
+    m_first_row_height = std::max(m_fm_chat_name.height(), m_fm_timestamp.height()) + m_base_margin;
     m_second_row_height = std::max(m_fm_last_message.height(), std::max(m_fm_sender.height(), m_fm_unread_counter.height()));
 
     m_pen_for_background.setStyle(Qt::NoPen);
@@ -88,13 +83,17 @@ QString ChatItemDelegate::date_handler(const Message::timestamp_t& timestamp) co
     ::localtime_r(&time_tt, &tm);
 
     if (tm.tm_year != tm_now.tm_year)
+    {
         return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
                m_month_names[to_size_t(tm.tm_mon)] + QStringLiteral(" ") +
                this->date_number_handler(tm.tm_year % 100);  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    }
 
     if (tm.tm_mday != tm_now.tm_mday)
+    {
         return this->date_number_handler(tm.tm_mday) + QStringLiteral(" ") +
                m_month_names[to_size_t(tm.tm_mon)];
+    }
 
     return this->date_number_handler(tm.tm_hour) + QStringLiteral(":") + this->date_number_handler(tm.tm_min);
 }
@@ -209,7 +208,8 @@ void ChatItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     // Sender rect and render
     QString sender(last_message->from());
-    if (sender == tr("Me"))
+    auto& storage = DBSingletone::get_instance();
+    if (last_message->user_id() == storage.me().user_id() && last_message->domain_id_user() == storage.me().domain_id())
         sender = tr("You");
     sender += QStringLiteral(": ");
 

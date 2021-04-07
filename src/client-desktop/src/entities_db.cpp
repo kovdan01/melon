@@ -1,8 +1,6 @@
 #include <entities_db.hpp>
 #include <storage_singletones.hpp>
 
-#include <iostream>
-
 namespace melon::client_desktop
 {
 
@@ -12,10 +10,10 @@ QtSqlException::~QtSqlException() = default;
 
 /* Helpers */
 
-melon::core::id_t max_domain_id();
-melon::core::id_t max_user_id(id_t domain_id);
-melon::core::id_t max_message_id(id_t chat_id, id_t domain_id);
-melon::core::id_t max_chat_id(id_t domain_id);
+id_t max_domain_id();
+id_t max_user_id(id_t domain_id);
+id_t max_message_id(id_t chat_id, id_t domain_id);
+id_t max_chat_id(id_t domain_id);
 
 /* Domain */
 
@@ -115,8 +113,7 @@ void User::remove_from_db()
 /* Message */
 
 // For Insert
-Message::Message(id_t chat_id, id_t domain_id_chat,
-                 id_t user_id, id_t domain_id_user,
+Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
                  const QString& text, timestamp_t timestamp, Status status)
     : detail::Message(chat_id, domain_id_chat, user_id, domain_id_user, text, timestamp, status)
 {
@@ -209,11 +206,13 @@ void Message::set_from()
 {
     auto& storage = DBSingletone::get_instance();
     if (this->user_id() == storage.me().user_id() && this->domain_id_user() == storage.me().domain_id())
+    {
         m_from = QObject::tr("Me");
+    }
     else
     {
         // Just draft. It will be removed by searching username and hostname in database by ids.
-        m_from = storage.another_user().username()  + QStringLiteral("@") + storage.my_domain().hostname();
+        m_from = storage.another_user().username() + QStringLiteral("@") + storage.my_domain().hostname();
     }
 }
 
@@ -304,7 +303,6 @@ void Chat::set_chatname(const QString& chatname)
 }
 
 
-
 /* Helpers */
 
 id_t max_domain_id()
@@ -319,8 +317,7 @@ id_t max_domain_id()
     // If the query returns empty (so we have no domains in db), QVariant will be invalid
     QVariant domain_id_qvar = qry.value(0);
     // If QVariant is invalid, convertation will return 0
-    auto domain_id = domain_id_qvar.value<id_t>();
-    return domain_id;
+    return domain_id_qvar.value<id_t>();
 }
 
 id_t max_user_id(id_t domain_id)
@@ -335,8 +332,7 @@ id_t max_user_id(id_t domain_id)
     // If the query returns empty (so we have no users in db), QVariant will be invalid
     QVariant user_id_qvar = qry.value(0);
     // If QVariant is invalid, convertation will return 0
-    auto user_id = user_id_qvar.value<id_t>();
-    return user_id;
+    return user_id_qvar.value<id_t>();
 }
 
 id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
@@ -353,8 +349,7 @@ id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
     // If the query returns empty (so we have no mesages in db), QVariant will be invalid
     QVariant msg_id_qvar = qry.value(0);
     // If QVariant is invalid, convertation will return 0
-    auto msg_id = msg_id_qvar.value<id_t>();
-    return msg_id;
+    return msg_id_qvar.value<id_t>();
 }
 
 id_t max_chat_id(melon::core::id_t domain_id)
@@ -369,8 +364,7 @@ id_t max_chat_id(melon::core::id_t domain_id)
     // If the query returns empty (so we have no chats in db), QVariant will be invalid
     QVariant chat_id_qvar = qry.value(0);
     // If QVariant is invalid, convertation will return 0
-    auto chat_id = chat_id_qvar.value<id_t>();
-    return chat_id;
+    return chat_id_qvar.value<id_t>();
 }
 
 

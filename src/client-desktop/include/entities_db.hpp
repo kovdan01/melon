@@ -1,8 +1,8 @@
-#ifndef MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_
-#define MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_
+#ifndef MELON_CLIENT_DESKTOP_ENTITIES_DB_HPP_
+#define MELON_CLIENT_DESKTOP_ENTITIES_DB_HPP_
 
-#include <melon/core/exception.hpp>
 #include <entities_qt.hpp>
+#include <melon/core/exception.hpp>
 
 #include <QtSql/QtSql>
 #include <QtWidgets>
@@ -70,6 +70,7 @@ public:
 private:
     bool m_is_edit = false;
     QString m_from;
+
     void set_text(std::string text);  // hide base class function
     void set_from();
     void set_is_edit(bool is_edit);
@@ -88,7 +89,7 @@ public:
 
     [[nodiscard]] const std::list<Message>& messages() const noexcept;
     [[nodiscard]] std::list<Message>& messages() noexcept;
-    [[nodiscard]] bool empty() const;
+    [[nodiscard]] bool empty() const noexcept;
 
     message_handle_t add_message(Message message);
     message_handle_t delete_message(message_handle_t message_handle);
@@ -113,4 +114,5 @@ Q_DECLARE_METATYPE(melon::client_desktop::Chat::message_handle_t)
 Q_DECLARE_METATYPE(melon::client_desktop::Message)
 
 #include "entities_db.ipp"
-#endif  // MELON_CLIENT_DESKTOP_DB_STORAGE_HPP_
+
+#endif  // MELON_CLIENT_DESKTOP_ENTITIES_DB_HPP_

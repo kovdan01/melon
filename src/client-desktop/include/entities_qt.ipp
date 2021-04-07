@@ -36,9 +36,8 @@ inline User::User (const QString& username, id_t domain_id)
     return QString::fromStdString(melon::core::User::username());
 }
 
-inline Message::Message(id_t chat_id, id_t domain_id_chat,
-        id_t user_id, id_t domain_id_user,
-        const QString& text, timestamp_t timestamp, Message::Status status)
+inline Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id_user,
+                        const QString& text, timestamp_t timestamp, Message::Status status)
     : melon::core::Message(chat_id, domain_id_chat, user_id, domain_id_user, text.toStdString(), timestamp, status)
 {
 }
@@ -98,4 +97,3 @@ inline void Chat::set_scrolling_position(int scrollbar) noexcept
 }  // namespace detail
 
 }  // namespace melon::client_desktop
-
