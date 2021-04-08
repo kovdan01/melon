@@ -12,6 +12,11 @@ inline Domain::Domain(std::string hostname)  // -V730
 {
 }
 
+inline Domain::Domain(id_t id)
+    : m_domain_id(id)
+{
+}
+
 [[nodiscard]] inline id_t Domain::domain_id() const noexcept
 {
     return m_domain_id;
@@ -37,6 +42,11 @@ inline void Domain::set_external(bool external) noexcept
     m_external = external;
 }
 
+inline void Domain::set_hostname(std::string hostname) noexcept
+{
+    m_hostname = std::move(hostname);
+}
+
 
 inline User::User(std::string username, id_t domain_id, Status status)
     : m_domain_id(domain_id)
@@ -48,6 +58,12 @@ inline User::User(std::string username, id_t domain_id, Status status)
 inline User::User(std::string username, id_t domain_id)  // -V730
     : m_domain_id(domain_id)
     , m_username(std::move(username))
+{
+}
+
+inline User::User(id_t user_id, id_t domain_id)
+    : m_user_id(user_id)
+    , m_domain_id(domain_id)
 {
 }
 
@@ -86,6 +102,10 @@ inline void User::set_domain_id(id_t domain_id) noexcept
     m_domain_id = domain_id;
 }
 
+inline void User::set_username(std::string username) noexcept
+{
+    m_username = std::move(username);
+}
 
 inline Chat::Chat(id_t domain_id, std::string chatname)
     : m_domain_id(domain_id)

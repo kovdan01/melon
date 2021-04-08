@@ -6,13 +6,18 @@ using id_t = melon::core::id_t;
 namespace detail
 {
 
-inline Domain::Domain (const QString& hostname, bool external)
+inline Domain::Domain(const QString& hostname, bool external)
     : melon::core::Domain(hostname.toStdString(), external)
 {
 }
 
-inline Domain::Domain (const QString& hostname)
+inline Domain::Domain(const QString& hostname)
     : melon::core::Domain(hostname.toStdString())
+{
+}
+
+inline Domain::Domain(id_t id)
+    : melon::core::Domain(id)
 {
 }
 
@@ -21,13 +26,18 @@ inline Domain::Domain (const QString& hostname)
     return QString::fromStdString(melon::core::Domain::hostname());
 }
 
-inline User::User (const QString& username, id_t domain_id, User::Status status)
+inline User::User(const QString& username, id_t domain_id, User::Status status)
     : melon::core::User(username.toStdString(), domain_id, status)
 {
 }
 
-inline User::User (const QString& username, id_t domain_id)
+inline User::User(const QString& username, id_t domain_id)
     : melon::core::User(username.toStdString(), domain_id)
+{
+}
+
+inline User::User(id_t user_id, id_t domain_id)
+    : melon::core::User(user_id, domain_id)
 {
 }
 

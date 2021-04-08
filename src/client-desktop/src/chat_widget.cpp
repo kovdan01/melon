@@ -179,11 +179,7 @@ void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it
 
 Message ChatWidget::capture_message_from_editor()
 {
-    QString message_text = m_ui->MsgEdit->toPlainText();
-    if (message_text.isEmpty())
-        return Message(QLatin1String(""));
-
-    return Message(message_text);
+    return m_ui->MsgEdit->toPlainText();
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)

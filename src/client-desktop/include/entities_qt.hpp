@@ -24,8 +24,10 @@ class Domain : public melon::core::Domain
 public:
     // For Insert
     Domain(const QString& hostname, bool external);
-    // For Select
+    // For Select by hostname
     Domain(const QString& hostname);
+    // For Select by id
+    Domain(id_t id);
     // To be initialized in DBStorage constructor
     Domain() = default;
 
@@ -37,8 +39,10 @@ class User : public melon::core::User
 public:
     // For Insert
     User(const QString& username, id_t domain_id, Status status);
-    // For Select
+    // For Select by username and domain_id
     User(const QString& username, id_t domain_id);
+    // For Select by user_id and domain_id
+    User(id_t user_id, id_t domain_id);
     // To be initialized in DBStorage constructor
     User() = default;
 

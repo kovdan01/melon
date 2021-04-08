@@ -36,7 +36,7 @@ Domain::Domain(const QString& hostname, bool external)
     exec_and_check_qtsql_query(qry, "Inserting domain");
 }
 
-// For Select
+// For Select by hostname
 Domain::Domain(const QString& hostname)
     : detail::Domain(hostname)
 {
@@ -47,6 +47,21 @@ Domain::Domain(const QString& hostname)
     exec_and_check_qtsql_query(qry, qry_string, "Loading domain");
     qry.next();
     this->set_domain_id(qry.value(0).value<id_t>());
+    this->set_external(qry.value(1).value<bool>());
+}
+
+// For Select by id
+Domain::Domain(id_t id)
+{
+    auto& storage = DBNameSingletone::get_instance();
+    QSqlQuery qry(storage.db_name());
+
+    this->set_domain_id(id);
+
+    QString qry_string = QStringLiteral("SELECT hostname, external FROM domains WHERE domain_id='") + QString::number(this->domain_id()) + QStringLiteral("'");
+    exec_and_check_qtsql_query(qry, qry_string, "Loading domain");
+    qry.next();
+    this->set_hostname(qry.value(0).toString().toStdString());
     this->set_external(qry.value(1).value<bool>());
 }
 
@@ -83,7 +98,7 @@ User::User(const QString& username, id_t domain_id, Status status)
     exec_and_check_qtsql_query(qry, "Inserting user");
 }
 
-// For Select
+// For Select by username and domain_id
 User::User(const QString& username, id_t domain_id)
     : detail::User(username, domain_id)
 {
@@ -96,6 +111,22 @@ User::User(const QString& username, id_t domain_id)
 
     qry.next();
     this->set_user_id(qry.value(0).value<id_t>());
+    this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
+}
+
+// For Select by user_id and domain_id
+User::User(id_t user_id, id_t domain_id)
+    : detail::User(user_id, domain_id)
+{
+    auto& storage = DBNameSingletone::get_instance();
+    QSqlQuery qry(storage.db_name());
+
+    QString qry_string = QStringLiteral("SELECT username, status FROM users WHERE user_id='") + QString::number(this->user_id()) +
+                         QStringLiteral("' and domain_id=") + QString::number(this->domain_id());
+    exec_and_check_qtsql_query(qry, qry_string, "Loading user");
+
+    qry.next();
+    this->set_username(qry.value(0).toString().toStdString());
     this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
 }
 
@@ -211,8 +242,9 @@ void Message::set_from()
     }
     else
     {
-        // Just draft. It will be removed by searching username and hostname in database by ids.
-        m_from = storage.another_user().username() + QStringLiteral("@") + storage.my_domain().hostname();
+        User sender(this->user_id(), this->domain_id_user());
+        Domain sender_domain(sender.domain_id());
+        m_from =sender.username() + QStringLiteral("@") + sender_domain.hostname();
     }
 }
 
