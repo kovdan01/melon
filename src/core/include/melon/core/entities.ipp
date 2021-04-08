@@ -12,7 +12,7 @@ inline Domain::Domain(std::string hostname)  // -V730
 {
 }
 
-inline Domain::Domain(id_t id)
+inline Domain::Domain(id_t id)  // -V730
     : m_domain_id(id)
 {
 }
@@ -61,7 +61,7 @@ inline User::User(std::string username, id_t domain_id)  // -V730
 {
 }
 
-inline User::User(id_t user_id, id_t domain_id)
+inline User::User(id_t user_id, id_t domain_id)  // -V730
     : m_user_id(user_id)
     , m_domain_id(domain_id)
 {
