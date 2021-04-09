@@ -5,6 +5,8 @@
 
 #include <storage.hpp>
 
+#include <iostream>
+
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
@@ -63,6 +65,18 @@ TEST_CASE("Test storage service", "[storage]")
             REQUIRE(domain2 == found_domain2);
         }
 
+        SECTION("Get hostname")
+        {
+            mss::Domain found_domain1(db, domain1.hostname());
+            REQUIRE(found_domain1.hostname() == "Paul server");
+        }
+
+        SECTION("Get external")
+        {
+            mss::Domain found_domain1(db, domain1.hostname());
+            REQUIRE(found_domain1.external() == false);
+        }
+
         SECTION("Test users")
         {
             mss::User user1(db, "Anna", domain1.domain_id(), mc::User::Status::ONLINE);
@@ -83,7 +97,25 @@ TEST_CASE("Test storage service", "[storage]")
                  REQUIRE_FALSE(answer.size() < 2);
             }
 
-            SECTION("Change status")
+            SECTION("Get username")
+            {
+                mss::User found_user1(db, user1.username(), user1.domain_id());
+                REQUIRE(found_user1.username() == "Anna");
+
+                mss::User found_user2(db, user2.username(), user2.domain_id());
+                REQUIRE(found_user2.username() == "Erick");
+            }
+
+            SECTION("Get status")
+            {
+                mss::User found_user1(db, user1.username(), user1.domain_id());
+                REQUIRE(found_user1.status() == mc::User::Status::ONLINE);
+
+                mss::User found_user2(db, user2.username(), user2.domain_id());
+                REQUIRE(found_user2.status() == mc::User::Status::ONLINE);
+            }
+
+            SECTION("Set status")
             {
                 user2.set_status(mc::User::Status::OFFLINE);
                 REQUIRE(user2.status() == mc::User::Status::OFFLINE);
@@ -104,7 +136,16 @@ TEST_CASE("Test storage service", "[storage]")
                     REQUIRE(chat1 == found_chat1);
                 }
 
-                SECTION("Change chatname")
+                SECTION("Get chatname")
+                {
+                    mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
+                    REQUIRE(found_chat1.chatname() == "secret_chat");
+
+                    mss::Chat found_chat2(db, chat2.chat_id(), chat2.domain_id());
+                    REQUIRE(found_chat2.chatname() == "On domain2");
+                }
+
+                SECTION("Set chatname")
                 {
                     mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
                     found_chat1.set_chatname("new name");
@@ -135,14 +176,36 @@ TEST_CASE("Test storage service", "[storage]")
                         REQUIRE(message1 == found_message1);
                     }
 
-                    SECTION("Change status")
+                    SECTION("Get status")
+                    {
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+                        REQUIRE(found_message1.status() == mc::Message::Status::SENT);
+                    }
+
+                    SECTION("Get text")
+                    {
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+                        REQUIRE(found_message1.text() == ":D");
+                    }
+
+                    SECTION("Get timestamp")
+                    {
+                        std::chrono::system_clock::time_point test_time_point = std::chrono::system_clock::now();
+                        mss::Message message4(db, chat1.chat_id(), chat1.domain_id(), user1.user_id(), user1.domain_id(),
+                                              "hello", test_time_point, mc::Message::Status::SENT);
+                        mss::Message found_message4(db, message4.message_id(), message4.chat_id(), message4.domain_id_chat());
+                        REQUIRE(std::chrono::system_clock::to_time_t(found_message4.timestamp()) ==
+                                std::chrono::system_clock::to_time_t(test_time_point));
+                    }
+
+                    SECTION("Set status")
                     {
                         mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
                         found_message1.set_status(mc::Message::Status::SEEN);
                         REQUIRE(found_message1.status() == mc::Message::Status::SEEN);
                     }
 
-                    SECTION("Change text")
+                    SECTION("Set text")
                     {
                         mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
                         found_message1.set_text("((((((");
