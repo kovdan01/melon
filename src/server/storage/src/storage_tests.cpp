@@ -5,7 +5,6 @@
 
 #include <storage.hpp>
 
-#include <iostream>
 
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
