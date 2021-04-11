@@ -75,6 +75,7 @@ add_executable(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_wrappers)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
