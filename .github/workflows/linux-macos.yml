@@ -299,7 +299,7 @@ jobs:
       id: cache_cyrus_sasl_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-8
 
     - name: Cyrus SASL
       if: ${{ steps.cache_cyrus_sasl_unix.outputs.cache-hit != 'true' }}
@@ -337,7 +337,7 @@ jobs:
         execute_command("patch -p1 < {}/build-config/patches/cyrus-sasl-2.1.27/gdbm_errno.patch".format(repo))
 
         execute_command("chmod +x ./configure")
-        execute_command("./configure --with-dblib=gdbm --prefix={}".format(sasl_install_dir))
+        execute_command("./configure --disable-otp --with-dblib=gdbm --prefix={}".format(sasl_install_dir))
         execute_command("chmod +x ./config/install-sh")
         execute_command("make")
         execute_command("sudo make install")  # MacOS requires sudo to copy files to /Library/Frameworks/
@@ -651,13 +651,15 @@ jobs:
         PATH_BEFORE=$PATH
         PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        ../src/server/auth/scripts/setupserver.sh
+        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        chmod 0777 ~/.melon/melon.conf
+        chmod 0777 ~/.melon/sasldb2
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
         MELON_AUTH_PID=$!
-        
+
         sleep 5
-        
+
         #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ${{ env.CMAKE_TOOL_BINARY_PATH }}/ctest
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
 
