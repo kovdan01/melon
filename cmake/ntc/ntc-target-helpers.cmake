@@ -218,12 +218,12 @@ function(ntc_target TARGET_NAME)
         # Enable IPO in standard builds, if supported.
         # Clang+LTO miscompiles Qt signal connections:
         # https://bugs.llvm.org/show_bug.cgi?id=46469
-        if(IPO_SUPPORTED AND NOT (qt5_dep AND CMAKE_CXX_COMPILER_ID MATCHES Clang))
+        if(IPO_SUPPORTED AND NOT (qt5_dep AND CMAKE_CXX_COMPILER_ID MATCHES Clang) AND NOT WIN32)
             set_target_properties(${TARGET_NAME} PROPERTIES
                 INTERPROCEDURAL_OPTIMIZATION ON
             )
         endif()
-        if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel|RelWithDebInfo")
+        if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel|RelWithDebInfo" AND NOT WIN32)
             set_target_properties(${TARGET_NAME} PROPERTIES
                 UNITY_BUILD ON
             )
