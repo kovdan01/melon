@@ -63,7 +63,7 @@ inline void check_sasl_result(sasl_res res, std::string_view function_name)
 {
     switch (res)
     {
-    case SASL_OK:
+    case SASL_OK:  // NOLINT (bugprone-branch-clone)
         [[fallthrough]];
     case SASL_CONTINUE:
         [[fallthrough]];
