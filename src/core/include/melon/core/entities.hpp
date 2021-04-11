@@ -39,11 +39,14 @@ protected:
 
     // For Insert
     Domain(std::string hostname, bool external);
-    // For Select
+    // For Select by hostname
     Domain(std::string hostname);
+    // For Select by id
+    Domain(id_t domain_id);
 
     void set_domain_id(id_t domain_id) noexcept;
     void set_external(bool external) noexcept;
+    void set_hostname(std::string hostname) noexcept;
 
 private:
     id_t m_domain_id = INVALID_ID;
@@ -85,11 +88,14 @@ protected:
 
     // For Insert
     User(std::string username, id_t domain_id, Status status);
-    // For Select
+    // For Select by username and domain_id
     User(std::string username, id_t domain_id);
+    // For Select by user_id and domain_id
+    User(id_t user_id, id_t domain_id);
 
     void set_user_id(id_t user_id) noexcept;
     void set_domain_id(id_t domain_id) noexcept;
+    void set_username(std::string username) noexcept;
 
 private:
     id_t m_user_id = INVALID_ID;

@@ -1,7 +1,9 @@
 #include <chat_item_delegate.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
+#include <entities_db.hpp>
 #include <main_window.hpp>
+#include <melon/core/exception.hpp>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -61,13 +63,43 @@ void MainWindow::replace_spacer_with_chat_widget()
             &MainWindow::repaint_chat_list);
 }
 
+void MainWindow::load_data_from_database()
+{
+    auto& storage = DBNameSingletone::get_instance();
+
+    QString db_name = storage.db_name();
+    QSqlQuery qry_for_chats(db_name);
+    QSqlQuery qry_for_messages(db_name);
+
+    exec_and_check_qtsql_query(qry_for_chats, QStringLiteral("SELECT chat_id, domain_id FROM chats"), "Loading chats");
+
+    while (qry_for_chats.next())
+    {
+        auto chat_id = qry_for_chats.value(0).value<std::uint64_t>();
+        auto domain_id = qry_for_chats.value(1).value<std::uint64_t>();
+        Chat chat(chat_id, domain_id);
+
+        QString qry_str = QStringLiteral("SELECT message_id FROM messages WHERE chat_id=") + QString::number(chat_id) +
+                          QStringLiteral(" and domain_id_chat=") + QString::number(domain_id);
+        exec_and_check_qtsql_query(qry_for_messages, qry_str, "Loading messages");
+
+        while (qry_for_messages.next())
+        {
+            auto message_id = qry_for_messages.value(0).value<std::uint64_t>();
+            Message message(message_id, chat_id, domain_id);
+            chat.add_message(message);
+        }
+
+        m_model_chat_list->add_chat(chat);
+    }
+    m_ui->ChatList->setCurrentIndex(m_model_chat_list->index(0));
+}
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent}
     , m_ui{new Ui::MainWindow}
 {
     m_ui->setupUi(this);
-
-    this->replace_chat_widget_with_spacer();
 
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
@@ -86,24 +118,29 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
+
+    auto& storage = DBNameSingletone::get_instance();
+
+    QSqlQuery qry(storage.db_name());
+    exec_and_check_qtsql_query(qry, QStringLiteral("SELECT COUNT(chat_id) from chats"), "Counting chats");
+    qry.next();
+    if (qry.value(0).toInt() > 0)  // If count of chats > 0
+    {
+        this->replace_spacer_with_chat_widget();
+        this->load_data_from_database();
+    }
+    else
+    {
+        this->replace_chat_widget_with_spacer();
+    }
 }
 
-namespace
-{
-
-class ChatNameException : public std::runtime_error
-{
-public:
-    using std::runtime_error::runtime_error;
-    using std::runtime_error::operator=;
-};
-
-}  // namespace
+ChatNameException::~ChatNameException() = default;
 
 static void check_chat_name(const QString& text)
 {
     if (text.isEmpty() || text.size() > MAX_CHAT_NAME_SIZE)
-        throw ChatNameException("Name is incorrect");
+        throw ChatNameException("ChatName is incorrect");
 }
 
 void MainWindow::add_chat()
@@ -113,19 +150,19 @@ void MainWindow::add_chat()
 
     try
     {
-        QString text = QInputDialog::getText(this, tr("Creating new chat"),
+        QString name = QInputDialog::getText(this, tr("Creating new chat"),
                                              tr("Name of chat:"), QLineEdit::Normal,
                                              tr("NewChat") + QString::number(counter), &ok);
         if (!ok)
             return;
 
-        check_chat_name(text);
+        check_chat_name(name);
 
         if (m_spacer != nullptr)
             this->replace_spacer_with_chat_widget();
 
-        Chat chat(text, static_cast<Chat::id_t>(counter));
-
+        auto& storage = DBSingletone::get_instance();
+        Chat chat(storage.my_domain().domain_id(), name);
         m_model_chat_list->add_chat(chat);
         int cur_chat_row = m_model_chat_list->rowCount(QModelIndex()) - 1;
         QModelIndex cur_index = m_model_chat_list->index(cur_chat_row);
@@ -180,6 +217,9 @@ void MainWindow::rename_chat()
 
         check_chat_name(text);
 
+        if (old_name == text)
+            return;
+
         m_model_chat_list->setData(cur_index, text, MyRoles::ChatNameRole);
     }
     catch (const ChatNameException& e)
@@ -200,7 +240,6 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
         return;
 
     auto current_it = m_model_chat_list->chat_it_by_index(current_chat);
-
     if (!previous_chat.isValid())
     {
         m_chat_widget->change_chat(current_it);

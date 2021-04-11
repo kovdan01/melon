@@ -1,8 +1,8 @@
 #include <chat_widget.hpp>
 #include <config.hpp>
+#include <entities_db.hpp>
 #include <helpers.hpp>
 #include <message_item_delegate.hpp>
-#include <ram_storage.hpp>
 
 #include <QFont>
 #include <QFontMetrics>
@@ -34,6 +34,11 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
                             user_ap.timestamp_font_params().size,
                             user_ap.timestamp_font_params().weight };
 
+
+    m_fm_sender = QFontMetrics(m_sender_font);
+    m_fm_message_text = QFontMetrics(m_message_text_font);
+    m_fm_timestamp = QFontMetrics(m_timestamp_font);
+
     m_sended_message_color = user_ap.sended_message_color();
     m_receive_message_color = user_ap.receive_message_color();
 
@@ -46,6 +51,9 @@ MessageItemDelegate::MessageItemDelegate(QObject* parent)
     m_icon_diameter = dev_ap.icon_diameter();
     m_message_round_radius = dev_ap.message_round_radius();
     m_selected_message_color = dev_ap.selected_message_color();
+
+    m_pen_for_text.setColor(Qt::black);
+    m_pen_for_background.setStyle(Qt::NoPen);
 }
 
 void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
@@ -53,15 +61,10 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 {
     auto message = index.data(Qt::DisplayRole).value<Chat::message_handle_t>();
     bool is_previous_same = index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>();
+    auto& storage = DBSingletone::get_instance();
 
     painter->setRenderHint(QPainter::Antialiasing);
-    QPen pen_for_background;
-    pen_for_background.setStyle(Qt::NoPen);
     QPen standart_pen = painter->pen();
-
-    // Fonts setting
-    QFontMetrics fm_sender(m_sender_font);
-    QFontMetrics fm_message_text(m_message_text_font);
 
     // Icon rect and render
     if (!is_previous_same)
@@ -74,10 +77,11 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 
         QPainterPath icon_rect_path;
         icon_rect_path.addEllipse(icon_rect);
-        painter->setPen(pen_for_background);
+        painter->setPen(m_pen_for_background);
 
         QColor icon_color;
-        if (message->from() == QStringLiteral("Me"))
+
+        if (message->user_id() == storage.me().user_id() && message->domain_id_user() == storage.me().domain_id())
             icon_color = Qt::darkCyan;
         else
             icon_color = Qt::darkGreen;
@@ -89,7 +93,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Rect setting
     // Sender rect
     QString sender = message->from();
-    QRect sender_rect = fm_sender.boundingRect(option.rect, Qt::AlignLeft, sender);
+    QRect sender_rect = m_fm_sender.boundingRect(option.rect, Qt::AlignLeft, sender);
     sender_rect += QMargins(-m_icon_diameter - m_base_margin * 3,
                             -m_base_margin,
                              m_icon_diameter + m_base_margin * 5,  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
@@ -99,9 +103,9 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     QString message_text = message->text();
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
-    QRect message_text_rect = fm_message_text.boundingRect(message_max_rect,
-                                                           Qt::AlignLeft | Qt::TextWordWrap,
-                                                           message_text);
+    QRect message_text_rect = m_fm_message_text.boundingRect(message_max_rect,
+                                                             Qt::AlignLeft | Qt::TextWordWrap,
+                                                             message_text);
     if (!is_previous_same)
     {
         int message_text_height = message_text_rect.height();
@@ -136,6 +140,8 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     // Rendering
     // Background rendering
     QRect message_background_rect = message_text_rect;
+    message_background_rect.setWidth(std::max(message_text_rect.width(), sender_rect.width()));
+    message_background_rect.setHeight(message_text_rect.height());
 
     if (!is_previous_same)
     {
@@ -153,7 +159,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     }
     QPainterPath message_background_path;
     QColor color;
-    if (message->from() == QStringLiteral("Me"))
+    if (message->user_id() == storage.me().user_id() && message->domain_id_user() == storage.me().domain_id())
         color = m_sended_message_color;
     else
         color = m_receive_message_color;
@@ -161,7 +167,7 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     message_background_path.addRoundedRect(message_background_rect,
                                            m_message_round_radius,
                                            m_message_round_radius);
-    painter->setPen(pen_for_background);
+    painter->setPen(m_pen_for_background);
     painter->fillPath(message_background_path, color);
     painter->drawPath(message_background_path);
     painter->setPen(standart_pen);
@@ -170,37 +176,43 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     if (!is_previous_same)
     {
         painter->setFont(m_sender_font);
+        painter->setPen(m_pen_for_text);
         painter->drawText(sender_rect, sender);
+        painter->setPen(standart_pen);
     }
 
     // Message text rendering
     painter->setFont(m_message_text_font);
+    painter->setPen(m_pen_for_text);
     painter->drawText(message_text_rect,
                       Qt::AlignLeft | Qt::TextWordWrap,
                       message_text);
+    painter->setPen(standart_pen);
 
     // Timestamp and edit mark rendering
     painter->setFont(m_timestamp_font);
     Message::timestamp_t timestamp = message->timestamp();
     std::time_t time_tt = std::chrono::system_clock::to_time_t(timestamp);
-    std::tm* timestamp_tm = std::localtime(&time_tt);
+    std::tm timestamp_tm;
+    ::localtime_r(&time_tt, &timestamp_tm);
 
-    QString time_str = this->date_number_handler(timestamp_tm->tm_mday) + QStringLiteral(" ") +
-                       m_month_names[to_size_t(timestamp_tm->tm_mon)] + QStringLiteral(" ") +
-                       this->date_number_handler(timestamp_tm->tm_hour) + QStringLiteral(":") +
-                       this->date_number_handler(timestamp_tm->tm_min);
-
+    QString time_str = this->date_number_handler(timestamp_tm.tm_mday) + QStringLiteral(" ") +
+                       m_month_names[timestamp_tm.tm_mon] + QStringLiteral(" ") +
+                       this->date_number_handler(timestamp_tm.tm_hour) + QStringLiteral(":") +
+                       this->date_number_handler(timestamp_tm.tm_min);
     if (message->is_edit())
         time_str = tr("edit") + QStringLiteral("  ") + time_str;
 
+    painter->setPen(m_pen_for_text);
     painter->drawText(timestamp_rect, Qt::AlignRight, time_str);
+    painter->setPen(standart_pen);
     painter->setFont(m_message_text_font);
 
 
     // Selection handling
     if (option.state & QStyle::State_Selected)
     {
-        painter->setPen(pen_for_background);
+        painter->setPen(m_pen_for_background);
         painter->fillPath(message_background_path, m_selected_message_color);
         painter->drawPath(message_background_path);
         painter->setPen(standart_pen);
@@ -210,22 +222,20 @@ void MessageItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
 QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QString text = index.data(MyRoles::MessageTextRole).toString();
-    QFontMetrics fm_sender(m_sender_font);
-    QFontMetrics fm_message_text(m_message_text_font);
-    QFontMetrics fm_timestamp(m_timestamp_font);
+
 
     QRect message_max_rect = option.rect;
     message_max_rect.setWidth(static_cast<int>(option.rect.width() * m_scale_message_width));
-    QRect my_rect = fm_message_text.boundingRect(message_max_rect,
+    QRect my_rect = m_fm_message_text.boundingRect(message_max_rect,
                                                  Qt::AlignLeft | Qt::TextWordWrap,
                                                  text);
 
     int row_height = /*message text height*/ my_rect.height() +
-                     /*timestamp height*/ fm_timestamp.height() +
+                     /*timestamp height*/ m_fm_timestamp.height() +
                      /*margin for whitespaces between messages*/ m_base_margin * 4;
 
     if (!index.data(MyRoles::AreIconAndSendernameNeededRole).value<bool>())
-        row_height += /*message sender*/ fm_sender.height();
+        row_height += /*message sender*/ m_fm_sender.height();
 
     const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), row_height);

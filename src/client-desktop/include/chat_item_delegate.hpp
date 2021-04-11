@@ -33,6 +33,15 @@ private:
     QFont m_unread_counter_font;
     QFont m_sender_font;
 
+    /* since QFontMetrics can not be initialized after creation,
+       but all members of the class must be initialized in constructor,
+       we put here fake initialization */
+    QFontMetrics m_fm_chat_name = QFontMetrics(QFont());
+    QFontMetrics m_fm_timestamp = QFontMetrics(QFont());
+    QFontMetrics m_fm_last_message = QFontMetrics(QFont());
+    QFontMetrics m_fm_sender = QFontMetrics(QFont());
+    QFontMetrics m_fm_unread_counter = QFontMetrics(QFont());
+
     int m_first_row_height;
     int m_second_row_height;
 
@@ -44,6 +53,9 @@ private:
     QColor m_unread_background;
     QColor m_selected_background;
     QColor m_item_under_mouse_background;
+
+    QPen m_pen_for_text;
+    QPen m_pen_for_background;
 };
 
 }  // namespace melon::client_desktop
