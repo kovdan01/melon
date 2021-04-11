@@ -145,9 +145,10 @@ jobs:
     - name: Install required python3 modules
       run: pip3 install requests pyparsing
 
-    - name: Install MariaDB (macOS)
+    - name: Install LLVM and MariaDB (macOS)
       if: ${{ runner.os == 'macOS' }}
       run: |
+        brew install llvm
         brew install mariadb
 
     - name: Ninja and CMake cache

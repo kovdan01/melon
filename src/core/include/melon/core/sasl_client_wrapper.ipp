@@ -98,8 +98,9 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 
 inline SaslClientConnection::SaslClientConnection(std::string service)
     : m_service(std::move(service))
+    , m_hostname(boost::asio::ip::host_name())
 {
-    m_hostname = boost::asio::ip::host_name();
+    std::cerr << "CLIENT HOSTNAME" << m_hostname << std::endl;
     sasl_res res = sasl_client_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, 0, &m_conn);
     detail::check_sasl_result(res, "client new");
 }

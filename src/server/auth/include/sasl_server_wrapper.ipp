@@ -13,8 +13,9 @@ namespace melon::server::auth
 
 inline SaslServerConnection::SaslServerConnection(std::string service)
     : m_service(std::move(service))
+    , m_hostname(boost::asio::ip::host_name())
 {
-    m_hostname = boost::asio::ip::host_name();
+    std::cerr << "SERVER HOSTNAME" << m_hostname << std::endl;
     mca::sasl_res res = sasl_server_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
     mca::detail::check_sasl_result(res, "server new");
 }
