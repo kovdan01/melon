@@ -216,7 +216,7 @@ jobs:
             -S . \
             -B build \
             -D CMAKE_INSTALL_PREFIX="${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
-            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}"
+            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
             -D CMAKE_VERBOSE_MAKEFILE=ON \
