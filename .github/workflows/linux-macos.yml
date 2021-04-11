@@ -45,33 +45,33 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "PVS-Studio",
-            #artifact: "all-debug-linux",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "PVS-Studio",
+            artifact: "all-debug-linux",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
         - {
             os: "macos-latest",
             prefix: "macOS",
@@ -606,286 +606,286 @@ jobs:
 
         os.chdir(repo)
 
-    #- name: Configure
-      #env:
-        #CC: ${{ matrix.config.cc }}
-        #CXX: ${{ matrix.config.cxx }}
-      #run: |
-        #${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
-        #-G Ninja \
-        #-D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-        #-S . \
-        #-B build \
-        #-D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        #-D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-        #-D CMAKE_PREFIX_PATH=\
-        #"${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        #${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
-        #${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
-        #${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        #${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
-        #${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
-        #${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
-        #-D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - name: Configure
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: |
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
+        -G Ninja \
+        -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
+        -S . \
+        -B build \
+        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+        -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+        -D CMAKE_PREFIX_PATH=\
+        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
+        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
+        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    #- name: Initialize CodeQL
-      #if: ${{ matrix.config.suffix == 'CodeQL' }}
-      #uses: github/codeql-action/init@v1
-      #with:
-        #languages: cpp
+    - name: Initialize CodeQL
+      if: ${{ matrix.config.suffix == 'CodeQL' }}
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
 
-    #- name: Build
-      #env:
-        #CC: ${{ matrix.config.cc }}
-        #CXX: ${{ matrix.config.cxx }}
-      #run: cmake --build build --target all
+    - name: Build
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      run: cmake --build build --target all
 
-    #- name: Perform CodeQL Analysis
-      #if: ${{ matrix.config.suffix == 'CodeQL' }}
-      #uses: github/codeql-action/analyze@v1
+    - name: Perform CodeQL Analysis
+      if: ${{ matrix.config.suffix == 'CodeQL' }}
+      uses: github/codeql-action/analyze@v1
 
-    #to be moved
-    #- name: Run tests
-      #run: |
-        #cd build
-        #PATH_BEFORE=$PATH
-        #PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+    # to be moved
+    - name: Run tests
+      run: |
+        cd build
+        PATH_BEFORE=$PATH
+        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        #${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
-        #chmod 0777 ~/.melon/melon.conf
-        #chmod 0777 ~/.melon/sasldb2
+        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        chmod 0777 ~/.melon/melon.conf
+        chmod 0777 ~/.melon/sasldb2
 
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
-        #MELON_AUTH_PID=$!
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
+        MELON_AUTH_PID=$!
 
-        #sleep 5
+        sleep 5
 
         #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ${{ env.CMAKE_TOOL_BINARY_PATH }}/ctest
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
 
-        #kill -2 $MELON_AUTH_PID
+        kill -2 $MELON_AUTH_PID
 
-        #PATH=$PATH_BEFORE
-        #cd ..
+        PATH=$PATH_BEFORE
+        cd ..
 
-    #- name: Install Strip
-      #run: cmake --install build --prefix install --strip
+    - name: Install Strip
+      run: cmake --install build --prefix install --strip
 
-    #- name: Mac Deploy Qt
-      #if: ${{ runner.os == 'macOS' }}
-      #shell: sh {0}
-      #run: |
-        #$ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
+    - name: Mac Deploy Qt
+      if: ${{ runner.os == 'macOS' }}
+      shell: sh {0}
+      run: |
+        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
 
-    #- name: Copy required dylibs
-      #if: ${{ runner.os == 'macOS' }}
-      #shell: sh {0}
-      #run: |
-        #cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
-        #install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
+    - name: Copy required dylibs
+      if: ${{ runner.os == 'macOS' }}
+      shell: sh {0}
+      run: |
+        cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
+        install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
 
-    #- name: Tar files
-      #run: tar -cvf install.tar ./install
+    - name: Tar files
+      run: tar -cvf install.tar ./install
 
-    #- name: Upload binaries
-      #if: ${{ matrix.config.artifact != '' }}
-      #uses: actions/upload-artifact@v2
-      #with:
-        #path: ./install.tar
-        #name: ${{ matrix.config.artifact }}
+    - name: Upload binaries
+      if: ${{ matrix.config.artifact != '' }}
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./install.tar
+        name: ${{ matrix.config.artifact }}
 
-    #- name: Prepare to run static analysis
-      #if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
-      #run: mkdir reports
+    - name: Prepare to run static analysis
+      if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
+      run: mkdir reports
 
-    #- name: Install clang-tidy
-      #if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      #run: |
-        #sudo apt install clang-tidy-11 -y
-        #sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11     100
-        #sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
+    - name: Install clang-tidy
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
+      run: |
+        sudo apt install clang-tidy-11 -y
+        sudo update-alternatives --install /usr/bin/clang-tidy      clang-tidy      /usr/bin/clang-tidy-11     100
+        sudo update-alternatives --install /usr/bin/run-clang-tidy  run-clang-tidy  /usr/bin/run-clang-tidy-11 100
 
-    #- name: Run clang-tidy
-      #if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      #run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
+    - name: Run clang-tidy
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
+      run: run-clang-tidy -p=build -j=2 2>&1 | tee reports/clang-tidy-report.log
 
-    #- name: Install PVS-Studio
-      #if: ${{ matrix.config.suffix == 'PVS-Studio' }}
-      #shell: sh {0}
-      #run: |
-        #wget -q -O - https://files.viva64.com/etc/pubkey.txt | sudo apt-key add -
-        #sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.viva64.com/etc/viva64.list
-        #sudo apt-get update
-        #sudo apt-get install pvs-studio
+    - name: Install PVS-Studio
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
+      shell: sh {0}
+      run: |
+        wget -q -O - https://files.viva64.com/etc/pubkey.txt | sudo apt-key add -
+        sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.viva64.com/etc/viva64.list
+        sudo apt-get update
+        sudo apt-get install pvs-studio
 
-    #- name: Run PVS-Studio
-      #if: ${{ matrix.config.suffix == 'PVS-Studio' }}
-      #env:
-        #PVS_NAME: ${{ secrets.PVS_NAME }}
-        #PVS_KEY: ${{ secrets.PVS_KEY }}
-      #shell: sh {0}
-      #run: |
-        #pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
-        #pvs-studio-analyzer analyze -e *melon/build/src* -j2 -f build/compile_commands.json
-        #plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
+    - name: Run PVS-Studio
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
+      env:
+        PVS_NAME: ${{ secrets.PVS_NAME }}
+        PVS_KEY: ${{ secrets.PVS_KEY }}
+      shell: sh {0}
+      run: |
+        pvs-studio-analyzer credentials $PVS_NAME $PVS_KEY
+        pvs-studio-analyzer analyze -e *melon/build/src* -j2 -f build/compile_commands.json
+        plog-converter -t fullhtml -o reports/pvs-report -a GA:1,2,3 PVS-Studio.log
 
-    #- name: Upload static analysis results
-      #if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
-      #uses: actions/upload-artifact@v2
-      #with:
-        #path: ./reports
-        #name: static-analyzer-reports
+    - name: Upload static analysis results
+      if: ${{ matrix.config.suffix == 'PVS-Studio' || matrix.config.suffix == 'clang-tidy' }}
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./reports
+        name: static-analyzer-reports
 
-    #- name: Fail if clang-tidy found warnings
-      #if: ${{ matrix.config.suffix == 'clang-tidy' }}
-      #shell: sh {0}
-      #run: |
-        #cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src\|autogen\|-fcoroutines'; status=$?; test $status -ne 0
+    - name: Fail if clang-tidy found warnings
+      if: ${{ matrix.config.suffix == 'clang-tidy' }}
+      shell: sh {0}
+      run: |
+        cat reports/clang-tidy-report.log | grep -E 'warning: |error: ' | grep -v 'melon/build/src\|autogen\|-fcoroutines'; status=$?; test $status -ne 0
 
-    #- name: Fail if PVS-Studio found warnings
-      #if: ${{ matrix.config.suffix == 'PVS-Studio' }}
-      #shell: sh {0}
-      #run: |
-        #plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
+    - name: Fail if PVS-Studio found warnings
+      if: ${{ matrix.config.suffix == 'PVS-Studio' }}
+      shell: sh {0}
+      run: |
+        plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
-  #run-tests:
-    #needs: build-core-server-client-desktop
-    #name: ${{ format('{0} {1} tests', matrix.config.prefix, matrix.config.build_type) }}
-    #runs-on: ${{ matrix.config.os }}
-    #env:
-      #BOOST_MAJOR: 1
-      #BOOST_MINOR: 76
-      #BOOST_BUILD: 0
-      #BOOST_INSTALL_PATH: "boost-install"
-      #CYRUS_SASL_VERSION: "2.1.27"
-      #CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
-      #YAML_CPP_VERSION: "0.6.3"
-      #YAML_CPP_INSTALL_PATH: "yaml-cpp-install"
-      #SQLPP11_VERSION: "0.60"
-      #SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
-      #SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      #CATCH2_VERSION: "2.13.4"
-      #CATCH2_INSTALL_PATH: "catch2-install"
-      #QT_VERSION: "5.15.1"
-      #QT_INSTALL_PATH: "qt-install"
-    #services:
-      #mariadb:
-        #image: mariadb:latest
-        #ports:
-          #- 3306
-        #env:
-          #MYSQL_USER: melon
-          #MYSQL_PASSWORD: melonpass
-          #MYSQL_ROOT_PASSWORD: melonpass
-          #MYSQL_DATABASE: melon
-        #options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #config:
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #artifact: "all-release-linux",
-            #build_type: "Release",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #artifact: "all-debug-linux",
-            #build_type: "Debug",
-          #}
+  run-tests:
+    needs: build-core-server-client-desktop
+    name: ${{ format('{0} {1} tests', matrix.config.prefix, matrix.config.build_type) }}
+    runs-on: ${{ matrix.config.os }}
+    env:
+      BOOST_MAJOR: 1
+      BOOST_MINOR: 76
+      BOOST_BUILD: 0
+      BOOST_INSTALL_PATH: "boost-install"
+      CYRUS_SASL_VERSION: "2.1.27"
+      CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
+      YAML_CPP_VERSION: "0.6.3"
+      YAML_CPP_INSTALL_PATH: "yaml-cpp-install"
+      SQLPP11_VERSION: "0.60"
+      SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
+      SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      CATCH2_VERSION: "2.13.4"
+      CATCH2_INSTALL_PATH: "catch2-install"
+      QT_VERSION: "5.15.1"
+      QT_INSTALL_PATH: "qt-install"
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: melon
+          MYSQL_PASSWORD: melonpass
+          MYSQL_ROOT_PASSWORD: melonpass
+          MYSQL_DATABASE: melon
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            artifact: "all-release-linux",
+            build_type: "Release",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            artifact: "all-debug-linux",
+            build_type: "Debug",
+          }
 
-    #steps:
-    #- uses: actions/checkout@v2
+    steps:
+    - uses: actions/checkout@v2
 
-    #- name: Set environment variables
-      #shell: python3 {0}
-      #run: |
-        #import os
+    - name: Set environment variables
+      shell: python3 {0}
+      run: |
+        import os
 
-        #repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
-        #root = os.path.normpath(os.path.dirname(repo))
+        repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
+        root = os.path.normpath(os.path.dirname(repo))
 
-        #with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-          #env_file.write("REPO_PATH={}\n".format(repo))
-          #env_file.write("ROOT_PATH={}\n".format(root))
+        with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+          env_file.write("REPO_PATH={}\n".format(repo))
+          env_file.write("ROOT_PATH={}\n".format(root))
 
-    #- name: Uninstall MySQL (Linux)
-      #if: ${{ runner.os == 'Linux' }}
-      #run: |
-        #sudo systemctl stop mysql
-        #sudo apt purge *mysql* -y
+    - name: Uninstall MySQL (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo systemctl stop mysql
+        sudo apt purge *mysql* -y
 
-    #- name: Install required packages (Linux)
-      #if: ${{ runner.os == 'Linux' }}
-      #run: |
-        #sudo apt update
-        #sudo apt install libstdc++-10-dev
-        #sudo apt install mariadb-client -y  # to restore DB from dump in tests
-        #sudo apt install libmariadb3 -y
+    - name: Install required packages (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt update
+        sudo apt install libstdc++-10-dev
+        sudo apt install mariadb-client -y  # to restore DB from dump in tests
+        sudo apt install libmariadb3 -y
 
-    #- name: Boost cache
-      #uses: actions/cache@v2
-      #id: cache_boost
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        #key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-7
+    - name: Boost cache
+      uses: actions/cache@v2
+      id: cache_boost
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-7
 
-    #- name: Cyrus SASL cache
-      #uses: actions/cache@v2
-      #id: cache_cyrus_sasl_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        #key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
+    - name: Cyrus SASL cache
+      uses: actions/cache@v2
+      id: cache_cyrus_sasl_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
 
-    #- name: Yaml CPP cache
-      #uses: actions/cache@v2
-      #id: cache_yaml_cpp_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        #key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-7
+    - name: Yaml CPP cache
+      uses: actions/cache@v2
+      id: cache_yaml_cpp_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-7
 
-    #- name: SQLPP11 cache
-      #uses: actions/cache@v2
-      #id: cache_sqlpp11_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        #key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-7
+    - name: SQLPP11 cache
+      uses: actions/cache@v2
+      id: cache_sqlpp11_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-7
 
-    #- name: Catch2 cache
-      #uses: actions/cache@v2
-      #id: cache_catch2_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        #key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-7
+    - name: Catch2 cache
+      uses: actions/cache@v2
+      id: cache_catch2_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-7
 
-    #- name: Qt5 cache
-      #uses: actions/cache@v2
-      #id: cache_qt_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        #key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-7
+    - name: Qt5 cache
+      uses: actions/cache@v2
+      id: cache_qt_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-7
 
-    #- name: Download pre-built binaries from artifacts
-      #uses: actions/download-artifact@v2
-      #with:
-        #name: ${{ matrix.config.artifact }}
+    - name: Download pre-built binaries from artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ matrix.config.artifact }}
 
-    #- name: Untar files
-      #run: |
-        #tar -xf install.tar
+    - name: Untar files
+      run: |
+        tar -xf install.tar
 
-    #- name: Run tests
-      #env:
-        #DB_USER: melon
-        #DB_PASSWORD: melonpass
-        #DB_DATABASE: melon
-        #DB_HOST: "127.0.0.1"
-        #DB_PORT: ${{ job.services.mariadb.ports[3306] }}
-      #run: |
-        #mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
-        #cd install
+    - name: Run tests
+      env:
+        DB_USER: melon
+        DB_PASSWORD: melonpass
+        DB_DATABASE: melon
+        DB_HOST: "127.0.0.1"
+        DB_PORT: ${{ job.services.mariadb.ports[3306] }}
+      run: |
+        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
+        cd install
         #ctest
-        #./bin/melon-storage-tests
-        #cd ..
+        ./bin/melon-storage-tests
+        cd ..
