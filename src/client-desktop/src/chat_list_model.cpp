@@ -1,6 +1,6 @@
 #include <chat_list_model.hpp>
+#include <entities_db.hpp>
 #include <helpers.hpp>
-#include <ram_storage.hpp>
 
 namespace melon::client_desktop
 {
@@ -28,7 +28,7 @@ QVariant ChatListModel::data(const QModelIndex& index, int role) const
             data.setValue(m_it_chats[row]);
             break;
         case MyRoles::ChatNameRole:
-            data.setValue(m_it_chats[row]->name());
+            data.setValue(m_it_chats[row]->chatname());
             break;
         default:
             break;
@@ -64,7 +64,7 @@ void ChatListModel::add_chat(const Chat& chat, const QModelIndex& parent)
 {
     int row = this->rowCount(QModelIndex()) + 1;
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    auto& ram_storage = StorageSingletone::get_instance();
 
     auto it_added_chat = ram_storage.add_chat(chat);
 
@@ -83,13 +83,13 @@ void ChatListModel::delete_chat(const QModelIndex& index, const QModelIndex& par
     m_it_chats.erase(m_it_chats.begin() + row);
     this->endRemoveRows();
 
-    auto& ram_storage = RAMStorageSingletone::get_instance();
+    auto& ram_storage = StorageSingletone::get_instance();
     ram_storage.delete_chat(it_chat);
 }
 
 void ChatListModel::set_chat_name_in_ram_storage(const QModelIndex &index, const QString &name)
 {
-    m_it_chats[to_size_t(index.row())]->set_name(name);
+    m_it_chats[to_size_t(index.row())]->set_chatname(name);
 }
 
 ChatListModel::chat_handle_t ChatListModel::chat_it_by_index(const QModelIndex &index)

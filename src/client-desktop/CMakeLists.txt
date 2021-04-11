@@ -24,7 +24,7 @@ find_package(Threads REQUIRED)
 # qt widgets, translations
 find_package(
     Qt5 REQUIRED
-    COMPONENTS Widgets LinguistTools
+    COMPONENTS Widgets LinguistTools Sql
 )
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/ui)
@@ -35,11 +35,16 @@ set(HEADERS
     include/chat_list_view.hpp
     include/chat_widget.hpp
     include/config.hpp
+    include/entities_db.hpp
+    include/entities_db.ipp
+    include/entities_qt.hpp
+    include/entities_qt.ipp
+    include/helpers.hpp
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
-    include/ram_storage.hpp
-    include/helpers.hpp
+    include/storage_singletones.hpp
+    include/storage_singletones.ipp
 )
 
 set(SOURCES
@@ -47,10 +52,12 @@ set(SOURCES
     src/chat_list_model.cpp
     src/chat_list_view.cpp
     src/chat_widget.cpp
+    src/entities_db.cpp
     src/main.cpp
     src/main_window.cpp
     src/message_item_delegate.cpp
     src/message_list_model.cpp
+    src/storage_singletones.cpp
 )
 
 set(UI_FILES
@@ -66,10 +73,15 @@ add_executable(${PROJECT_NAME}
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
+if(MINGW)
+    # for localtime_r
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _POSIX_C_SOURCE)
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Sql)
 
 ntc_target(${PROJECT_NAME}
     TRANSLATIONS en_US

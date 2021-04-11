@@ -1,9 +1,10 @@
 #ifndef MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 #define MELON_CLIENT_DESKTOP_CHAT_WIDGET_HPP_
 
+#include <entities_db.hpp>
 #include <message_item_delegate.hpp>
 #include <message_list_model.hpp>
-#include <ram_storage.hpp>
+#include <storage_singletones.hpp>
 
 #include <ui_chat_widget.h>
 
@@ -28,8 +29,8 @@ public:
     ChatWidget(QWidget* parent = nullptr);
     ~ChatWidget() override = default;
 
-    using chat_handle_t = RAMStorageSingletone::chat_handle_t;
-    using const_chat_handle_t = RAMStorageSingletone::const_chat_handle_t;
+    using chat_handle_t = StorageSingletone::chat_handle_t;
+    using const_chat_handle_t = StorageSingletone::const_chat_handle_t;
     using message_handle_t = Chat::message_handle_t;
     using MyRoles = MessageListModel::MyRoles;
 
@@ -66,6 +67,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     chat_handle_t m_current_chat_it;
     QSet<int> m_pressed_keys;
     QString m_incomplete_message;
+    QString m_pre_edit_message;
     int m_current_chat_row;
     int m_edit_row;
     bool m_edit_mode = false;

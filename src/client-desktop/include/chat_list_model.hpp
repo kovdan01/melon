@@ -1,7 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_MESSAGE_CHAT_LIST_MODEL_HPP_
 #define MELON_CLIENT_DESKTOP_MESSAGE_CHAT_LIST_MODEL_HPP_
 
-#include <ram_storage.hpp>
+#include <entities_db.hpp>
+#include <storage_singletones.hpp>
 
 #include <QAbstractListModel>
 
@@ -15,7 +16,7 @@ public:
     explicit ChatListModel(QObject* parent = nullptr);
 
     using message_handle_t = Chat::message_handle_t;
-    using chat_handle_t = RAMStorageSingletone::chat_handle_t;
+    using chat_handle_t = StorageSingletone::chat_handle_t;
 
     [[nodiscard]] int rowCount(const QModelIndex& index) const override;
     [[nodiscard]] Qt::ItemFlags flags(const QModelIndex&) const override;
