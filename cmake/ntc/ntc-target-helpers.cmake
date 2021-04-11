@@ -223,7 +223,7 @@ function(ntc_target TARGET_NAME)
                 INTERPROCEDURAL_OPTIMIZATION ON
             )
         endif()
-        if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel|RelWithDebInfo" AND NOT WIN32)
+        if(CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel|RelWithDebInfo")
             set_target_properties(${TARGET_NAME} PROPERTIES
                 UNITY_BUILD ON
             )
