@@ -20,7 +20,7 @@ std::string get_client_response(const std::string& server_response, mca::SaslCli
         response = conn.start(server_response).response;
     else
         response = conn.step(server_response).response;
-    if (response.data() != nullptr)
+    if (response.data() != nullptr)  // -V547
         return std::string(response);
     return "";
 }
@@ -71,7 +71,7 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
             confirmation_recieved = true;
             break;
         }
-        else if (reply == mca::AuthResultSingleton::get_instance().failure())
+        if (reply == mca::AuthResultSingleton::get_instance().failure())
         {
             confirmation_recieved = false;
             break;

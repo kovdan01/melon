@@ -64,15 +64,15 @@ inline void check_sasl_result(sasl_res res, std::string_view function_name)
     switch (res)
     {
     case SASL_OK:
-        break;
+        [[fallthrough]];
     case SASL_CONTINUE:
-        break;
+        [[fallthrough]];
     case SASL_NOUSER:
-        break;
+        [[fallthrough]];
     case SASL_BADPROT:
-        break;
+        [[fallthrough]];
     case SASL_BADAUTH:
-        break;
+        [[fallthrough]];
     case SASL_NOAUTHZ:
         break;
     default:
