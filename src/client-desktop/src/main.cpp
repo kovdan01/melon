@@ -1,17 +1,24 @@
+#include <entities_db.hpp>
 #include <main_window.hpp>
+#include <storage_singletones.hpp>
 
 #include <QApplication>
 
 #include <iostream>
 
-namespace mc = melon::client_desktop;
-
 int main(int argc, char* argv[]) try
 {
     QApplication application(argc, argv);
-    mc::MainWindow window;
+
+    [[maybe_unused]] const auto& storage = melon::client_desktop::DBSingletone::get_instance();
+
+    melon::client_desktop::MainWindow window;
     window.show();
     return QApplication::exec();
+}
+catch (const melon::client_desktop::QtSqlException& e)
+{
+    std::cerr << "Error with DB! " << e.what() << std::endl;
 }
 catch (const std::exception& e)
 {
