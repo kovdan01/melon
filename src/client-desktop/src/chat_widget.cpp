@@ -1,8 +1,7 @@
-#include <ram_storage.hpp>
-
 #include <ui_chat_widget.h>
 
 #include <chat_widget.hpp>
+#include <entities_db.hpp>
 #include <message_list_model.hpp>
 
 #include <QMainWindow>
@@ -85,10 +84,14 @@ void ChatWidget::send_message()
 
     if (m_edit_mode)
     {
-        QModelIndex index = m_model_message_list->index(m_edit_row);
+        if (message_text != m_pre_edit_message)
+        {
+            QModelIndex index = m_model_message_list->index(m_edit_row);
 
-        m_model_message_list->setData(index, message_text, Qt::DisplayRole);
-        m_model_message_list->setData(index, true, MyRoles::IsEditRole);
+            m_model_message_list->setData(index, message_text, Qt::DisplayRole);
+            m_model_message_list->setData(index, true, MyRoles::IsEditRole);
+            m_pre_edit_message.clear();
+        }
 
         m_edit_mode = false;
         m_ui->MsgEdit->clear();
@@ -103,10 +106,14 @@ void ChatWidget::send_message()
         return;
     }
 
-    Message new_message(QLatin1String("Me"),
+
+    auto& storage = DBSingletone::get_instance();
+
+    Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
+                        storage.me().user_id(), storage.me().domain_id(),
                         message_text,
-                        {},
-                        std::chrono::system_clock::now());
+                        std::chrono::system_clock::now(),
+                        Message::Status::SENT);
 
     m_ui->MsgEdit->clear();
     m_model_message_list->add_message(m_current_chat_it, new_message);
@@ -119,10 +126,12 @@ void ChatWidget::send_message()
 
 void ChatWidget::receive_message()
 {
-    Message new_message(QLatin1String("Some Sender"),
+    auto& storage = DBSingletone::get_instance();
+    Message new_message(m_current_chat_it->chat_id(), m_current_chat_it->domain_id(),
+                        storage.another_user().user_id(), storage.another_user().domain_id(),
                         QStringLiteral("I wish I could hear you."),
-                        {},
-                        std::chrono::system_clock::now());
+                        std::chrono::system_clock::now(),
+                        Message::Status::RECEIVED);
 
     m_model_message_list->add_message(m_current_chat_it, new_message);
 
@@ -157,6 +166,7 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     m_ui->MsgEdit->setTextCursor(cursor);
 
     m_ui->MsgList->clearSelection();
+    m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)
@@ -169,11 +179,7 @@ void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it
 
 Message ChatWidget::capture_message_from_editor()
 {
-    QString message_text = m_ui->MsgEdit->toPlainText();
-    if (message_text.isEmpty())
-        return Message(QLatin1String("Me"), QLatin1String(""), {}, std::chrono::system_clock::now());
-
-    return Message(QLatin1String("Me"), message_text, {}, std::chrono::system_clock::now());
+    return m_ui->MsgEdit->toPlainText();
 }
 
 void ChatWidget::load_message_to_editor(const Message& message)
@@ -189,7 +195,7 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 
     auto it_message = this->m_model_message_list->data(index, Qt::DisplayRole).value<message_handle_t>();
 
-    if (it_message->from() == QStringLiteral("Me"))
+    if (it_message->status() == Message::Status::SENT)
     {
         m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
     }
@@ -217,6 +223,7 @@ void ChatWidget::edit_message()
     m_edit_row = index.row();
 
     auto message_text = m_model_message_list->data(index, MyRoles::MessageTextRole).toString();
+    m_pre_edit_message = message_text;
 
     m_incomplete_message = m_ui->MsgEdit->toPlainText();
     m_ui->MsgEdit->setText(message_text);

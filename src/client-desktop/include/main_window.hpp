@@ -21,6 +21,13 @@ QT_END_NAMESPACE
 namespace melon::client_desktop
 {
 
+class ChatNameException : public melon::Exception
+{
+public:
+    using melon::Exception::Exception;
+    ~ChatNameException() override;
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -52,6 +59,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();
+    void load_data_from_database();
 };
 
 }  // namespace melon::client_desktop

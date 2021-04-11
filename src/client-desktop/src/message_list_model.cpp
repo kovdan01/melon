@@ -60,7 +60,6 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
             emit dataChanged(index, index);
             return true;
         case MyRoles::IsEditRole:
-            m_it_messages[to_size_t(index.row())]->set_is_edit(value.toBool());
             emit dataChanged(index, index);
             return true;
         default:
@@ -112,8 +111,7 @@ MessageListModel::message_handle_t MessageListModel::add_message_to_ram_storage(
 
 void MessageListModel::set_message_in_ram_storage(const QModelIndex& index, const QString& message)
 {
-    auto it_msg = m_it_messages[to_size_t(index.row())];
-    it_msg->set_text(message);
+    m_it_messages[to_size_t(index.row())]->set_text(message);
 }
 
 bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std::size_t bigger_row) const
@@ -125,7 +123,7 @@ bool MessageListModel::are_icon_and_sendername_needed(std::size_t less_row, std:
 
     auto diff_time = std::chrono::duration_cast<std::chrono::minutes>(message2->timestamp() - message1->timestamp());
 
-    return ((message1->from() == message2->from()) && (diff_time.count() < 2));
+    return (message1->user_id() == message2->user_id() && message1->domain_id_user() == message2->domain_id_user() && diff_time.count() < 2);
 }
 
 void MessageListModel::clear()
