@@ -83,7 +83,7 @@ inline SaslServerSingleton::SaslServerSingleton()
 {
     m_config_path /= std::filesystem::path(std::getenv("HOME")) / ".melon";
     sasl_set_path(SASL_PATH_TYPE_CONFIG, const_cast<char*>(m_config_path.c_str()));
-    mca::sasl_res res = sasl_server_init(nullptr, "localserver");
+    mca::sasl_res res = sasl_server_init(nullptr, "melon");
     mca::detail::check_sasl_result(res, "server init");
 }
 
