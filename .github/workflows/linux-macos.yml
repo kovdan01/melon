@@ -874,11 +874,11 @@ jobs:
         chmod 0777 ~/.melon/melon.conf
         chmod 0777 ~/.melon/sasldb2
 
-        ./bin/melon-auth 6666 &
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
         MELON_AUTH_PID=$!
         sleep 1  # ensure that server has started
 
-        ./bin/melon-auth-test-client
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
 
         kill -2 $MELON_AUTH_PID
         PATH=$PATH_BEFORE
