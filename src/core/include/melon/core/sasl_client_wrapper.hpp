@@ -15,22 +15,24 @@
 namespace melon::core::auth
 {
 
-class ConfirmationSingleton
+class AuthResultSingleton
 {
 public:
-    static ConfirmationSingleton& get_instance();
+    static AuthResultSingleton& get_instance();
 
-    ConfirmationSingleton(const ConfirmationSingleton& root) = delete;
-    ConfirmationSingleton& operator=(const ConfirmationSingleton&) = delete;
-    ConfirmationSingleton(ConfirmationSingleton&& root) = delete;
-    ConfirmationSingleton& operator=(ConfirmationSingleton&&) = delete;
+    AuthResultSingleton(const AuthResultSingleton& root) = delete;
+    AuthResultSingleton& operator=(const AuthResultSingleton&) = delete;
+    AuthResultSingleton(AuthResultSingleton&& root) = delete;
+    AuthResultSingleton& operator=(AuthResultSingleton&&) = delete;
 
-    [[nodiscard]] const std::string& confirmation_string() const noexcept;
+    [[nodiscard]] const std::string& success() const noexcept;
+    [[nodiscard]] const std::string& failure() const noexcept;
 
 private:
-    ConfirmationSingleton() = default;
+    AuthResultSingleton() = default;
 
-    const std::string m_token_confirmation_string = "Okay, Mr. Client, here's your token...";
+    const std::string m_success = "Okay, Mr. Client, here's your token...";
+    const std::string m_failure = "Can't perform authentication!";
 };
 
 using sasl_res = int;
@@ -57,16 +59,30 @@ private:
     std::unique_ptr<sasl_secret_t, FreeDeleter> m_password;
 };
 
-enum class AuthCompletness
+enum class AuthState
 {
+    // common
     COMPLETE = SASL_OK,
+    // common
     INCOMPLETE = SASL_CONTINUE,
+
+    // common
+    // in server stands for incorrect password
+    // with SCRAM-SHA-256 for some reason
+    BAD_PROTOCOL = SASL_BADPROT,
+
+    // server-only
+    USER_NOT_FOUND = SASL_NOUSER,
+    // server-only
+    AUTHENTICATION_FAILURE = SASL_BADAUTH,
+    // server-only
+    AUTHORIZATION_FAILURE = SASL_NOAUTHZ,
 };
 
 struct StepResult
 {
     std::string_view response;
-    AuthCompletness completness;
+    AuthState completness;
 };
 
 
@@ -88,7 +104,7 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 class SaslClientConnection
 {
 public:
-    SaslClientConnection(std::string service);
+    SaslClientConnection(std::string service, std::string server_hostname);
     ~SaslClientConnection();
 
     struct StartResult
@@ -104,9 +120,9 @@ public:
 
 private:
     const std::string m_service;
+    const std::string m_server_hostname;
     std::size_t m_step_count = 0;
     sasl_conn_t* m_conn;
-    std::string m_hostname;
 };
 
 class SaslClientSingleton

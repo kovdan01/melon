@@ -9,8 +9,6 @@
 #include <string_view>
 
 
-#include <iostream>
-
 namespace melon::server::auth
 {
 
@@ -18,7 +16,6 @@ inline SaslServerConnection::SaslServerConnection(std::string service)
     : m_service(std::move(service))
     , m_hostname(boost::asio::ip::host_name())
 {
-    std::cerr << "SERVER HOSTNAME" << m_hostname << std::endl;
     mca::sasl_res res = sasl_server_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, nullptr, 0, &m_conn);
     mca::detail::check_sasl_result(res, "server new");
 }
@@ -47,7 +44,7 @@ inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mecha
                                      static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
     mca::detail::check_sasl_result(res, "server start");
 
-    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthCompletness>(res) };
+    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthState>(res) };
 }
 
 
@@ -60,7 +57,7 @@ inline mca::StepResult SaslServerConnection::step(std::string_view client_respon
 
     mca::detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthCompletness>(res) };
+    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthState>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslServerConnection::conn() const

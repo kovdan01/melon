@@ -1,5 +1,5 @@
-#include <sasl_server_wrapper.hpp>
 #include <melon/core/log_configuration.hpp>
+#include <sasl_server_wrapper.hpp>
 
 #include <ce/format.hpp>
 #include <ce/io_context_signal_interrupter.hpp>
@@ -48,7 +48,7 @@ public:
         namespace msa = melon::server::auth;
 
         [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
-        spawn(this->executor(), [this, s=shared_from_this()](auto yc)
+        ce::spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
             using namespace boost::log::trivial;
             boost::system::error_code ec;
@@ -58,9 +58,9 @@ public:
             std::string_view supported_mechanisms = server.list_mechanisms();
             m_out_buf = std::string(supported_mechanisms) + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
             stream_.expires_after(TIME_LIMIT);
-            std::size_t n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+            std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             if (ec)
             {
                 if (ec != boost::asio::error::eof)
@@ -68,43 +68,68 @@ public:
                 BOOST_LOG_SEV(log(), info) << "Connection closed";
                 return;
             }
-            std::string wanted_mechanism = read_erase_buffered_string(n);
+
+            std::string wanted_mechanism = read_erase_in_buf(n);
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
 
             stream_.expires_after(TIME_LIMIT);
             n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-            std::string client_response = read_erase_buffered_string(n);
+            std::string client_response = read_erase_in_buf(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-            m_out_buf = std::string(server_response) += "\n";
-            stream_.expires_after(TIME_LIMIT);
-            while (server_completness == mca::AuthCompletness::INCOMPLETE)
-            {
-                async_write(stream_, ba::buffer(m_out_buf), yc, 0);
-                stream_.expires_after(TIME_LIMIT);
-                n = async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-                client_response = read_erase_buffered_string(n);
-                mca::StepResult server_step_res = server.step(client_response);
-                server_response = server_step_res.response;
-                server_completness = server_step_res.completness;
+            m_out_buf = std::string(server_response) + '\n';
 
-                if (server_completness == mca::AuthCompletness::COMPLETE)
+            while (server_completness == mca::AuthState::INCOMPLETE)
+            {
+                stream_.expires_after(TIME_LIMIT);
+                ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+                stream_.expires_after(TIME_LIMIT);
+                n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+                client_response = read_erase_in_buf(n);
+                mca::StepResult server_step_result = server.step(client_response);
+                server_response = server_step_result.response;
+                server_completness = server_step_result.completness;
+
+                if (server_completness != mca::AuthState::INCOMPLETE)
                     break;
 
                 if (server_response.data() != nullptr)
-                    m_out_buf = std::string(server_response.data(), server_response.size()) += "\n";
+                    m_out_buf = std::string(server_response) + '\n';
                 else
                     m_out_buf = "";
-
-                stream_.expires_after(TIME_LIMIT);
             }
-            m_out_buf = mca::ConfirmationSingleton::get_instance().confirmation_string() + '\n';
+            assert(server_completness != mca::AuthState::INCOMPLETE);
+
+            switch (server_completness)
+            {
+            case mca::AuthState::COMPLETE:
+                m_out_buf = mca::AuthResultSingleton::get_instance().success() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Issued a token";
+                break;
+            case mca::AuthState::USER_NOT_FOUND:
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "User not found";
+                break;
+            case mca::AuthState::BAD_PROTOCOL:
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Protocol error";
+                break;
+            case mca::AuthState::AUTHENTICATION_FAILURE:
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Authentication failure";
+                break;
+            case mca::AuthState::AUTHORIZATION_FAILURE:
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Authorization failure";
+                break;
+            }
+
             stream_.expires_after(TIME_LIMIT);
-            async_write(stream_, ba::buffer(m_out_buf), yc, 0);
-            BOOST_LOG_TRIVIAL(info) << "Issued a token.";
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
             if (e)
@@ -113,8 +138,11 @@ public:
     }
 
 private:
-    std::string m_in_buf, m_out_buf;
-    std::string read_erase_buffered_string(std::size_t n)  // The function copies string read before the delimiter and erases that part of buffer
+    std::string m_in_buf;
+    std::string m_out_buf;
+
+    // The function copies string read before the delimiter and erases that part of buffer
+    std::string read_erase_in_buf(std::size_t n)
     {
         std::string before_separator = std::move(m_in_buf);
         m_in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);

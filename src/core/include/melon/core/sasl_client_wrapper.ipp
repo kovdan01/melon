@@ -1,6 +1,5 @@
 #include <melon/core/exception.hpp>
 
-#include <boost/asio/ip/host_name.hpp>
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -11,20 +10,23 @@
 #include <string_view>
 
 
-#include <iostream>
-
 namespace melon::core::auth
 {
 
-inline ConfirmationSingleton& ConfirmationSingleton::get_instance()
+inline AuthResultSingleton& AuthResultSingleton::get_instance()
 {
-    static ConfirmationSingleton instance;
+    static AuthResultSingleton instance;
     return instance;
 }
 
-inline const std::string& ConfirmationSingleton::confirmation_string() const noexcept
+inline const std::string& AuthResultSingleton::success() const noexcept
 {
-    return m_token_confirmation_string;
+    return m_success;
+}
+
+inline const std::string& AuthResultSingleton::failure() const noexcept
+{
+    return m_failure;
 }
 
 inline Credentials::Credentials(std::string username,std::string_view password)
@@ -59,8 +61,21 @@ namespace detail
 
 inline void check_sasl_result(sasl_res res, std::string_view function_name)
 {
-    if (res != SASL_OK && res != SASL_CONTINUE)
+    switch (res)
     {
+    case SASL_OK:
+        break;
+    case SASL_CONTINUE:
+        break;
+    case SASL_NOUSER:
+        break;
+    case SASL_BADPROT:
+        break;
+    case SASL_BADAUTH:
+        break;
+    case SASL_NOAUTHZ:
+        break;
+    default:
         throw melon::core::Exception("Sasl " + std::string(function_name) + " exit code " +
                                      std::to_string(res) + ": " + sasl_errstring(res, nullptr, nullptr));
     }
@@ -99,12 +114,11 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 
 }  // namespace detail
 
-inline SaslClientConnection::SaslClientConnection(std::string service)
+inline SaslClientConnection::SaslClientConnection(std::string service, std::string server_hostname)
     : m_service(std::move(service))
-    , m_hostname(boost::asio::ip::host_name())
+    , m_server_hostname(std::move(server_hostname))
 {
-    std::cerr << "CLIENT HOSTNAME" << m_hostname << std::endl;
-    sasl_res res = sasl_client_new(m_service.c_str(), m_hostname.c_str(), nullptr, nullptr, nullptr, 0, &m_conn);
+    sasl_res res = sasl_client_new(m_service.c_str(), m_server_hostname.c_str(), nullptr, nullptr, nullptr, 0, &m_conn);
     detail::check_sasl_result(res, "client new");
 }
 
@@ -133,7 +147,7 @@ inline StepResult SaslClientConnection::step(std::string_view server_response)
 
     detail::check_sasl_result(res, "client step " + std::to_string(m_step_count));
 
-    return { .response = { clientout, clientout_len }, .completness = static_cast<AuthCompletness>(res) };
+    return { .response = { clientout, clientout_len }, .completness = static_cast<AuthState>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslClientConnection::conn() const
