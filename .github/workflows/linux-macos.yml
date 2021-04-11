@@ -85,6 +85,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Print LLVM prefix
+      run: brew --prefix llvm
+
     - name: Uninstall MySQL (Linux)
       if: ${{ runner.os == 'Linux' }}
       run: |
