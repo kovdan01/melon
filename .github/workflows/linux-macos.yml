@@ -19,6 +19,7 @@ jobs:
       BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
+      THIRD_PARTY_INSTALL_PATH: "3rd-party-install"
       CYRUS_SASL_VERSION: "2.1.27"
       CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
       YAML_CPP_VERSION: "0.6.3"
@@ -265,6 +266,13 @@ jobs:
         os.chdir(repo)
 
     - name: Utils by Pavel A. Lebedev
+      uses: actions/cache@v2
+      id: cache_lebedev_utils_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
+        key: ${{ runner.os }}-lebedev-utils-9
+
+    - name: Utils by Pavel A. Lebedev
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
@@ -281,12 +289,12 @@ jobs:
         # utils and asio-utils from cosec-examples
         cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
         mkdir build
-        mkdir prefix
+        mkdir ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
         cd build
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
             -G Ninja \
             -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-            -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix \
+            -D CMAKE_INSTALL_PREFIX="${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}" \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
             -S ..
@@ -625,7 +633,7 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
-        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
+        ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Initialize CodeQL
@@ -646,27 +654,6 @@ jobs:
 
     - name: Install Strip
       run: cmake --install build --prefix install --strip
-
-    - name: Run tests
-      run: |
-        # auth tests
-        cd install
-        PATH_BEFORE=$PATH
-        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
-
-        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
-        chmod 0777 ~/.melon/melon.conf
-        chmod 0777 ~/.melon/sasldb2
-
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
-        MELON_AUTH_PID=$!
-        sleep 1  # ensure that server has started
-
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
-
-        kill -2 $MELON_AUTH_PID
-        PATH=$PATH_BEFORE
-        cd ..
 
     - name: Mac Deploy Qt
       if: ${{ runner.os == 'macOS' }}
@@ -745,165 +732,172 @@ jobs:
       run: |
         plog-converter -t tasklist -a GA:1,2,3 -w PVS-Studio.log
 
-  #run-tests:
-    #needs: build-core-server-client-desktop
-    #name: ${{ format('{0} {1} tests', matrix.config.prefix, matrix.config.build_type) }}
-    #runs-on: ${{ matrix.config.os }}
-    #env:
-      #BOOST_MAJOR: 1
-      #BOOST_MINOR: 76
-      #BOOST_BUILD: 0
-      #BOOST_INSTALL_PATH: "boost-install"
-      #CYRUS_SASL_VERSION: "2.1.27"
-      #CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
-      #YAML_CPP_VERSION: "0.6.3"
-      #YAML_CPP_INSTALL_PATH: "yaml-cpp-install"
-      #SQLPP11_VERSION: "0.60"
-      #SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
-      #SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      #CATCH2_VERSION: "2.13.4"
-      #CATCH2_INSTALL_PATH: "catch2-install"
-      #QT_VERSION: "5.15.1"
-      #QT_INSTALL_PATH: "qt-install"
-    #services:
-      #mariadb:
-        #image: mariadb:latest
-        #ports:
-          #- 3306
-        #env:
-          #MYSQL_USER: melon
-          #MYSQL_PASSWORD: melonpass
-          #MYSQL_ROOT_PASSWORD: melonpass
-          #MYSQL_DATABASE: melon
-        #options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #config:
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #artifact: "all-release-linux",
-            #build_type: "Release",
-          #}
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #artifact: "all-debug-linux",
-            #build_type: "Debug",
-          #}
+  run-tests:
+    needs: build-core-server-client-desktop
+    name: ${{ format('{0} {1} tests', matrix.config.prefix, matrix.config.build_type) }}
+    runs-on: ${{ matrix.config.os }}
+    env:
+      BOOST_MAJOR: 1
+      BOOST_MINOR: 76
+      BOOST_BUILD: 0
+      BOOST_INSTALL_PATH: "boost-install"
+      CYRUS_SASL_VERSION: "2.1.27"
+      CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
+      YAML_CPP_VERSION: "0.6.3"
+      YAML_CPP_INSTALL_PATH: "yaml-cpp-install"
+      SQLPP11_VERSION: "0.60"
+      SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
+      SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      CATCH2_VERSION: "2.13.4"
+      CATCH2_INSTALL_PATH: "catch2-install"
+      QT_VERSION: "5.15.1"
+      QT_INSTALL_PATH: "qt-install"
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_USER: melon
+          MYSQL_PASSWORD: melonpass
+          MYSQL_ROOT_PASSWORD: melonpass
+          MYSQL_DATABASE: melon
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            artifact: "all-release-linux",
+            build_type: "Release",
+          }
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            artifact: "all-debug-linux",
+            build_type: "Debug",
+          }
 
-    #steps:
-    #- uses: actions/checkout@v2
+    steps:
+    - uses: actions/checkout@v2
 
-    #- name: Set environment variables
-      #shell: python3 {0}
-      #run: |
-        #import os
+    - name: Set environment variables
+      shell: python3 {0}
+      run: |
+        import os
 
-        #repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
-        #root = os.path.normpath(os.path.dirname(repo))
+        repo = os.path.normpath(os.environ['GITHUB_WORKSPACE'])
+        root = os.path.normpath(os.path.dirname(repo))
 
-        #with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-          #env_file.write("REPO_PATH={}\n".format(repo))
-          #env_file.write("ROOT_PATH={}\n".format(root))
+        with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+          env_file.write("REPO_PATH={}\n".format(repo))
+          env_file.write("ROOT_PATH={}\n".format(root))
 
-    #- name: Uninstall MySQL (Linux)
-      #if: ${{ runner.os == 'Linux' }}
-      #run: |
-        #sudo systemctl stop mysql
-        #sudo apt purge *mysql* -y
+    - name: Uninstall MySQL (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo systemctl stop mysql
+        sudo apt purge *mysql* -y
 
-    #- name: Install required packages (Linux)
-      #if: ${{ runner.os == 'Linux' }}
-      #run: |
-        #sudo apt update
-        #sudo apt install libstdc++-10-dev
-        #sudo apt install mariadb-client -y  # to restore DB from dump in tests
-        #sudo apt install libmariadb3 -y
-        #sudo apt install libgdbm6 -y
-        #sudo apt install libssl1.1 -y
+    - name: Install required packages (Linux)
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt update
+        sudo apt install libstdc++-10-dev
+        sudo apt install mariadb-client -y  # to restore DB from dump in tests
+        sudo apt install libmariadb3 -y
+        sudo apt install libgdbm6 -y
+        sudo apt install libssl1.1 -y
 
-    #- name: Boost cache
-      #uses: actions/cache@v2
-      #id: cache_boost
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        #key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-7
+    - name: Boost cache
+      uses: actions/cache@v2
+      id: cache_boost
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-9
 
-    #- name: Cyrus SASL cache
-      #uses: actions/cache@v2
-      #id: cache_cyrus_sasl_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
-        #key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-7
+    - name: Utils by Pavel A. Lebedev cache
+      uses: actions/cache@v2
+      id: cache_lebedev_utils_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
+        key: ${{ runner.os }}-lebedev-utils-9
 
-    #- name: Yaml CPP cache
-      #uses: actions/cache@v2
-      #id: cache_yaml_cpp_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
-        #key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-7
+    - name: Cyrus SASL cache
+      uses: actions/cache@v2
+      id: cache_cyrus_sasl_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}
+        key: ${{ runner.os }}-cyrus-sasl-with-gdbm-${{ env.CYRUS_SASL_VERSION }}-9
 
-    #- name: SQLPP11 cache
-      #uses: actions/cache@v2
-      #id: cache_sqlpp11_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        #key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-7
+    - name: Yaml CPP cache
+      uses: actions/cache@v2
+      id: cache_yaml_cpp_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }}
+        key: ${{ runner.os }}-yaml-cpp-${{ env.YAML_CPP_VERSION }}-9
 
-    #- name: Catch2 cache
-      #uses: actions/cache@v2
-      #id: cache_catch2_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        #key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-7
+    - name: SQLPP11 cache
+      uses: actions/cache@v2
+      id: cache_sqlpp11_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-9
 
-    #- name: Qt5 cache
-      #uses: actions/cache@v2
-      #id: cache_qt_unix
-      #with:
-        #path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
-        #key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-7
+    - name: Catch2 cache
+      uses: actions/cache@v2
+      id: cache_catch2_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-9
 
-    #- name: Download pre-built binaries from artifacts
-      #uses: actions/download-artifact@v2
-      #with:
-        #name: ${{ matrix.config.artifact }}
+    - name: Qt5 cache
+      uses: actions/cache@v2
+      id: cache_qt_unix
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}
+        key: ${{ runner.os }}-qt-qtbase-qttools-${{ env.QT_VERSION }}-9
 
-    #- name: Untar files
-      #run: |
-        #tar -xf install.tar
+    - name: Download pre-built binaries from artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ matrix.config.artifact }}
 
-    #- name: Run tests
-      #env:
-        #DB_USER: melon
-        #DB_PASSWORD: melonpass
-        #DB_DATABASE: melon
-        #DB_HOST: "127.0.0.1"
-        #DB_PORT: ${{ job.services.mariadb.ports[3306] }}
-      #run: |
-        #cd install
+    - name: Untar files
+      run: |
+        tar -xf install.tar
 
-        ##storage tests
-        #mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < ${{ env.REPO_PATH }}/src/server/storage/sql/db_scheme_dump.sql
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-storage-tests
+    - name: Run tests
+      env:
+        DB_USER: melon
+        DB_PASSWORD: melonpass
+        DB_DATABASE: melon
+        DB_HOST: "127.0.0.1"
+        DB_PORT: ${{ job.services.mariadb.ports[3306] }}
+      run: |
+        cd install
 
-        ##auth tests
-        #PATH_BEFORE=$PATH
-        #PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+        # storage tests
+        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < ${{ env.REPO_PATH }}/src/server/storage/sql/db_scheme_dump.sql
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-storage-tests
 
-        #${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
-        #chmod 0777 ~/.melon/melon.conf
-        #chmod 0777 ~/.melon/sasldb2
+        # auth tests
+        PATH_BEFORE=$PATH
+        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
 
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
-        #MELON_AUTH_PID=$!
-        #sleep 1  # ensure that server has started
+        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        chmod 0777 ~/.melon/melon.conf
+        chmod 0777 ~/.melon/sasldb2
 
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
+        MELON_AUTH_PID=$!
+        sleep 1  # ensure that server has started
 
-        #kill -2 $MELON_AUTH_PID
-        #PATH=$PATH_BEFORE
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
 
-        #cd ..
+        kill -2 $MELON_AUTH_PID
+        PATH=$PATH_BEFORE
+
+        cd ..
