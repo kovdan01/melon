@@ -52,11 +52,10 @@ Domain::Domain(const QString& hostname)
 
 // For Select by id
 Domain::Domain(id_t id)
+    : detail::Domain(id)
 {
     auto& storage = DBNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
-
-    this->set_domain_id(id);
 
     QString qry_string = QStringLiteral("SELECT hostname, external FROM domains WHERE domain_id='") + QString::number(this->domain_id()) + QStringLiteral("'");
     exec_and_check_qtsql_query(qry, qry_string, "Loading domain");
