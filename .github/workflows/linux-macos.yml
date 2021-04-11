@@ -644,30 +644,6 @@ jobs:
       if: ${{ matrix.config.suffix == 'CodeQL' }}
       uses: github/codeql-action/analyze@v1
 
-    # to be moved
-    - name: Run tests
-      run: |
-        cd build
-        PATH_BEFORE=$PATH
-        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
-
-        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
-        chmod 0777 ~/.melon/melon.conf
-        chmod 0777 ~/.melon/sasldb2
-
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth 6666 &
-        MELON_AUTH_PID=$!
-
-        sleep 5
-
-        #LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ${{ env.CMAKE_TOOL_BINARY_PATH }}/ctest
-        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./src/server/auth/melon-auth-test-client
-
-        kill -2 $MELON_AUTH_PID
-
-        PATH=$PATH_BEFORE
-        cd ..
-
     - name: Install Strip
       run: cmake --install build --prefix install --strip
 
@@ -675,14 +651,14 @@ jobs:
       if: ${{ runner.os == 'macOS' }}
       shell: sh {0}
       run: |
-        $ROOT_PATH/$QT_INSTALL_PATH/bin/macdeployqt install/bin/melon-client-desktop.app
+        ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }}/bin/macdeployqt install/bin/melon-client-desktop.app
 
     - name: Copy required dylibs
       if: ${{ runner.os == 'macOS' }}
       shell: sh {0}
       run: |
-        cp $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
-        install_name_tool -change $ROOT_PATH/$CYRUS_SASL_INSTALL_PATH/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
+        cp ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/lib/libsasl2.3.dylib install/bin/libsasl2.3.dylib
+        install_name_tool -change ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/lib/libsasl2.3.dylib @executable_path/libsasl2.3.dylib install/bin/melon-auth
 
     - name: Tar files
       run: tar -cvf install.tar ./install
@@ -884,8 +860,27 @@ jobs:
         DB_HOST: "127.0.0.1"
         DB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: |
-        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < $REPO_PATH/src/server/storage/sql/db_scheme_dump.sql
         cd install
-        #ctest
+
+        # storage tests
+        mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < ${{ env.REPO_PATH }}/src/server/storage/sql/db_scheme_dump.sql
         ./bin/melon-storage-tests
+
+        # auth tests
+        PATH_BEFORE=$PATH
+        PATH=${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }}/sbin:$PATH_BEFORE
+
+        ${{ env.REPO_PATH }}/src/server/auth/scripts/setupserver.sh
+        chmod 0777 ~/.melon/melon.conf
+        chmod 0777 ~/.melon/sasldb2
+
+        ./src/server/auth/melon-auth 6666 &
+        MELON_AUTH_PID=$!
+        sleep 1  # ensure that server has started
+
+        ./src/server/auth/melon-auth-test-client
+
+        kill -2 $MELON_AUTH_PID
+        PATH=$PATH_BEFORE
+
         cd ..
