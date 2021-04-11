@@ -270,7 +270,7 @@ jobs:
       id: cache_lebedev_utils_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
-        key: ${{ runner.os }}-lebedev-utils-9
+        key: ${{ runner.os }}-lebedev-utils-10
 
     - name: Utils by Pavel A. Lebedev
       env:
@@ -289,12 +289,14 @@ jobs:
         # utils and asio-utils from cosec-examples
         cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
         mkdir build
-        mkdir ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
+        instal_prefix="${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}"
+        [ -d $instal_prefix ] && rm -r $instal_prefix
+        mkdir $instal_prefix
         cd build
         ${{ env.CMAKE_TOOL_BINARY_PATH }}/cmake \
             -G Ninja \
             -D CMAKE_MAKE_PROGRAM=${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}/ninja \
-            -D CMAKE_INSTALL_PREFIX="${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}" \
+            -D CMAKE_INSTALL_PREFIX="$instal_prefix" \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
             -S ..
@@ -824,7 +826,7 @@ jobs:
       id: cache_lebedev_utils_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
-        key: ${{ runner.os }}-lebedev-utils-9
+        key: ${{ runner.os }}-lebedev-utils-10
 
     - name: Cyrus SASL cache
       uses: actions/cache@v2
