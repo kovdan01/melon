@@ -84,6 +84,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
+ntc_target(${PROJECT_NAME})
+
 # compile test main only once to speed up compilation
 set(TESTS_MAIN_NAME melon-auth-tests-main)
 
@@ -111,7 +113,7 @@ target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::sasl_wrappers)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Catch2::Catch2)
 target_link_libraries(${TEST_CLIENT_NAME} PRIVATE ${TESTS_MAIN_NAME})
 
-ntc_target(${PROJECT_NAME})
+ntc_target(${TEST_CLIENT_NAME})
 
 # register tests with CTest
 
