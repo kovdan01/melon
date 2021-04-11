@@ -78,15 +78,12 @@ jobs:
             suffix: "",
             artifact: "all-release-macos",
             build_type: "Release",
-            cc: "/usr/local/bin/clang",
-            cxx: "/usr/local/bin/clang++",
+            cc: "/usr/local/opt/llvm/bin/clang",
+            cxx: "/usr/local/opt/llvm/bin/clang++",
           }
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Print LLVM prefix
-      run: brew --prefix llvm
 
     - name: Uninstall MySQL (Linux)
       if: ${{ runner.os == 'Linux' }}
