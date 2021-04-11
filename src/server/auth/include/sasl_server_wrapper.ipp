@@ -8,6 +8,9 @@
 #include <string>
 #include <string_view>
 
+
+#include <iostream>
+
 namespace melon::server::auth
 {
 

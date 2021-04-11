@@ -47,16 +47,18 @@ set(LIB_HEADERS
 set(LIB_SOURCES
 )
 
-add_library(sasl-wrappers INTERFACE
+set(MELON_AUTH_SASL_WRAPPERS melon-auth-sasl-wrappers)
+
+add_library(${MELON_AUTH_SASL_WRAPPERS} INTERFACE
     ${LIB_HEADERS}
     ${LIB_SOURCES}
 )
 
-target_compile_features(sasl-wrappers INTERFACE cxx_std_20)
+target_compile_features(${MELON_AUTH_SASL_WRAPPERS} INTERFACE cxx_std_20)
 
-target_link_libraries(sasl-wrappers INTERFACE PkgConfig::cyrus-sasl)
+target_link_libraries(${MELON_AUTH_SASL_WRAPPERS} INTERFACE PkgConfig::cyrus-sasl)
 
-ntc_target(sasl-wrappers
+ntc_target(${MELON_AUTH_SASL_WRAPPERS}
     ALIAS_NAME melon::sasl_wrappers
 )
 
