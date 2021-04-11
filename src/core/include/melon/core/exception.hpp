@@ -12,7 +12,6 @@ class MELON_CORE_EXPORT Exception : public std::runtime_error
 {
 public:
     using std::runtime_error::runtime_error;
-    using std::runtime_error::operator=;
     ~Exception() override;
 };
 
@@ -25,7 +24,6 @@ class MELON_CORE_EXPORT Exception : public melon::Exception
 {
 public:
     using melon::Exception::Exception;
-    using melon::Exception::operator=;
     ~Exception() override;
 };
 
