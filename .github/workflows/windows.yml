@@ -25,7 +25,7 @@ jobs:
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
-      MINGW64_CACHE_VERSION: 17  # increment when need to update mingw64 packages
+      MINGW64_CACHE_VERSION: 15  # increment when need to update mingw64 packages
     strategy:
       fail-fast: true
       matrix:
@@ -823,7 +823,7 @@ jobs:
       id: cache_sqlpp11
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-3
+        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-2
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
@@ -903,7 +903,7 @@ jobs:
 
         os.chdir(sqlpp11_conn_source_dir)
 
-        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} -DBUILD_SHARED_LIBS=ON " +
+        execute_msys_command(("{} -GNinja -DCMAKE_MAKE_PROGRAM={} " +
                               "-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={} -DUSE_MARIADB=TRUE " +
                               "-DDATE_INCLUDE_DIR={}/include -DSQLPP11_INCLUDE_DIR={}/include -DENABLE_TESTS=OFF " +
                               ".").format(cmake_binary, ninja_binary, sqlpp11_install_dir,
