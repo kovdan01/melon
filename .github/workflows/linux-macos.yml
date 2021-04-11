@@ -864,7 +864,7 @@ jobs:
 
         # storage tests
         mysql --host=${{ env.DB_HOST }} --port=${{ env.DB_PORT }} --user=${{ env.DB_USER }} --password=${{ env.DB_PASSWORD }} --database=${{ env.DB_DATABASE }} < ${{ env.REPO_PATH }}/src/server/storage/sql/db_scheme_dump.sql
-        ./bin/melon-storage-tests
+        LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-storage-tests
 
         # auth tests
         PATH_BEFORE=$PATH
@@ -876,7 +876,7 @@ jobs:
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
         MELON_AUTH_PID=$!
-        sleep 1  # ensure that server has started
+        sleep 5  # ensure that server has started
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
 
