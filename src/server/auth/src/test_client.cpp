@@ -1,7 +1,9 @@
 #include <sasl_server_wrapper.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <catch2/catch.hpp>
 
 #include <cassert>
@@ -40,12 +42,10 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     // so client's and server's hostnames are the same
     mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
 
-    boost::asio::io_service io_service;
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(tcp::v4(), ip, port);
-    tcp::resolver::iterator iterator = resolver.resolve(query);
-    tcp::socket s(io_service);
-    boost::asio::connect(s, iterator);
+    boost::asio::io_context io_context;
+    tcp::resolver resolver(io_context);
+    tcp::socket s(io_context);
+    boost::asio::connect(s, resolver.resolve(ip, port));
 
     std::string reply, to_send = wanted_mech;
 
