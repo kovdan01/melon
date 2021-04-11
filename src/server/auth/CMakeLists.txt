@@ -5,8 +5,6 @@ project(melon-auth
         LANGUAGES CXX
         )
 
-set(TEST_CLIENT_NAME melon-auth-test-client)
-
 find_package(ntc-cmake REQUIRED)
 include(ntc-dev-build)
 
@@ -85,7 +83,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::sasl_wrappers)
 
 # compile test main only once to speed up compilation
-set(TESTS_MAIN_NAME tests-main)
+set(TESTS_MAIN_NAME melon-auth-tests-main)
 
 add_library(${TESTS_MAIN_NAME} OBJECT
     src/test_main.cpp)
@@ -94,6 +92,7 @@ target_compile_features(${TESTS_MAIN_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${TESTS_MAIN_NAME} PRIVATE Catch2::Catch2)
 
 # melon-auth-test executable
+set(TEST_CLIENT_NAME melon-auth-test-client)
 
 add_executable(${TEST_CLIENT_NAME}
     ${HEADERS}

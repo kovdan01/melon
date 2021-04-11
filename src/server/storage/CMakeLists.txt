@@ -79,7 +79,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 # compile main only once to speed up compilation
-set(TESTS_MAIN tests-main)
+set(TESTS_MAIN melon-storage-tests-main)
 
 add_library(${TESTS_MAIN} OBJECT
     src/test_main.cpp
