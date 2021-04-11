@@ -800,6 +800,8 @@ jobs:
         sudo apt install libstdc++-10-dev
         sudo apt install mariadb-client -y  # to restore DB from dump in tests
         sudo apt install libmariadb3 -y
+        sudo apt install libgdbm6 -y
+        sudo apt install libssl1.1
 
     - name: Boost cache
       uses: actions/cache@v2
@@ -876,7 +878,7 @@ jobs:
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth 6666 &
         MELON_AUTH_PID=$!
-        sleep 5  # ensure that server has started
+        sleep 1  # ensure that server has started
 
         LD_LIBRARY_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}/lib ./bin/melon-auth-test-client
 
