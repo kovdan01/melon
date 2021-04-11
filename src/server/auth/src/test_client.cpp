@@ -59,7 +59,7 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
         boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
         std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
         reply = read_erase_buffered_string(n, in_buf);
-        if (reply == mca::TOKEN_CONFIRMATION_STRING)
+        if (reply == mca::ConfirmationSingleton::get_instance().confirmation_string())
         {
             confirmation_recieved = true;
             break;
@@ -75,7 +75,7 @@ TEST_CASE("credential-based tests", "[creds]")
     const std::string ip = "localhost";
     const std::string port = "6666";
 
-    /*auto& client_singletone = mca::SaslClientSingleton::get_instance();
+    auto& client_singletone = mca::SaslClientSingleton::get_instance();
     std::string wanted_mech;
     bool confirmation_recieved;
     SECTION("regisered credentials")
@@ -106,5 +106,5 @@ TEST_CASE("credential-based tests", "[creds]")
         mca::Credentials credentials = { "Igor", "Shcherbakov" };
         client_singletone.set_credentials(&credentials);
         REQUIRE_THROWS(confirmation_recieved = run_auth(ip, port, wanted_mech));
-    }*/
+    }
 }

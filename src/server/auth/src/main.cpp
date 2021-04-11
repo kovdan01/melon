@@ -101,7 +101,7 @@ public:
 
                 stream_.expires_after(TIME_LIMIT);
             }
-            m_out_buf = mca::TOKEN_CONFIRMATION_STRING + '\n';
+            m_out_buf = mca::ConfirmationSingleton::get_instance().confirmation_string() + '\n';
             stream_.expires_after(TIME_LIMIT);
             async_write(stream_, ba::buffer(m_out_buf), yc, 0);
             BOOST_LOG_TRIVIAL(info) << "Issued a token.";

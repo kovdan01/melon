@@ -15,7 +15,23 @@
 namespace melon::core::auth
 {
 
-const std::string TOKEN_CONFIRMATION_STRING = "Okay, Mr. Client, here's your token...";
+class ConfirmationSingleton
+{
+public:
+    static ConfirmationSingleton& get_instance();
+
+    ConfirmationSingleton(const ConfirmationSingleton& root) = delete;
+    ConfirmationSingleton& operator=(const ConfirmationSingleton&) = delete;
+    ConfirmationSingleton(ConfirmationSingleton&& root) = delete;
+    ConfirmationSingleton& operator=(ConfirmationSingleton&&) = delete;
+
+    [[nodiscard]] const std::string& confirmation_string() const noexcept;
+
+private:
+    ConfirmationSingleton() = default;
+
+    const std::string m_token_confirmation_string = "Okay, Mr. Client, here's your token...";
+};
 
 using sasl_res = int;
 

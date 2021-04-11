@@ -13,6 +13,17 @@
 namespace melon::core::auth
 {
 
+inline ConfirmationSingleton& ConfirmationSingleton::get_instance()
+{
+    static ConfirmationSingleton instance;
+    return instance;
+}
+
+inline const std::string& ConfirmationSingleton::confirmation_string() const noexcept
+{
+    return m_token_confirmation_string;
+}
+
 inline Credentials::Credentials(std::string username,std::string_view password)
     : m_username{std::move(username)}
     // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
