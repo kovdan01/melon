@@ -78,6 +78,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_wrappers)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
+ntc_target(${PROJECT_NAME})
+
 # compile main only once to speed up compilation
 set(TESTS_MAIN tests-main)
 
