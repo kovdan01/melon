@@ -259,7 +259,7 @@ jobs:
 
         toolset = os.path.basename("${{ env.CC }}")
         execute_command('echo "using {} : : ${{ env.CXX }} : ;" > user-config.jam'.format(toolset))
-        execute_command("./bootstrap.sh --with-toolset=${{ env.CC }} --without-libraries=python")
+        execute_command("./bootstrap.sh --with-toolset={} --without-libraries=python".format(toolset))
         execute_command('./b2 --ignore-site-config --user-config=./user-config.jam --prefix={} toolset={} variant=release link=shared threading=multi install'.format(boost_install_dir, toolset))
 
         os.chdir(repo)
