@@ -128,7 +128,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-2
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-3
 
     - name: Boost
       id: boost
@@ -918,7 +918,7 @@ jobs:
       id: cache_catch2
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}
+        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}-3
 
     - name: Catch2
       if: ${{ steps.cache_catch2.outputs.cache-hit != 'true' }}
