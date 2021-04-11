@@ -5,7 +5,6 @@
 
 #include <storage.hpp>
 
-
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
 namespace mysql = sqlpp::mysql;
@@ -96,6 +95,12 @@ TEST_CASE("Test storage service", "[storage]")
                  REQUIRE_FALSE(answer.size() < 2);
             }
 
+            SECTION("Get user_id")
+            {
+                REQUIRE(user1.user_id() == 1);
+                REQUIRE(user2.user_id() == 2);
+            }
+
             SECTION("Get username")
             {
                 mss::User found_user1(db, user1.username(), user1.domain_id());
@@ -103,6 +108,12 @@ TEST_CASE("Test storage service", "[storage]")
 
                 mss::User found_user2(db, user2.username(), user2.domain_id());
                 REQUIRE(found_user2.username() == "Erick");
+            }
+
+            SECTION("Get domain_id")
+            {
+                REQUIRE(user1.domain_id() == domain1.domain_id());
+                REQUIRE(user2.domain_id() == domain1.domain_id());
             }
 
             SECTION("Get status")
@@ -133,6 +144,22 @@ TEST_CASE("Test storage service", "[storage]")
                     REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat1.chat_id(), chat1.domain_id()));
                     mss::Chat found_chat1(db, chat1.chat_id(), chat1.domain_id());
                     REQUIRE(chat1 == found_chat1);
+
+                    REQUIRE_NOTHROW(mss::check_if_chat_exists(db, chat2.chat_id(), chat2.domain_id()));
+                    mss::Chat found_chat2(db, chat2.chat_id(), chat2.domain_id());
+                    REQUIRE(chat2 == found_chat2);
+                }
+
+                SECTION("Get chat_id")
+                {
+                    REQUIRE(chat1.chat_id() == 1);
+                    REQUIRE(chat2.chat_id() == 1);
+                }
+
+                SECTION("Get domain_id")
+                {
+                    REQUIRE(chat1.domain_id() == domain1.domain_id());
+                    REQUIRE(chat2.domain_id() == domain2.domain_id());
                 }
 
                 SECTION("Get chatname")
@@ -175,6 +202,36 @@ TEST_CASE("Test storage service", "[storage]")
                         REQUIRE(message1 == found_message1);
                     }
 
+                    SECTION("Get message_id")
+                    {
+                        REQUIRE(message1.message_id() == 1);
+                        REQUIRE(message2.message_id() == 1);
+                    }
+
+                    SECTION("Get chat_id")
+                    {
+                        REQUIRE(message1.chat_id() == chat1.chat_id());
+                        REQUIRE(message2.chat_id() == chat2.chat_id());
+                    }
+
+                    SECTION("Get domain_id_chat")
+                    {
+                        REQUIRE(message1.domain_id_chat() == chat1.domain_id());
+                        REQUIRE(message2.domain_id_chat() == chat2.domain_id());
+                    }
+
+                    SECTION("Get user_id")
+                    {
+                        REQUIRE(message1.user_id() == user2.user_id());
+                        REQUIRE(message2.user_id() == user2.user_id());
+                    }
+
+                    SECTION("Get domain_id_user")
+                    {
+                        REQUIRE(message1.domain_id_user() == user2.domain_id());
+                        REQUIRE(message2.domain_id_user() == user2.domain_id());
+                    }
+
                     SECTION("Get status")
                     {
                         mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
@@ -190,10 +247,10 @@ TEST_CASE("Test storage service", "[storage]")
                     SECTION("Get timestamp")
                     {
                         std::chrono::system_clock::time_point test_time_point = std::chrono::system_clock::now();
-                        mss::Message message4(db, chat1.chat_id(), chat1.domain_id(), user1.user_id(), user1.domain_id(),
+                        mss::Message message3(db, chat1.chat_id(), chat1.domain_id(), user1.user_id(), user1.domain_id(),
                                               "hello", test_time_point, mc::Message::Status::SENT);
-                        mss::Message found_message4(db, message4.message_id(), message4.chat_id(), message4.domain_id_chat());
-                        REQUIRE(std::chrono::system_clock::to_time_t(found_message4.timestamp()) ==
+                        mss::Message found_message3(db, message3.message_id(), message3.chat_id(), message3.domain_id_chat());
+                        REQUIRE(std::chrono::system_clock::to_time_t(found_message3.timestamp()) ==
                                 std::chrono::system_clock::to_time_t(test_time_point));
                     }
 
@@ -211,13 +268,22 @@ TEST_CASE("Test storage service", "[storage]")
                         REQUIRE(found_message1.text() == "((((((");
                     }
 
+                    SECTION("Set timestamp")
+                    {
+                        std::chrono::system_clock::time_point test_time_point = std::chrono::system_clock::now();
+                        mss::Message found_message1(db, message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+                        found_message1.set_timestamp(test_time_point);
+                        REQUIRE(std::chrono::system_clock::to_time_t(found_message1.timestamp()) ==
+                                std::chrono::system_clock::to_time_t(test_time_point));
+                    }
+
                     SECTION("Test get_messages() for Chat")
                     {
-                        mss::Message message3(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(),
+                        mss::Message message4(db, chat1.chat_id(), chat1.domain_id(), user2.user_id(), user2.domain_id(),
                                               "Sample text", std::chrono::system_clock::now(), mc::Message::Status::SENT);
                         std::vector<mss::Message> messages_in_chat = chat1.get_messages();
                         REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message1](const mss::Message& m){ return m == message1; }) != messages_in_chat.end());
-                        REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message3](const mss::Message& m){ return m == message3; }) != messages_in_chat.end());
+                        REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message4](const mss::Message& m){ return m == message4; }) != messages_in_chat.end());
                         REQUIRE(messages_in_chat.size() == 2);
                     }
                 }
