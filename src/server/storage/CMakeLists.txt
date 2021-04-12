@@ -74,12 +74,17 @@ add_executable(${PROJECT_NAME}
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_wrappers)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
-target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
+target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::connector-mysql)
+target_link_libraries(${PROJECT_NAME} PUBLIC melon::storage_wrappers)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::program_options)
+target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
+
+ntc_target(${PROJECT_NAME})
 
 # compile main only once to speed up compilation
-set(TESTS_MAIN tests-main)
+set(TESTS_MAIN melon-storage-tests-main)
 
 add_library(${TESTS_MAIN} OBJECT
     src/test_main.cpp
