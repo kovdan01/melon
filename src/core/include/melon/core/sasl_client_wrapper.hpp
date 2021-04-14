@@ -1,5 +1,5 @@
-#ifndef MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
-#define MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
+#ifndef MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
+#define MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
 
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
@@ -12,8 +12,28 @@
 #include <string>
 #include <string_view>
 
-namespace melon::server::auth
+namespace melon::core::auth
 {
+
+class AuthResultSingleton
+{
+public:
+    static AuthResultSingleton& get_instance();
+
+    AuthResultSingleton(const AuthResultSingleton& root) = delete;
+    AuthResultSingleton& operator=(const AuthResultSingleton&) = delete;
+    AuthResultSingleton(AuthResultSingleton&& root) = delete;
+    AuthResultSingleton& operator=(AuthResultSingleton&&) = delete;
+
+    [[nodiscard]] const std::string& success() const noexcept;
+    [[nodiscard]] const std::string& failure() const noexcept;
+
+private:
+    AuthResultSingleton() = default;
+
+    const std::string m_success = "Okay, Mr. Client, here's your token...";
+    const std::string m_failure = "Can't perform authentication!";
+};
 
 using sasl_res = int;
 
@@ -39,16 +59,30 @@ private:
     std::unique_ptr<sasl_secret_t, FreeDeleter> m_password;
 };
 
-enum class AuthCompletness
+enum class AuthState
 {
+    // common
     COMPLETE = SASL_OK,
+    // common
     INCOMPLETE = SASL_CONTINUE,
+
+    // common
+    // in server stands for incorrect password
+    // with SCRAM-SHA-256 for some reason
+    BAD_PROTOCOL = SASL_BADPROT,
+
+    // server-only
+    USER_NOT_FOUND = SASL_NOUSER,
+    // server-only
+    AUTHENTICATION_FAILURE = SASL_BADAUTH,
+    // server-only
+    AUTHORIZATION_FAILURE = SASL_NOAUTHZ,
 };
 
 struct StepResult
 {
     std::string_view response;
-    AuthCompletness completness;
+    AuthState completness;
 };
 
 
@@ -67,43 +101,10 @@ inline sasl_res get_password(sasl_conn_t*, void* context, int id, sasl_secret_t*
 
 }  // namespace detail
 
-class SaslServerConnection
-{
-public:
-    SaslServerConnection(std::string service);
-    ~SaslServerConnection();
-
-    [[nodiscard]] std::string_view list_mechanisms() const;
-    StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
-    StepResult step(std::string_view client_response);
-    [[nodiscard]] const sasl_conn_t* conn() const;
-    [[nodiscard]] sasl_conn_t* conn();
-
-private:
-    const std::string m_service;
-    std::size_t m_step_count = 0;
-    sasl_conn_t* m_conn;
-};
-
-class SaslServerSingleton
-{
-public:
-    static SaslServerSingleton& get_instance();
-
-    SaslServerSingleton(const SaslServerSingleton& root) = delete;
-    SaslServerSingleton& operator=(const SaslServerSingleton&) = delete;
-    SaslServerSingleton(SaslServerSingleton&& root) = delete;
-    SaslServerSingleton& operator=(SaslServerSingleton&&) = delete;
-
-private:
-    SaslServerSingleton();
-    ~SaslServerSingleton();
-};
-
 class SaslClientConnection
 {
 public:
-    SaslClientConnection(std::string service);
+    SaslClientConnection(std::string service, std::string server_hostname);
     ~SaslClientConnection();
 
     struct StartResult
@@ -119,6 +120,7 @@ public:
 
 private:
     const std::string m_service;
+    const std::string m_server_hostname;
     std::size_t m_step_count = 0;
     sasl_conn_t* m_conn;
 };
@@ -148,8 +150,8 @@ private:
     };
 };
 
-}  // namespace melon::server::auth
+}  // namespace melon::core::auth
 
-#include "sasl_wrapper.ipp"
+#include "sasl_client_wrapper.ipp"
 
-#endif  // MELON_SERVER_AUTH_SASL_WRAPPER_HPP_
+#endif  // MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
