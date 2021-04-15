@@ -79,9 +79,13 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Select inserted domains")
     {
+        // show that nothing throws
+        REQUIRE_THROWS_AS(mss::check_if_domain_exists(db, 2014), std::exception);
+
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain1.domain_id()));
         mss::Domain found_domain1(db, domain1.hostname());
         REQUIRE(domain1 == found_domain1);
+
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain2.domain_id()));
         mss::Domain found_domain2(db, domain2.hostname());
