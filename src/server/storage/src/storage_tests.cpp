@@ -42,32 +42,33 @@ static bool operator==(const mss::Message& lhs, const mss::Message& rhs)
 
 }  // namespace melon::server::storage
 
-//class DBTestRAIIWrapper
-//{
-//public:
-//    DBTestRAIIWrapper()
-//    {
-//        m_conn.execute(R"(SET autocommit=0)");
-//    }
+class DBTestRAIIWrapper
+{
+public:
+    DBTestRAIIWrapper()
+    {
+        m_conn.execute(R"(SET autocommit=0)");
+    }
 
-//    ~DBTestRAIIWrapper()
-//    {
-//        try
-//        {
-//            m_conn.execute(R"(ROLLBACK)");
-//            m_conn.execute(R"(COMMIT)");
-//        }
-//        catch (...) // деструкторы не должны выбрасывать исключений (по-хорошему мы сюда никогда не зайдем, но перестраховаться не будет лишним
-//        {
-//            // log...
-//        }
-//    }
+    ~DBTestRAIIWrapper()
+    {
+        try
+        {
+            m_conn.execute(R"(ROLLBACK)");
+            m_conn.execute(R"(COMMIT)");
+        }
+        catch (...)
+        {
+            // log...
+        }
+    }
 
-//    mysql::connection& conn() { return m_conn; }
+    mysql::connection& conn() { return m_conn; }
 
-//private:
-//    mysql::connection m_conn(mss::config_db());
-//};
+private:
+    // storage_tests.cpp:69:35: error: no type named 'config_db' in namespace 'melon::server::storage'
+    mysql::connection m_conn(mss::config_db());
+};
 
 TEST_CASE("Test domains", "[storage service]")
 {
@@ -79,7 +80,7 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Select inserted domains")
     {
-        // show that nothing throws
+        // show that nothing throws as required
         REQUIRE_THROWS(mss::check_if_domain_exists(db, 2014));
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db, domain1.domain_id()));
