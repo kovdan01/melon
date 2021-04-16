@@ -75,6 +75,7 @@ jobs:
         path: |
           ${{ env.ROOT_PATH }}/${{ env.CMAKE_TOOL_PATH }}
           ${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}
+          C:/msys64/mingw64/bin/ninja.exe
         key: ${{ runner.os }}-ninja-${{ env.NINJA_TOOL_VERSION }}-cmake-${{ env.CMAKE_TOOL_VERSION }}-1
 
     - name: Download Ninja and CMake
