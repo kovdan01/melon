@@ -1,7 +1,6 @@
 #include <catch2/catch.hpp>
 
 #include <algorithm>
-#include <iostream>
 #include <tuple>
 
 #include <storage.hpp>
@@ -78,7 +77,6 @@ TEST_CASE("Test domains", "[storage service]")
     SECTION("Select inserted domains")
     {
         REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID));
-        REQUIRE_THROWS_WITH(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID), "No domain with id 0");
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
         mss::Domain found_domain1(db.conn(), domain1.hostname());
@@ -121,12 +119,6 @@ TEST_CASE("Test users", "[storage service]")
         REQUIRE_THROWS(mss::User{db.conn(), "Not_valid_username", mc::INVALID_ID});
     }
 
-    SECTION("Get online users")
-    {
-         std::vector<mss::User> answer = mss::get_online_users(db.conn());
-         REQUIRE_FALSE(answer.size() < 2);
-    }
-
     SECTION("Get functions")
     {
         REQUIRE(user1.user_id() == 1);
@@ -140,6 +132,9 @@ TEST_CASE("Test users", "[storage service]")
         REQUIRE(found_user2.username() == "Erick");
         REQUIRE(found_user1.status() == mc::User::Status::ONLINE);
         REQUIRE(found_user2.status() == mc::User::Status::ONLINE);
+
+        std::vector<mss::User> answer = mss::get_online_users(db.conn());
+        REQUIRE_FALSE(answer.size() < 2);
     }
 
     SECTION("Set functions")
@@ -165,7 +160,6 @@ TEST_CASE("Test chats", "[storage service]")
 
     SECTION("Select inserted chats")
     {
-
         REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, chat1.domain_id()));
         REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), mc::INVALID_ID));
         REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, mc::INVALID_ID));
