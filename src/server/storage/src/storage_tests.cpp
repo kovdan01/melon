@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <tuple>
 
 #include <storage.hpp>
@@ -59,7 +60,6 @@ public:
         }
         catch (...)
         {
-            // log...
         }
     }
 
@@ -77,8 +77,7 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Select inserted domains")
     {
-        // show that nothing throws as required
-        //REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), 2014));
+        REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID));
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
         mss::Domain found_domain1(db.conn(), domain1.hostname());
@@ -165,6 +164,10 @@ TEST_CASE("Test chats", "[storage service]")
 
     SECTION("Select inserted chats")
     {
+        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, chat1.domain_id()));
+        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), mc::INVALID_ID));
+        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, mc::INVALID_ID));
+
         REQUIRE_NOTHROW(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), chat1.domain_id()));
         mss::Chat found_chat1(db.conn(), chat1.chat_id(), chat1.domain_id());
         REQUIRE(chat1 == found_chat1);

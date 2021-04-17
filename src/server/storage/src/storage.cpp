@@ -56,13 +56,14 @@ IdNotFoundException::~IdNotFoundException() = default;
 
 void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id)
 {
-    if (db(select(max(G_DOMAINS.domainId)).from(G_DOMAINS).where(G_DOMAINS.domainId == domain_id)).empty())
+    if (db(select(G_DOMAINS.domainId).from(G_DOMAINS).where(G_DOMAINS.domainId == domain_id)).empty())
         throw IdNotFoundException("No domain with id " + std::to_string(domain_id));
 }
 
+
 void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id)
 {
-    if (db(select(max(G_CHATS.chatId)).from(G_CHATS).where(G_CHATS.chatId == chat_id && G_CHATS.domainId == domain_id)).empty())
+    if (db(select(G_CHATS.chatId).from(G_CHATS).where(G_CHATS.chatId == chat_id && G_CHATS.domainId == domain_id)).empty())
         throw IdNotFoundException("No chat with id " + std::to_string(chat_id) + " on domain with id " + std::to_string(domain_id));
 }
 
