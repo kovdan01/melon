@@ -95,6 +95,14 @@ TEST_CASE("Test domains", "[storage service]")
         REQUIRE(found_domain1.hostname() == "Paul server");
         REQUIRE(found_domain1.external() == false);
     }
+
+    SECTION("Remove")
+    {
+        mss::Domain found_domain1(db.conn(), domain1.hostname());
+        REQUIRE_NOTHROW(mss::Domain{db.conn(), found_domain1.hostname()});
+        found_domain1.remove();
+        REQUIRE_THROWS(mss::Domain{db.conn(), found_domain1.hostname()});
+    }
 }
 
 TEST_CASE("Test users", "[storage service]")
@@ -143,6 +151,14 @@ TEST_CASE("Test users", "[storage service]")
         REQUIRE(user2.status() == mc::User::Status::OFFLINE);
         std::vector answer = mss::get_online_users(db.conn());
         REQUIRE_FALSE(answer.empty());
+    }
+
+    SECTION("Remove")
+    {
+        mss::User found_user1(db.conn(), user1.username(), user1.domain_id());
+        REQUIRE_NOTHROW(mss::User{db.conn(), found_user1.username(), found_user1.domain_id()});
+        found_user1.remove();
+        REQUIRE_THROWS(mss::User{db.conn(), found_user1.username(), found_user1.domain_id()});
     }
 }
 
@@ -206,6 +222,14 @@ TEST_CASE("Test chats", "[storage service]")
         REQUIRE(std::find_if(users_in_chat.begin(), users_in_chat.end(), [&user1](const mss::User& u){ return u == user1; }) != users_in_chat.end());
         REQUIRE(std::find_if(users_in_chat.begin(), users_in_chat.end(), [&user2](const mss::User& u){ return u == user2; }) != users_in_chat.end());
         REQUIRE(users_in_chat.size() == 2);
+    }
+
+    SECTION("Remove")
+    {
+        mss::Chat found_chat1(db.conn(), chat1.chat_id(), chat1.domain_id());
+        REQUIRE_NOTHROW(mss::Chat{db.conn(), found_chat1.chat_id(), found_chat1.domain_id()});
+        found_chat1.remove();
+        REQUIRE_THROWS(mss::Chat{db.conn(), found_chat1.chat_id(), found_chat1.domain_id()});
     }
 }
 
@@ -283,5 +307,13 @@ TEST_CASE("Test messages", "[storage service]")
         REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message1](const mss::Message& m){ return m == message1; }) != messages_in_chat.end());
         REQUIRE(std::find_if(messages_in_chat.begin(), messages_in_chat.end(), [&message4](const mss::Message& m){ return m == message4; }) != messages_in_chat.end());
         REQUIRE(messages_in_chat.size() == 2);
+    }
+
+    SECTION("Remove")
+    {
+        mss::Message found_message1(db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat());
+        REQUIRE_NOTHROW(mss::Message{db.conn(), found_message1.message_id(), found_message1.chat_id(), found_message1.domain_id_chat()});
+        found_message1.remove();
+        REQUIRE_THROWS(mss::Message{db.conn(), found_message1.message_id(), found_message1.chat_id(), found_message1.domain_id_chat()});
     }
 }
