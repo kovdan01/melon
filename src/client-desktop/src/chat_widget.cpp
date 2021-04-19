@@ -11,6 +11,8 @@
 
 #include <chrono>
 
+#include <config.hpp>
+
 namespace melon::client_desktop
 {
 
@@ -122,6 +124,8 @@ void ChatWidget::send_message()
     m_ui->MsgEdit->setFocus();
 
     emit this->last_message_changed();
+
+    config_to_yaml();
 }
 
 void ChatWidget::receive_message()

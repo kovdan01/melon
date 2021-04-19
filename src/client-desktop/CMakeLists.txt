@@ -52,6 +52,7 @@ set(SOURCES
     src/chat_list_model.cpp
     src/chat_list_view.cpp
     src/chat_widget.cpp
+    src/config.cpp
     src/entities_db.cpp
     src/main.cpp
     src/main_window.cpp

@@ -237,6 +237,8 @@ private:
     Appearance m_appearance;
 };
 
+void config_to_yaml();
+
 }  // namespace melon::client_desktop
 
 #endif  // MELON_CLIENT_DESKTOP_CONFIG_HPP_
