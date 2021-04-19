@@ -24,7 +24,7 @@ T deserialize(const std::string& s)
 {
     msgpack::object_handle obj;
     unpack(obj, s.data(), s.size());
-    return obj.get().as<std::string>();
+    return obj.get().as<T>();
 }
 
 }  // namespace melon::core::serialization

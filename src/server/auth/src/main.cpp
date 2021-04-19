@@ -57,10 +57,7 @@ public:
             msa::SaslServerConnection server("melon");
 
             std::string_view supported_mechanisms = server.list_mechanisms();
-            auto [send_size, serialized_data] = melon::core::serialization::serialize(std::string(supported_mechanisms) );
-            ba::write(stream_, ba::buffer(&send_size, sizeof(send_size)));
-            ba::async_write(stream_, ba::buffer(serialized_data), yc, 0);
-            stream_.expires_after(TIME_LIMIT);
+            send_serialized(stream_, supported_mechanisms, yc);
 
             std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             if (ec)
@@ -150,6 +147,16 @@ private:
         m_in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
         before_separator.erase(n - 1,  before_separator.size() - 1);
         return before_separator;
+    }
+
+    template<typename Stream, typename What, typename YC>
+    void send_serialized(Stream& stream, What& what, YC& yc)
+    {
+        auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
+        ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
+        ba::async_write(stream, ba::buffer(serialized_data), yc, 0);
+        stream_.expires_after(TIME_LIMIT);
+        return;
     }
 
 };

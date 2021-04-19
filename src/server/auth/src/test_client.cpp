@@ -37,6 +37,17 @@ std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
     return before_separator;
 }
 
+template<typename Stream>
+std::string recieve_serialized(Stream& stream, std::string& buffer)
+{
+    std::uint32_t recieve_size;
+    boost::asio::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
+    std::size_t n = boost::asio::read(stream, boost::asio::dynamic_string_buffer{buffer, BUFFER_LIMIT}, boost::asio::transfer_exactly(recieve_size));
+    std::string reply = melon::core::serialization::deserialize<std::string>(buffer);
+    buffer.erase(0, n);
+    return reply;
+}
+
 bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
     // Test client is supposed to run on the same computer as server
@@ -52,12 +63,9 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
 
     bool confirmation_recieved = false;
 
+    std::size_t n;
     std::string in_buf;
-    std::uint32_t recieve_size, send_size;
-    boost::asio::read(s, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
-    std::size_t n = boost::asio::read(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, boost::asio::transfer_exactly(recieve_size));
-    reply = melon::core::serialization::deserialize<std::string>(in_buf);
-    in_buf.erase(0, n);
+    reply = recieve_serialized(s, in_buf);
 
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
