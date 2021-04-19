@@ -7,6 +7,7 @@
 #include <ce/spawn.hpp>
 #include <ce/tcp_listener.hpp>
 
+#include <boost/asio/read.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/asio/strand.hpp>
@@ -59,7 +60,7 @@ public:
             std::string_view supported_mechanisms = server.list_mechanisms();
             send_serialized(stream_, supported_mechanisms, yc);
 
-            std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+            std::string wanted_mechanism = recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
             if (ec)
             {
                 if (ec != boost::asio::error::eof)
@@ -67,8 +68,6 @@ public:
                 BOOST_LOG_SEV(log(), info) << "Connection closed";
                 return;
             }
-
-            std::string wanted_mechanism = read_erase_in_buf(n);
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
             m_out_buf = wanted_mechanism + "\n";
@@ -76,7 +75,7 @@ public:
             ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
 
             stream_.expires_after(TIME_LIMIT);
-            n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+            std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
             std::string client_response = read_erase_in_buf(n);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
             m_out_buf = std::string(server_response) + '\n';
@@ -149,13 +148,25 @@ private:
         return before_separator;
     }
 
+    template<typename Stream, typename YC>
+    std::string recieve_serialized(Stream& stream, YC& yc, std::size_t limit, boost::system::error_code ec)
+    {
+        std::uint32_t recieve_size;
+        ba::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
+        stream_.expires_after(TIME_LIMIT);
+        std::size_t n = ba::async_read(stream, boost::asio::dynamic_string_buffer{m_in_buf, limit}, boost::asio::transfer_exactly(recieve_size), yc[ec], 0);
+        std::string reply = melon::core::serialization::deserialize<std::string>(m_in_buf);
+        m_in_buf.erase(0, n);
+        return reply;
+    }
+
     template<typename Stream, typename What, typename YC>
     void send_serialized(Stream& stream, What& what, YC& yc)
     {
+        stream_.expires_after(TIME_LIMIT);
         auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
         ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
         ba::async_write(stream, ba::buffer(serialized_data), yc, 0);
-        stream_.expires_after(TIME_LIMIT);
         return;
     }
 

@@ -37,6 +37,15 @@ std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
     return before_separator;
 }
 
+template<typename Stream, typename What>
+void send_serialized(Stream& stream, What& what)
+{
+    auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
+    boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
+    boost::asio::write(stream, boost::asio::buffer(serialized_data));
+    return;
+}
+
 template<typename Stream>
 std::string recieve_serialized(Stream& stream, std::string& buffer)
 {
@@ -65,9 +74,10 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
 
     std::size_t n;
     std::string in_buf;
+
     reply = recieve_serialized(s, in_buf);
 
-    boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
+    send_serialized(s, to_send);
 
     n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
     reply = read_erase_buffered_string(n, in_buf);
