@@ -60,7 +60,7 @@ void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id)
         throw IdNotFoundException("No domain with id " + std::to_string(domain_id));
 }
 
-void check_if_domain_exists(sqlpp::mysql::connection& db, std::string hostname)
+void check_if_domain_exists(sqlpp::mysql::connection& db, const std::string& hostname)
 {
     if (db(select(G_DOMAINS.hostname).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname)).empty())
         throw IdNotFoundException("No domain with hostname " + hostname);

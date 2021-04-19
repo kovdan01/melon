@@ -76,8 +76,9 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Select inserted domains")
     {
-        REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID));
-        REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), "not_valid_hostname"));
+
+        REQUIRE_THROWS_AS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS(mss::check_if_domain_exists(db.conn(), "not_valid_hostname"), mss::IdNotFoundException);
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
         {
@@ -98,6 +99,8 @@ TEST_CASE("Test domains", "[storage service]")
             mss::Domain found_domain2(db.conn(), domain2.domain_id());
             REQUIRE(domain2 == found_domain2);
         }
+
+        REQUIRE_THROWS_AS(mss::Domain{db.conn(), "not_valid_hostname"}, mss::IdNotFoundException);
 
         REQUIRE_THROWS(mss::Domain{db.conn(), "not_valid_hostname"});
         REQUIRE_THROWS(mss::Domain{db.conn(), mc::INVALID_ID});
@@ -196,9 +199,9 @@ TEST_CASE("Test chats", "[storage service]")
 
     SECTION("Select inserted chats")
     {
-        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, chat1.domain_id()));
-        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), mc::INVALID_ID));
-        REQUIRE_THROWS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, mc::INVALID_ID));
+        REQUIRE_THROWS_AS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, chat1.domain_id()), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), mc::INVALID_ID), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS(mss::check_if_chat_exists(db.conn(), mc::INVALID_ID, mc::INVALID_ID), mss::IdNotFoundException);
 
         REQUIRE_NOTHROW(mss::check_if_chat_exists(db.conn(), chat1.chat_id(), chat1.domain_id()));
         mss::Chat found_chat1(db.conn(), chat1.chat_id(), chat1.domain_id());
