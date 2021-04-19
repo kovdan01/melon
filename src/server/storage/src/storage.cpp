@@ -60,6 +60,11 @@ void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id)
         throw IdNotFoundException("No domain with id " + std::to_string(domain_id));
 }
 
+void check_if_domain_exists(sqlpp::mysql::connection& db, std::string hostname)
+{
+    if (db(select(G_DOMAINS.hostname).from(G_DOMAINS).where(G_DOMAINS.hostname == hostname)).empty())
+        throw IdNotFoundException("No domain with hostname " + hostname);
+}
 
 void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id)
 {
@@ -240,6 +245,7 @@ User::User(sqlpp::mysql::connection& db, id_t user_id, id_t domain_id)
         const auto& row = result.front();
 
         auto status = static_cast<mc::User::Status>(static_cast<int>(row.status));
+
         mc::User::set_username(row.username);
         mc::User::set_status(status);
     }

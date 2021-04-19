@@ -77,6 +77,7 @@ TEST_CASE("Test domains", "[storage service]")
     SECTION("Select inserted domains")
     {
         REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID));
+        REQUIRE_THROWS(mss::check_if_domain_exists(db.conn(), "not_valid_hostname"));
 
         REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
         {
@@ -99,13 +100,15 @@ TEST_CASE("Test domains", "[storage service]")
         }
 
         REQUIRE_THROWS(mss::Domain{db.conn(), "not_valid_hostname"});
+        REQUIRE_THROWS(mss::Domain{db.conn(), mc::INVALID_ID});
     }
 
     SECTION("Getters")
     {
-        mss::Domain found_domain1(db.conn(), domain1.hostname());
-        REQUIRE(found_domain1.hostname() == "Paul server");
-        REQUIRE(found_domain1.external() == false);
+        REQUIRE(domain1.hostname() == "Paul server");
+        REQUIRE(domain2.hostname() == "Blaze server");
+        REQUIRE(domain1.external() == false);
+        REQUIRE(domain2.external() == false);
     }
 
     SECTION("Remove")
@@ -155,13 +158,10 @@ TEST_CASE("Test users", "[storage service]")
         REQUIRE(user2.user_id() == 2);
         REQUIRE(user1.domain_id() == domain1.domain_id());
         REQUIRE(user2.domain_id() == domain1.domain_id());
-
-        mss::User found_user1(db.conn(), user1.username(), user1.domain_id());
-        mss::User found_user2(db.conn(), user2.username(), user2.domain_id());
-        REQUIRE(found_user1.username() == "Anna");
-        REQUIRE(found_user2.username() == "Erick");
-        REQUIRE(found_user1.status() == mc::User::Status::ONLINE);
-        REQUIRE(found_user2.status() == mc::User::Status::ONLINE);
+        REQUIRE(user1.username() == "Anna");
+        REQUIRE(user2.username() == "Erick");
+        REQUIRE(user1.status() == mc::User::Status::ONLINE);
+        REQUIRE(user2.status() == mc::User::Status::ONLINE);
 
         std::vector<mss::User> answer = mss::get_online_users(db.conn());
         REQUIRE_FALSE(answer.size() < 2);
@@ -221,11 +221,8 @@ TEST_CASE("Test chats", "[storage service]")
         REQUIRE(chat2.chat_id() == 1);
         REQUIRE(chat1.domain_id() == domain1.domain_id());
         REQUIRE(chat2.domain_id() == domain2.domain_id());
-
-        mss::Chat found_chat1(db.conn(), chat1.chat_id(), chat1.domain_id());
-        mss::Chat found_chat2(db.conn(), chat2.chat_id(), chat2.domain_id());
-        REQUIRE(found_chat1.chatname() == "secret_chat");
-        REQUIRE(found_chat2.chatname() == "On domain2");
+        REQUIRE(chat1.chatname() == "secret_chat");
+        REQUIRE(chat2.chatname() == "On domain2");
     }
 
     SECTION("Setters")
@@ -295,15 +292,14 @@ TEST_CASE("Test messages", "[storage service]")
         REQUIRE(message2.user_id() == user2.user_id());
         REQUIRE(message1.domain_id_user() == user2.domain_id());
         REQUIRE(message2.domain_id_user() == user2.domain_id());
-
-        mss::Message found_message1(db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat());
-        REQUIRE(found_message1.status() == mc::Message::Status::SENT);
-        REQUIRE(found_message1.text() == ":D");
+        REQUIRE(message1.status() == mc::Message::Status::SENT);
+        REQUIRE(message2.status() == mc::Message::Status::SENT);
+        REQUIRE(message1.text() == ":D");
+        REQUIRE(message2.text() == "Lorem ipsum");
 
         std::chrono::system_clock::time_point test_time_point = std::chrono::system_clock::now();
         mss::Message message3(db.conn(), chat1.chat_id(), chat1.domain_id(), user1.user_id(), user1.domain_id(), "hello", test_time_point, mc::Message::Status::SENT);
-        mss::Message found_message3(db.conn(), message3.message_id(), message3.chat_id(), message3.domain_id_chat());
-        REQUIRE(std::chrono::system_clock::to_time_t(found_message3.timestamp()) == std::chrono::system_clock::to_time_t(test_time_point));
+        REQUIRE(std::chrono::system_clock::to_time_t(message3.timestamp()) == std::chrono::system_clock::to_time_t(test_time_point));
     }
 
     SECTION("Setters")
