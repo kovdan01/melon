@@ -686,6 +686,7 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.CYRUS_SASL_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.YAML_CPP_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
+        ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}" \
