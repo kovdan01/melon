@@ -1,3 +1,4 @@
+#include <melon/core/serialization.hpp>
 #include <sasl_server_wrapper.hpp>
 
 #include <boost/asio.hpp>
@@ -52,8 +53,11 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     bool confirmation_recieved = false;
 
     std::string in_buf;
-    std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
-    read_erase_buffered_string(n, in_buf);
+    std::uint32_t recieve_size, send_size;
+    boost::asio::read(s, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
+    std::size_t n = boost::asio::read(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, boost::asio::transfer_exactly(recieve_size));
+    reply = melon::core::serialization::deserialize<std::string>(in_buf);
+    in_buf.erase(0, n);
 
     boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
 
