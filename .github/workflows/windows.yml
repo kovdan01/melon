@@ -23,6 +23,8 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
+      MSGPACK_VERSION: "3.3.0"
+      MSGPACK_INSTALL_PATH: "msgpack-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
       MINGW64_CACHE_VERSION: 15  # increment when need to update mingw64 packages
@@ -911,6 +913,62 @@ jobs:
         execute_msys_command("{} --build . --target all".format(cmake_binary))
         execute_msys_command("{} --build . --target install".format(cmake_binary))
 
+        os.chdir(repo)
+
+    - name: MsgPack cache
+      uses: actions/cache@v2
+      id: cache_msgpack
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }}
+        key: ${{ runner.os }}-msgpack-${{ env.MSGPACK_VERSION }}
+
+    - name: MsgPack
+      if: ${{ steps.cache_msgpack.outputs.cache-hit != 'true' }}
+      env:
+        CC: ${{ matrix.config.cc }}
+        CXX: ${{ matrix.config.cxx }}
+      shell: python3 {0}
+      run: |
+        import os
+        import requests
+        import subprocess
+
+        def execute_command(cmd):
+          ret = subprocess.call(cmd, shell=True)
+          if ret != 0:
+            raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
+
+        def execute_msys_command(cmd):
+          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          execute_command(cmd_prefix + '"{}"'.format(cmd))
+
+        root = os.environ['ROOT_PATH']
+        repo = os.environ['REPO_PATH']
+        ninja_tool_path = os.environ['NINJA_TOOL_PATH']
+        ninja_binary = os.path.join(root, ninja_tool_path, "ninja").replace("\\", "/")
+        cmake_tool_binary_path = os.environ['CMAKE_TOOL_BINARY_PATH']
+        cmake_binary = os.path.join(cmake_tool_binary_path, "cmake").replace("\\", "/")
+
+        os.chdir(root)
+
+        msgpack_version = os.environ['MSGPACK_VERSION']
+
+        msgpack_source_dir  = os.path.normpath(os.path.join(root, "msgpack-{}".format(msgpack_version)))
+        msgpack_install_dir = os.path.normpath(os.path.join(root, "${{ env.MSGPACK_INSTALL_PATH }}")).replace("\\", "/")
+        os.mkdir(msgpack_install_dir)
+
+        msgpack_url = "https://github.com/msgpack/msgpack-c/releases/download/cpp-{}/msgpack-{}.tar.gz".format(msgpack_version, msgpack_version)
+        open("msgpack.tar.gz", "wb").write(requests.get(msgpack_url, allow_redirects=True).content)
+        execute_msys_command("tar -xf msgpack.tar.gz")
+
+        os.chdir(msgpack_source_dir)
+
+        execute_msys_command("{} -B build -DCMAKE_BUILD_TYPE=Release -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
+                             "-DMSGPACK_CXX17=ON -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF -DBUILD_SHARED_LIBS=ON -DMSGPACK_ENABLE_STATIC=OFF "
+                             ".".format(cmake_binary, ninja_binary,
+                                        msgpack_install_dir))
+        execute_msys_command("{} --build build --target all".format(cmake_binary))
+        execute_msys_command("{} --build build --target install".format(cmake_binary))
         os.chdir(repo)
 
     - name: Catch2 cache
