@@ -34,7 +34,7 @@ public:
 
 // The following functions throw IdNotFoundException if the requested entity is not found
 STORAGE_WRAPPERS_EXPORT void check_if_domain_exists(sqlpp::mysql::connection& db, id_t domain_id);
-STORAGE_WRAPPERS_EXPORT void check_if_domain_exists(sqlpp::mysql::connection& db, std::string hostname);
+STORAGE_WRAPPERS_EXPORT void check_if_domain_exists(sqlpp::mysql::connection& db, const std::string& hostname);
 STORAGE_WRAPPERS_EXPORT void check_if_chat_exists(sqlpp::mysql::connection& db, id_t chat_id, id_t domain_id);
 
 [[nodiscard]] STORAGE_WRAPPERS_EXPORT id_t max_user_id(sqlpp::mysql::connection& db, id_t domain_id);
