@@ -54,22 +54,24 @@ private:
     DBSingletone();  // NOLINT (modernize-use-equals-delete)
 };
 
-class DBNameSingletone
+class StorageNameSingletone
 {
 public:
-    [[nodiscard]] static DBNameSingletone& get_instance();
+    [[nodiscard]] static StorageNameSingletone& get_instance();
 
-    DBNameSingletone(const DBNameSingletone&) = delete;
-    DBNameSingletone& operator=(const DBNameSingletone&) = delete;
-    DBNameSingletone(DBNameSingletone&&) = delete;
-    DBNameSingletone& operator=(DBNameSingletone&&) = delete;
+    StorageNameSingletone(const StorageNameSingletone&) = delete;
+    StorageNameSingletone& operator=(const StorageNameSingletone&) = delete;
+    StorageNameSingletone(StorageNameSingletone&&) = delete;
+    StorageNameSingletone& operator=(StorageNameSingletone&&) = delete;
 
     [[nodiscard]] QString db_name();
+    [[nodiscard]] std::string user_settings_file_name();
 
 private:
     QString m_db_name = QStringLiteral("test_db");
+    std::string m_user_settings_file_name = "user_config.yaml";
 
-    DBNameSingletone() = default;
+    StorageNameSingletone() = default;
 };
 
 }  // namespace melon::client_desktop

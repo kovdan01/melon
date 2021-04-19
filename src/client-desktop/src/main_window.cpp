@@ -1,6 +1,7 @@
 #include <chat_item_delegate.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
+#include <config.hpp>
 #include <entities_db.hpp>
 #include <main_window.hpp>
 #include <melon/core/exception.hpp>
@@ -65,7 +66,7 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QString db_name = storage.db_name();
     QSqlQuery qry_for_chats(db_name);
@@ -101,6 +102,13 @@ MainWindow::MainWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    auto& storage = StorageNameSingletone::get_instance();
+    std::string filename = storage.user_settings_file_name();
+    if (QFile::exists(QString::fromStdString(filename)))
+        parse_settings(YAML::LoadFile(filename));
+    else
+        set_standart_settings();
+
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
             this,
@@ -118,8 +126,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
-
-    auto& storage = DBNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     exec_and_check_qtsql_query(qry, QStringLiteral("SELECT COUNT(chat_id) from chats"), "Counting chats");

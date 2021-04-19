@@ -1,6 +1,8 @@
 #ifndef MELON_CLIENT_DESKTOP_CONFIG_HPP_
 #define MELON_CLIENT_DESKTOP_CONFIG_HPP_
 
+#include <yaml-cpp/yaml.h>
+
 #include <QColor>
 #include <QFont>
 #include <QString>
@@ -29,9 +31,9 @@ public:
 
         struct FontParams
         {
-            const QString family;
-            const int size;
-            const int weight;
+            QString family;
+            int size;
+            int weight;
         };
 
         [[nodiscard]] FontParams sender_font_params() const
@@ -94,26 +96,88 @@ public:
             return m_unread_background_color;
         }
 
+        // Setters
+
+        void set_sender_font_params(const FontParams& pm)
+        {
+            m_sender_font_params = pm;
+        }
+
+        void set_message_text_font_params(const FontParams& pm)
+        {
+            m_message_text_font_params = pm;
+        }
+
+        void set_timestamp_font_params(const FontParams& pm)
+        {
+            m_timestamp_font_params = pm;
+        }
+
+        void set_receive_message_color(const QColor& c)
+        {
+            m_receive_message_color = c;
+        }
+
+        void set_sended_message_color(const QColor& c)
+        {
+            m_sended_message_color = c;
+        }
+
+        void set_chat_name_font_params(const FontParams& pm)
+        {
+            m_chat_name_font_params = pm;
+        }
+
+        void set_chat_timestamp_font_params(const FontParams& pm)
+        {
+            m_chat_timestamp_font_params = pm;
+        }
+
+        void set_last_message_font_params(const FontParams& pm)
+        {
+            m_last_message_font_params = pm;
+        }
+
+        void set_unread_counter_font_params(const FontParams& pm)
+        {
+            m_unread_counter_font_params = pm;
+        }
+
+        void set_last_message_sender_font_params(const FontParams& pm)
+        {
+            m_last_message_sender_font_params = pm;
+        }
+
+        void set_selected_chat_color(const QColor& c)
+        {
+            m_selected_chat_color = c;
+        }
+
+        void set_unread_background_color(const QColor& c)
+        {
+            m_unread_background_color = c;
+        }
+
     private:
         Appearance() = default;
 
         // for message item delegate
-        const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-        const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
-        const FontParams m_timestamp_font_params = {QStringLiteral("Cantarell"), 6, 35};
+        FontParams m_sender_font_params;
+        FontParams m_message_text_font_params;
+        FontParams m_timestamp_font_params;
 
-        const QColor m_receive_message_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
-        const QColor m_sended_message_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+        QColor m_receive_message_color;
+        QColor m_sended_message_color;
 
         // for chat item delegate
-        const FontParams m_chat_name_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-        const FontParams m_chat_timestamp_font_params = {QStringLiteral("Cantarell"), 7, 35};
-        const FontParams m_last_message_font_params = {QStringLiteral("Cantarell"), 7, 35};
-        const FontParams m_unread_counter_font_params = {QStringLiteral("Cantarell"), 7, 45};
-        const FontParams m_last_message_sender_font_params = {QStringLiteral("Cantarell"), 7, 40};
+        FontParams m_chat_name_font_params;
+        FontParams m_chat_timestamp_font_params;
+        FontParams m_last_message_font_params;
+        FontParams m_unread_counter_font_params;
+        FontParams m_last_message_sender_font_params;
 
-        const QColor m_selected_chat_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
-        const QColor m_unread_background_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+        QColor m_selected_chat_color;
+        QColor m_unread_background_color;
     };
 
     [[nodiscard]] Appearance& appearance()
@@ -238,6 +302,8 @@ private:
 };
 
 void config_to_yaml();
+void set_standart_settings();
+void parse_settings(const YAML::Node& conf_file);
 
 }  // namespace melon::client_desktop
 

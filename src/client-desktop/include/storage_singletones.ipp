@@ -50,15 +50,20 @@ inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSi
     return m_my_domain;
 }
 
-[[nodiscard]] inline DBNameSingletone& DBNameSingletone::get_instance()
+[[nodiscard]] inline StorageNameSingletone& StorageNameSingletone::get_instance()
 {
-    static DBNameSingletone instance;
+    static StorageNameSingletone instance;
     return instance;
 }
 
-[[nodiscard]] inline QString DBNameSingletone::db_name()
+[[nodiscard]] inline QString StorageNameSingletone::db_name()
 {
     return m_db_name;
+}
+
+[[nodiscard]] inline std::string StorageNameSingletone::user_settings_file_name()
+{
+    return m_user_settings_file_name;
 }
 
 }  // namespace melon::client_desktop

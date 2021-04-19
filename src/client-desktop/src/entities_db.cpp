@@ -23,7 +23,7 @@ Domain::Domain(const QString& hostname, bool external)
 {
     this->set_domain_id(max_domain_id() + 1);
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO domains VALUES(:domain_id, :hostname, :external)"),
@@ -40,7 +40,7 @@ Domain::Domain(const QString& hostname, bool external)
 Domain::Domain(const QString& hostname)
     : detail::Domain(hostname)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("SELECT domain_id, external FROM domains WHERE hostname='") + this->hostname() + QStringLiteral("'");
@@ -54,7 +54,7 @@ Domain::Domain(const QString& hostname)
 Domain::Domain(id_t id)
     : detail::Domain(id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("SELECT hostname, external FROM domains WHERE domain_id='") + QString::number(this->domain_id()) + QStringLiteral("'");
@@ -66,7 +66,7 @@ Domain::Domain(id_t id)
 
 void Domain::remove_from_db()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("DELETE FROM domains WHERE domain_id=") + QString::number(this->domain_id());
@@ -83,7 +83,7 @@ User::User(const QString& username, id_t domain_id, Status status)
 {
     this->set_user_id(max_user_id(this->domain_id()) + 1);
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO users VALUES(:user_id, :username, :domain_id, :status)"),
@@ -101,7 +101,7 @@ User::User(const QString& username, id_t domain_id, Status status)
 User::User(const QString& username, id_t domain_id)
     : detail::User(username, domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("SELECT user_id, status FROM users WHERE username='") + this->username() +
@@ -117,7 +117,7 @@ User::User(const QString& username, id_t domain_id)
 User::User(id_t user_id, id_t domain_id)
     : detail::User(user_id, domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("SELECT username, status FROM users WHERE user_id='") + QString::number(this->user_id()) +
@@ -131,7 +131,7 @@ User::User(id_t user_id, id_t domain_id)
 
 void User::remove_from_db()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QSqlQuery qry(storage.db_name());
 
     QString qry_string = QStringLiteral("DELETE FROM users WHERE user_id=") + QString::number(this->user_id()) +
@@ -150,7 +150,7 @@ Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id
     this->set_message_id(max_message_id(this->chat_id(), this->domain_id_chat()) + 1);
     this->set_is_edit(false);
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("INSERT INTO messages"
@@ -190,7 +190,7 @@ Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t domain_id
 Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
     : detail::Message(message_id, chat_id, domain_id_chat)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT user_id, domain_id_user, timestamp, text, status, edit FROM messages"
@@ -219,7 +219,7 @@ Message::Message(id_t message_id, id_t chat_id, id_t domain_id_chat)
 
 void Message::set_text(const QString& text)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE messages SET text='") + text +
@@ -249,7 +249,7 @@ void Message::set_from()
 
 void Message::set_is_edit(bool is_edit)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE messages SET edit='") + QString::number(static_cast<int>(is_edit)) +
@@ -262,7 +262,7 @@ void Message::set_is_edit(bool is_edit)
 
 void Message::remove_from_db()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("DELETE FROM messages WHERE message_id=") + QString::number(this->message_id()) +
@@ -282,7 +282,7 @@ Chat::Chat(id_t domain_id, const QString& name)
 {
     this->set_chat_id(max_chat_id(this->domain_id()) + 1);
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
 
@@ -299,7 +299,7 @@ Chat::Chat(id_t domain_id, const QString& name)
 Chat::Chat(id_t chat_id, id_t domain_id)
     : detail::Chat(chat_id, domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT name FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
@@ -311,7 +311,7 @@ Chat::Chat(id_t chat_id, id_t domain_id)
 
 void Chat::remove_from_db()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("DELETE FROM chats WHERE chat_id=") + QString::number(this->chat_id()) +
@@ -322,7 +322,7 @@ void Chat::remove_from_db()
 
 void Chat::set_chatname(const QString& chatname)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("UPDATE chats SET name='") + chatname +
@@ -338,7 +338,7 @@ void Chat::set_chatname(const QString& chatname)
 
 id_t max_domain_id()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(domain_id) FROM domains");
@@ -353,7 +353,7 @@ id_t max_domain_id()
 
 id_t max_user_id(id_t domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(user_id) FROM users WHERE domain_id=") + QString::number(domain_id);
@@ -368,7 +368,7 @@ id_t max_user_id(id_t domain_id)
 
 id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(message_id) FROM messages where chat_id=") + QString::number(chat_id) +
@@ -385,7 +385,7 @@ id_t max_message_id(melon::core::id_t chat_id, melon::core::id_t domain_id)
 
 id_t max_chat_id(melon::core::id_t domain_id)
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QSqlQuery qry(storage.db_name());
     QString qry_string = QStringLiteral("SELECT MAX(chat_id) FROM chats WHERE domain_id=") + QString::number(domain_id);

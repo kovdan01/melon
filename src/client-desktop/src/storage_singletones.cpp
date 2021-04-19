@@ -7,7 +7,7 @@ DBSingletone::DBSingletone()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QString db_name = storage.db_name();
 
     db.setDatabaseName(db_name);
