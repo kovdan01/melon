@@ -113,10 +113,9 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Remove")
     {
-        mss::Domain found_domain1(db.conn(), domain1.hostname());
-        REQUIRE_NOTHROW(mss::Domain{db.conn(), found_domain1.hostname()});
-        found_domain1.remove();
-        REQUIRE_THROWS(mss::Domain{db.conn(), found_domain1.hostname()});
+        REQUIRE_NOTHROW(mss::Domain{db.conn(), domain1.hostname()});
+        domain1.remove();
+        REQUIRE_THROWS(mss::Domain{db.conn(), domain1.hostname()});
     }
 }
 
@@ -177,10 +176,9 @@ TEST_CASE("Test users", "[storage service]")
 
     SECTION("Remove")
     {
-        mss::User found_user1(db.conn(), user1.username(), user1.domain_id());
-        REQUIRE_NOTHROW(mss::User{db.conn(), found_user1.username(), found_user1.domain_id()});
-        found_user1.remove();
-        REQUIRE_THROWS(mss::User{db.conn(), found_user1.username(), found_user1.domain_id()});
+        REQUIRE_NOTHROW(mss::User{db.conn(), user1.username(), user1.domain_id()});
+        user1.remove();
+        REQUIRE_THROWS(mss::User{db.conn(), user1.username(), user1.domain_id()});
     }
 }
 
@@ -245,10 +243,9 @@ TEST_CASE("Test chats", "[storage service]")
 
     SECTION("Remove")
     {
-        mss::Chat found_chat1(db.conn(), chat1.chat_id(), chat1.domain_id());
-        REQUIRE_NOTHROW(mss::Chat{db.conn(), found_chat1.chat_id(), found_chat1.domain_id()});
-        found_chat1.remove();
-        REQUIRE_THROWS(mss::Chat{db.conn(), found_chat1.chat_id(), found_chat1.domain_id()});
+        REQUIRE_NOTHROW(mss::Chat{db.conn(), chat1.chat_id(), chat1.domain_id()});
+        chat1.remove();
+        REQUIRE_THROWS(mss::Chat{db.conn(), chat1.chat_id(), chat1.domain_id()});
     }
 }
 
@@ -329,9 +326,8 @@ TEST_CASE("Test messages", "[storage service]")
 
     SECTION("Remove")
     {
-        mss::Message found_message1(db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat());
-        REQUIRE_NOTHROW(mss::Message{db.conn(), found_message1.message_id(), found_message1.chat_id(), found_message1.domain_id_chat()});
-        found_message1.remove();
-        REQUIRE_THROWS(mss::Message{db.conn(), found_message1.message_id(), found_message1.chat_id(), found_message1.domain_id_chat()});
+        REQUIRE_NOTHROW(mss::Message{db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat()});
+        message1.remove();
+        REQUIRE_THROWS(mss::Message{db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat()});
     }
 }
