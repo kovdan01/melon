@@ -50,6 +50,8 @@ public:
     Domain(sqlpp::mysql::connection& db, std::string hostname, bool external);
     // For Select
     Domain(sqlpp::mysql::connection& db, std::string hostname);
+    // For Select by id
+    Domain(sqlpp::mysql::connection& db, id_t domain_id);
 
     void remove();
 
@@ -67,6 +69,8 @@ public:
     User(sqlpp::mysql::connection& db, std::string username, id_t domain_id, Status status);
     // For Select
     User(sqlpp::mysql::connection& db, std::string username, id_t domain_id);
+    // For Select by user_id and domain_id
+    User(sqlpp::mysql::connection& db, id_t user_id, id_t domain_id);
 
     [[nodiscard]] std::vector<Chat> get_chats() const;
 

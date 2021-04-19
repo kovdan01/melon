@@ -158,6 +158,25 @@ Domain::Domain(sqlpp::mysql::connection& db, std::string hostname)
     }
 }
 
+// For Select by id
+Domain::Domain(sqlpp::mysql::connection& db, id_t domain_id)
+    : mc::Domain(domain_id)
+    , m_db(db)
+{
+    auto result = db(select(G_DOMAINS.hostname, G_DOMAINS.external).from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+
+        mc::Domain::set_hostname(row.hostname);
+        mc::Domain::set_external(row.external);
+    }
+    else
+    {
+        throw IdNotFoundException("No domain_id in database");
+    }
+}
+
 void Domain::remove()
 {
     m_db(remove_from(G_DOMAINS).where(G_DOMAINS.domainId == this->domain_id()));
@@ -200,6 +219,28 @@ User::User(sqlpp::mysql::connection& db, std::string username, id_t domain_id)
         auto status = static_cast<mc::User::Status>(static_cast<int>(row.status));
 
         this->set_user_id(row.userId);
+        mc::User::set_status(status);
+    }
+    else
+    {
+        throw IdNotFoundException("No user in database");
+    }
+}
+
+// For Select by user_id and domain_id
+User::User(sqlpp::mysql::connection& db, id_t user_id, id_t domain_id)
+    : mc::User(user_id, domain_id)
+    , m_db(db)
+{
+    auto result = db(select(G_USERS.username, G_USERS.status)
+                     .from(G_USERS).where(G_USERS.userId == this->user_id() &&
+                                          G_USERS.domainId == this->domain_id()));
+    if (!result.empty())
+    {
+        const auto& row = result.front();
+
+        auto status = static_cast<mc::User::Status>(static_cast<int>(row.status));
+        mc::User::set_username(row.username);
         mc::User::set_status(status);
     }
     else
