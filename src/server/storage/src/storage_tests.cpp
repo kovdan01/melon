@@ -100,10 +100,8 @@ TEST_CASE("Test domains", "[storage service]")
             REQUIRE(domain2 == found_domain2);
         }
 
-        REQUIRE_THROWS_AS(mss::Domain{db.conn(), "not_valid_hostname"}, mss::IdNotFoundException);
-
-        REQUIRE_THROWS(mss::Domain{db.conn(), "not_valid_hostname"});
-        REQUIRE_THROWS(mss::Domain{db.conn(), mc::INVALID_ID});
+        REQUIRE_THROWS_AS((mss::Domain{db.conn(), "not_valid_hostname"}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Domain{db.conn(), mc::INVALID_ID}), mss::IdNotFoundException);
     }
 
     SECTION("Getters")
@@ -118,7 +116,7 @@ TEST_CASE("Test domains", "[storage service]")
     {
         REQUIRE_NOTHROW(mss::Domain{db.conn(), domain1.hostname()});
         domain1.remove();
-        REQUIRE_THROWS(mss::Domain{db.conn(), domain1.hostname()});
+        REQUIRE_THROWS_AS((mss::Domain{db.conn(), domain1.hostname()}), mss::IdNotFoundException);
     }
 }
 
@@ -149,9 +147,10 @@ TEST_CASE("Test users", "[storage service]")
             mss::User found_user2(db.conn(), user2.user_id(), user2.domain_id());
             REQUIRE(user2 == found_user2);
         }
-        REQUIRE_THROWS(mss::User{db.conn(), "Not_valid_username", user1.domain_id()});
-        REQUIRE_THROWS(mss::User{db.conn(), "Anna", mc::INVALID_ID});
-        REQUIRE_THROWS(mss::User{db.conn(), "Not_valid_username", mc::INVALID_ID});
+
+        REQUIRE_THROWS_AS((mss::User{db.conn(), "Not_valid_username", user1.domain_id()}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::User{db.conn(), "Anna", mc::INVALID_ID}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::User{db.conn(), "Not_valid_username", mc::INVALID_ID}), mss::IdNotFoundException);
     }
 
     SECTION("Getters")
@@ -181,7 +180,7 @@ TEST_CASE("Test users", "[storage service]")
     {
         REQUIRE_NOTHROW(mss::User{db.conn(), user1.username(), user1.domain_id()});
         user1.remove();
-        REQUIRE_THROWS(mss::User{db.conn(), user1.username(), user1.domain_id()});
+        REQUIRE_THROWS_AS((mss::User{db.conn(), user1.username(), user1.domain_id()}), mss::IdNotFoundException);
     }
 }
 
@@ -211,9 +210,9 @@ TEST_CASE("Test chats", "[storage service]")
         mss::Chat found_chat2(db.conn(), chat2.chat_id(), chat2.domain_id());
         REQUIRE(chat2 == found_chat2);
 
-        REQUIRE_THROWS(mss::Chat{db.conn(), mc::INVALID_ID, chat1.domain_id()});
-        REQUIRE_THROWS(mss::Chat{db.conn(), chat1.chat_id(), mc::INVALID_ID});
-        REQUIRE_THROWS(mss::Chat{db.conn(), mc::INVALID_ID, mc::INVALID_ID});
+        REQUIRE_THROWS_AS((mss::Chat{db.conn(), mc::INVALID_ID, chat1.domain_id()}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Chat{db.conn(), chat1.chat_id(), mc::INVALID_ID}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Chat{db.conn(), mc::INVALID_ID, mc::INVALID_ID}), mss::IdNotFoundException);
     }
 
     SECTION("Getters")
@@ -248,7 +247,7 @@ TEST_CASE("Test chats", "[storage service]")
     {
         REQUIRE_NOTHROW(mss::Chat{db.conn(), chat1.chat_id(), chat1.domain_id()});
         chat1.remove();
-        REQUIRE_THROWS(mss::Chat{db.conn(), chat1.chat_id(), chat1.domain_id()});
+        REQUIRE_THROWS_AS((mss::Chat{db.conn(), chat1.chat_id(), chat1.domain_id()}), mss::IdNotFoundException);
     }
 }
 
@@ -274,10 +273,10 @@ TEST_CASE("Test messages", "[storage service]")
         mss::Message found_message1(db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat());
         REQUIRE(message1 == found_message1);
 
-        REQUIRE_THROWS(mss::Message{db.conn(), mc::INVALID_ID, message1.chat_id(), message1.domain_id_chat()});
-        REQUIRE_THROWS(mss::Message{db.conn(), message1.message_id(), mc::INVALID_ID, message1.domain_id_chat()});
-        REQUIRE_THROWS(mss::Message{db.conn(), message1.message_id(), message1.chat_id(), mc::INVALID_ID});
-        REQUIRE_THROWS(mss::Message{db.conn(), mc::INVALID_ID, mc::INVALID_ID, mc::INVALID_ID});
+        REQUIRE_THROWS_AS((mss::Message{db.conn(), mc::INVALID_ID, message1.chat_id(), message1.domain_id_chat()}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Message{db.conn(), message1.message_id(), mc::INVALID_ID, message1.domain_id_chat()}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Message{db.conn(), message1.message_id(), message1.chat_id(), mc::INVALID_ID}), mss::IdNotFoundException);
+        REQUIRE_THROWS_AS((mss::Message{db.conn(), mc::INVALID_ID, mc::INVALID_ID, mc::INVALID_ID}), mss::IdNotFoundException);
     }
 
     SECTION("Getters")
@@ -331,6 +330,6 @@ TEST_CASE("Test messages", "[storage service]")
     {
         REQUIRE_NOTHROW(mss::Message{db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat()});
         message1.remove();
-        REQUIRE_THROWS(mss::Message{db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat()});
+        REQUIRE_THROWS_AS((mss::Message{db.conn(), message1.message_id(), message1.chat_id(), message1.domain_id_chat()}), mss::IdNotFoundException);
     }
 }
