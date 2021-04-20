@@ -80,7 +80,7 @@ static void parameter_abnormalities_reaction(const std::vector<std::string>& mis
 
 void parse_settings_appearance(const std::string& title, const YAML::Node& node);
 
-void config_to_yaml()
+void save_settings_to_yaml()
 {
     auto& config = UserConfigSingletone::get_instance();
 

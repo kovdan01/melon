@@ -119,6 +119,11 @@ MainWindow::MainWindow(QWidget* parent)
             this,
             &MainWindow::provide_chat_context_menu);
 
+    connect(m_ui->OpenSettings,
+            &QAction::triggered,
+            this,
+            &MainWindow::exec_settings);
+
     m_submenu.addAction(tr("Rename"), this, SLOT(rename_chat()));
     m_submenu.addAction(tr("Delete"), this, SLOT(delete_chat()));
 
@@ -139,6 +144,8 @@ MainWindow::MainWindow(QWidget* parent)
     {
         this->replace_chat_widget_with_spacer();
     }
+
+
 }
 
 ChatNameException::~ChatNameException() = default;
@@ -254,6 +261,11 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
 
     auto previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
     m_chat_widget->change_chat(current_it, previous_it);
+}
+
+bool MainWindow::exec_settings()
+{
+    return m_settings_dialog->exec();
 }
 
 }  // namespace melon::client_desktop

@@ -36,6 +36,8 @@ public:
             int weight;
         };
 
+        // Getters
+
         [[nodiscard]] FontParams sender_font_params() const
         {
             return m_sender_font_params;
@@ -156,6 +158,19 @@ public:
         void set_unread_background_color(const QColor& c)
         {
             m_unread_background_color = c;
+        }
+
+        void set_font_family_common(const QString& family)
+        {
+            m_sender_font_params.family = family;
+            m_message_text_font_params.family = family;
+            m_timestamp_font_params.family = family;
+
+            m_chat_name_font_params.family = family;
+            m_chat_timestamp_font_params.family = family;
+            m_last_message_font_params.family = family;
+            m_unread_counter_font_params.family = family;
+            m_last_message_sender_font_params.family = family;
         }
 
     private:
@@ -301,7 +316,7 @@ private:
     Appearance m_appearance;
 };
 
-void config_to_yaml();
+void save_settings_to_yaml();
 void set_standart_settings();
 void parse_settings(const YAML::Node& conf_file);
 

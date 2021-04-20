@@ -7,6 +7,7 @@
 #include <chat_list_view.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
+#include <settings_dialog.hpp>
 
 #include <QMainWindow>
 #include <QSpacerItem>
@@ -48,6 +49,8 @@ private slots:
 
     void change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat);
 
+    bool exec_settings();
+
 private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu{this};
     QScopedPointer<Ui::MainWindow> m_ui;
@@ -56,6 +59,7 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QPoint m_requested_menu_position;
     ChatListModel* m_model_chat_list = new ChatListModel{this};
     ChatItemDelegate* m_chat_item_delegate;
+    SettingsDialog* m_settings_dialog = new SettingsDialog{this};
 
     void replace_chat_widget_with_spacer();
     void replace_spacer_with_chat_widget();

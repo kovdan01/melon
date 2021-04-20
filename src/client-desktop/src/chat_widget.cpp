@@ -141,6 +141,8 @@ void ChatWidget::receive_message()
 
     m_ui->MsgEdit->setFocus();
     emit this->last_message_changed();
+
+    save_settings_to_yaml();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it)

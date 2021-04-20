@@ -148,7 +148,7 @@
    </property>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>Options</string>
     </property>
     <addaction name="OpenSettings"/>
    </widget>
