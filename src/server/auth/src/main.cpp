@@ -58,9 +58,9 @@ public:
             msa::SaslServerConnection server("melon");
 
             std::string_view supported_mechanisms = server.list_mechanisms();
-            send_serialized(stream_, supported_mechanisms, yc);
+            async_send_serialized(stream_, supported_mechanisms, yc);
 
-            std::string wanted_mechanism = recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
+            std::string wanted_mechanism = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
             if (ec)
             {
                 if (ec != boost::asio::error::eof)
@@ -149,7 +149,7 @@ private:
     }
 
     template<typename Stream, typename YC>
-    std::string recieve_serialized(Stream& stream, YC& yc, std::size_t limit, boost::system::error_code ec)
+    std::string async_recieve_serialized(Stream& stream, YC& yc, std::size_t limit, boost::system::error_code ec)
     {
         std::uint32_t recieve_size;
         ba::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
@@ -161,7 +161,7 @@ private:
     }
 
     template<typename Stream, typename What, typename YC>
-    void send_serialized(Stream& stream, What& what, YC& yc)
+    void async_send_serialized(Stream& stream, const What& what, YC& yc)
     {
         stream_.expires_after(TIME_LIMIT);
         auto [send_size, serialized_data] = melon::core::serialization::serialize(what);

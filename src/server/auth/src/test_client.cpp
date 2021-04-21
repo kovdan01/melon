@@ -38,7 +38,7 @@ std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
 }
 
 template<typename Stream, typename What>
-void send_serialized(Stream& stream, What& what)
+void send_serialized(Stream& stream, const What& what)
 {
     auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
     boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
