@@ -155,7 +155,7 @@ private:
         ba::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
         stream_.expires_after(TIME_LIMIT);
         std::size_t n = ba::async_read(stream, boost::asio::dynamic_string_buffer{m_in_buf, limit}, boost::asio::transfer_exactly(recieve_size), yc[ec], 0);
-        std::string reply = melon::core::serialization::deserialize<std::string>(m_in_buf);
+        auto reply = melon::core::serialization::deserialize<std::string>(m_in_buf);
         m_in_buf.erase(0, n);
         return reply;
     }
