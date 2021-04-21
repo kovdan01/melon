@@ -167,7 +167,6 @@ private:
         auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
         ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
         ba::async_write(stream, ba::buffer(serialized_data), yc, 0);
-        return;
     }
 
 };

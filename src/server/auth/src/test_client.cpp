@@ -43,7 +43,6 @@ void send_serialized(Stream& stream, What& what)
     auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
     boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
     boost::asio::write(stream, boost::asio::buffer(serialized_data));
-    return;
 }
 
 template<typename Stream>
@@ -52,7 +51,7 @@ std::string recieve_serialized(Stream& stream, std::string& buffer)
     std::uint32_t recieve_size;
     boost::asio::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
     std::size_t n = boost::asio::read(stream, boost::asio::dynamic_string_buffer{buffer, BUFFER_LIMIT}, boost::asio::transfer_exactly(recieve_size));
-    std::string reply = melon::core::serialization::deserialize<std::string>(buffer);
+    auto reply = melon::core::serialization::deserialize<std::string>(buffer);
     buffer.erase(0, n);
     return reply;
 }
@@ -75,7 +74,7 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     std::size_t n;
     std::string in_buf;
 
-    reply = recieve_serialized(s, in_buf);
+    recieve_serialized(s, in_buf);
 
     send_serialized(s, to_send);
 
