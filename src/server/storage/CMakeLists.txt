@@ -14,7 +14,12 @@ find_package(melon-core REQUIRED)
 # boost program options, asio
 find_package(
     Boost 1.75 REQUIRED
-    COMPONENTS program_options system
+    COMPONENTS
+    program_options
+    log
+    log_setup
+    thread
+    system
 )
 
 # mariadb
@@ -73,13 +78,16 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-
 target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::connector-mysql)
 target_link_libraries(${PROJECT_NAME} PUBLIC melon::storage_wrappers)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::program_options)
+target_link_libraries(${PROJECT_NAME} PUBLIC melon::core)
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::program_options)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::system)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log_setup)
 
 ntc_target(${PROJECT_NAME})
 
@@ -103,9 +111,14 @@ add_executable(${STORAGE_TESTS}
 )
 
 target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
-
+target_link_libraries(${STORAGE_TESTS} PRIVATE melon::core)
 target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_wrappers)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Threads::Threads)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::program_options)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::system)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::log)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::log_setup)
 target_link_libraries(${STORAGE_TESTS} PRIVATE ${TESTS_MAIN})
 
 ntc_target(${STORAGE_TESTS})

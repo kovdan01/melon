@@ -1,9 +1,15 @@
+#include <storage.hpp>
+#include <melon/core/log_configuration.hpp>
+
 #include <catch2/catch.hpp>
+
+#include <boost/log/expressions.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 #include <algorithm>
 #include <tuple>
-
-#include <storage.hpp>
 
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
@@ -48,6 +54,8 @@ public:
     DBTestRAIIWrapper()
     {
         m_conn.execute(R"(SET autocommit=0)");
+        using namespace boost::log::trivial;
+        mc::log::setup();
     }
 
     ~DBTestRAIIWrapper()
@@ -59,6 +67,7 @@ public:
         }
         catch (...)
         {
+            BOOST_LOG_TRIVIAL(fatal) << "Failed to ROLLBACK and COMMIT\n";
         }
     }
 

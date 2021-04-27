@@ -216,7 +216,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-9
+        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-10
 
     - name: Boost
       id: boost
@@ -248,10 +248,10 @@ jobs:
         boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}"))
         os.mkdir(boost_install_dir)
 
-        boost_url = "https://dl.bintray.com/boostorg/beta/{}.{}.{}.beta1/source/boost_{}_{}_{}_b1.zip".format(boost_major, boost_minor, boost_build,
-                                                                                                              boost_major, boost_minor, boost_build)
-        open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
-        execute_command("7z x boost.zip")
+        boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.tar.bz2".format(boost_major, boost_minor, boost_build,
+                                                                                                            boost_major, boost_minor, boost_build)
+        open("boost.tar.bz2", "wb").write(requests.get(boost_url, allow_redirects=True).content)
+        execute_command("tar -xf boost.tar.bz2")
 
         os.chdir(boost_source_dir)
 
