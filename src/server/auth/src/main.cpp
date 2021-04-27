@@ -70,23 +70,15 @@ public:
             }
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-            m_out_buf = wanted_mechanism + "\n";
-            stream_.expires_after(TIME_LIMIT);
-            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+            async_send_serialized(stream_, wanted_mechanism, yc);
 
-            stream_.expires_after(TIME_LIMIT);
-            std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-            std::string client_response = read_erase_in_buf(n);
+            std::string client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
             auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
-            m_out_buf = std::string(server_response) + '\n';
 
             while (server_completness == mca::AuthState::INCOMPLETE)
             {
-                stream_.expires_after(TIME_LIMIT);
-                ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
-                stream_.expires_after(TIME_LIMIT);
-                n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
-                client_response = read_erase_in_buf(n);
+                async_send_serialized(stream_, server_response, yc);
+                client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
                 mca::StepResult server_step_result = server.step(client_response);
                 server_response = server_step_result.response;
                 server_completness = server_step_result.completness;
@@ -95,7 +87,7 @@ public:
                     break;
 
                 if (server_response.data() != nullptr)
-                    m_out_buf = std::string(server_response) + '\n';
+                    m_out_buf = std::string(server_response);
                 else
                     m_out_buf = "";
             }
@@ -125,8 +117,7 @@ public:
                 break;
             }
 
-            stream_.expires_after(TIME_LIMIT);
-            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+            async_send_serialized(stream_, m_out_buf, yc);
 
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
