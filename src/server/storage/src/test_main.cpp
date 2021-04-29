@@ -1,13 +1,13 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
+#include <melon/core/log_configuration.hpp>
+
 int main( int argc, char* argv[] )
 {
-    // global setup...
+    melon::core::log::setup();
 
     int result = Catch::Session().run( argc, argv );
-
-     // global clean-up...
 
     return result;
 }

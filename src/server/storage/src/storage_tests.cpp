@@ -48,14 +48,15 @@ static bool operator==(const mss::Message& lhs, const mss::Message& rhs)
 
 }  // namespace melon::server::storage
 
+namespace
+{
+
 class DBTestRAIIWrapper
 {
 public:
     DBTestRAIIWrapper()
     {
         m_conn.execute(R"(SET autocommit=0)");
-        using namespace boost::log::trivial;
-        mc::log::setup();
     }
 
     ~DBTestRAIIWrapper()
@@ -77,6 +78,8 @@ private:
     mysql::connection m_conn{mss::config_db()};
 };
 
+}  // namespace
+
 TEST_CASE("Test domains", "[storage service]")
 {
     DBTestRAIIWrapper db;
@@ -85,25 +88,26 @@ TEST_CASE("Test domains", "[storage service]")
 
     SECTION("Select inserted domains")
     {
-
         REQUIRE_THROWS_AS(mss::check_if_domain_exists(db.conn(), mc::INVALID_ID), mss::IdNotFoundException);
         REQUIRE_THROWS_AS(mss::check_if_domain_exists(db.conn(), "not_valid_hostname"), mss::IdNotFoundException);
 
-        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
+        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.hostname()));
         {
             mss::Domain found_domain1(db.conn(), domain1.hostname());
             REQUIRE(domain1 == found_domain1);
         }
+        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain1.domain_id()));
         {
             mss::Domain found_domain1(db.conn(), domain1.domain_id());
             REQUIRE(domain1 == found_domain1);
         }
 
-        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain2.domain_id()));
+        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain2.hostname()));
         {
             mss::Domain found_domain2(db.conn(), domain2.hostname());
             REQUIRE(domain2 == found_domain2);
         }
+        REQUIRE_NOTHROW(mss::check_if_domain_exists(db.conn(), domain2.domain_id()));
         {
             mss::Domain found_domain2(db.conn(), domain2.domain_id());
             REQUIRE(domain2 == found_domain2);
