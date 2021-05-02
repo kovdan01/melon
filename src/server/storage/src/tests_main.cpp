@@ -3,11 +3,11 @@
 
 #include <melon/core/log_configuration.hpp>
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     melon::core::log::setup();
 
-    int result = Catch::Session().run( argc, argv );
+    int result = Catch::Session().run(argc, argv);
 
     return result;
 }
