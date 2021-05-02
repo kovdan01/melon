@@ -63,7 +63,7 @@ target_sources(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autog
 target_compile_features(${STORAGE_ENTITIES_LIB} PRIVATE cxx_std_20)
 
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC melon::core)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC PkgConfig::mariadb)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::sqlpp11)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::connector-mysql)
 
@@ -78,16 +78,9 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
-target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::sqlpp11)
-target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::connector-mysql)
-target_link_libraries(${PROJECT_NAME} PUBLIC melon::storage_entities)
-target_link_libraries(${PROJECT_NAME} PUBLIC melon::core)
-target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::program_options)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::system)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log_setup)
+target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
+target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 
 ntc_target(${PROJECT_NAME})
 
@@ -101,7 +94,6 @@ add_library(${TESTS_MAIN} OBJECT
 target_compile_features(${TESTS_MAIN} PRIVATE cxx_std_20)
 
 target_link_libraries(${TESTS_MAIN} PRIVATE melon::core)
-target_link_libraries(${TESTS_MAIN} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${TESTS_MAIN} PRIVATE Catch2::Catch2)
 
 # test cases itself
@@ -112,14 +104,10 @@ add_executable(${STORAGE_TESTS}
 )
 
 target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
-target_link_libraries(${STORAGE_TESTS} PRIVATE melon::core)
 target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_entities)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Threads::Threads)
-target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::program_options)
-target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::system)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::log)
-target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::log_setup)
 target_link_libraries(${STORAGE_TESTS} PRIVATE ${TESTS_MAIN})
 
 ntc_target(${STORAGE_TESTS})
