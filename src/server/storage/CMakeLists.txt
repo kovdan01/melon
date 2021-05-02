@@ -59,7 +59,7 @@ target_sources(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autog
 target_compile_features(${STORAGE_ENTITIES_LIB} PRIVATE cxx_std_20)
 
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC melon::core)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::sqlpp11)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::connector-mysql)
 
@@ -75,7 +75,7 @@ add_executable(${PROJECT_NAME}
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 # linker errors on GitHub Actions without explicit link with MariaDB for some reason
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
@@ -102,7 +102,7 @@ add_executable(${STORAGE_TESTS}
 
 target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
 # linker errors on GitHub Actions without explicit link with MariaDB for some reason
-target_link_libraries(${STORAGE_TESTS} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${STORAGE_TESTS} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_entities)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Threads::Threads)
