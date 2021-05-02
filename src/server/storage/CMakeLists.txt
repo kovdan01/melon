@@ -74,9 +74,9 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 # linker errors on GitHub Actions without explicit link with MariaDB for some reason
 target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 ntc_target(${PROJECT_NAME})
@@ -101,10 +101,10 @@ add_executable(${STORAGE_TESTS}
 )
 
 target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
-target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_entities)
-target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
 # linker errors on GitHub Actions without explicit link with MariaDB for some reason
 target_link_libraries(${STORAGE_TESTS} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_entities)
+target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Threads::Threads)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::log)
 target_link_libraries(${STORAGE_TESTS} PRIVATE ${TESTS_MAIN})
