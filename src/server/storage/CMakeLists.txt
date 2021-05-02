@@ -74,8 +74,11 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-# linker errors on GitHub Actions without explicit link with MariaDB for some reason
+# linker errors on GitHub Actions without explicit link with MariaDB and sqlpp11 for some reason
 target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
+target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::connector-mysql)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
