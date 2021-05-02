@@ -50,26 +50,26 @@ add_custom_command(
 )
 
 # storage wrappers
-set(STORAGE_WRAPPERS_LIB storage-wrappers)
+set(STORAGE_ENTITIES_LIB melon-storage-entities)
 
-add_library(${STORAGE_WRAPPERS_LIB}
-    include/storage.hpp
-    src/storage.cpp
+add_library(${STORAGE_ENTITIES_LIB}
+    include/entities.hpp
+    src/entities.cpp
 )
 
-target_include_directories(${STORAGE_WRAPPERS_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
-target_sources(${STORAGE_WRAPPERS_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
+target_include_directories(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
+target_sources(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
 
-target_compile_features(${STORAGE_WRAPPERS_LIB} PRIVATE cxx_std_20)
+target_compile_features(${STORAGE_ENTITIES_LIB} PRIVATE cxx_std_20)
 
-target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC melon::core)
-target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC PkgConfig::mariadb)
-target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC sqlpp11::sqlpp11)
-target_link_libraries(${STORAGE_WRAPPERS_LIB} PUBLIC sqlpp11::connector-mysql)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC melon::core)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC PkgConfig::mariadb)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::connector-mysql)
 
-ntc_target(${STORAGE_WRAPPERS_LIB}
-    ALIAS_NAME melon::storage_wrappers
-    HEADER_PREFIX melon/server/storage/wrappers/
+ntc_target(${STORAGE_ENTITIES_LIB}
+    ALIAS_NAME melon::storage_entities
+    HEADER_PREFIX melon/server/storage/entities/
 )
 
 # storage service itself
@@ -81,7 +81,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PUBLIC sqlpp11::connector-mysql)
-target_link_libraries(${PROJECT_NAME} PUBLIC melon::storage_wrappers)
+target_link_libraries(${PROJECT_NAME} PUBLIC melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PUBLIC melon::core)
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::program_options)
@@ -95,7 +95,7 @@ ntc_target(${PROJECT_NAME})
 set(TESTS_MAIN melon-storage-tests-main)
 
 add_library(${TESTS_MAIN} OBJECT
-    src/test_main.cpp
+    src/tests_main.cpp
 )
 
 target_compile_features(${TESTS_MAIN} PRIVATE cxx_std_20)
@@ -108,12 +108,12 @@ target_link_libraries(${TESTS_MAIN} PRIVATE Catch2::Catch2)
 set(STORAGE_TESTS melon-storage-tests)
 
 add_executable(${STORAGE_TESTS}
-    src/storage_tests.cpp
+    src/tests.cpp
 )
 
 target_compile_features(${STORAGE_TESTS} PRIVATE cxx_std_20)
 target_link_libraries(${STORAGE_TESTS} PRIVATE melon::core)
-target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_wrappers)
+target_link_libraries(${STORAGE_TESTS} PRIVATE melon::storage_entities)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Catch2::Catch2)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Threads::Threads)
 target_link_libraries(${STORAGE_TESTS} PRIVATE Boost::program_options)

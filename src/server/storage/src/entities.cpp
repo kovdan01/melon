@@ -1,5 +1,5 @@
+#include <entities.hpp>
 #include <melon/db_scheme.h>
-#include <storage.hpp>
 
 #include <sqlpp11/mysql/mysql.h>
 #include <sqlpp11/remove.h>
@@ -450,10 +450,11 @@ void Message::set_status(Status status)
 
 void Message::set_timestamp(timestamp_t timestamp)
 {
-    m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = timestamp).where(G_MESSAGES.messageId == this->message_id() &&
-                                                                       G_MESSAGES.chatId == this->chat_id() &&
-                                                                       G_MESSAGES.domainIdChat == this->domain_id_chat()));
-    mc::Message::set_timestamp(timestamp);
+    std::chrono::time_point timestamp_sec = std::chrono::floor<std::chrono::seconds>(timestamp);
+    m_db(update(G_MESSAGES).set(G_MESSAGES.sendtime = timestamp_sec).where(G_MESSAGES.messageId == this->message_id() &&
+                                                                           G_MESSAGES.chatId == this->chat_id() &&
+                                                                           G_MESSAGES.domainIdChat == this->domain_id_chat()));
+    mc::Message::set_timestamp(timestamp_sec);
 }
 
 }  // namespace melon::server::storage
