@@ -157,7 +157,7 @@ inline Message::Message(id_t chat_id, id_t domain_id_chat, id_t user_id, id_t do
     , m_user_id(user_id)
     , m_domain_id_user(domain_id_user)
     , m_text(std::move(text))
-    , m_timestamp(timestamp)
+    , m_timestamp(std::chrono::floor<std::chrono::seconds>(timestamp))
     , m_status(status)
 {
 }
@@ -221,7 +221,7 @@ inline void Message::set_status(Status status) noexcept
 
 inline void Message::set_timestamp(Message::timestamp_t timestamp)
 {
-    m_timestamp = timestamp;
+    m_timestamp = std::chrono::floor<std::chrono::seconds>(timestamp);
 }
 
 inline void Message::set_message_id(id_t message_id) noexcept
