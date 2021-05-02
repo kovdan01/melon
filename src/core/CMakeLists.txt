@@ -10,7 +10,7 @@ include(ntc-dev-build)
 
 # boost asio
 find_package(
-    Boost 1.75 REQUIRED
+    Boost 1.76 REQUIRED
     COMPONENTS
     chrono
     context
