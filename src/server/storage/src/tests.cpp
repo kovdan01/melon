@@ -1,5 +1,4 @@
 #include <entities.hpp>
-#include <melon/core/log_configuration.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -10,8 +9,6 @@
 
 #include <algorithm>
 #include <tuple>
-
-#include <iostream>
 
 namespace mc = melon::core;
 namespace mss = melon::server::storage;
