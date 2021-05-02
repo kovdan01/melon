@@ -95,7 +95,7 @@ add_library(${TESTS_MAIN} OBJECT
 target_compile_features(${TESTS_MAIN} PRIVATE cxx_std_20)
 
 # linker errors on GitHub Actions without explicit link with MariaDB for some reason
-target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${TESTS_MAIN} PRIVATE PkgConfig::mariadb)
 
 target_link_libraries(${TESTS_MAIN} PRIVATE melon::core)
 target_link_libraries(${TESTS_MAIN} PRIVATE Catch2::Catch2)
