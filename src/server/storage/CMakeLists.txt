@@ -15,11 +15,7 @@ find_package(melon-core REQUIRED)
 find_package(
     Boost 1.75 REQUIRED
     COMPONENTS
-    program_options
     log
-    log_setup
-    thread
-    system
 )
 
 # mariadb
@@ -63,7 +59,7 @@ target_sources(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autog
 target_compile_features(${STORAGE_ENTITIES_LIB} PRIVATE cxx_std_20)
 
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC melon::core)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC PkgConfig::mariadb)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::sqlpp11)
 target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::connector-mysql)
 
@@ -80,7 +76,6 @@ add_executable(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 
 ntc_target(${PROJECT_NAME})
 
