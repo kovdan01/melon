@@ -16,7 +16,7 @@ find_package(asio-utils REQUIRED)
 
 # boost program options, asio
 find_package(
-    Boost 1.75 REQUIRED
+    Boost 1.76 REQUIRED
     COMPONENTS
     chrono
     context
