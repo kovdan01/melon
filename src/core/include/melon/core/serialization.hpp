@@ -25,7 +25,7 @@ inline std::pair<std::uint32_t, msgpack::sbuffer> serialize(std::span<const melo
     packer.pack_bin(in.size());
     packer.pack_bin_body(reinterpret_cast<const char*>(in.data()), in.size());
     auto size = static_cast<std::uint32_t>(sbuf.size());
-    std::cerr << "serialize sbuf: " << (int)sbuf.data()[0] << ", " << sbuf.size() << std::endl;
+    std::cerr << "serialize sbuf: " << (void*)sbuf.data() << ", " << (int)sbuf.data()[0] << ", " << sbuf.size() << std::endl;
     return { size, std::move(sbuf) };
 }
 
@@ -35,7 +35,7 @@ std::pair<std::uint32_t, msgpack::sbuffer> serialize(const T& in)
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, in);
     auto size = static_cast<std::uint32_t>(sbuf.size());
-    std::cerr << "serialize sbuf: " << (int)sbuf.data()[0] << ", " << sbuf.size() << std::endl;
+    std::cerr << "serialize sbuf: " << (void*)sbuf.data() << ", " << (int)sbuf.data()[0] << ", " << sbuf.size() << std::endl;
     return { size, std::move(sbuf) };
 }
 

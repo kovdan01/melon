@@ -97,14 +97,14 @@ public:
             }
             if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
                 throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-            std::cerr << "WANTED: " << wanted_mechanism.view() << std::endl;
+            BOOST_LOG_TRIVIAL(info) << "WANTED: " << wanted_mechanism.view() << std::endl;
             async_send_serialized(stream_, wanted_mechanism.view(), yc);
 
             std::cerr << "2222" << std::endl;
 
             StringViewOverBinary client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
             std::cerr << "3333" << std::endl;
-            std::cerr << wanted_mechanism.view() << std::endl << client_response.view() << std::endl;
+            BOOST_LOG_TRIVIAL(info) << wanted_mechanism.view() << std::endl << client_response.view() << std::endl;
             auto [server_response, server_completness] = server.start(wanted_mechanism.view(), client_response.view());
 
             while (server_completness == mca::AuthState::INCOMPLETE)
@@ -197,14 +197,13 @@ private:
         const auto* data_ptr = reinterpret_cast<const mc::byte*>(what.data());
         std::span<const mc::byte> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
 
-        std::cerr << "send serialized: " << what.size() << ", " << (void*)what.data() << ", " << (int)what.data()[0] << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "send serialized: " << what.size() << ", " << (void*)what.data() << ", " << (int)what.data()[0] << std::endl;
 
         auto [send_size, serialized_data] = mc::serialization::serialize(bin);
         auto buf = ba::buffer(serialized_data.data(), serialized_data.size());
-        std::cerr << (void*)serialized_data.data() << ' ' << (void*)buf.data() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << (void*)serialized_data.data() << ' ' << (void*)buf.data() << std::endl;
         ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
         ba::write(stream, buf);
-        ::free(serialized_data.data());
     }
 
 };
