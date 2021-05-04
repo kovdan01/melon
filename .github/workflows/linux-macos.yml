@@ -680,6 +680,7 @@ jobs:
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+        -D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all" \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
