@@ -48,15 +48,15 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "CodeQL",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "CodeQL",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
         - {
             os: "ubuntu-latest",
             prefix: "Linux",
@@ -66,24 +66,24 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        #- {
-            #os: "ubuntu-latest",
-            #prefix: "Linux",
-            #suffix: "clang-tidy",
-            #artifact: "",
-            #build_type: "Debug",
-            #cc: "gcc",
-            #cxx: "g++",
-          #}
-        #- {
-            #os: "macos-latest",
-            #prefix: "macOS",
-            #suffix: "",
-            #artifact: "all-release-macos",
-            #build_type: "Release",
-            #cc: "/usr/local/opt/llvm/bin/clang",
-            #cxx: "/usr/local/opt/llvm/bin/clang++",
-          #}
+        - {
+            os: "ubuntu-latest",
+            prefix: "Linux",
+            suffix: "clang-tidy",
+            artifact: "",
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "macos-latest",
+            prefix: "macOS",
+            suffix: "",
+            artifact: "all-release-macos",
+            build_type: "Release",
+            cc: "/usr/local/opt/llvm/bin/clang",
+            cxx: "/usr/local/opt/llvm/bin/clang++",
+          }
 
     steps:
     - uses: actions/checkout@v2
@@ -680,7 +680,6 @@ jobs:
         -S . \
         -B build \
         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all" \
         -D CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
         -D CMAKE_PREFIX_PATH=\
         "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
