@@ -12,6 +12,7 @@
 
 using boost::asio::ip::tcp;
 
+namespace mc = melon::core;
 namespace mca = melon::core::auth;
 
 constexpr std::size_t BUFFER_LIMIT = 3000;
@@ -40,8 +41,8 @@ std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
 template<typename Stream>
 void send_serialized(Stream& stream, const std::string& what)
 {
-    const unsigned char* data_ptr = reinterpret_cast<const unsigned char*>(what.data());
-    std::span<const unsigned char> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
+    const auto* data_ptr = reinterpret_cast<const mc::byte*>(what.data());
+    std::span<const mc::byte> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
     auto [send_size, serialized_data] = melon::core::serialization::serialize(bin);
     boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
     boost::asio::write(stream, boost::asio::buffer(serialized_data.data(), serialized_data.size()));

@@ -204,7 +204,6 @@ private:
         std::cerr << (void*)serialized_data.data() << ' ' << (void*)buf.data() << std::endl;
         ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
         ba::write(stream, buf);
-        ::free(serialized_data.data());
     }
 
 };
