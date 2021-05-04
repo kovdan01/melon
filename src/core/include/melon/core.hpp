@@ -7,6 +7,8 @@
 namespace melon::core
 {
 
+using byte = unsigned char;
+
 MELON_CORE_EXPORT void hello();
 
 }  // namespace melon::core

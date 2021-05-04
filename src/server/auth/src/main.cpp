@@ -1,3 +1,4 @@
+#include <melon/core.hpp>
 #include <melon/core/log_configuration.hpp>
 #include <melon/core/serialization.hpp>
 #include <sasl_server_wrapper.hpp>
@@ -19,9 +20,11 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <thread>
 
+namespace mc = melon::core;
 namespace ba = boost::asio;
 namespace bb = boost::beast;
 namespace bae = boost::asio::execution;
@@ -31,6 +34,29 @@ using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
 using tcp_stream = bb::basic_stream<ba::ip::tcp,
                                     socket_executor_t,
                                     bb::simple_rate_policy>;
+
+class StringViewOverBinary
+{
+public:
+    StringViewOverBinary(std::vector<mc::byte> binary)
+        : m_binary(std::move(binary))
+    {
+        char* data_ptr = reinterpret_cast<char*>(m_binary.data());
+        if (!m_binary.empty() && m_binary.back() == 0)
+            m_view = std::string_view(data_ptr, data_ptr + m_binary.size() - 1);
+        else
+            m_view = std::string_view(data_ptr, data_ptr + m_binary.size());
+    }
+
+    std::string_view view() const
+    {
+        return m_view;
+    }
+
+private:
+    std::vector<mc::byte> m_binary;
+    std::string_view m_view;
+};
 
 class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
@@ -59,8 +85,9 @@ public:
 
             std::string_view supported_mechanisms = server.list_mechanisms();
             async_send_serialized(stream_, supported_mechanisms, yc);
-
-            std::string wanted_mechanism = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
+            std::cerr << "0000" << std::endl;
+            StringViewOverBinary wanted_mechanism = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
+            std::cerr << "1111" << std::endl;
             if (ec)
             {
                 if (ec != boost::asio::error::eof)
@@ -68,18 +95,26 @@ public:
                 BOOST_LOG_SEV(log(), info) << "Connection closed";
                 return;
             }
-            if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
-                throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
-            async_send_serialized(stream_, wanted_mechanism, yc);
+            if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
+                throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
+            std::cerr << "WANTED: " << wanted_mechanism.view() << std::endl;
+            async_send_serialized(stream_, wanted_mechanism.view(), yc);
 
-            std::string client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
-            auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+            std::cerr << "2222" << std::endl;
+
+            StringViewOverBinary client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
+            std::cerr << "3333" << std::endl;
+            std::cerr << wanted_mechanism.view() << std::endl << client_response.view() << std::endl;
+            auto [server_response, server_completness] = server.start(wanted_mechanism.view(), client_response.view());
 
             while (server_completness == mca::AuthState::INCOMPLETE)
             {
+                std::cerr << "4444" << std::endl;
                 async_send_serialized(stream_, server_response, yc);
+                std::cerr << "5555" << std::endl;
                 client_response = async_recieve_serialized(stream_, yc, NUMBER_LIMIT, ec);
-                mca::StepResult server_step_result = server.step(client_response);
+                std::cerr << "6666" << std::endl;
+                mca::StepResult server_step_result = server.step(client_response.view());
                 server_response = server_step_result.response;
                 server_completness = server_step_result.completness;
 
@@ -96,23 +131,23 @@ public:
             switch (server_completness)
             {
             case mca::AuthState::COMPLETE:
-                m_out_buf = mca::AuthResultSingleton::get_instance().success() + '\n';
+                m_out_buf = mca::AuthResultSingleton::get_instance().success();
                 BOOST_LOG_TRIVIAL(info) << "Issued a token";
                 break;
             case mca::AuthState::USER_NOT_FOUND:
-                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure();
                 BOOST_LOG_TRIVIAL(info) << "User not found";
                 break;
             case mca::AuthState::BAD_PROTOCOL:
-                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure();
                 BOOST_LOG_TRIVIAL(info) << "Protocol error";
                 break;
             case mca::AuthState::AUTHENTICATION_FAILURE:
-                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure();
                 BOOST_LOG_TRIVIAL(info) << "Authentication failure";
                 break;
             case mca::AuthState::AUTHORIZATION_FAILURE:
-                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure();
                 BOOST_LOG_TRIVIAL(info) << "Authorization failure";
                 break;
             }
@@ -139,25 +174,36 @@ private:
         return before_separator;
     }
 
-    template<typename Stream, typename YC>
-    std::string async_recieve_serialized(Stream& stream, YC& yc, std::size_t limit, boost::system::error_code ec)
+    template<typename Stream, typename YieldContext>
+    StringViewOverBinary async_recieve_serialized(Stream& stream, YieldContext& yc, std::size_t limit, boost::system::error_code ec)
     {
-        std::uint32_t recieve_size;
-        ba::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
+        std::uint32_t receive_size;
+        ba::read(stream, ba::buffer(&receive_size, sizeof(receive_size)), ba::transfer_exactly(sizeof(receive_size)), 0);
         stream_.expires_after(TIME_LIMIT);
-        std::size_t n = ba::async_read(stream, boost::asio::dynamic_string_buffer{m_in_buf, limit}, boost::asio::transfer_exactly(recieve_size), yc[ec], 0);
-        auto reply = melon::core::serialization::deserialize<std::string>(m_in_buf);
+
+        std::size_t n = ba::read(stream, ba::dynamic_string_buffer{m_in_buf, limit}, boost::asio::transfer_exactly(receive_size), 0);
+        if (n != receive_size)
+            throw melon::Exception("Error: received " + std::to_string(n) + " bytes, expected " + std::to_string(receive_size));
+
+        auto reply = mc::serialization::deserialize<std::vector<mc::byte>>(m_in_buf);
         m_in_buf.erase(0, n);
-        return reply;
+        return StringViewOverBinary(std::move(reply));
     }
 
-    template<typename Stream, typename What, typename YC>
-    void async_send_serialized(Stream& stream, const What& what, YC& yc)
+    template<typename Stream, typename What, typename YieldContext>
+    void async_send_serialized(Stream& stream, const What& what, YieldContext& yc)
     {
         stream_.expires_after(TIME_LIMIT);
-        auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
+        const mc::byte* data_ptr = reinterpret_cast<const mc::byte*>(what.data());
+        std::span<const mc::byte> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
+
+        std::cerr << "send serialized: " << what.size() << ", " << (void*)what.data() << ", " << (int)what.data()[0] << std::endl;
+
+        auto [send_size, serialized_data] = mc::serialization::serialize(bin);
+        auto buf = ba::buffer(serialized_data.data(), serialized_data.size());
+        std::cerr << (void*)serialized_data.data() << ' ' << (void*)buf.data() << std::endl;
         ba::write(stream, ba::buffer(&send_size, sizeof(send_size)));
-        ba::async_write(stream, ba::buffer(serialized_data), yc, 0);
+        ba::write(stream, buf);
     }
 
 };

@@ -8,7 +8,7 @@
 #include <catch2/catch.hpp>
 
 #include <cassert>
-
+#include <span>
 
 using boost::asio::ip::tcp;
 
@@ -37,23 +37,29 @@ std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
     return before_separator;
 }
 
-template<typename Stream, typename What>
-void send_serialized(Stream& stream, const What& what)
+template<typename Stream>
+void send_serialized(Stream& stream, const std::string& what)
 {
-    auto [send_size, serialized_data] = melon::core::serialization::serialize(what);
+    const unsigned char* data_ptr = reinterpret_cast<const unsigned char*>(what.data());
+    std::span<const unsigned char> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
+    auto [send_size, serialized_data] = melon::core::serialization::serialize(bin);
     boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
-    boost::asio::write(stream, boost::asio::buffer(serialized_data));
+    boost::asio::write(stream, boost::asio::buffer(serialized_data.data(), serialized_data.size()));
 }
 
 template<typename Stream>
-std::string recieve_serialized(Stream& stream, std::string& buffer)
+std::string receive_serialized(Stream& stream, std::string& buffer)
 {
-    std::uint32_t recieve_size;
-    boost::asio::read(stream, boost::asio::buffer(&recieve_size, sizeof(recieve_size)), boost::asio::transfer_exactly(sizeof(recieve_size)), 0);
-    std::size_t n = boost::asio::read(stream, boost::asio::dynamic_string_buffer{buffer, BUFFER_LIMIT}, boost::asio::transfer_exactly(recieve_size));
-    auto reply = melon::core::serialization::deserialize<std::string>(buffer);
+    std::uint32_t receive_size;
+    boost::asio::read(stream, boost::asio::buffer(&receive_size, sizeof(receive_size)), boost::asio::transfer_exactly(sizeof(receive_size)), 0);
+    std::size_t n = boost::asio::read(stream, boost::asio::dynamic_string_buffer{buffer, BUFFER_LIMIT}, boost::asio::transfer_exactly(receive_size));
+    if (n != receive_size)
+        throw melon::Exception("Error: received " + std::to_string(n) + " bytes, expected " + std::to_string(receive_size));
+    auto reply = melon::core::serialization::deserialize<std::vector<unsigned char>>(buffer);
     buffer.erase(0, n);
-    return reply;
+    if (!reply.empty() && reply.back() == 0)
+        return std::string(reinterpret_cast<char*>(reply.data()), reply.size() - 1);
+    return std::string(reinterpret_cast<char*>(reply.data()), reply.size());
 }
 
 bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
@@ -74,17 +80,20 @@ bool run_auth(const std::string& ip, const std::string& port, const std::string&
     //std::size_t n;
     std::string in_buf;
 
-    recieve_serialized(s, in_buf);
+    receive_serialized(s, in_buf);
 
     send_serialized(s, to_send);
 
-    reply = recieve_serialized(s, in_buf);
+    reply = receive_serialized(s, in_buf);
 
     for (int counter = 0; ; ++counter)
     {
         to_send = get_client_response(reply, client, counter);
         send_serialized(s, to_send);
-        reply = recieve_serialized(s, in_buf);
+        reply = receive_serialized(s, in_buf);
+        std::cerr << "REPLY: \"" << reply << "\", " << reply.size() << ", "
+                  << mca::AuthResultSingleton::get_instance().success().size()
+                  << (int)reply.back() << std::endl;
         if (reply == mca::AuthResultSingleton::get_instance().success())
         {
             confirmation_recieved = true;
@@ -113,43 +122,43 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-//        SECTION("PLAIN mech")
-//        {
-//            wanted_mech = "PLAIN";
-//        }
+        SECTION("PLAIN mech")
+        {
+            wanted_mech = "PLAIN";
+        }
         mca::Credentials credentials = { "john", "doe" };
         client_singletone.set_credentials(&credentials);
         REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
         REQUIRE(confirmation_recieved == true);
     }
-//    SECTION("not registered credentials")
-//    {
-//        SECTION("SCRAM-SHA-256 mech")
-//        {
-//            wanted_mech = "SCRAM-SHA-256";
-//        }
-//        SECTION("PLAIN mech")
-//        {
-//            wanted_mech = "PLAIN";
-//        }
-//        mca::Credentials credentials = { "Igor", "Shcherbakov" };
-//        client_singletone.set_credentials(&credentials);
-//        REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
-//        REQUIRE(confirmation_recieved == false);
-//    }
-//    SECTION("incorrect password")
-//    {
-//        SECTION("SCRAM-SHA-256 mech")
-//        {
-//            wanted_mech = "SCRAM-SHA-256";
-//        }
-//        SECTION("PLAIN mech")
-//        {
-//            wanted_mech = "PLAIN";
-//        }
-//        mca::Credentials credentials = { "john", "password" };
-//        client_singletone.set_credentials(&credentials);
-//        REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
-//        REQUIRE(confirmation_recieved == false);
-//    }
+    SECTION("not registered credentials")
+    {
+        SECTION("SCRAM-SHA-256 mech")
+        {
+            wanted_mech = "SCRAM-SHA-256";
+        }
+        SECTION("PLAIN mech")
+        {
+            wanted_mech = "PLAIN";
+        }
+        mca::Credentials credentials = { "Igor", "Shcherbakov" };
+        client_singletone.set_credentials(&credentials);
+        REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
+        REQUIRE(confirmation_recieved == false);
+    }
+    SECTION("incorrect password")
+    {
+        SECTION("SCRAM-SHA-256 mech")
+        {
+            wanted_mech = "SCRAM-SHA-256";
+        }
+        SECTION("PLAIN mech")
+        {
+            wanted_mech = "PLAIN";
+        }
+        mca::Credentials credentials = { "john", "password" };
+        client_singletone.set_credentials(&credentials);
+        REQUIRE_NOTHROW(confirmation_recieved = run_auth(ip, port, wanted_mech));
+        REQUIRE(confirmation_recieved == false);
+    }
 }
