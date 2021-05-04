@@ -48,15 +48,15 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            os: "ubuntu-latest",
-            prefix: "Linux",
-            suffix: "CodeQL",
-            artifact: "",
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-          }
+        #- {
+            #os: "ubuntu-latest",
+            #prefix: "Linux",
+            #suffix: "CodeQL",
+            #artifact: "",
+            #build_type: "Debug",
+            #cc: "gcc",
+            #cxx: "g++",
+          #}
         - {
             os: "ubuntu-latest",
             prefix: "Linux",
