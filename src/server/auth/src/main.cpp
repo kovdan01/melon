@@ -43,9 +43,9 @@ public:
     {
         char* data_ptr = reinterpret_cast<char*>(m_binary.data());
         if (!m_binary.empty() && m_binary.back() == 0)
-            m_view = std::string_view(data_ptr, data_ptr + m_binary.size() - 1);
+            m_view = std::string_view(data_ptr, m_binary.size() - 1);
         else
-            m_view = std::string_view(data_ptr, data_ptr + m_binary.size());
+            m_view = std::string_view(data_ptr, m_binary.size());
     }
 
     std::string_view view() const
