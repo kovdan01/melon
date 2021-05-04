@@ -95,6 +95,8 @@ User::User(const QString& username, id_t domain_id, Status status)
     qry.bindValue(QStringLiteral(":status"), static_cast<int>(this->status()));
 
     exec_and_check_qtsql_query(qry, "Inserting user");
+
+    this->set_full_name();
 }
 
 // For Select by username and domain_id
@@ -111,6 +113,8 @@ User::User(const QString& username, id_t domain_id)
     qry.next();
     this->set_user_id(qry.value(0).value<id_t>());
     this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
+
+    this->set_full_name();
 }
 
 // For Select by user_id and domain_id
@@ -127,6 +131,8 @@ User::User(id_t user_id, id_t domain_id)
     qry.next();
     this->set_username(qry.value(0).toString().toStdString());
     this->set_status(static_cast<melon::core::User::Status>(qry.value(1).toInt()));
+
+    this->set_full_name();
 }
 
 void User::remove_from_db()
@@ -138,6 +144,12 @@ void User::remove_from_db()
                          QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
     exec_and_check_qtsql_query(qry, qry_string, "Deleting user");
+}
+
+void User::set_full_name()
+{
+    Domain sender_domain(this->domain_id());
+    m_full_name = this->username() + QStringLiteral("@") + sender_domain.hostname();
 }
 
 /* Message */
@@ -242,8 +254,7 @@ void Message::set_from()
     else
     {
         User sender(this->user_id(), this->domain_id_user());
-        Domain sender_domain(sender.domain_id());
-        m_from =sender.username() + QStringLiteral("@") + sender_domain.hostname();
+        m_from = sender.full_name();
     }
 }
 

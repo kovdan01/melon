@@ -7,6 +7,11 @@
 #include <QFont>
 #include <QString>
 
+// For Log
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+
 namespace melon::client_desktop
 {
 
@@ -34,6 +39,13 @@ public:
             QString family;
             int size;
             int weight;
+        };
+
+        enum class FontSize
+        {
+            SMALL,
+            STANDART,
+            BIG
         };
 
         // Getters
@@ -96,6 +108,16 @@ public:
         [[nodiscard]] QColor unread_background_color() const
         {
             return m_unread_background_color;
+        }
+
+        [[nodiscard]] QString font_family() const
+        {
+            return m_font_family;
+        }
+
+        [[nodiscard]] FontSize message_font_size() const
+        {
+            return m_message_font_size;
         }
 
         // Setters
@@ -171,10 +193,49 @@ public:
             m_last_message_font_params.family = family;
             m_unread_counter_font_params.family = family;
             m_last_message_sender_font_params.family = family;
+
+            m_font_family = family;
         }
+
+        void set_font_family_var(const QString& family)
+        {
+            m_font_family = family;
+        }
+
+        void set_message_font_size_var(FontSize size)
+        {
+            m_message_font_size = size;
+        }
+
+        void set_message_font_size(FontSize size)
+        {
+            switch (size)
+            {
+            case FontSize::SMALL:
+                m_sender_font_params.size = 7;
+                m_message_text_font_params.size = 7;
+                m_timestamp_font_params.size = 6;
+                break;
+            case FontSize::STANDART:
+                m_sender_font_params.size = 8;
+                m_message_text_font_params.size = 8;
+                m_timestamp_font_params.size = 7;
+                break;
+            case FontSize::BIG:
+                m_sender_font_params.size = 9;
+                m_message_text_font_params.size = 9;
+                m_timestamp_font_params.size = 8;
+                break;
+            }
+            m_message_font_size = size;
+            BOOST_LOG_TRIVIAL(info) << "In config msg size is " << static_cast<int>(m_message_font_size);
+        }        
 
     private:
         Appearance() = default;
+
+        QString m_font_family;
+        FontSize m_message_font_size;
 
         // for message item delegate
         FontParams m_sender_font_params;

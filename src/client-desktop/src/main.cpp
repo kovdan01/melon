@@ -1,5 +1,6 @@
 #include <entities_db.hpp>
 #include <main_window.hpp>
+#include <melon/core/log_configuration.hpp>
 #include <storage_singletones.hpp>
 
 #include <QApplication>
@@ -11,6 +12,8 @@ int main(int argc, char* argv[]) try
     QApplication application(argc, argv);
 
     [[maybe_unused]] const auto& storage = melon::client_desktop::DBSingletone::get_instance();
+
+    melon::core::log::setup();
 
     melon::client_desktop::MainWindow window;
     window.show();

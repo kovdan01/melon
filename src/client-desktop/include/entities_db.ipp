@@ -59,4 +59,9 @@ inline void Chat::set_incomplete_message(Message incomplete_message)
     return m_incomplete_message;
 }
 
+[[nodiscard]] inline const QString& User::full_name() const noexcept
+{
+    return m_full_name;
+}
+
 }  // namespace melon::client_desktop

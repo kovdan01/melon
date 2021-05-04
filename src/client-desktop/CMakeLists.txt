@@ -13,8 +13,11 @@ find_package(melon-core REQUIRED)
 
 # boost asio
 find_package(
-    Boost 1.75 REQUIRED
+    Boost 1.76 REQUIRED
     COMPONENTS system
+    log
+    log_setup
+    thread
 )
 
 # thread support
@@ -84,6 +87,8 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::log)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::log_setup)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Sql)
 

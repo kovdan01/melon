@@ -184,6 +184,12 @@
    <property name="text">
     <string>Open settings</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
  </widget>
  <customwidgets>

@@ -46,10 +46,11 @@ private slots:
     void delete_chat();
     void rename_chat();
     void repaint_chat_list();
+    void apply_appearance_settings();
 
     void change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat);
 
-    bool exec_settings();
+    void exec_settings();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu{this};

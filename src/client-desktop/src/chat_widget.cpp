@@ -240,4 +240,18 @@ void ChatWidget::edit_message()
     m_ui->SendButton->setText(QStringLiteral("Done"));
 }
 
+void ChatWidget::apply_appearance_settings()
+{
+    BOOST_LOG_TRIVIAL(info) << "Applying appearance settings in ChatWidget";
+    m_message_item_delegate->update_settings();
+    this->repaint_message_list();
+}
+
+void ChatWidget::repaint_message_list()
+{
+    BOOST_LOG_TRIVIAL(info) << "Repainting message list";
+    QModelIndex cur_index = m_model_message_list->index(m_model_message_list->rowCount(QModelIndex()) - 1);
+    m_model_message_list->setData(cur_index, QVariant(), MyRoles::RepaintRole);
+}
+
 }  // namespace melon::client_desktop

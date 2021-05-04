@@ -4,16 +4,22 @@
 
 #include <yaml-cpp/yaml.h>
 
+// For Log
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+
 #include <fstream>
 
 // for encoding and decoding from YAML::Node to needed classes automatically
 namespace YAML
 {
 
+using user_conf_ap = melon::client_desktop::UserConfigSingletone::Appearance;
 template<>
-struct convert<melon::client_desktop::UserConfigSingletone::Appearance::FontParams>
+struct convert<user_conf_ap::FontParams>
 {
-  static Node encode(const melon::client_desktop::UserConfigSingletone::Appearance::FontParams& fp)
+  static Node encode(const user_conf_ap::FontParams& fp)
   {
       YAML::Node node;
       node["family"] = fp.family.toStdString();
@@ -22,7 +28,7 @@ struct convert<melon::client_desktop::UserConfigSingletone::Appearance::FontPara
       return node;
   }
 
-  static bool decode(const Node& node, melon::client_desktop::UserConfigSingletone::Appearance::FontParams& fp)
+  static bool decode(const Node& node, user_conf_ap::FontParams& fp)
   {
     if(!node.IsMap() || node.size() != 3)
     {
@@ -32,7 +38,7 @@ struct convert<melon::client_desktop::UserConfigSingletone::Appearance::FontPara
     QString family = QString::fromStdString(node["family"].as<std::string>());
     int size = node["size"].as<int>();
     int weight = node["weight"].as<int>();
-    fp = melon::client_desktop::UserConfigSingletone::Appearance::FontParams({family, size, weight});
+    fp = user_conf_ap::FontParams({family, size, weight});
     return true;
   }
 
@@ -88,6 +94,9 @@ void save_settings_to_yaml()
 
     UserConfigSingletone::Appearance user_ap = config.appearance();
 
+    node["Appearance"]["common_font_family"] = user_ap.font_family().toStdString();
+    node["Appearance"]["message_font_size"] = static_cast<int>(user_ap.message_font_size());
+
     // For Chat items
     node["Appearance"]["chat_name_font_params"] = user_ap.chat_name_font_params();
     node["Appearance"]["chat_timestamp_font_params"] = user_ap.chat_timestamp_font_params();
@@ -118,23 +127,28 @@ void set_standart_settings()
 
     //Appearance
 
-    // Chat settings
-    config.appearance().set_chat_name_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});
-    config.appearance().set_chat_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});
-    config.appearance().set_last_message_font_params({QStringLiteral("Cantarell"), 7, 35});
-    config.appearance().set_last_message_sender_font_params({QStringLiteral("Cantarell"), 7, 40});
-    config.appearance().set_unread_counter_font_params({QStringLiteral("Cantarell"), 7, 45});
+    UserConfigSingletone::Appearance& app = config.appearance();
 
-    config.appearance().set_selected_chat_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
-    config.appearance().set_unread_background_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
+    app.set_font_family_var(QStringLiteral("Cantarell"));
+    app.set_message_font_size_var(UserConfigSingletone::Appearance::FontSize::STANDART);
+
+    // Chat settings
+    app.set_chat_name_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});
+    app.set_chat_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});
+    app.set_last_message_font_params({QStringLiteral("Cantarell"), 7, 35});
+    app.set_last_message_sender_font_params({QStringLiteral("Cantarell"), 7, 40});
+    app.set_unread_counter_font_params({QStringLiteral("Cantarell"), 7, 45});
+
+    app.set_selected_chat_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
+    app.set_unread_background_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
 
     // Message settings
-    config.appearance().set_sender_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});
-    config.appearance().set_message_text_font_params({QStringLiteral("Cantarell"), 9, 41});
-    config.appearance().set_timestamp_font_params({QStringLiteral("Cantarell"), 6, 35});
+    app.set_sender_font_params({QStringLiteral("Cantarell"), 8, QFont::DemiBold});
+    app.set_message_text_font_params({QStringLiteral("Cantarell"), 8, 41});
+    app.set_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});
 
-    config.appearance().set_receive_message_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
-    config.appearance().set_sended_message_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
+    app.set_receive_message_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
+    app.set_sended_message_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
 }
 
 void parse_settings(const YAML::Node& conf_file)
@@ -163,7 +177,7 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
     using FP = UserConfigSingletone::Appearance::FontParams;
 
     // Parameters we want on top level of Appearance
-    static const std::array<std::string, 12> required_parameters =
+    static const std::array<std::string, 14> required_parameters =
     {
         "chat_name_font_params",
         "chat_timestamp_font_params",
@@ -177,6 +191,8 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
         "timestamp_font_params",
         "sended_message_color",
         "receive_message_color",
+        "common_font_family",
+        "message_font_size"
     };
 
     auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node,
@@ -225,6 +241,15 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
         else if (title == "receive_message_color")
             user_ap.set_receive_message_color(node2.as<QColor>());
 
+        else if (title == "common_font_family")
+            user_ap.set_font_family_var(QString::fromStdString(node2.as<std::string>()));
+
+        else if (title == "message_font_size")
+        {
+            UserConfigSingletone::Appearance::FontSize fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
+            user_ap.set_message_font_size_var(fs);
+            BOOST_LOG_TRIVIAL(info) << "Parsing settings: message font size is " << static_cast<int>(fs);
+        }
         else
             throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
     }

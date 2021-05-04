@@ -16,40 +16,8 @@ namespace melon::client_desktop
 ChatItemDelegate::ChatItemDelegate(QObject* parent)
     : QStyledItemDelegate{parent}
 {
-    const auto& user_config = UserConfigSingletone::get_instance();
-    const UserConfigSingletone::Appearance& user_ap = user_config.appearance();
-
-    m_selected_background = user_ap.selected_chat_color();
-    m_unread_background = user_ap.unread_background_color();
-
-    m_chat_name_font        = { user_ap.chat_name_font_params().family,
-                                user_ap.chat_name_font_params().size,
-                                user_ap.chat_name_font_params().weight };
-
-    m_last_message_font     = { user_ap.last_message_font_params().family,
-                                user_ap.last_message_font_params().size,
-                                user_ap.last_message_font_params().weight };
-
-    m_timestamp_font        = { user_ap.chat_timestamp_font_params().family,
-                                user_ap.chat_timestamp_font_params().size,
-                                user_ap.chat_timestamp_font_params().weight };
-
-    m_sender_font           = { user_ap.last_message_sender_font_params().family,
-                                user_ap.last_message_sender_font_params().size,
-                                user_ap.last_message_sender_font_params().weight };
-
-    m_unread_counter_font   = { user_ap.unread_counter_font_params().family,
-                                user_ap.unread_counter_font_params().size,
-                                user_ap.unread_counter_font_params().weight };
-
     const auto& dev_config = DevelopConfigSingletone::get_instance();
     const DevelopConfigSingletone::Appearance& dev_ap = dev_config.appearance();
-
-    m_fm_chat_name = QFontMetrics(m_chat_name_font);
-    m_fm_timestamp = QFontMetrics(m_timestamp_font);
-    m_fm_last_message = QFontMetrics(m_last_message_font);
-    m_fm_sender = QFontMetrics(m_sender_font);
-    m_fm_unread_counter = QFontMetrics(m_unread_counter_font);
 
     m_item_under_mouse_background = dev_ap.item_under_mouse_color();
 
@@ -58,11 +26,10 @@ ChatItemDelegate::ChatItemDelegate(QObject* parent)
     m_icon_diameter = m_icon_radius * 2;
     m_unread_indicator_round = dev_ap.unread_indicator_round();
 
-    m_first_row_height = std::max(m_fm_chat_name.height(), m_fm_timestamp.height()) + m_base_margin;
-    m_second_row_height = std::max(m_fm_last_message.height(), std::max(m_fm_sender.height(), m_fm_unread_counter.height()));
-
     m_pen_for_background.setStyle(Qt::NoPen);
     m_pen_for_text.setColor(Qt::black);
+
+    this->update_settings();
 }
 
 QString ChatItemDelegate::date_number_handler(const int& num) const
@@ -236,6 +203,44 @@ QSize ChatItemDelegate::sizeHint(const QStyleOptionViewItem&, const QModelIndex&
 {
     const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), m_first_row_height + m_second_row_height + m_base_margin * 2);
+}
+
+void ChatItemDelegate::update_settings()
+{
+    const auto& user_config = UserConfigSingletone::get_instance();
+    const UserConfigSingletone::Appearance& user_ap = user_config.appearance();
+
+    m_selected_background = user_ap.selected_chat_color();
+    m_unread_background = user_ap.unread_background_color();
+
+    m_chat_name_font        = { user_ap.chat_name_font_params().family,
+                                user_ap.chat_name_font_params().size,
+                                user_ap.chat_name_font_params().weight };
+
+    m_last_message_font     = { user_ap.last_message_font_params().family,
+                                user_ap.last_message_font_params().size,
+                                user_ap.last_message_font_params().weight };
+
+    m_timestamp_font        = { user_ap.chat_timestamp_font_params().family,
+                                user_ap.chat_timestamp_font_params().size,
+                                user_ap.chat_timestamp_font_params().weight };
+
+    m_sender_font           = { user_ap.last_message_sender_font_params().family,
+                                user_ap.last_message_sender_font_params().size,
+                                user_ap.last_message_sender_font_params().weight };
+
+    m_unread_counter_font   = { user_ap.unread_counter_font_params().family,
+                                user_ap.unread_counter_font_params().size,
+                                user_ap.unread_counter_font_params().weight };
+
+    m_fm_chat_name = QFontMetrics(m_chat_name_font);
+    m_fm_timestamp = QFontMetrics(m_timestamp_font);
+    m_fm_last_message = QFontMetrics(m_last_message_font);
+    m_fm_sender = QFontMetrics(m_sender_font);
+    m_fm_unread_counter = QFontMetrics(m_unread_counter_font);
+
+    m_first_row_height = std::max(m_fm_chat_name.height(), m_fm_timestamp.height()) + m_base_margin;
+    m_second_row_height = std::max(m_fm_last_message.height(), std::max(m_fm_sender.height(), m_fm_unread_counter.height()));
 }
 
 }  // namespace melon::client_desktop

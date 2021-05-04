@@ -62,6 +62,9 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
         case MyRoles::IsEditRole:
             emit dataChanged(index, index);
             return true;
+        case MyRoles::RepaintRole:
+            emit dataChanged(index, index);
+            return true;
         default:
             break;
         }
