@@ -62,11 +62,12 @@ jobs:
       run: |
         pip install requests
 
-    - name: Install required python modules (MinGW64)
+    - name: Install MSYS packages
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -ucrt64 -shell sh {0}
       run: |
         pacman -S --noconfirm mingw-w64-ucrt-x86_64-python-pip
         pip install pyparsing
+        pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
