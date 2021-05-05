@@ -164,6 +164,9 @@ jobs:
         boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
                                                                                                         boost_major, boost_minor, boost_build)
         open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
+        print("\n\nAAAAAAAAAAAAAAA\n\n")
+        execute_command("ls -al")
+        print("\n\nAAAAAAAAAAAAAAA\n\n")
         execute_command("7z x boost.zip")
 
         os.chdir(boost_source_dir)
