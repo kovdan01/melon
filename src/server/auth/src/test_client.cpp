@@ -16,7 +16,7 @@ namespace mc = melon::core;
 namespace mca = melon::core::auth;
 namespace mcs = melon::core::serialization;
 
-constexpr std::size_t BUFFER_LIMIT = 3000;
+constexpr std::size_t BUFFER_LIMIT = 8192;
 
 class MySession
 {

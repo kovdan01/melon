@@ -61,7 +61,9 @@ public:
 
             std::string_view supported_mechanisms = server.list_mechanisms();
             async_send_serialized(supported_mechanisms, yc);
-            mc::serialization::StringViewOverBinary wanted_mechanism(async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT, ec));
+            mc::serialization::StringViewOverBinary wanted_mechanism(async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT));
+            // 1) should ec be passed to all async_* functions?
+            // 2) if yes, should ec be checked after every async_* function?
             if (ec)
             {
                 if (ec != boost::asio::error::eof)
@@ -76,13 +78,13 @@ public:
             }
             async_send_serialized(wanted_mechanism.view(), yc);
 
-            auto client_response = async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT, ec);
+            auto client_response = async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT);
             auto [server_response, server_completness] = server.start(wanted_mechanism.view(), { client_response.data(), client_response.size() });
             async_send_serialized(server_response, yc);
 
             while (server_completness == mca::AuthState::INCOMPLETE)
             {
-                client_response = async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT, ec);
+                client_response = async_recieve_serialized<std::vector<mc::byte>>(yc, NUMBER_LIMIT);
 
                 mca::StepResult server_step_result = server.step({ client_response.data(), client_response.size() });
                 server_response = server_step_result.response;
@@ -125,18 +127,18 @@ private:
     mc::serialization::Serializer m_serializer{};
 
     template <typename What, typename YieldContext>
-    What async_recieve_serialized(YieldContext& /*yc*/, std::size_t limit, boost::system::error_code /*ec*/)
+    What async_recieve_serialized(YieldContext& yc, std::size_t limit)
     {
         m_stream.expires_after(TIME_LIMIT);
-        What data = m_serializer.deserialize_from<decltype(m_stream), std::vector<mc::byte>>(m_stream, limit);
+        What data = m_serializer.async_deserialize_from<decltype(m_stream), std::vector<mc::byte>>(m_stream, limit, yc);
         return data;
     }
 
     template <typename What, typename YieldContext>
-    void async_send_serialized(const What& what, YieldContext& /*yc*/)
+    void async_send_serialized(const What& what, YieldContext& yc)
     {
         m_stream.expires_after(TIME_LIMIT);
-        m_serializer.serialize_to(m_stream, what);
+        m_serializer.async_serialize_to(m_stream, what, yc);
     }
 };
 

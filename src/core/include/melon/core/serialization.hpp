@@ -122,6 +122,43 @@ template <typename T>
 class Serializer
 {
 public:
+    template <typename Stream, typename What, typename YieldContext>
+    void async_serialize_to(Stream& to, const What& what, YieldContext& yc)
+    {
+        m_out_sbuf = serialize(what);
+        m_out_sbuf_size = static_cast<std::uint32_t>(m_out_sbuf.size());
+        boost::asio::async_write(to, boost::asio::buffer(&m_out_sbuf_size, sizeof(m_out_sbuf_size)), yc);
+        boost::asio::async_write(to, boost::asio::buffer(m_out_sbuf.data(), m_out_sbuf.size()), yc);
+    }
+
+    template <typename Stream, typename What, typename YieldContext>
+    [[nodiscard]] What async_deserialize_from(Stream& from, std::size_t limit, YieldContext& yc)
+    {
+        namespace ba = boost::asio;
+
+        std::uint32_t receive_size;
+        std::size_t n = ba::async_read(from, ba::buffer(&receive_size, sizeof(receive_size)),
+                                       ba::transfer_exactly(sizeof(receive_size)), yc);
+        if (n != sizeof(receive_size))
+        {
+            throw melon::Exception("Error: received " + std::to_string(n) + " bytes in size header, "
+                                   "expected " + std::to_string(receive_size));
+        }
+
+        n = ba::async_read(from, ba::dynamic_vector_buffer{m_in_buf, limit},
+                           ba::transfer_exactly(receive_size), yc);
+        if (n != receive_size)
+        {
+            throw melon::Exception("Error: received " + std::to_string(n) + " bytes in payload, "
+                                   "expected " + std::to_string(receive_size));
+        }
+
+        What reply = deserialize<What>(m_in_buf);
+        m_in_buf.erase(m_in_buf.begin(), m_in_buf.begin() + n);
+
+        return reply;
+    }
+
     template <typename Stream, typename What>
     void serialize_to(Stream& to, const What& what)
     {
