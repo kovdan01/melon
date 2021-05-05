@@ -122,7 +122,7 @@ public:
     }
 
 private:
-    mc::serialization::Serializer m_serializer;
+    mc::serialization::Serializer m_serializer{};
 
     template <typename What, typename YieldContext>
     What async_recieve_serialized(YieldContext& /*yc*/, std::size_t limit, boost::system::error_code /*ec*/)
@@ -138,7 +138,6 @@ private:
         stream_.expires_after(TIME_LIMIT);
         m_serializer.serialize_to(stream_, what);
     }
-
 };
 
 int main(int argc, char* argv[]) try

@@ -42,7 +42,7 @@ public:
 private:
     boost::asio::io_context m_io_context;
     boost::asio::ip::tcp::socket m_stream{m_io_context};
-    mcs::Serializer m_serializer;
+    mcs::Serializer m_serializer{};
 };
 
 static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
