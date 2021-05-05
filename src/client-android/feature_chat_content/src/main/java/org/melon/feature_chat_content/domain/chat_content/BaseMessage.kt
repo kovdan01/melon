@@ -2,7 +2,7 @@ package org.melon.feature_chat_content.domain.chat_content
 
 import java.util.*
 
-data class Message(
+data class BaseMessage(
     val messageId: Int,
     val chatId: Int,
     val messageText: String,

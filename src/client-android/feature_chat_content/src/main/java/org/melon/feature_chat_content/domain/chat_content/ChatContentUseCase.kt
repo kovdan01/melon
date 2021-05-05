@@ -15,11 +15,11 @@ class ChatContentUseCase @Inject constructor(
         chatContentRepository.addMessage(messageText, chatId)
     }
 
-    suspend fun editMessage(message: Message) {
+    suspend fun editMessage(message: BaseMessage) {
         chatContentRepository.updateMessage(message)
     }
 
-    suspend fun deleteMessages(messages: List<Message>) {
+    suspend fun deleteMessages(messages: List<BaseMessage>) {
         chatContentRepository.deleteMessages(messages)
     }
 }

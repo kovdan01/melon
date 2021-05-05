@@ -8,21 +8,25 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.melon.feature_chat_content.domain.chat_content.ChatContentUseCase
+import org.melon.feature_chat_content.presentation.chat_content.model.BaseMessageUi
+import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
+import org.melon.feature_chat_content.presentation.chat_content.model.FileMessageUi
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatContentViewModel @Inject constructor(
-        private val chatContentUseCase: ChatContentUseCase,
-        private val chatContentUiTransformer: ChatContentUiTransformer
+    private val chatContentUseCase: ChatContentUseCase,
+    private val chatContentUiTransformer: ChatContentUiTransformer
 ) : ViewModel() {
 
     private var chatId: Int? = null
 
-    private var messagesList: MutableList<MessageUi> = mutableListOf()
+    private var messagesList: MutableList<BaseMessageUi> = mutableListOf()
     private var messageToEdit: MessageUi? = null
 
-    private val _liveMessagesList: MutableLiveData<List<MessageUi>> = MutableLiveData()
-    val liveMessagesList: LiveData<List<MessageUi>>
+    private val _liveMessagesList: MutableLiveData<List<BaseMessageUi>> = MutableLiveData()
+    val liveMessagesList: LiveData<List<BaseMessageUi>>
         get() = _liveMessagesList
 
     private val _liveActionMode: MutableLiveData<Boolean> = MutableLiveData()
@@ -55,11 +59,11 @@ class ChatContentViewModel @Inject constructor(
                 if (messageToEdit != null) {
 
                     chatContentUseCase.editMessage(
-                            chatContentUiTransformer.transform(
-                                    messageToEdit!!.copy(
-                                            messageText = messageText!!
-                                    )
+                        chatContentUiTransformer.transform(
+                            messageToEdit!!.copy(
+                                messageText = messageText!!
                             )
+                        )
                     )
 
                     _liveMessageToEdit.value = null
@@ -90,6 +94,22 @@ class ChatContentViewModel @Inject constructor(
         _liveMessagesList.value = messagesList
     }
 
+    fun onFileSelected() {
+        messagesList.add(
+            FileMessageUi(
+                chatId = messagesList.lastOrNull()?.chatId ?: 1,
+                messageId = messagesList.lastOrNull()?.messageId ?: 1,
+                messageText = "YouPorn.txt",
+                messageDate = Date(),
+                isUserMessage = true,
+                isRead = true,
+                isSelected = false
+            )
+        )
+
+        _liveMessagesList.value = messagesList
+    }
+
     fun onActionModeDestroy() {
         if (messagesList.any { it.isSelected }) {
             messagesList.deselectAll()
@@ -100,15 +120,16 @@ class ChatContentViewModel @Inject constructor(
     fun onActionDeleteClick() {
         viewModelScope.launch {
             chatContentUseCase.deleteMessages(
-                    messagesList
-                            .filter { it.isSelected }
-                            .map(chatContentUiTransformer::transform)
+                messagesList
+                    .filterIsInstance<MessageUi>()
+                    .filter { it.isSelected }
+                    .map(chatContentUiTransformer::transform)
             )
         }
     }
 
     fun onActionEditClick() {
-        messageToEdit = messagesList.first { it.isSelected }
+        messageToEdit = messagesList.first { it.isSelected } as MessageUi
         messagesList.deselectAll()
 
         _liveMessagesList.value = messagesList

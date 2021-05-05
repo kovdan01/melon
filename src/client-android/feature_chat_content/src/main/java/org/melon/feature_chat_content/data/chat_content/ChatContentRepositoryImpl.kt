@@ -9,7 +9,7 @@ import org.melon.feature_chat_content.data.db.ChatContentDao
 import org.melon.feature_chat_content.data.db.ChatDraftDataEntity
 import org.melon.feature_chat_content.data.db.MessageDataEntity
 import org.melon.feature_chat_content.domain.chat_content.ChatContentRepository
-import org.melon.feature_chat_content.domain.chat_content.Message
+import org.melon.feature_chat_content.domain.chat_content.BaseMessage
 import java.util.*
 import javax.inject.Inject
 
@@ -34,7 +34,7 @@ class ChatContentRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getMessages(chatId: Int): Flow<List<Message>> {
+    override fun getMessages(chatId: Int): Flow<List<BaseMessage>> {
         return chatContentDao.getMessages(chatId)
                 .map {
                     it?.map(chatContentDataTransformer::transform) ?: emptyList()
@@ -56,13 +56,13 @@ class ChatContentRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateMessage(message: Message) {
+    override suspend fun updateMessage(message: BaseMessage) {
         withContext(Dispatchers.IO) {
             chatContentDao.updateMessage(chatContentDataTransformer.transform(message))
         }
     }
 
-    override suspend fun deleteMessages(messages: List<Message>) {
+    override suspend fun deleteMessages(messages: List<BaseMessage>) {
         withContext(Dispatchers.IO) {
             chatContentDao.deleteMessage(*messages.map(chatContentDataTransformer::transform).toTypedArray())
         }

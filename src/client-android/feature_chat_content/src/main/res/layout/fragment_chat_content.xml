@@ -29,6 +29,19 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
+        android:id="@+id/attachBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:background="?selectableItemBackground"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sendMsgBtn"
+        app:layout_constraintTop_toTopOf="@id/messageTi"
+        app:srcCompat="@drawable/ic_attach"
+        app:tint="@color/dark_gray" />
+
+    <ImageView
         android:id="@+id/sendMsgBtn"
         android:layout_width="wrap_content"
         android:layout_height="0dp"

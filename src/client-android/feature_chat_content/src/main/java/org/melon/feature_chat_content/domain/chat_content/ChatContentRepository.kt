@@ -6,8 +6,8 @@ interface ChatContentRepository {
     suspend fun getChatDraft(chatId: Int): String?
     suspend fun setChatDraft(chatId: Int, chatDraft: String?)
 
-    fun getMessages(chatId: Int): Flow<List<Message>>
+    fun getMessages(chatId: Int): Flow<List<BaseMessage>>
     suspend fun addMessage(messageText: String, chatId: Int)
-    suspend fun updateMessage(message: Message)
-    suspend fun deleteMessages(messages: List<Message>)
+    suspend fun updateMessage(message: BaseMessage)
+    suspend fun deleteMessages(messages: List<BaseMessage>)
 }

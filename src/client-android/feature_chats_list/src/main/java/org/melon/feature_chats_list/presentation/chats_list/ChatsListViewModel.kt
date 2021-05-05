@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.melon.feature_chat_content.presentation.chat_content.ChatContentUiTransformer
-import org.melon.feature_chat_content.presentation.chat_content.MessageUi
+import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
 import org.melon.feature_chats_list.domain.ChatsListUseCase
 import javax.inject.Inject
 import kotlin.random.Random

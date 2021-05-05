@@ -1,14 +1,14 @@
 package org.melon.feature_chat_content.data.chat_content
 
 import org.melon.feature_chat_content.data.db.MessageDataEntity
-import org.melon.feature_chat_content.domain.chat_content.Message
+import org.melon.feature_chat_content.domain.chat_content.BaseMessage
 import java.util.*
 import javax.inject.Inject
 
 class ChatContentDataTransformer @Inject constructor() {
 
-    fun transform(data: MessageDataEntity): Message = with(data) {
-        Message(
+    fun transform(data: MessageDataEntity): BaseMessage = with(data) {
+        BaseMessage(
             messageId = messageId,
             chatId = chatId,
             messageText = messageText,
@@ -18,7 +18,7 @@ class ChatContentDataTransformer @Inject constructor() {
         )
     }
 
-    fun transform(data: Message): MessageDataEntity = with(data) {
+    fun transform(data: BaseMessage): MessageDataEntity = with(data) {
         MessageDataEntity(
             messageId = messageId,
             chatId = chatId,
