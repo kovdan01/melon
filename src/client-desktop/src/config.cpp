@@ -87,25 +87,25 @@ void UserConfigSingletone::Appearance::set_chatlist_font_size(FontSize size)
     switch (size)
     {
     case FontSize::SMALL:
-        m_chat_name_font_params.size = 8;
-        m_chat_timestamp_font_params.size = 6;
-        m_last_message_font_params.size = 6;
-        m_last_message_sender_font_params.size = 6;
-        m_unread_counter_font_params.size = 6;
+        m_chat_name_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_chat_timestamp_font_params.size = 6;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_font_params.size = 6;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_sender_font_params.size = 6;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_unread_counter_font_params.size = 6;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     case FontSize::STANDART:
-        m_chat_name_font_params.size = 9;
-        m_chat_timestamp_font_params.size = 7;
-        m_last_message_font_params.size = 7;
-        m_last_message_sender_font_params.size = 7;
-        m_unread_counter_font_params.size = 7;
+        m_chat_name_font_params.size = 9;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_chat_timestamp_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_sender_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_unread_counter_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     case FontSize::BIG:
-        m_chat_name_font_params.size = 10;
-        m_chat_timestamp_font_params.size = 8;
-        m_last_message_font_params.size = 8;
-        m_last_message_sender_font_params.size = 8;
-        m_unread_counter_font_params.size = 8;
+        m_chat_name_font_params.size = 10;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_chat_timestamp_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_last_message_sender_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_unread_counter_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     }
     m_chatlist_font_size = size;
@@ -117,19 +117,19 @@ void UserConfigSingletone::Appearance::set_message_font_size(FontSize size)
     switch (size)
     {
     case FontSize::SMALL:
-        m_sender_font_params.size = 7;
-        m_message_text_font_params.size = 7;
-        m_timestamp_font_params.size = 6;
+        m_sender_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_message_text_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_timestamp_font_params.size = 6;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     case FontSize::STANDART:
-        m_sender_font_params.size = 8;
-        m_message_text_font_params.size = 8;
-        m_timestamp_font_params.size = 7;
+        m_sender_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_message_text_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_timestamp_font_params.size = 7;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     case FontSize::BIG:
-        m_sender_font_params.size = 9;
-        m_message_text_font_params.size = 9;
-        m_timestamp_font_params.size = 8;
+        m_sender_font_params.size = 9;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_message_text_font_params.size = 9;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+        m_timestamp_font_params.size = 8;  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
         break;
     }
     m_message_font_size = size;
@@ -210,22 +210,22 @@ void set_standart_settings()
     app.set_chatlist_font_size_var(UserConfigSingletone::Appearance::FontSize::STANDART);
 
     // Chat settings
-    app.set_chat_name_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});
-    app.set_chat_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});
-    app.set_last_message_font_params({QStringLiteral("Cantarell"), 7, 35});
-    app.set_last_message_sender_font_params({QStringLiteral("Cantarell"), 7, 40});
-    app.set_unread_counter_font_params({QStringLiteral("Cantarell"), 7, 45});
+    app.set_chat_name_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_chat_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_last_message_font_params({QStringLiteral("Cantarell"), 7, 35});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_last_message_sender_font_params({QStringLiteral("Cantarell"), 7, 40});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_unread_counter_font_params({QStringLiteral("Cantarell"), 7, 45});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
-    app.set_selected_chat_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
-    app.set_unread_background_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
+    app.set_selected_chat_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_unread_background_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
     // Message settings
-    app.set_sender_font_params({QStringLiteral("Cantarell"), 8, QFont::DemiBold});
-    app.set_message_text_font_params({QStringLiteral("Cantarell"), 8, 41});
-    app.set_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});
+    app.set_sender_font_params({QStringLiteral("Cantarell"), 8, QFont::DemiBold});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_message_text_font_params({QStringLiteral("Cantarell"), 8, 41});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_timestamp_font_params({QStringLiteral("Cantarell"), 7, 35});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
-    app.set_receive_message_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
-    app.set_sended_message_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
+    app.set_receive_message_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
+    app.set_sended_message_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});  // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
     // Behaviour
     UserConfigSingletone::Behaviour& user_behav = config.behaviour();
@@ -366,14 +366,14 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
 
         else if (title == "message_font_size")
         {
-            UserConfigSingletone::Appearance::FontSize fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
+            auto fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
             user_ap.set_message_font_size_var(fs);
             BOOST_LOG_TRIVIAL(info) << "Parsing settings: message font size is " << static_cast<int>(fs);
         }
 
         else if (title == "chatlist_font_size")
         {
-            UserConfigSingletone::Appearance::FontSize fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
+            auto fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
             user_ap.set_chatlist_font_size_var(fs);
             BOOST_LOG_TRIVIAL(info) << "Parsing settings: chatlist font size is " << static_cast<int>(fs);
         }

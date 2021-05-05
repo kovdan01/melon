@@ -97,7 +97,11 @@ void ChatWidget::send_message()
         message_text = message_text.trimmed();
 
     if (config.behaviour().replace_hyphens())
-        message_text.replace(QStringLiteral("--"), QStringLiteral("–"));
+    {
+        static const QString two_hyphens = QStringLiteral("--");
+        static const QString dash = QStringLiteral("–");
+        message_text.replace(two_hyphens, dash);
+    }
 
     if (m_edit_mode)
     {
@@ -106,7 +110,7 @@ void ChatWidget::send_message()
             QModelIndex index = m_model_message_list->index(m_edit_row);
 
             m_model_message_list->setData(index, message_text, Qt::DisplayRole);
-            m_model_message_list->setData(index, true, MyRoles::IsEditRole);
+            m_model_message_list->setData(index, true, MyRoles::RepaintRole);
             m_pre_edit_message.clear();
         }
 

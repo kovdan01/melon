@@ -22,7 +22,7 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(QWidget *parent = nullptr);
-    ~SettingsDialog();
+    ~SettingsDialog() override;
 
     void load_current_settings();
 
@@ -31,7 +31,7 @@ signals:
 
 private:
     void set_default();
-    void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent* event) override;
     void applied();
     void load_current_settings(QWidget* tab);
     void current_tab_changed(int);

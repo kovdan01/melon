@@ -96,6 +96,7 @@ void SettingsDialog::applied()
 
     save_settings_to_yaml();
     m_visited_tabs.clear();
+    m_visited_tabs.insert(m_ui->SettingsTabs->currentWidget());
 }
 
 void SettingsDialog::set_default()
