@@ -43,7 +43,7 @@ public:
     MySaslSession(const ba::io_context::executor_type& ex)
         : socket_session<MySaslSession, tcp_stream>{ex}
     {
-        stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
+        m_stream.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
     }
 
     void start_protocol()
@@ -127,16 +127,16 @@ private:
     template <typename What, typename YieldContext>
     What async_recieve_serialized(YieldContext& /*yc*/, std::size_t limit, boost::system::error_code /*ec*/)
     {
-        stream_.expires_after(TIME_LIMIT);
-        What data = m_serializer.deserialize_from<decltype(stream_), std::vector<mc::byte>>(stream_, limit);
+        m_stream.expires_after(TIME_LIMIT);
+        What data = m_serializer.deserialize_from<decltype(m_stream), std::vector<mc::byte>>(m_stream, limit);
         return data;
     }
 
     template <typename What, typename YieldContext>
     void async_send_serialized(const What& what, YieldContext& /*yc*/)
     {
-        stream_.expires_after(TIME_LIMIT);
-        m_serializer.serialize_to(stream_, what);
+        m_stream.expires_after(TIME_LIMIT);
+        m_serializer.serialize_to(m_stream, what);
     }
 };
 
