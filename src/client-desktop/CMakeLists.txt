@@ -14,7 +14,8 @@ find_package(melon-core REQUIRED)
 # boost asio
 find_package(
     Boost 1.76 REQUIRED
-    COMPONENTS system
+    COMPONENTS
+    system
     log
     log_setup
     thread
@@ -38,6 +39,7 @@ set(HEADERS
     include/chat_list_view.hpp
     include/chat_widget.hpp
     include/config.hpp
+    include/config.ipp
     include/entities_db.hpp
     include/entities_db.ipp
     include/entities_qt.hpp

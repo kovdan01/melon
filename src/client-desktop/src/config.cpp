@@ -82,9 +82,79 @@ namespace melon::client_desktop
 
 namespace meco = melon::core;
 
+void UserConfigSingletone::Appearance::set_chatlist_font_size(FontSize size)
+{
+    switch (size)
+    {
+    case FontSize::SMALL:
+        m_chat_name_font_params.size = 8;
+        m_chat_timestamp_font_params.size = 6;
+        m_last_message_font_params.size = 6;
+        m_last_message_sender_font_params.size = 6;
+        m_unread_counter_font_params.size = 6;
+        break;
+    case FontSize::STANDART:
+        m_chat_name_font_params.size = 9;
+        m_chat_timestamp_font_params.size = 7;
+        m_last_message_font_params.size = 7;
+        m_last_message_sender_font_params.size = 7;
+        m_unread_counter_font_params.size = 7;
+        break;
+    case FontSize::BIG:
+        m_chat_name_font_params.size = 10;
+        m_chat_timestamp_font_params.size = 8;
+        m_last_message_font_params.size = 8;
+        m_last_message_sender_font_params.size = 8;
+        m_unread_counter_font_params.size = 8;
+        break;
+    }
+    m_chatlist_font_size = size;
+    BOOST_LOG_TRIVIAL(info) << "In config chatlist size is " << static_cast<int>(m_message_font_size);
+}
+
+void UserConfigSingletone::Appearance::set_message_font_size(FontSize size)
+{
+    switch (size)
+    {
+    case FontSize::SMALL:
+        m_sender_font_params.size = 7;
+        m_message_text_font_params.size = 7;
+        m_timestamp_font_params.size = 6;
+        break;
+    case FontSize::STANDART:
+        m_sender_font_params.size = 8;
+        m_message_text_font_params.size = 8;
+        m_timestamp_font_params.size = 7;
+        break;
+    case FontSize::BIG:
+        m_sender_font_params.size = 9;
+        m_message_text_font_params.size = 9;
+        m_timestamp_font_params.size = 8;
+        break;
+    }
+    m_message_font_size = size;
+    BOOST_LOG_TRIVIAL(info) << "In config msg size is " << static_cast<int>(m_message_font_size);
+}
+
+void UserConfigSingletone::Appearance::set_font_family_common(const QString& family)
+{
+    m_sender_font_params.family = family;
+    m_message_text_font_params.family = family;
+    m_timestamp_font_params.family = family;
+
+    m_chat_name_font_params.family = family;
+    m_chat_timestamp_font_params.family = family;
+    m_last_message_font_params.family = family;
+    m_unread_counter_font_params.family = family;
+    m_last_message_sender_font_params.family = family;
+
+    m_font_family = family;
+}
+
 static void parameter_abnormalities_reaction(const std::vector<std::string>& missing_params, const std::vector<std::string>& superfluous_params, const std::string& where);
 
 void parse_settings_appearance(const std::string& title, const YAML::Node& node);
+void parse_settings_behaviour(const std::string& title, const YAML::Node& node);
 
 void save_settings_to_yaml()
 {
@@ -96,6 +166,7 @@ void save_settings_to_yaml()
 
     node["Appearance"]["common_font_family"] = user_ap.font_family().toStdString();
     node["Appearance"]["message_font_size"] = static_cast<int>(user_ap.message_font_size());
+    node["Appearance"]["chatlist_font_size"] = static_cast<int>(user_ap.chatlist_font_size());
 
     // For Chat items
     node["Appearance"]["chat_name_font_params"] = user_ap.chat_name_font_params();
@@ -115,6 +186,11 @@ void save_settings_to_yaml()
     node["Appearance"]["sended_message_color"] = user_ap.sended_message_color();
     node["Appearance"]["receive_message_color"] = user_ap.receive_message_color();
 
+    UserConfigSingletone::Behaviour user_behav = config.behaviour();
+    node["Behaviour"]["remove_white_around_message"] = user_behav.remove_whitespaces_around();
+    node["Behaviour"]["send_message_by_enter"] = user_behav.send_message_by_enter();
+    node["Behaviour"]["replace_hyphens"] = user_behav.replace_hyphens();
+
     auto& storage = StorageNameSingletone::get_instance();
     std::string filename = storage.user_settings_file_name();
     std::ofstream fout(filename);
@@ -131,6 +207,7 @@ void set_standart_settings()
 
     app.set_font_family_var(QStringLiteral("Cantarell"));
     app.set_message_font_size_var(UserConfigSingletone::Appearance::FontSize::STANDART);
+    app.set_chatlist_font_size_var(UserConfigSingletone::Appearance::FontSize::STANDART);
 
     // Chat settings
     app.set_chat_name_font_params({QStringLiteral("Cantarell"), 9, QFont::DemiBold});
@@ -149,14 +226,21 @@ void set_standart_settings()
 
     app.set_receive_message_color({/*r*/ 255, /*g*/ 243, /*b*/ 223});
     app.set_sended_message_color({/*r*/ 235, /*g*/ 235, /*b*/ 235});
+
+    // Behaviour
+    UserConfigSingletone::Behaviour& user_behav = config.behaviour();
+    user_behav.set_remove_whitespaces_around(true);
+    user_behav.set_send_message_by_enter(true);
+    user_behav.set_replace_hyphens(true);
 }
 
 void parse_settings(const YAML::Node& conf_file)
 {
     // Parameters we want on top level of YAML
-    static const std::array<std::string, 1> required_parameters =
+    static const std::array<std::string, 2> required_parameters =
     {
         "Appearance",
+        "Behaviour"
     };
 
     auto parsed_level_categories = meco::yaml_conf::parse_one_level_down(conf_file, required_parameters.begin(), required_parameters.end());
@@ -165,10 +249,45 @@ void parse_settings(const YAML::Node& conf_file)
 
     for (auto& [title, node] : parsed_level_categories.first)
     {
+        BOOST_LOG_TRIVIAL(info) << "Parsing " << title;
         if (title == "Appearance")
             parse_settings_appearance(title, node);
+        else if (title == "Behaviour")
+            parse_settings_behaviour(title, node);
         else
             throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
+    }
+}
+
+void parse_settings_behaviour(const std::string& title, const YAML::Node& node)
+{
+    // Parameters we want on top level of Behaviour
+    static const std::array<std::string, 3> required_parameters =
+    {
+        "remove_white_around_message",
+        "send_message_by_enter",
+        "replace_hyphens"
+    };
+
+    auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node,
+                                                                    required_parameters.begin(),
+                                                                    required_parameters.end());
+    auto& [missing_params, superfluous_params] = abnormal;
+    parameter_abnormalities_reaction(missing_params, superfluous_params, title);
+
+    auto& config = UserConfigSingletone::get_instance();
+    UserConfigSingletone::Behaviour& user_behav = config.behaviour();
+    for (auto& [title, node2] : parsed)
+    {
+        if (title == "remove_white_around_message")
+            user_behav.set_remove_whitespaces_around(node2.as<bool>());
+        else if (title == "send_message_by_enter")
+            user_behav.set_send_message_by_enter(node2.as<bool>());
+        else if (title == "replace_hyphens")
+            user_behav.set_replace_hyphens(node2.as<bool>());
+        else
+            throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
+
     }
 }
 
@@ -177,7 +296,7 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
     using FP = UserConfigSingletone::Appearance::FontParams;
 
     // Parameters we want on top level of Appearance
-    static const std::array<std::string, 14> required_parameters =
+    static const std::array<std::string, 15> required_parameters =
     {
         "chat_name_font_params",
         "chat_timestamp_font_params",
@@ -192,7 +311,8 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
         "sended_message_color",
         "receive_message_color",
         "common_font_family",
-        "message_font_size"
+        "message_font_size",
+        "chatlist_font_size"
     };
 
     auto [parsed, abnormal] = meco::yaml_conf::parse_one_level_down(node,
@@ -249,6 +369,13 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
             UserConfigSingletone::Appearance::FontSize fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
             user_ap.set_message_font_size_var(fs);
             BOOST_LOG_TRIVIAL(info) << "Parsing settings: message font size is " << static_cast<int>(fs);
+        }
+
+        else if (title == "chatlist_font_size")
+        {
+            UserConfigSingletone::Appearance::FontSize fs = static_cast<UserConfigSingletone::Appearance::FontSize>(node2.as<int>());
+            user_ap.set_chatlist_font_size_var(fs);
+            BOOST_LOG_TRIVIAL(info) << "Parsing settings: chatlist font size is " << static_cast<int>(fs);
         }
         else
             throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...

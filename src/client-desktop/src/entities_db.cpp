@@ -1,6 +1,11 @@
 #include <entities_db.hpp>
 #include <storage_singletones.hpp>
 
+// For Log
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+
 namespace melon::client_desktop
 {
 
@@ -238,6 +243,7 @@ void Message::set_text(const QString& text)
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
                          QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
+    BOOST_LOG_TRIVIAL(info) << "sql-query for updating message is:\n" << qry_string.toStdString();
     exec_and_check_qtsql_query(qry, qry_string, "Updating message text");
 
     this->set_is_edit(true);

@@ -30,9 +30,8 @@ signals:
     void applied_appearance_settings();
 
 private:
-    void save_all();
     void set_default();
-    void cancel_changes();
+    void closeEvent(QCloseEvent* event);
     void applied();
     void load_current_settings(QWidget* tab);
     void current_tab_changed(int);

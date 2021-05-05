@@ -11,6 +11,11 @@
 
 #include <chrono>
 
+// For Log
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+
 #include <config.hpp>
 
 namespace melon::client_desktop
@@ -51,15 +56,18 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
         int key = event_key->key();
         m_pressed_keys += key;
 
+        auto& config = UserConfigSingletone::get_instance();
         if ( (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
-              && m_pressed_keys.contains(Qt::Key_Shift) )
+              && m_pressed_keys.contains(Qt::Key_Shift)
+              && config.behaviour().send_message_by_enter())
         {
             QTextCursor cursor = m_ui->MsgEdit->textCursor();
             cursor.insertText(QStringLiteral("\n"));
             return true;
         }
 
-        if (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
+        if ( (m_pressed_keys.contains(Qt::Key_Enter) || m_pressed_keys.contains(Qt::Key_Return))
+             && config.behaviour().send_message_by_enter())
         {
             ChatWidget::send_message();
             return true;
@@ -79,10 +87,17 @@ bool ChatWidget::eventFilter(QObject *object, QEvent *event)
 void ChatWidget::send_message()
 {
     QString message_text = m_ui->MsgEdit->toPlainText();
-    message_text = message_text.trimmed();
 
     if (message_text.isEmpty())
         return;
+
+    auto& config = UserConfigSingletone::get_instance();
+
+    if (config.behaviour().remove_whitespaces_around())
+        message_text = message_text.trimmed();
+
+    if (config.behaviour().replace_hyphens())
+        message_text.replace(QStringLiteral("--"), QStringLiteral("–"));
 
     if (m_edit_mode)
     {
