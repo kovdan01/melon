@@ -52,7 +52,9 @@ private:
 {
     msgpack::sbuffer sbuf;
     msgpack::packer<msgpack::sbuffer> packer(sbuf);
-    if (in.data() == nullptr)
+    // PVS-Studio V547 warning looks like false positive
+    // see (1) at https://en.cppreference.com/w/cpp/container/span/span
+    if (in.data() == nullptr)  // -V547
     {
         assert(in.empty());
         melon::core::byte c = 0;

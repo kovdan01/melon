@@ -40,12 +40,9 @@ public:
     }
 
 private:
-    std::string m_in_buf;
-    std::string m_out_buf;
-    mcs::Serializer m_serializer;
-
     boost::asio::io_context m_io_context;
     boost::asio::ip::tcp::socket m_stream{m_io_context};
+    mcs::Serializer m_serializer;
 };
 
 static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
@@ -72,7 +69,9 @@ static bool run_auth(const std::string& ip, const std::string& port, const std::
         while (completness == mca::AuthState::INCOMPLETE)
         {
             auto server_reply = session.receive_serialized<std::vector<mc::byte>>();
-            auto [step_response, completness] = client.step(server_reply);
+            mca::StepResult step_result = client.step(server_reply);
+            std::span<const mc::byte> step_response = step_result.response;
+            completness = step_result.completness;
             switch (completness)
             {
             case mca::AuthState::COMPLETE:
