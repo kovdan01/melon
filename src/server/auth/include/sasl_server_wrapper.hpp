@@ -17,8 +17,8 @@ public:
     ~SaslServerConnection();
 
     [[nodiscard]] std::string_view list_mechanisms() const;
-    mca::StepResult start(std::string_view chosen_mechanism, std::string_view client_initial_response);
-    mca::StepResult step(std::string_view client_response);
+    mca::StepResult start(std::string_view chosen_mechanism, std::span<const melon::core::byte> client_initial_response);
+    mca::StepResult step(std::span<const melon::core::byte> client_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
 

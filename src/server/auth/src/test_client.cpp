@@ -1,5 +1,5 @@
+#include <melon/core/sasl_client_wrapper.hpp>
 #include <melon/core/serialization.hpp>
-#include <sasl_server_wrapper.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
@@ -14,99 +14,83 @@ using boost::asio::ip::tcp;
 
 namespace mc = melon::core;
 namespace mca = melon::core::auth;
+namespace mcs = melon::core::serialization;
 
 constexpr std::size_t BUFFER_LIMIT = 3000;
 
-std::string get_client_response(const std::string& server_response, mca::SaslClientConnection& conn, int counter)
+class MySession
 {
-    std::string_view response;
-    if (counter == 0)
-        response = conn.start(server_response).response;
-    else
-        response = conn.step(server_response).response;
-    if (response.data() != nullptr)  // -V547
-        return std::string(response);
-    return "";
-}
+public:
+    MySession(const std::string& ip, const std::string& port)
+    {
+        boost::asio::connect(m_stream, boost::asio::ip::tcp::resolver{m_io_context}.resolve(ip, port));
+    }
 
-// The function copies string read before the delimiter and erases that part of buffer
-std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
-{
-    std::string before_separator = std::move(in_buf);
-    in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
-    before_separator.erase(n - 1,  before_separator.size() - 1);
-    return before_separator;
-}
+    template <typename What>
+    void send_serialized(const What& what)
+    {
+        m_serializer.serialize_to(m_stream, what);
+    }
 
-template<typename Stream>
-void send_serialized(Stream& stream, const std::string& what)
-{
-    const auto* data_ptr = reinterpret_cast<const mc::byte*>(what.data());
-    std::span<const mc::byte> bin(data_ptr, data_ptr + what.size() + 1);  // +1 for '\0'
-    auto [send_size, serialized_data] = melon::core::serialization::serialize(bin);
-    boost::asio::write(stream, boost::asio::buffer(&send_size, sizeof(send_size)));
-    boost::asio::write(stream, boost::asio::buffer(serialized_data.data(), serialized_data.size()));
-}
+    template <typename What>
+    [[nodiscard]] What receive_serialized(std::size_t limit = BUFFER_LIMIT)
+    {
+        auto data = m_serializer.deserialize_from<decltype(m_stream), std::vector<mc::byte>>(m_stream, limit);
+        return data;
+    }
 
-template<typename Stream>
-std::string receive_serialized(Stream& stream, std::string& buffer)
-{
-    std::uint32_t receive_size;
-    boost::asio::read(stream, boost::asio::buffer(&receive_size, sizeof(receive_size)), boost::asio::transfer_exactly(sizeof(receive_size)), 0);
-    std::size_t n = boost::asio::read(stream, boost::asio::dynamic_string_buffer{buffer, BUFFER_LIMIT}, boost::asio::transfer_exactly(receive_size));
-    if (n != receive_size)
-        throw melon::Exception("Error: received " + std::to_string(n) + " bytes, expected " + std::to_string(receive_size));
-    auto reply = melon::core::serialization::deserialize<std::vector<unsigned char>>(buffer);
-    buffer.erase(0, n);
-    if (!reply.empty() && reply.back() == 0)
-        return std::string(reinterpret_cast<char*>(reply.data()), reply.size() - 1);
-    return std::string(reinterpret_cast<char*>(reply.data()), reply.size());
-}
+private:
+    std::string m_in_buf;
+    std::string m_out_buf;
+    mcs::Serializer m_serializer;
 
-bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
+    boost::asio::io_context m_io_context;
+    boost::asio::ip::tcp::socket m_stream{m_io_context};
+};
+
+static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
     // Test client is supposed to run on the same computer as server
     // so client's and server's hostnames are the same
-    mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
-
-    boost::asio::io_context io_context;
-    tcp::resolver resolver(io_context);
-    tcp::socket s(io_context);
-    boost::asio::connect(s, resolver.resolve(ip, port));
-
-    std::string reply, to_send = wanted_mech;
-
-    bool confirmation_recieved = false;
-
-    //std::size_t n;
-    std::string in_buf;
-
-    receive_serialized(s, in_buf);
-
-    send_serialized(s, to_send);
-
-    reply = receive_serialized(s, in_buf);
-
-    for (int counter = 0; ; ++counter)
+    try
     {
-        to_send = get_client_response(reply, client, counter);
-        send_serialized(s, to_send);
-        reply = receive_serialized(s, in_buf);
-        std::cerr << "REPLY: \"" << reply << "\", " << reply.size() << ", "
-                  << mca::AuthResultSingleton::get_instance().success().size()
-                  << (int)reply.back() << std::endl;
-        if (reply == mca::AuthResultSingleton::get_instance().success())
+        mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
+        MySession session(ip, port);
+
+        mcs::StringViewOverBinary supported_mechanisms(session.receive_serialized<std::vector<mc::byte>>());
+        session.send_serialized(wanted_mech);
+
+        mcs::StringViewOverBinary mechanism_confirmation(session.receive_serialized<std::vector<mc::byte>>());
+        // TODO: handle mechanism mismatch
+        assert(mechanism_confirmation.view() == wanted_mech);
+        auto [start_response, selected_mechanism, completness] = client.start(mechanism_confirmation.view());
+        if (completness == mca::AuthState::COMPLETE)
+            return true;
+        assert(selected_mechanism == wanted_mech);
+        session.send_serialized(start_response);
+
+        while (completness == mca::AuthState::INCOMPLETE)
         {
-            confirmation_recieved = true;
-            break;
+            auto server_reply = session.receive_serialized<std::vector<mc::byte>>();
+            auto [step_response, completness] = client.step(server_reply);
+            switch (completness)
+            {
+            case mca::AuthState::COMPLETE:
+                session.send_serialized(step_response);
+                return true;
+            case mca::AuthState::INCOMPLETE:
+                session.send_serialized(step_response);
+                break;
+            default:
+                return false;
+            }
         }
-        if (reply == mca::AuthResultSingleton::get_instance().failure())
-        {
-            confirmation_recieved = false;
-            break;
-        }
+        return false;
     }
-    return confirmation_recieved;
+    catch (const mca::Exception& e)
+    {
+        return false;
+    }
 }
 
 TEST_CASE("credential-based tests", "[creds]")
@@ -123,9 +107,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("PLAIN mech")
+        SECTION("DIGEST-MD5 mech")
         {
-            wanted_mech = "PLAIN";
+            wanted_mech = "DIGEST-MD5";
         }
         mca::Credentials credentials = { "john", "doe" };
         client_singletone.set_credentials(&credentials);
@@ -138,9 +122,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("PLAIN mech")
+        SECTION("DIGEST-MD5 mech")
         {
-            wanted_mech = "PLAIN";
+            wanted_mech = "DIGEST-MD5";
         }
         mca::Credentials credentials = { "Igor", "Shcherbakov" };
         client_singletone.set_credentials(&credentials);
@@ -153,9 +137,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("PLAIN mech")
+        SECTION("DIGEST-MD5 mech")
         {
-            wanted_mech = "PLAIN";
+            wanted_mech = "DIGEST-MD5";
         }
         mca::Credentials credentials = { "john", "password" };
         client_singletone.set_credentials(&credentials);

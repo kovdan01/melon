@@ -13,22 +13,6 @@
 namespace melon::core::auth
 {
 
-inline AuthResultSingleton& AuthResultSingleton::get_instance()
-{
-    static AuthResultSingleton instance;
-    return instance;
-}
-
-inline const std::string& AuthResultSingleton::success() const noexcept
-{
-    return m_success;
-}
-
-inline const std::string& AuthResultSingleton::failure() const noexcept
-{
-    return m_failure;
-}
-
 inline Credentials::Credentials(std::string username,std::string_view password)
     : m_username{std::move(username)}
     // There is no additional byte for '\0' allocated, as sasl_secret_t already contains a single byte for password
@@ -76,8 +60,8 @@ inline void check_sasl_result(sasl_res res, std::string_view function_name)
     case SASL_NOAUTHZ:
         break;
     default:
-        throw melon::core::Exception("Sasl " + std::string(function_name) + " exit code " +
-                                     std::to_string(res) + ": " + sasl_errstring(res, nullptr, nullptr));
+        throw melon::core::auth::Exception("Sasl " + std::string(function_name) + " exit code " +
+                                           std::to_string(res) + ": " + sasl_errstring(res, nullptr, nullptr));
     }
 }
 
@@ -135,19 +119,23 @@ inline SaslClientConnection::StartResult SaslClientConnection::start(std::string
     sasl_res res = sasl_client_start(m_conn, wanted_mech_list.data(), nullptr, &out, &len, &selected_mechanism);
     detail::check_sasl_result(res, "client start");
 
-    return { .response = { out, len }, .selected_mechanism = selected_mechanism };
+    return { .response = std::span{ reinterpret_cast<const melon::core::byte*>(out), len },
+             .selected_mechanism = selected_mechanism,
+             .completness = static_cast<AuthState>(res) };
 }
 
-inline StepResult SaslClientConnection::step(std::string_view server_response)
+inline StepResult SaslClientConnection::step(std::span<const melon::core::byte> server_response)
 {
     const char* clientout;
     unsigned clientout_len;
-    sasl_res res = sasl_client_step(m_conn, server_response.data(), static_cast<unsigned>(server_response.size()), nullptr,  &clientout, &clientout_len);
+    sasl_res res = sasl_client_step(m_conn, reinterpret_cast<const char*>(server_response.data()),
+                                    static_cast<unsigned>(server_response.size()), nullptr,  &clientout, &clientout_len);
     ++m_step_count;
 
     detail::check_sasl_result(res, "client step " + std::to_string(m_step_count));
 
-    return { .response = { clientout, clientout_len }, .completness = static_cast<AuthState>(res) };
+    return { .response = std::span{ reinterpret_cast<const melon::core::byte*>(clientout), clientout_len },
+             .completness = static_cast<AuthState>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslClientConnection::conn() const

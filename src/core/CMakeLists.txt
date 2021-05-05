@@ -63,6 +63,8 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::headers)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log)
 target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
