@@ -63,7 +63,7 @@ private:
     }
     else
     {
-        std::uint32_t size = static_cast<std::uint32_t>(in.size());
+        auto size = static_cast<std::uint32_t>(in.size());
         packer.pack_bin(size);
         packer.pack_bin_body(reinterpret_cast<const char*>(in.data()), size);
     }
