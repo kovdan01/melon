@@ -993,7 +993,8 @@ jobs:
         -D CMAKE_DLLTOOL=/ucrt64/bin/dlltool.exe \
         -D CMAKE_NM=/ucrt64/bin/nm.exe \
         -D CMAKE_PREFIX_PATH=\
-        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
+        "/ucrt64;\
+        ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
         ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
