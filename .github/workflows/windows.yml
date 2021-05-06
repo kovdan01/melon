@@ -76,7 +76,7 @@ jobs:
         pip install requests
 
     - name: Install MSYS packages
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -Syu
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
@@ -201,7 +201,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         # ntc-cmake
         cd ${{ env.REPO_PATH }}/cmake/ntc
@@ -808,31 +808,31 @@ jobs:
 
     - name: Cyrus SASL
       if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}cyrus-sasl
 
     - name: Yaml CPP
       if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}yaml-cpp
 
     - name: MariaDB
       if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}libmariadbclient
 
     - name: Qt5
       if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}qt5
 
     - name: Catch2
       if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}catch
 
@@ -991,7 +991,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
         -G Ninja \
@@ -1018,7 +1018,7 @@ jobs:
       run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
 
     - name: Run tests
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         #cd build
         #ctest
@@ -1059,7 +1059,7 @@ jobs:
 
     - name: Win Deploy Qt
       if: ${{ runner.os == 'Windows' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
