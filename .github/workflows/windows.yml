@@ -74,6 +74,7 @@ jobs:
     - name: Install required python modules
       run: |
         pip install requests
+        pip install pyparsing
 
     - name: Install MSYS packages
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
@@ -146,7 +147,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-4
+        key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-4
 
     - name: Boost
       id: boost
