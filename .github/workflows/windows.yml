@@ -433,7 +433,7 @@ jobs:
     - name: Win Deploy Qt
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
       run: |
-        windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
+        /${{ matrix.config.msys_variant }}/bin/windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
     - name: Upload binaries
       uses: actions/upload-artifact@v2
