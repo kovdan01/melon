@@ -75,7 +75,7 @@ jobs:
         pip install requests
 
     - name: Install MSYS packages
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -Syu
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
@@ -200,7 +200,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         # ntc-cmake
         cd ${{ env.REPO_PATH }}/cmake/ntc
@@ -250,27 +250,27 @@ jobs:
         cd ${{ env.REPO_PATH }}
 
     - name: Cyrus SASL
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}cyrus-sasl
 
     - name: Yaml CPP
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}yaml-cpp
 
     - name: MariaDB
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}libmariadbclient
 
     - name: Qt5
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}qt5
 
     - name: Catch2
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}catch
 
@@ -428,34 +428,15 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: cmd
       run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
-        -G Ninja \
-        -S . \
-        -B build \
-        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -D CMAKE_RANLIB=/${{ matrix.config.msys_variant }}/bin/ranlib.exe \
-        -D CMAKE_VERBOSE_MAKEFILE=ON \
-        -D CMAKE_MAKE_PROGRAM=/${{ matrix.config.msys_variant }}/bin/ninja.exe \
-        -D CMAKE_C_COMPILER=/${{ matrix.config.msys_variant }}/bin/gcc.exe \
-        -D CMAKE_CXX_COMPILER=/${{ matrix.config.msys_variant }}/bin/g++.exe \
-        -D CMAKE_AR=/${{ matrix.config.msys_variant }}/bin/ar.exe \
-        -D CMAKE_LINKER=/${{ matrix.config.msys_variant }}/bin/ld.exe \
-        -D CMAKE_DLLTOOL=/${{ matrix.config.msys_variant }}/bin/dlltool.exe \
-        -D CMAKE_NM=/${{ matrix.config.msys_variant }}/bin/nm.exe \
-        -D CMAKE_PREFIX_PATH=\
-        "/${{ matrix.config.msys_variant }};\
-        ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
-        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix"
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-configure.sh ${{ matrix.config.build_type }} ${{ matrix.config.msys_variant }}"
 
     - name: Build
       run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
 
     - name: Run tests
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         #cd build
         #ctest
@@ -494,7 +475,7 @@ jobs:
         copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\zlib1.dll"                  install\\bin
 
     - name: Win Deploy Qt
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ env.MSYS_VARIANT }} -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
