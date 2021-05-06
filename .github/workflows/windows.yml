@@ -69,6 +69,7 @@ jobs:
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "/")))
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
           env_file.write("MSYS_VARIANT={}\n".format("${{ matrix.config.msys_variant }}".replace("\\", "/")))
+          env_file.write("BUILD_TYPE={}\n".format("${{ matrix.config.build_type }}".replace("\\", "/")))
 
     - name: Install required python modules
       run: |
@@ -430,7 +431,7 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       shell: cmd
       run: |
-        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-configure.sh ${{ matrix.config.build_type }} ${{ matrix.config.msys_variant }}"
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-configure.sh"
 
     - name: Build
       run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
