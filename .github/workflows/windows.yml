@@ -257,7 +257,7 @@ jobs:
     - name: MSYS cache
       uses: actions/cache@v2
       if: ${{ runner.os == 'Windows' }}
-      id: cache_${{ matrix.config.msys_variant }}_windows
+      id: cache_msys2_windows
       with:
         path: |
           C:/msys64/${{ matrix.config.msys_variant }}/bin/gdbm_dump.exe
@@ -807,31 +807,31 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-${{ env.MSYS_CACHE_VERSION }}
 
     - name: Cyrus SASL
-      if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_msys2_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}cyrus-sasl
 
     - name: Yaml CPP
-      if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_msys2_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}yaml-cpp
 
     - name: MariaDB
-      if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_msys2_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}libmariadbclient
 
     - name: Qt5
-      if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_msys2_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}qt5
 
     - name: Catch2
-      if: ${{ runner.os == 'Windows' && steps.cache_${{ matrix.config.msys_variant }}_windows.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Windows' && steps.cache_msys2_windows.outputs.cache-hit != 'true' }}
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}catch
