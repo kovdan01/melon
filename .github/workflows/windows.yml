@@ -27,7 +27,7 @@ jobs:
       CATCH2_INSTALL_PATH: "catch2-install"
       MSYS_CACHE_VERSION: 17  # increment when need to update msys packages
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         config:
         - {
@@ -68,13 +68,14 @@ jobs:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "/")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "/")))
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
+          env_file.write("MSYS_VARIANT={}\n".format("${{ matrix.config.msys_variant }}".replace("\\", "/")))
 
     - name: Install required python modules
       run: |
         pip install requests
 
     - name: Install MSYS packages
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -Syu
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
@@ -199,7 +200,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         # ntc-cmake
         cd ${{ env.REPO_PATH }}/cmake/ntc
@@ -249,27 +250,27 @@ jobs:
         cd ${{ env.REPO_PATH }}
 
     - name: Cyrus SASL
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}cyrus-sasl
 
     - name: Yaml CPP
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}yaml-cpp
 
     - name: MariaDB
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}libmariadbclient
 
     - name: Qt5
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}qt5
 
     - name: Catch2
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}catch
 
@@ -427,7 +428,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
         -G Ninja \
@@ -454,7 +455,7 @@ jobs:
       run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
 
     - name: Run tests
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         #cd build
         #ctest
@@ -493,7 +494,7 @@ jobs:
         copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\zlib1.dll"                  install\\bin
 
     - name: Win Deploy Qt
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ env.MSYS_VARIANT }} -shell sh {0}
       run: |
         windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
