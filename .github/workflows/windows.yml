@@ -429,6 +429,8 @@ jobs:
         copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libbrotlicommon.dll"        install\\bin
         copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libiconv-2.dll"             install\\bin
         copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\zlib1.dll"                  install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libsasl2-3.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\yaml-cpp.dll"               install\\bin
 
     - name: Win Deploy Qt
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
