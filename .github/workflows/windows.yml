@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-core-server-client-desktop:
-    name: ${{ format('Windows {0} {1}', matrix.config.build_type, matrix.config.suffix) }}
+    name: ${{ format('Windows {0} {1}', matrix.config.build_type, matrix.config.msys_variant) }}
     runs-on: ${{ matrix.config.os }}
     env:
       CMAKE_TOOL_VERSION: "3.19.1"
@@ -27,16 +27,27 @@ jobs:
       MSGPACK_INSTALL_PATH: "msgpack-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
-      MINGW64_CACHE_VERSION: 15  # increment when need to update mingw64 packages
+      MSYS_CACHE_VERSION: 17  # increment when need to update msys packages
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         config:
         - {
             os: "windows-latest",
             prefix: "Windows",
-            suffix: "",
-            artifact: "all-release-windows-mingw64",
+            msys_variant: "ucrt64",
+            package_prefix: "mingw-w64-ucrt-x86_64-",
+            artifact: "all-release-windows",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+          }
+        - {
+            os: "windows-latest",
+            prefix: "Windows",
+            msys_variant: "mingw64",
+            package_prefix: "mingw-w64-x86_64-",
+            artifact: "all-release-windows",
             build_type: "Release",
             cc: "gcc",
             cxx: "g++",
@@ -59,16 +70,22 @@ jobs:
           env_file.write("REPO_PATH={}\n".format(repo.replace("\\", "/")))
           env_file.write("ROOT_PATH={}\n".format(root.replace("\\", "/")))
           env_file.write("CMAKE_TOOL_BINARY_PATH={}\n".format(os.path.join(root, cmake_tool_path, "bin").replace("\\", "/")))
+          env_file.write("MSYS_VARIANT={}\n".format("${{ matrix.config.msys_variant }}".replace("\\", "/")))
+          env_file.write("BUILD_TYPE={}\n".format("${{ matrix.config.build_type }}".replace("\\", "/")))
 
     - name: Install required python modules
       run: |
         pip install requests
 
-    - name: Install required python modules (MinGW64)
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+    - name: Install MSYS packages
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-python-pip
-        pip install pyparsing
+        pacman -Syu
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
+        /${{ matrix.config.msys_variant }}/bin/pip install pyparsing
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}gcc
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}pkg-config
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}brotli
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -77,7 +94,7 @@ jobs:
         path: |
           ${{ env.ROOT_PATH }}/${{ env.CMAKE_TOOL_PATH }}
           ${{ env.ROOT_PATH }}/${{ env.NINJA_TOOL_PATH }}
-          C:/msys64/mingw64/bin/ninja.exe
+          C:/msys64/${{ matrix.config.msys_variant }}/bin/ninja.exe
         key: ${{ runner.os }}-ninja-${{ env.NINJA_TOOL_VERSION }}-cmake-${{ env.CMAKE_TOOL_VERSION }}-1
 
     - name: Download Ninja and CMake
@@ -115,7 +132,7 @@ jobs:
         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v{}/ninja-{}".format(ninja_version, ninja_suffix)
         open("ninja.zip", "wb").write(requests.get(ninja_url, allow_redirects=True).content)
         execute_command("7z x ninja.zip")
-        shutil.copy('ninja.exe', 'C:\\msys64\\mingw64\\bin\\ninja.exe')
+        shutil.copy('ninja.exe', 'C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\ninja.exe')
         os.chdir(root)
 
         cmake_url = "https://github.com/Kitware/CMake/releases/download/v{}/cmake-{}-{}".format(cmake_version, cmake_version, cmake_suffix)
@@ -131,7 +148,7 @@ jobs:
       id: cache_boost
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}
-        key: ${{ runner.os }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-3
+        key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-boost-${{ env.BOOST_MAJOR }}-${{ env.BOOST_MINOR }}-${{ env.BOOST_BUILD }}-all-4
 
     - name: Boost
       id: boost
@@ -163,14 +180,14 @@ jobs:
         boost_install_dir = os.path.normpath(os.path.join(root, "${{ env.BOOST_INSTALL_PATH }}")).replace("\\", "/")
         os.mkdir(boost_install_dir)
 
-        boost_url = "https://dl.bintray.com/boostorg/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
-                                                                                                        boost_major, boost_minor, boost_build)
+        boost_url = "https://boostorg.jfrog.io/artifactory/main/release/{}.{}.{}/source/boost_{}_{}_{}.zip".format(boost_major, boost_minor, boost_build,
+                                                                                                                   boost_major, boost_minor, boost_build)
         open("boost.zip", "wb").write(requests.get(boost_url, allow_redirects=True).content)
         execute_command("7z x boost.zip")
 
         os.chdir(boost_source_dir)
 
-        cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+        cmd_prefix = "C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh -c "
 
         execute_command(cmd_prefix + '"chmod +x ./bootstrap.sh"')
         execute_command(cmd_prefix + '"chmod +x ./tools/build/src/engine/build.sh"')
@@ -186,647 +203,41 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: cmd
       run: |
-        # ntc-cmake
-        cd ${{ env.REPO_PATH }}/cmake/ntc
-        mkdir prefix
-
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
-            -G Ninja \
-            -S . \
-            -B build \
-            -D CMAKE_INSTALL_PREFIX="${{ env.REPO_PATH }}/cmake/ntc/prefix" \
-            -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
-            -D CMAKE_VERBOSE_MAKEFILE=ON \
-            -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-            -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-            -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
-            -D CMAKE_AR=/mingw64/bin/ar.exe \
-            -D CMAKE_LINKER=/mingw64/bin/ld.exe \
-            -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
-            -D CMAKE_NM=/mingw64/bin/nm.exe
-
-        cmake --build build --target all
-        cmake --build build --target install
-
-        # utils and asio-utils from cosec-examples
-        cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
-        mkdir prefix
-
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
-            -G Ninja \
-            -S . \
-            -B build \
-            -D CMAKE_INSTALL_PREFIX="${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
-            -D CMAKE_PREFIX_PATH="${{ env.REPO_PATH }}/cmake/ntc/prefix;${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }}" \
-            -D CMAKE_BUILD_TYPE=Release \
-            -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
-            -D CMAKE_VERBOSE_MAKEFILE=ON \
-            -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-            -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-            -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
-            -D CMAKE_AR=/mingw64/bin/ar.exe \
-            -D CMAKE_LINKER=/mingw64/bin/ld.exe \
-            -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
-            -D CMAKE_NM=/mingw64/bin/nm.exe
-
-        cmake --build build --target all
-        cmake --build build --target install
-        cd ${{ env.REPO_PATH }}
-
-    # mingw64 packages:
-    # - mingw-w64-x86_64-cyrus-sasl (and mingw-w64-x86_64-gdbm as a dependency)
-    # - mingw-w64-x86_64-yaml-cpp
-    # - mingw-w64-x86_64-qt5 and its dependencies
-    - name: Mingw64 cache
-      uses: actions/cache@v2
-      if: ${{ runner.os == 'Windows' }}
-      id: cache_mingw64_windows
-      with:
-        path: |
-          C:/msys64/mingw64/bin/gdbm_dump.exe
-          C:/msys64/mingw64/bin/gdbm_load.exe
-          C:/msys64/mingw64/bin/gdbmtool.exe
-          C:/msys64/mingw64/bin/libgdbm-6.dll
-          C:/msys64/mingw64/bin/libgdbm_compat-4.dll
-          C:/msys64/mingw64/include/dbm.h
-          C:/msys64/mingw64/include/gdbm.h
-          C:/msys64/mingw64/include/ndbm.h
-          C:/msys64/mingw64/lib/libgdbm.a
-          C:/msys64/mingw64/lib/libgdbm.dll.a
-          C:/msys64/mingw64/lib/libgdbm_compat.a
-          C:/msys64/mingw64/lib/libgdbm_compat.dll.a
-          C:/msys64/mingw64/share/licenses/gdbm/
-
-          C:/msys64/mingw64/bin/libsasl2-3.dll
-          C:/msys64/mingw64/include/sasl/
-          C:/msys64/mingw64/lib/libsasl2.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libsasl2.pc
-          C:/msys64/mingw64/lib/sasl2/
-          C:/msys64/mingw64/sbin/pluginviewer.exe
-          C:/msys64/mingw64/sbin/sasldblistusers2.exe
-          C:/msys64/mingw64/sbin/saslpasswd2.exe
-          C:/msys64/mingw64/share/licenses/cyrus-sasl/
-
-          C:/msys64/mingw64/bin/yaml-cpp.dll
-          C:/msys64/mingw64/include/yaml-cpp/
-          C:/msys64/mingw64/lib/cmake/yaml-cpp/
-          C:/msys64/mingw64/lib/libyaml-cpp.a
-          C:/msys64/mingw64/lib/pkgconfig/yaml-cpp.pc
-          C:/msys64/mingw64/lib/yaml-cpp.dll.a
-          C:/msys64/mingw64/share/licenses/yaml-cpp/
-
-          C:/msys64/mingw64/bin/libmariadb.dll
-          C:/msys64/mingw64/bin/mariadb_config.exe
-          C:/msys64/mingw64/include/mariadb/
-          C:/msys64/mingw64/include/mysql/
-          C:/msys64/mingw64/lib/libmariadb.dll.a
-          C:/msys64/mingw64/lib/libmariadbclient.a
-          C:/msys64/mingw64/lib/libmysqlclient.a
-          C:/msys64/mingw64/lib/libmysqlclient.dll.a
-          C:/msys64/mingw64/lib/libmysqlclient_r.a
-          C:/msys64/mingw64/lib/libmysqlclient_r.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libmariadb.pc
-
-          C:/msys64/mingw64/bin/assimp.exe
-          C:/msys64/mingw64/bin/assimp_viewer.exe
-          C:/msys64/mingw64/bin/libassimp.dll
-          C:/msys64/mingw64/include/assimp/
-          C:/msys64/mingw64/lib/cmake/assimp-5.0/
-          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimp-config-version.cmake
-          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimp-config.cmake
-          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimpTargets-release.cmake
-          C:/msys64/mingw64/lib/cmake/assimp-5.0/assimpTargets.cmake
-          C:/msys64/mingw64/lib/libassimp.dll.a
-          C:/msys64/mingw64/lib/libIrrXML.a
-          C:/msys64/mingw64/lib/pkgconfig/assimp.pc
-          C:/msys64/mingw64/share/licenses/assimp/
-
-          C:/msys64/mingw64/bin/dbus*.exe
-          C:/msys64/mingw64/bin/libdbus-1-3.dll
-          C:/msys64/mingw64/etc/dbus-1/
-          C:/msys64/mingw64/include/dbus-1.0/
-          C:/msys64/mingw64/lib/cmake/DBus1/
-          C:/msys64/mingw64/lib/dbus-1.0/
-          C:/msys64/mingw64/lib/libdbus-1.a
-          C:/msys64/mingw64/lib/libdbus-1.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/dbus-1.pc
-          C:/msys64/mingw64/share/dbus-1/
-          C:/msys64/mingw64/share/xml/dbus-1/
-          C:/msys64/mingw64/var/lib/dbus/
-
-          C:/msys64/mingw64/bin/libdouble-conversion.dll
-          C:/msys64/mingw64/include/double-conversion/
-          C:/msys64/mingw64/lib/cmake/double-conversion/
-          C:/msys64/mingw64/lib/libdouble-conversion.a
-          C:/msys64/mingw64/lib/libdouble-conversion.dll.a
-          C:/msys64/mingw64/share/licenses/double-conversion/
-
-          C:/msys64/mingw64/bin/fc-*.exe
-          C:/msys64/mingw64/bin/libfontconfig-1.dll
-          C:/msys64/mingw64/etc/fonts/conf.d/
-          C:/msys64/mingw64/etc/fonts/fonts.conf
-          C:/msys64/mingw64/include/fontconfig/
-          C:/msys64/mingw64/lib/libfontconfig.a
-          C:/msys64/mingw64/lib/libfontconfig.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/fontconfig.pc
-          C:/msys64/mingw64/share/fontconfig/
-          C:/msys64/mingw64/share/gettext/its/fontconfig.its
-          C:/msys64/mingw64/share/gettext/its/fontconfig.loc
-          C:/msys64/mingw64/share/licenses/fontconfig/
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig-conf.mo
-          C:/msys64/mingw64/share/locale/zh_CN/LC_MESSAGES/fontconfig.mo
-          C:/msys64/mingw64/share/xml/fontconfig/
-          C:/msys64/mingw64/var/cache/fontconfig/
-
-          C:/msys64/mingw64/bin/libfreeglut.dll
-          C:/msys64/mingw64/include/GL/
-          C:/msys64/mingw64/lib/cmake/FreeGLUT/
-          C:/msys64/mingw64/lib/libfreeglut.dll.a
-          C:/msys64/mingw64/lib/libfreeglut_static.a
-          C:/msys64/mingw64/lib/pkgconfig/freeglut.pc
-
-          C:/msys64/mingw64/bin/freetype-config
-          C:/msys64/mingw64/bin/libfreetype-6.dll
-          C:/msys64/mingw64/include/freetype2/
-          C:/msys64/mingw64/lib/libfreetype.a
-          C:/msys64/mingw64/lib/libfreetype.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/freetype2.pc
-          C:/msys64/mingw64/share/aclocal/freetype2.m4
-          C:/msys64/mingw64/share/licenses/freetype/
-
-          C:/msys64/mingw64/bin/gif*.exe
-          C:/msys64/mingw64/bin/libgif-7.dll
-          C:/msys64/mingw64/include/gif_lib.h
-          C:/msys64/mingw64/lib/libgif.a
-          C:/msys64/mingw64/lib/libgif.dll.a
-
-          C:/msys64/mingw64/bin/gdbus-codegen-script.py
-          C:/msys64/mingw64/bin/gdbus-codegen.exe
-          C:/msys64/mingw64/bin/gdbus.exe
-          C:/msys64/mingw64/bin/gio-querymodules.exe
-          C:/msys64/mingw64/bin/gio.exe
-          C:/msys64/mingw64/bin/glib-*.exe
-          C:/msys64/mingw64/bin/gobject-query.exe
-          C:/msys64/mingw64/bin/gresource.exe
-          C:/msys64/mingw64/bin/gsettings.exe
-          C:/msys64/mingw64/bin/gspawn-win64-helper-console.exe
-          C:/msys64/mingw64/bin/gspawn-win64-helper.exe
-          C:/msys64/mingw64/bin/gtester-report-script.py
-          C:/msys64/mingw64/bin/gtester-report.exe
-          C:/msys64/mingw64/bin/libgio-2.0-0.dll
-          C:/msys64/mingw64/bin/libglib-2.0-0.dll
-          C:/msys64/mingw64/bin/libgmodule-2.0-0.dll
-          C:/msys64/mingw64/bin/libgobject-2.0-0.dll
-          C:/msys64/mingw64/bin/libgthread-2.0-0.dll
-          C:/msys64/mingw64/include/gio-win32-2.0/
-          C:/msys64/mingw64/include/glib-2.0/
-          C:/msys64/mingw64/lib/glib-2.0/
-          C:/msys64/mingw64/lib/libgio-2.0.a
-          C:/msys64/mingw64/lib/libgio-2.0.dll.a
-          C:/msys64/mingw64/lib/libglib-2.0.a
-          C:/msys64/mingw64/lib/libglib-2.0.dll.a
-          C:/msys64/mingw64/lib/libgmodule-2.0.a
-          C:/msys64/mingw64/lib/libgmodule-2.0.dll.a
-          C:/msys64/mingw64/lib/libgobject-2.0.a
-          C:/msys64/mingw64/lib/libgobject-2.0.dll.a
-          C:/msys64/mingw64/lib/libgthread-2.0.a
-          C:/msys64/mingw64/lib/libgthread-2.0.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/gio-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gio-windows-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/glib-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gmodule-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gmodule-export-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gmodule-no-export-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gobject-2.0.pc
-          C:/msys64/mingw64/lib/pkgconfig/gthread-2.0.pc
-          C:/msys64/mingw64/share/aclocal/glib-2.0.m4
-          C:/msys64/mingw64/share/aclocal/glib-gettext.m4
-          C:/msys64/mingw64/share/aclocal/gsettings.m4
-          C:/msys64/mingw64/share/gettext/its/gschema.its
-          C:/msys64/mingw64/share/gettext/its/gschema.loc
-          C:/msys64/mingw64/share/glib-2.0/
-          C:/msys64/mingw64/share/licenses/glib2/
-          C:/msys2/usr/share/libalpm/
-
-          C:/msys64/mingw64/bin/gr2fonttest.exe
-          C:/msys64/mingw64/bin/libgraphite2.dll
-          C:/msys64/mingw64/include/graphite2/
-          C:/msys64/mingw64/lib/libgraphite2.a
-          C:/msys64/mingw64/lib/libgraphite2.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/graphite2.pc
-          C:/msys64/mingw64/share/graphite2/
-          C:/msys64/mingw64/share/licenses/graphite2/
-
-          C:/msys64/mingw64/bin/hb-*.exe
-          C:/msys64/mingw64/bin/hb-*.exe
-          C:/msys64/mingw64/bin/hb-*.exe
-          C:/msys64/mingw64/bin/hb-*.exe
-          C:/msys64/mingw64/bin/libharfbuzz*.dll
-          C:/msys64/mingw64/bin/libharfbuzz*.dll
-          C:/msys64/mingw64/bin/libharfbuzz*.dll
-          C:/msys64/mingw64/bin/libharfbuzz*.dll
-          C:/msys64/mingw64/include/harfbuzz/
-          C:/msys64/mingw64/lib/cmake/harfbuzz/
-          C:/msys64/mingw64/lib/girepository-1.0/HarfBuzz-0.0.typelib
-          C:/msys64/mingw64/lib/libharfbuzz*.a
-          C:/msys64/mingw64/lib/libharfbuzz*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/harfbuzz*.pc
-          C:/msys64/mingw64/share/gir-1.0/HarfBuzz-0.0.gir
-          C:/msys64/mingw64/share/licenses/harfbuzz/
-
-          C:/msys64/mingw64/bin/derb.exe
-          C:/msys64/mingw64/bin/genbrk.exe
-          C:/msys64/mingw64/bin/gencfu.exe
-          C:/msys64/mingw64/bin/gencnval.exe
-          C:/msys64/mingw64/bin/gendict.exe
-          C:/msys64/mingw64/bin/genrb.exe
-          C:/msys64/mingw64/bin/icu-config
-          C:/msys64/mingw64/bin/icuinfo.exe
-          C:/msys64/mingw64/bin/libicudt68.dll
-          C:/msys64/mingw64/bin/libicuin68.dll
-          C:/msys64/mingw64/bin/libicuio68.dll
-          C:/msys64/mingw64/bin/libicutest68.dll
-          C:/msys64/mingw64/bin/libicutu68.dll
-          C:/msys64/mingw64/bin/libicuuc68.dll
-          C:/msys64/mingw64/bin/makeconv.exe
-          C:/msys64/mingw64/bin/pkgdata.exe
-          C:/msys64/mingw64/bin/uconv.exe
-          C:/msys64/mingw64/include/unicode/
-          C:/msys64/mingw64/lib/icu/
-          C:/msys64/mingw64/lib/libicu*.a
-          C:/msys64/mingw64/lib/libicu*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/icu-i18n.pc
-          C:/msys64/mingw64/lib/pkgconfig/icu-io.pc
-          C:/msys64/mingw64/lib/pkgconfig/icu-uc.pc
-          C:/msys64/mingw64/sbin/escapesrc.exe
-          C:/msys64/mingw64/sbin/genccode.exe
-          C:/msys64/mingw64/sbin/gencmn.exe
-          C:/msys64/mingw64/sbin/gennorm2.exe
-          C:/msys64/mingw64/sbin/gensprep.exe
-          C:/msys64/mingw64/sbin/icupkg.exe
-          C:/msys64/mingw64/share/icu/
-
-          C:/msys64/mingw64/bin/imgcmp.exe
-          C:/msys64/mingw64/bin/imginfo.exe
-          C:/msys64/mingw64/bin/jasper.exe
-          C:/msys64/mingw64/bin/libjasper-4.dll
-          C:/msys64/mingw64/include/jasper/
-          C:/msys64/mingw64/lib/libjasper.a
-          C:/msys64/mingw64/lib/libjasper.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/jasper.pc
-          C:/msys64/mingw64/share/licenses/jasper/
-
-          C:/msys64/mingw64/bin/jpgicc.exe
-          C:/msys64/mingw64/bin/liblcms2-2.dll
-          C:/msys64/mingw64/bin/linkicc.exe
-          C:/msys64/mingw64/bin/psicc.exe
-          C:/msys64/mingw64/bin/tificc.exe
-          C:/msys64/mingw64/bin/transicc.exe
-          C:/msys64/mingw64/include/lcms2.h
-          C:/msys64/mingw64/include/lcms2_plugin.h
-          C:/msys64/mingw64/lib/liblcms2.a
-          C:/msys64/mingw64/lib/liblcms2.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/lcms2.pc
-
-          C:/msys64/mingw64/bin/dumpsexp.exe
-          C:/msys64/mingw64/bin/hmac256.exe
-          C:/msys64/mingw64/bin/libgcrypt-20.dll
-          C:/msys64/mingw64/bin/libgcrypt-config
-          C:/msys64/mingw64/bin/mpicalc.exe
-          C:/msys64/mingw64/include/gcrypt.h
-          C:/msys64/mingw64/lib/libgcrypt.a
-          C:/msys64/mingw64/lib/libgcrypt.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libgcrypt.pc
-          C:/msys64/mingw64/share/aclocal/libgcrypt.m4
-          C:/msys64/mingw64/share/licenses/libgcrypt/
-
-          C:/msys64/mingw64/bin/gpg-error-config
-          C:/msys64/mingw64/bin/gpg-error.exe
-          C:/msys64/mingw64/bin/gpgrt-config
-          C:/msys64/mingw64/bin/libgpg-error-0.dll
-          C:/msys64/mingw64/bin/yat2m.exe
-          C:/msys64/mingw64/include/gpg-error.h
-          C:/msys64/mingw64/include/gpgrt.h
-          C:/msys64/mingw64/lib/libgpg-error.a
-          C:/msys64/mingw64/lib/libgpg-error.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/gpg-error.pc
-          C:/msys64/mingw64/share/aclocal/gpg-error.m4
-          C:/msys64/mingw64/share/aclocal/gpgrt.m4
-          C:/msys64/mingw64/share/common-lisp/
-          C:/msys64/mingw64/share/libgpg-error/
-          C:/msys64/mingw64/share/licenses/libgpg-error/
-
-          C:/msys64/mingw64/bin/cjpeg.exe
-          C:/msys64/mingw64/bin/djpeg.exe
-          C:/msys64/mingw64/bin/jpegtran.exe
-          C:/msys64/mingw64/bin/libjpeg-8.dll
-          C:/msys64/mingw64/bin/libturbojpeg.dll
-          C:/msys64/mingw64/bin/rdjpgcom.exe
-          C:/msys64/mingw64/bin/tjbench.exe
-          C:/msys64/mingw64/bin/wrjpgcom.exe
-          C:/msys64/mingw64/include/jconfig.h
-          C:/msys64/mingw64/include/jerror.h
-          C:/msys64/mingw64/include/jinclude.h
-          C:/msys64/mingw64/include/jmorecfg.h
-          C:/msys64/mingw64/include/jpeglib.h
-          C:/msys64/mingw64/include/transupp.h
-          C:/msys64/mingw64/include/turbojpeg.h
-          C:/msys64/mingw64/lib/libjpeg.a
-          C:/msys64/mingw64/lib/libjpeg.dll.a
-          C:/msys64/mingw64/lib/libturbojpeg.a
-          C:/msys64/mingw64/lib/libturbojpeg.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libjpeg.pc
-          C:/msys64/mingw64/lib/pkgconfig/libturbojpeg.pc
-          C:/msys64/mingw64/share/licenses/libjpeg-turbo/
-
-          C:/msys64/mingw64/bin/libmng-2.dll
-          C:/msys64/mingw64/include/libmng.h
-          C:/msys64/mingw64/include/libmng_conf.h
-          C:/msys64/mingw64/include/libmng_types.h
-          C:/msys64/mingw64/lib/libmng.a
-          C:/msys64/mingw64/lib/libmng.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libmng.pc
-          C:/msys64/mingw64/share/mng-2.0/
-
-          C:/msys64/mingw64/bin/libpng-config
-          C:/msys64/mingw64/bin/libpng16-16.dll
-          C:/msys64/mingw64/bin/libpng16-config
-          C:/msys64/mingw64/bin/png-fix-itxt.exe
-          C:/msys64/mingw64/bin/png2pnm-static.exe
-          C:/msys64/mingw64/bin/png2pnm.exe
-          C:/msys64/mingw64/bin/pngfix.exe
-          C:/msys64/mingw64/bin/pnm2png-static.exe
-          C:/msys64/mingw64/bin/pnm2png.exe
-          C:/msys64/mingw64/include/libpng16/
-          C:/msys64/mingw64/include/png.h
-          C:/msys64/mingw64/include/pngconf.h
-          C:/msys64/mingw64/include/pnglibconf.h
-          C:/msys64/mingw64/lib/libpng.a
-          C:/msys64/mingw64/lib/libpng.dll.a
-          C:/msys64/mingw64/lib/libpng16.a
-          C:/msys64/mingw64/lib/libpng16.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libpng.pc
-          C:/msys64/mingw64/lib/pkgconfig/libpng16.pc
-          C:/msys64/mingw64/share/licenses/libpng/
-
-          C:/msys64/mingw64/bin/fax2ps.exe
-          C:/msys64/mingw64/bin/fax2tiff.exe
-          C:/msys64/mingw64/bin/libtiff-5.dll
-          C:/msys64/mingw64/bin/libtiffxx-5.dll
-          C:/msys64/mingw64/bin/pal2rgb.exe
-          C:/msys64/mingw64/bin/ppm2tiff.exe
-          C:/msys64/mingw64/bin/raw2tiff.exe
-          C:/msys64/mingw64/bin/tiff*.exe
-          C:/msys64/mingw64/include/tif*.h
-          C:/msys64/mingw64/lib/libtiff.a
-          C:/msys64/mingw64/lib/libtiff.dll.a
-          C:/msys64/mingw64/lib/libtiffxx.a
-          C:/msys64/mingw64/lib/libtiffxx.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libtiff-4.pc
-          C:/msys64/mingw64/share/licenses/libtiff/
-
-          C:/msys64/mingw64/bin/cwebp.exe
-          C:/msys64/mingw64/bin/dwebp.exe
-          C:/msys64/mingw64/bin/gif2webp.exe
-          C:/msys64/mingw64/bin/img2webp.exe
-          C:/msys64/mingw64/bin/libwebp-7.dll
-          C:/msys64/mingw64/bin/libwebpdecoder-3.dll
-          C:/msys64/mingw64/bin/libwebpdemux-2.dll
-          C:/msys64/mingw64/bin/libwebpmux-3.dll
-          C:/msys64/mingw64/bin/webpinfo.exe
-          C:/msys64/mingw64/bin/webpmux.exe
-          C:/msys64/mingw64/include/webp/
-          C:/msys64/mingw64/lib/libwebp*.a
-          C:/msys64/mingw64/lib/libwebp*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libwebp*.pc
-
-          C:/msys64/mingw64/bin/libxml2-2.dll
-          C:/msys64/mingw64/bin/xml2-config
-          C:/msys64/mingw64/bin/xmlcatalog.exe
-          C:/msys64/mingw64/bin/xmllint.exe
-          C:/msys64/mingw64/include/libxml2/
-          C:/msys64/mingw64/lib/cmake/libxml2/
-          C:/msys64/mingw64/lib/libxml2.a
-          C:/msys64/mingw64/lib/libxml2.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libxml-2.0.pc
-          C:/msys64/mingw64/lib/python3.8/site-packages/drv_libxml2.py
-          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2.py
-          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2mod.dll.a
-          C:/msys64/mingw64/lib/python3.8/site-packages/libxml2mod.pyd
-          C:/msys64/mingw64/lib/xml2Conf.sh
-          C:/msys64/mingw64/share/aclocal/libxml.m4
-          C:/msys64/mingw64/share/licenses/libxml2/
-
-          C:/msys64/mingw64/bin/libexslt-0.dll
-          C:/msys64/mingw64/bin/libxslt-1.dll
-          C:/msys64/mingw64/bin/xslt-config
-          C:/msys64/mingw64/bin/xsltproc.exe
-          C:/msys64/mingw64/include/libexslt/
-          C:/msys64/mingw64/include/libxslt/
-          C:/msys64/mingw64/lib/libexslt.a
-          C:/msys64/mingw64/lib/libexslt.dll.a
-          C:/msys64/mingw64/lib/libxslt-plugins/
-          C:/msys64/mingw64/lib/libxslt.a
-          C:/msys64/mingw64/lib/libxslt.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libexslt.pc
-          C:/msys64/mingw64/lib/pkgconfig/libxslt.pc
-          C:/msys64/mingw64/lib/xsltConf.sh
-          C:/msys64/mingw64/share/aclocal/libxslt.m4
-
-          C:/msys64/mingw64/bin/libminizip-1.dll
-          C:/msys64/mingw64/include/minizip/
-          C:/msys64/mingw64/lib/cmake/minizip-exports-release.cmake
-          C:/msys64/mingw64/lib/cmake/minizip-exports.cmake
-          C:/msys64/mingw64/lib/libminizip.a
-          C:/msys64/mingw64/lib/libminizip.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/minizip.pc
-
-          C:/msys64/mingw64/bin/altonegen.exe
-          C:/msys64/mingw64/bin/libopenal-1.dll
-          C:/msys64/mingw64/bin/makemhr.exe
-          C:/msys64/mingw64/bin/openal-info.exe
-          C:/msys64/mingw64/include/AL/
-          C:/msys64/mingw64/lib/cmake/OpenAL/
-          C:/msys64/mingw64/lib/libopenal.a
-          C:/msys64/mingw64/lib/libopenal.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/openal.pc
-          C:/msys64/mingw64/share/openal/
-
-          C:/msys64/mingw64/bin/libpcre*.dll
-          C:/msys64/mingw64/bin/pcre-config
-          C:/msys64/mingw64/bin/pcregrep.exe
-          C:/msys64/mingw64/bin/pcretest.exe
-          C:/msys64/mingw64/include/pcre*.h
-          C:/msys64/mingw64/lib/libpcre*.a
-          C:/msys64/mingw64/lib/libpcre*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libpcre*.pc
-          C:/msys64/mingw64/share/licenses/pcre/
-
-          C:/msys64/mingw64/bin/libpcre2*.dll
-          C:/msys64/mingw64/bin/pcre2-config
-          C:/msys64/mingw64/bin/pcre2grep.exe
-          C:/msys64/mingw64/bin/pcre2test.exe
-          C:/msys64/mingw64/include/pcre2.h
-          C:/msys64/mingw64/include/pcre2posix.h
-          C:/msys64/mingw64/lib/libpcre2*.a
-          C:/msys64/mingw64/lib/libpcre2*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/libpcre2*.pc
-
-          C:/msys64/mingw64/include/vulkan/
-          C:/msys64/mingw64/share/licenses/vulkan-headers/
-          C:/msys64/mingw64/share/vulkan/
-
-          C:/msys64/mingw64/bin/libvulkan-1.dll
-          C:/msys64/mingw64/lib/libvulkan.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/vulkan.pc
-          C:/msys64/mingw64/share/licenses/vulkan-loader/
-
-          C:/msys64/mingw64/bin/edit.dll
-          C:/msys64/mingw64/bin/edit_test.exe
-          C:/msys64/mingw64/bin/edit_test_dll.exe
-          C:/msys64/mingw64/include/editline/
-          C:/msys64/mingw64/lib/libedit.dll.a
-          C:/msys64/mingw64/lib/libedit_static.a
-          C:/msys64/mingw64/lib/pkgconfig/wineditline.pc
-          C:/msys64/mingw64/share/licenses/wineditline/
-
-          C:/msys64/mingw64/bin/cxpm-noX.exe
-          C:/msys64/mingw64/bin/libXpm-noX4.dll
-          C:/msys64/mingw64/include/X11/simx.h
-          C:/msys64/mingw64/include/X11/xpm.h
-          C:/msys64/mingw64/lib/libXpm.a
-          C:/msys64/mingw64/lib/libXpm.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/xpm.pc
-
-          C:/msys64/mingw64/bin/libzzip*.dll
-          C:/msys64/mingw64/bin/unzip-mem.exe
-          C:/msys64/mingw64/bin/unzzip*.exe
-          C:/msys64/mingw64/bin/zz*.exe
-          C:/msys64/mingw64/include/SDL_rwops_zzip/
-          C:/msys64/mingw64/include/zzip-io.h
-          C:/msys64/mingw64/include/zzip.h
-          C:/msys64/mingw64/include/zzip/
-          C:/msys64/mingw64/lib/libzzip*.a
-          C:/msys64/mingw64/lib/libzzip*.dll.a
-          C:/msys64/mingw64/lib/pkgconfig/SDL_rwops_zzip.pc
-          C:/msys64/mingw64/lib/pkgconfig/zzip*.pc
-          C:/msys64/mingw64/share/aclocal/zziplib.m4
-
-          C:/msys64/mingw64/bin/balsam.exe
-          C:/msys64/mingw64/bin/canbusutil.exe
-          C:/msys64/mingw64/bin/dumpcpp.exe
-          C:/msys64/mingw64/bin/dumpdoc.exe
-          C:/msys64/mingw64/bin/fixqt4headers.pl
-          C:/msys64/mingw64/bin/idc.exe
-          C:/msys64/mingw64/bin/lconvert.exe
-          C:/msys64/mingw64/bin/linguist.exe
-          C:/msys64/mingw64/bin/lprodump.exe
-          C:/msys64/mingw64/bin/lrelease-pro.exe
-          C:/msys64/mingw64/bin/lrelease.exe
-          C:/msys64/mingw64/bin/lupdate-pro.exe
-          C:/msys64/mingw64/bin/lupdate.exe
-          C:/msys64/mingw64/bin/meshdebug.exe
-          C:/msys64/mingw64/bin/moc.exe
-          C:/msys64/mingw64/bin/pixeltool.exe
-          C:/msys64/mingw64/bin/qcollectiongenerator.exe
-          C:/msys64/mingw64/bin/qdbus.exe
-          C:/msys64/mingw64/bin/qdbuscpp2xml.exe
-          C:/msys64/mingw64/bin/qdbusviewer.exe
-          C:/msys64/mingw64/bin/qdbusxml2cpp.exe
-          C:/msys64/mingw64/bin/qdistancefieldgenerator.exe
-          C:/msys64/mingw64/bin/qdoc.exe
-          C:/msys64/mingw64/bin/qgltf.exe
-          C:/msys64/mingw64/bin/qhelpgenerator.exe
-          C:/msys64/mingw64/bin/qlalr.exe
-          C:/msys64/mingw64/bin/qmake.exe
-          C:/msys64/mingw64/bin/qscxmlc.exe
-          C:/msys64/mingw64/bin/Qt5Core.dll
-          C:/msys64/mingw64/bin/Qt5Gui.dll
-          C:/msys64/mingw64/bin/Qt5Sql.dll
-          C:/msys64/mingw64/bin/Qt5Widgets.dll
-          C:/msys64/mingw64/bin/qtattributionsscanner.exe
-          C:/msys64/mingw64/bin/qtdiag.exe
-          C:/msys64/mingw64/bin/qtpaths.exe
-          C:/msys64/mingw64/bin/qtplugininfo.exe
-          C:/msys64/mingw64/bin/qvkgen.exe
-          C:/msys64/mingw64/bin/rcc.exe
-          C:/msys64/mingw64/bin/repc.exe
-          C:/msys64/mingw64/bin/syncqt.pl
-          C:/msys64/mingw64/bin/testcon.exe
-          C:/msys64/mingw64/bin/tracegen.exe
-          C:/msys64/mingw64/bin/uic.exe
-          C:/msys64/mingw64/bin/windeployqt.exe
-          C:/msys64/mingw64/bin/xmlpatterns.exe
-          C:/msys64/mingw64/bin/xmlpatternsvalidator.exe
-          C:/msys64/mingw64/include/ActiveQt/
-          C:/msys64/mingw64/include/QtCore/
-          C:/msys64/mingw64/include/QtGui/
-          C:/msys64/mingw64/include/QtSql/
-          C:/msys64/mingw64/include/QtWidgets/
-          C:/msys64/mingw64/lib/cmake/Qt5*/
-          C:/msys64/mingw64/lib/libQt5Core.dll.a
-          C:/msys64/mingw64/lib/libQt5Gui.dll.a
-          C:/msys64/mingw64/lib/libQt5Sql.dll.a
-          C:/msys64/mingw64/lib/libQt5Widgets.dll.a
-          C:/msys64/mingw64/lib/libqtmain.a
-          C:/msys64/mingw64/lib/metatypes/qt5core_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5gui_metatypes.json
-          C:/msys64/mingw64/lib/metatypes/qt5widgets_metatypes.json
-          C:/msys64/mingw64/lib/pkgconfig/Qt5*.pc
-          C:/msys64/mingw64/lib/Qt5*.prl
-          C:/msys64/mingw64/lib/qtmain.prl
-          C:/msys64/mingw64/share/licenses/qt5/
-          C:/msys64/mingw64/share/qt5/mkspecs/
-          C:/msys64/mingw64/share/qt5/phrasebooks/
-          C:/msys64/mingw64/share/qt5/plugins/
-          C:/msys64/mingw64/share/qt5/translations/
-
-          C:/msys64/mingw64/include/catch2/
-          C:/msys64/mingw64/lib/cmake/Catch2/
-          C:/msys64/mingw64/lib/libCatch2WithMain.a
-          C:/msys64/mingw64/share/Catch2/
-          C:/msys64/mingw64/share/licenses/
-          C:/msys64/mingw64/share/pkgconfig/
-        key: ${{ runner.os }}-mingw64-${{ env.MINGW64_CACHE_VERSION }}
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/lebedev-utils.sh"
 
     - name: Cyrus SASL
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-cyrus-sasl
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}cyrus-sasl
 
     - name: Yaml CPP
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-yaml-cpp
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}yaml-cpp
 
     - name: MariaDB
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-libmariadbclient
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}libmariadbclient
 
     - name: Qt5
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-qt5
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}qt5
 
     - name: Catch2
-      if: ${{ runner.os == 'Windows' && steps.cache_mingw64_windows.outputs.cache-hit != 'true' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
-        pacman -S --noconfirm mingw-w64-x86_64-catch
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}catch
 
     - name: SQLPP11 cache
       uses: actions/cache@v2
       id: cache_sqlpp11
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }}
-        key: ${{ runner.os }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-2
+        key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-sqlpp11-${{ env.SQLPP11_VERSION }}-connector-mysql-${{ env.SQLPP11_CONNECTOR_MYSQL_VERSION }}-4
 
     - name: SQLPP11
       if: ${{ steps.cache_sqlpp11.outputs.cache-hit != 'true' }}
@@ -845,7 +256,7 @@ jobs:
             raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
 
         def execute_msys_command(cmd):
-          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh -c "
           execute_command(cmd_prefix + '"{}"'.format(cmd))
 
         root = os.environ['ROOT_PATH']
@@ -977,7 +388,7 @@ jobs:
       id: cache_catch2
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }}
-        key: ${{ runner.os }}-catch2-${{ env.CATCH2_VERSION }}
+        key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-catch2-${{ env.CATCH2_VERSION }}
 
     - name: Catch2
       if: ${{ steps.cache_catch2.outputs.cache-hit != 'true' }}
@@ -996,7 +407,7 @@ jobs:
             raise RuntimeError('Exit code {} while executing "{}"'.format(ret, cmd))
 
         def execute_msys_command(cmd):
-          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh -c "
+          cmd_prefix = "C:/msys64/msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh -c "
           execute_command(cmd_prefix + '"{}"'.format(cmd))
 
         root = os.environ['ROOT_PATH']
@@ -1028,86 +439,64 @@ jobs:
         os.chdir(repo)
 
     - name: Configure
-      if: ${{ runner.os == 'Windows' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
+      shell: cmd
       run: |
-        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake \
-        -G Ninja \
-        -S . \
-        -B build \
-        -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-        -D CMAKE_RANLIB=/mingw64/bin/ranlib.exe \
-        -D CMAKE_VERBOSE_MAKEFILE=ON \
-        -D CMAKE_MAKE_PROGRAM=/mingw64/bin/ninja.exe \
-        -D CMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-        -D CMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
-        -D CMAKE_AR=/mingw64/bin/ar.exe \
-        -D CMAKE_LINKER=/mingw64/bin/ld.exe \
-        -D CMAKE_DLLTOOL=/mingw64/bin/dlltool.exe \
-        -D CMAKE_NM=/mingw64/bin/nm.exe \
-        -D CMAKE_PREFIX_PATH=\
-        "${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.SQLPP11_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
-        ${{ env.REPO_PATH }}/3rd-party/lebedev-utils/prefix" \
-        -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-configure.sh"
 
     - name: Build
-      run: cmake --build build --target all
+      run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
 
     - name: Run tests
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         #cd build
         #ctest
         #cd ..
 
     - name: Install Strip
-      run: cmake --install build --prefix install --strip
+      run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --install build --prefix install --strip
 
     - name: Copy required DLL
-      if: ${{ runner.os == 'Windows' }}
       run: |
-        copy "C:\\msys64\\mingw64\\bin\\libstdc++-6.dll"            install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libgcc_s_seh-1.dll"         install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libwinpthread-1.dll"        install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libmariadb.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\Qt5Core.dll"                install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\Qt5Gui.dll"                 install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\Qt5Sql.dll"                 install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\Qt5Widgets.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuin68.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libdouble-conversion.dll"   install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicuuc68.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libzstd.dll"                install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libpcre2-16-0.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libicudt68.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libharfbuzz-0.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libpng16-16.dll"            install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libgraphite2.dll"           install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libglib-2.0-0.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libfreetype-6.dll"          install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libintl-8.dll"              install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libpcre-1.dll"              install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libbrotlidec.dll"           install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libbz2-1.dll"               install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libbrotlicommon.dll"        install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\libiconv-2.dll"             install\\bin
-        copy "C:\\msys64\\mingw64\\bin\\zlib1.dll"                  install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libstdc++-6.dll"            install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libgcc_s_seh-1.dll"         install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libwinpthread-1.dll"        install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libmariadb.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\Qt5Core.dll"                install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\Qt5Gui.dll"                 install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\Qt5Sql.dll"                 install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\Qt5Widgets.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libicuin68.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libdouble-conversion.dll"   install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libicuuc68.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libzstd.dll"                install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libpcre2-16-0.dll"          install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libicudt68.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libharfbuzz-0.dll"          install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libpng16-16.dll"            install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libgraphite2.dll"           install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libglib-2.0-0.dll"          install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libfreetype-6.dll"          install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libintl-8.dll"              install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libpcre-1.dll"              install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libbrotlidec.dll"           install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libbz2-1.dll"               install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libbrotlicommon.dll"        install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libiconv-2.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\zlib1.dll"                  install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\libsasl2-3.dll"             install\\bin
+        copy "C:\\msys64\\${{ matrix.config.msys_variant }}\\bin\\yaml-cpp.dll"               install\\bin
 
     - name: Win Deploy Qt
-      if: ${{ runner.os == 'Windows' }}
-      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -mingw64 -shell sh {0}
+      shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -msys2 -shell sh {0}
       run: |
-        windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
+        /${{ matrix.config.msys_variant }}/bin/windeployqt.exe --dir install/bin install/bin/melon-client-desktop.exe
 
     - name: Upload binaries
-      if: ${{ runner.os == 'Windows' }}
       uses: actions/upload-artifact@v2
       with:
         path: ./install
-        name: ${{ matrix.config.artifact }}
+        name: ${{ matrix.config.artifact }}-${{ matrix.config.msys_variant }}
