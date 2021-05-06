@@ -207,8 +207,8 @@ jobs:
             -D CMAKE_DLLTOOL=/ucrt64/bin/dlltool.exe \
             -D CMAKE_NM=/ucrt64/bin/nm.exe
 
-        cmake --build build --target all
-        cmake --build build --target install
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target install
 
         # utils and asio-utils from cosec-examples
         cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
@@ -231,8 +231,8 @@ jobs:
             -D CMAKE_DLLTOOL=/ucrt64/bin/dlltool.exe \
             -D CMAKE_NM=/ucrt64/bin/nm.exe
 
-        cmake --build build --target all
-        cmake --build build --target install
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
+        ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target install
         cd ${{ env.REPO_PATH }}
 
     # mingw64 packages:
@@ -1000,7 +1000,7 @@ jobs:
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
-      run: cmake --build build --target all
+      run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
 
     - name: Run tests
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -ucrt64 -shell sh {0}
@@ -1010,7 +1010,7 @@ jobs:
         #cd ..
 
     - name: Install Strip
-      run: cmake --install build --prefix install --strip
+      run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --install build --prefix install --strip
 
     - name: Copy required DLL
       if: ${{ runner.os == 'Windows' }}
