@@ -69,6 +69,7 @@ jobs:
         pacman -S --noconfirm mingw-w64-ucrt-x86_64-python-pip
         pip install pyparsing
         pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc
+        pacman -S --noconfirm mingw-w64-ucrt-x86_64-pkg-config
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
