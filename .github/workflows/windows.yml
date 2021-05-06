@@ -70,6 +70,7 @@ jobs:
         pip install pyparsing
         pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc
         pacman -S --noconfirm mingw-w64-ucrt-x86_64-pkg-config
+        pacman -S --noconfirm mingw-w64-ucrt-x86_64-brotli
 
     - name: Ninja and CMake cache
       uses: actions/cache@v2
@@ -1038,7 +1039,9 @@ jobs:
         copy "C:\\msys64\\ucrt64\\bin\\libfreetype-6.dll"          install\\bin
         copy "C:\\msys64\\ucrt64\\bin\\libintl-8.dll"              install\\bin
         copy "C:\\msys64\\ucrt64\\bin\\libpcre-1.dll"              install\\bin
+        copy "C:\\msys64\\ucrt64\\bin\\libbrotlidec.dll"           install\\bin
         copy "C:\\msys64\\ucrt64\\bin\\libbz2-1.dll"               install\\bin
+        copy "C:\\msys64\\ucrt64\\bin\\libbrotlicommon.dll"        install\\bin
         copy "C:\\msys64\\ucrt64\\bin\\libiconv-2.dll"             install\\bin
         copy "C:\\msys64\\ucrt64\\bin\\zlib1.dll"                  install\\bin
 
