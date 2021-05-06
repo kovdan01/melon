@@ -74,14 +74,13 @@ jobs:
     - name: Install required python modules
       run: |
         pip install requests
-        pip install pyparsing
 
     - name: Install MSYS packages
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
       run: |
         pacman -Syu
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
-        pip install pyparsing
+        /${{ matrix.config.msys_variant }}/bin/pip install pyparsing
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}gcc
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}pkg-config
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}brotli
