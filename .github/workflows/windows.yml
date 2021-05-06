@@ -1039,6 +1039,7 @@ jobs:
         copy "C:\\msys64\\mingw64\\bin\\libbrotlicommon.dll"        install\\bin
         copy "C:\\msys64\\mingw64\\bin\\libiconv-2.dll"             install\\bin
         copy "C:\\msys64\\mingw64\\bin\\zlib1.dll"                  install\\bin
+        copy "C:\\msys64\\mingw64\\bin\\yaml-cpp.dll"               install\\bin
 
     - name: Win Deploy Qt
       if: ${{ runner.os == 'Windows' }}
