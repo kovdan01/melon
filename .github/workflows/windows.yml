@@ -332,7 +332,7 @@ jobs:
       id: cache_msgpack
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }}
-        key: ${{ runner.os }}-msgpack-${{ env.MSGPACK_VERSION }}
+        key: ${{ runner.os }}-msgpack-${{ env.MSGPACK_VERSION }}-1
 
     - name: MsgPack
       if: ${{ steps.cache_msgpack.outputs.cache-hit != 'true' }}
@@ -374,6 +374,8 @@ jobs:
         execute_msys_command("tar -xf msgpack.tar.gz")
 
         os.chdir(msgpack_source_dir)
+
+        execute_msys_command("patch -p1 < {}/build-config/patches/msgpack-3.3.0/struct_iovec.patch".format(repo))
 
         execute_msys_command("{} -B build -DCMAKE_BUILD_TYPE=Release -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
                              "-DMSGPACK_CXX17=ON -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF -DBUILD_SHARED_LIBS=ON -DMSGPACK_ENABLE_STATIC=OFF "
