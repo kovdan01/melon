@@ -54,6 +54,16 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
    mysql -u melon -p melon < sql/db_scheme_dump.sql
    ```
 
+9. If you use other database name, username  and etc you can set up environment variable (you do not need them if you use default configurations)
+   
+   DB_USER="melon"
+   DB_PASSWORD="melonpass"
+   DB_DATABASE="melon"
+   DB_HOST="localhost"
+   DB_PORT="3306"
+   
+   
+
 ### Current Database Scheme Details
 
 ![](docs/db_scheme.jpg)
