@@ -23,8 +23,6 @@ class Message;
 
 using id_t = melon::core::id_t;
 
-MELON_STORAGE_ENTITIES_EXPORT std::shared_ptr<sqlpp::mysql::connection_config> config_db();
-
 class MELON_STORAGE_ENTITIES_EXPORT IdNotFoundException : public melon::Exception
 {
 public:

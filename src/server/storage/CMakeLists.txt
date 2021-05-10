@@ -50,7 +50,9 @@ set(STORAGE_ENTITIES_LIB melon-storage-entities)
 
 add_library(${STORAGE_ENTITIES_LIB}
     include/entities.hpp
+    include/config_db.hpp
     src/entities.cpp
+    src/config_db.cpp
 )
 
 target_include_directories(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
