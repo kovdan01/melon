@@ -12,4 +12,4 @@ MELON_STORAGE_ENTITIES_EXPORT std::shared_ptr<sqlpp::mysql::connection_config> c
 
 }  // namespace melon::server::storage
 
-#endif // CONFIG_DB_HPP
+#endif  // CONFIG_DB_HPP
