@@ -55,12 +55,17 @@ Storage service uses MariaDB (community-developed fork of the MySQL relational d
    ```
 
 9. If you use other database name, username  and etc you can set up environment variable (you do not need them if you use default configurations)
-   
+   ```bash
    DB_USER="melon"
+   
    DB_PASSWORD="melonpass"
+   
    DB_DATABASE="melon"
+   
    DB_HOST="localhost"
+   
    DB_PORT="3306"
+   ```
    
    
 
