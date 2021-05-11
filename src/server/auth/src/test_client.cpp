@@ -10,12 +10,8 @@
 
 #include <cassert>
 
-using boost::asio::ip::tcp;
-
-namespace ba = boost::asio;
 namespace mc = melon::core;
 namespace mca = melon::core::auth;
-namespace mcs = melon::core::serialization;
 
 static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
@@ -23,7 +19,7 @@ static bool run_auth(const std::string& ip, const std::string& port, const std::
     // so client's and server's hostnames are the same
     try
     {
-        mca::SaslClientConnection client("melon", ba::ip::host_name());
+        mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
         mc::SyncSession session(ip, port);
 
         mc::StringViewOverBinary supported_mechanisms(session.receive());

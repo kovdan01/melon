@@ -22,7 +22,7 @@ namespace ba = boost::asio;
 #define MELON_CHECK_BA_ERROR_CODE(ec)                       \
     if (ec)                                                 \
     {                                                       \
-        if (ec != ba::error::eof)                           \
+        if ((ec) != ba::error::eof)                         \
             throw boost::system::system_error{ec};          \
         BOOST_LOG_SEV(log(), info) << "Connection closed";  \
         return;                                             \
