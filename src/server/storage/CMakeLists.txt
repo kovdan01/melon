@@ -46,24 +46,26 @@ add_custom_command(
 )
 
 # storage wrappers
-set(STORAGE_ENTITIES_LIB melon-storage-entities)
+set(STORAGE_IMPLEMENTATION_LIB melon-storage-entities)
 
-add_library(${STORAGE_ENTITIES_LIB}
+add_library(${STORAGE_IMPLEMENTATION_LIB}
+    include/config_db.hpp
     include/entities.hpp
+    src/config_db.cpp
     src/entities.cpp
 )
 
-target_include_directories(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
-target_sources(${STORAGE_ENTITIES_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
+target_include_directories(${STORAGE_IMPLEMENTATION_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen)
+target_sources(${STORAGE_IMPLEMENTATION_LIB} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/autogen/melon/db_scheme.h)
 
-target_compile_features(${STORAGE_ENTITIES_LIB} PRIVATE cxx_std_20)
+target_compile_features(${STORAGE_IMPLEMENTATION_LIB} PRIVATE cxx_std_20)
 
-target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC melon::core)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PRIVATE PkgConfig::mariadb)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::sqlpp11)
-target_link_libraries(${STORAGE_ENTITIES_LIB} PUBLIC sqlpp11::connector-mysql)
+target_link_libraries(${STORAGE_IMPLEMENTATION_LIB} PUBLIC melon::core)
+target_link_libraries(${STORAGE_IMPLEMENTATION_LIB} PRIVATE PkgConfig::mariadb)
+target_link_libraries(${STORAGE_IMPLEMENTATION_LIB} PUBLIC sqlpp11::sqlpp11)
+target_link_libraries(${STORAGE_IMPLEMENTATION_LIB} PUBLIC sqlpp11::connector-mysql)
 
-ntc_target(${STORAGE_ENTITIES_LIB}
+ntc_target(${STORAGE_IMPLEMENTATION_LIB}
     ALIAS_NAME melon::storage_entities
     HEADER_PREFIX melon/server/storage/entities/
 )
