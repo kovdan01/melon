@@ -1,5 +1,5 @@
-#ifndef MELON_SERVER_STORAGE_HPP_
-#define MELON_SERVER_STORAGE_HPP_
+#ifndef MELON_SERVER_STORAGE_ENTITIES_HPP_
+#define MELON_SERVER_STORAGE_ENTITIES_HPP_
 
 #include <melon/core/entities.hpp>
 #include <melon/core/exception.hpp>
@@ -22,8 +22,6 @@ class Chat;
 class Message;
 
 using id_t = melon::core::id_t;
-
-MELON_STORAGE_ENTITIES_EXPORT std::shared_ptr<sqlpp::mysql::connection_config> config_db();
 
 class MELON_STORAGE_ENTITIES_EXPORT IdNotFoundException : public melon::Exception
 {
@@ -125,4 +123,4 @@ private:
 
 }  // namespace melon::server::storage
 
-#endif  // MELON_SERVER_STORAGE_HPP_
+#endif  // MELON_SERVER_STORAGE_ENTITIES_HPP_
