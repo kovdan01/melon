@@ -3,9 +3,10 @@
 
 #include <melon/core/exception.hpp>
 #include <melon/core/export.h>
+
+#include <boost/log/trivial.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -117,7 +118,7 @@ parse_one_level_down(const YAML::Node& parent_node,
     }
     catch (const YAML::ParserException& e)
     {
-       std::cerr << "YAML parser error: " << e.what() << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "YAML parser error: " << e.what() << std::endl;
     }
     return {node_res, {missing_res, superfluous_res}};
 }
