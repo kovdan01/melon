@@ -1,5 +1,5 @@
-#ifndef CONFIG_DB_HPP
-#define CONFIG_DB_HPP
+#ifndef MELON_SERVER_STORAGE_CONFIG_DB_HPP_
+#define MELON_SERVER_STORAGE_CONFIG_DB_HPP_
 
 #include <melon/server/storage/entities/export.h>
 
@@ -12,4 +12,4 @@ MELON_STORAGE_ENTITIES_EXPORT std::shared_ptr<sqlpp::mysql::connection_config> c
 
 }  // namespace melon::server::storage
 
-#endif  // CONFIG_DB_HPP
+#endif  // MELON_SERVER_STORAGE_CONFIG_DB_HPP_

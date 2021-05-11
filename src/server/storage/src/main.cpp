@@ -1,5 +1,5 @@
-#include <entities.hpp>
 #include <config_db.hpp>
+#include <entities.hpp>
 
 #include <cassert>
 #include <iostream>

@@ -1,5 +1,5 @@
-#ifndef MELON_SERVER_STORAGE_HPP_
-#define MELON_SERVER_STORAGE_HPP_
+#ifndef MELON_SERVER_STORAGE_ENTITIES_HPP_
+#define MELON_SERVER_STORAGE_ENTITIES_HPP_
 
 #include <melon/core/entities.hpp>
 #include <melon/core/exception.hpp>
@@ -123,4 +123,4 @@ private:
 
 }  // namespace melon::server::storage
 
-#endif  // MELON_SERVER_STORAGE_HPP_
+#endif  // MELON_SERVER_STORAGE_ENTITIES_HPP_
