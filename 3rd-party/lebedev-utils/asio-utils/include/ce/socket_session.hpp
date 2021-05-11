@@ -101,22 +101,22 @@ namespace ce
 
         template<typename... Ts>
         socket_session(Ts&&... args) noexcept
-            : m_stream{executor_type{typename Stream::executor_type{std::forward<Ts>(args)...},*this}}
+            : stream_{executor_type{typename Stream::executor_type{std::forward<Ts>(args)...},*this}}
         {}
 
         stream_t& stream() noexcept
         {
-            return m_stream;
+            return stream_;
         }
 
         void create_logger()
         {
-            this->log_ = make_socket_session_logger(get_socket(m_stream).remote_endpoint());
+            this->log_ = make_socket_session_logger(get_socket(stream_).remote_endpoint());
         }
 
         void start()
         {
-            bae::execute(m_stream.get_executor(),[this_=static_cast<Derived*>(this)]{
+            bae::execute(stream_.get_executor(),[this_=static_cast<Derived*>(this)]{
                 this_->start_protocol();
             });
         }
@@ -124,19 +124,19 @@ namespace ce
         void handle_exception(const std::exception& e) override
         {
             socket_session_base::handle_exception(e);
-            m_stream.close();
+            stream_.close();
         }
     protected:
-        stream_t m_stream;
+        stream_t stream_;
 
         auto executor() noexcept
         {
-            return m_stream.get_executor();
+            return stream_.get_executor();
         }
 
         auto cont_executor() noexcept
         {
-            return ba::prefer(m_stream.get_executor(),bae::relationship.continuation);
+            return ba::prefer(stream_.get_executor(),bae::relationship.continuation);
         }
     };
 }

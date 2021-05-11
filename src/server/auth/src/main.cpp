@@ -1,44 +1,53 @@
-#include <melon/core.hpp>
 #include <melon/core/log_configuration.hpp>
-#include <melon/core/session.hpp>
 #include <sasl_server_wrapper.hpp>
 
+#include <ce/format.hpp>
+#include <ce/io_context_signal_interrupter.hpp>
+#include <ce/spawn.hpp>
+#include <ce/tcp_listener.hpp>
+
+#include <boost/asio/read_until.hpp>
 #include <boost/asio/static_thread_pool.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
 
 #include <exception>
 #include <iostream>
 #include <memory>
-#include <span>
 #include <stdexcept>
 #include <thread>
 
-namespace mc = melon::core;
-namespace mca = melon::core::auth;
-namespace msa = melon::server::auth;
 namespace ba = boost::asio;
+namespace bb = boost::beast;
+namespace bae = boost::asio::execution;
 
-#define MELON_CHECK_BA_ERROR_CODE(ec)                       \
-    if (ec)                                                 \
-    {                                                       \
-        if ((ec) != ba::error::eof)                         \
-            throw boost::system::system_error{ec};          \
-        BOOST_LOG_SEV(log(), info) << "Connection closed";  \
-        return;                                             \
-    }                                                       \
+using socket_executor_t = ba::strand<ba::io_context::executor_type>;
+using tcp_socket = ba::basic_stream_socket<ba::ip::tcp, socket_executor_t>;
+using tcp_stream = bb::basic_stream<ba::ip::tcp,
+                                    socket_executor_t,
+                                    bb::simple_rate_policy>;
 
-class MySaslSession final : public mc::AsyncSession
+class MySaslSession final : public ce::socket_session<MySaslSession, tcp_stream>
 {
+    constexpr static std::size_t NUMBER_LIMIT = 1024,
+                                 BYTES_PER_SECOND_LIMIT = 1024;
+    constexpr static boost::asio::steady_timer::duration TIME_LIMIT = std::chrono::seconds(15);
 public:
     MySaslSession(const ba::io_context::executor_type& ex)
-        : mc::AsyncSession(ex)
+        : socket_session<MySaslSession, tcp_stream>{ex}
     {
-        [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
+        stream_.rate_policy().read_limit(BYTES_PER_SECOND_LIMIT);
     }
 
-    void start_protocol() final
+    void start_protocol()
     {
+        namespace mca = melon::core::auth;
+        namespace msa = melon::server::auth;
+
+        [[maybe_unused]] auto& server_singletone = msa::SaslServerSingleton::get_instance();
         ce::spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
             using namespace boost::log::trivial;
@@ -46,69 +55,80 @@ public:
 
             msa::SaslServerConnection server("melon");
 
-            // TODO:
-            // 1) should ec be passed to all async_* functions?
-            // 2) if yes, should ec be checked after every async_* function?
-
             std::string_view supported_mechanisms = server.list_mechanisms();
-            async_send(supported_mechanisms, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-
-            mc::StringViewOverBinary wanted_mechanism(async_recieve(NUMBER_LIMIT, yc, ec));
-            MELON_CHECK_BA_ERROR_CODE(ec);
-            if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
+            m_out_buf = std::string(supported_mechanisms) + "\n";
+            stream_.expires_after(TIME_LIMIT);
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+            stream_.expires_after(TIME_LIMIT);
+            std::size_t n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+            if (ec)
             {
-                throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. "
-                                         "Supported mechanisms: " + std::string(supported_mechanisms));
+                if (ec != boost::asio::error::eof)
+                    throw boost::system::system_error{ec};
+                BOOST_LOG_SEV(log(), info) << "Connection closed";
+                return;
             }
 
-            async_send(wanted_mechanism.view(), yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
+            std::string wanted_mechanism = read_erase_in_buf(n);
+            if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
+                throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. Supported mechanisms: " + std::string(supported_mechanisms));
+            m_out_buf = wanted_mechanism + "\n";
+            stream_.expires_after(TIME_LIMIT);
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
 
-            auto client_response = async_recieve(NUMBER_LIMIT, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-            auto [server_response, server_completness] = server.start(wanted_mechanism.view(), { client_response.data(), client_response.size() });
-            async_send(server_response, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
+            stream_.expires_after(TIME_LIMIT);
+            n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+            std::string client_response = read_erase_in_buf(n);
+            auto [server_response, server_completness] = server.start(wanted_mechanism, client_response);
+            m_out_buf = std::string(server_response) + '\n';
 
             while (server_completness == mca::AuthState::INCOMPLETE)
             {
-                client_response = async_recieve(NUMBER_LIMIT, yc, ec);
-                MELON_CHECK_BA_ERROR_CODE(ec);
-
-                mca::StepResult server_step_result = server.step({ client_response.data(), client_response.size() });
+                stream_.expires_after(TIME_LIMIT);
+                ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
+                stream_.expires_after(TIME_LIMIT);
+                n = ba::async_read_until(stream_, ba::dynamic_string_buffer{m_in_buf, NUMBER_LIMIT}, '\n', yc[ec], 0);
+                client_response = read_erase_in_buf(n);
+                mca::StepResult server_step_result = server.step(client_response);
                 server_response = server_step_result.response;
                 server_completness = server_step_result.completness;
 
-                if (server_completness != mca::AuthState::COMPLETE)
-                {
-                    async_send(server_response, yc, ec);
-                    MELON_CHECK_BA_ERROR_CODE(ec);
-                }
-
                 if (server_completness != mca::AuthState::INCOMPLETE)
                     break;
+
+                if (server_response.data() != nullptr)
+                    m_out_buf = std::string(server_response) + '\n';
+                else
+                    m_out_buf = "";
             }
             assert(server_completness != mca::AuthState::INCOMPLETE);
 
             switch (server_completness)
             {
             case mca::AuthState::COMPLETE:
-                BOOST_LOG_SEV(log(), info) << "Issued a token";
+                m_out_buf = mca::AuthResultSingleton::get_instance().success() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Issued a token";
                 break;
             case mca::AuthState::USER_NOT_FOUND:
-                BOOST_LOG_SEV(log(), info) << "User not found";
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "User not found";
                 break;
             case mca::AuthState::BAD_PROTOCOL:
-                BOOST_LOG_SEV(log(), info) << "Protocol error";
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Protocol error";
                 break;
             case mca::AuthState::AUTHENTICATION_FAILURE:
-                BOOST_LOG_SEV(log(), info) << "Authentication failure";
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Authentication failure";
                 break;
             case mca::AuthState::AUTHORIZATION_FAILURE:
-                BOOST_LOG_SEV(log(), info) << "Authorization failure";
+                m_out_buf = mca::AuthResultSingleton::get_instance().failure() + '\n';
+                BOOST_LOG_TRIVIAL(info) << "Authorization failure";
                 break;
             }
+
+            stream_.expires_after(TIME_LIMIT);
+            ba::async_write(stream_, ba::buffer(m_out_buf), yc, 0);
 
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
@@ -116,12 +136,25 @@ public:
                 std::rethrow_exception(e);
         }));
     }
+
+private:
+    std::string m_in_buf;
+    std::string m_out_buf;
+
+    // The function copies string read before the delimiter and erases that part of buffer
+    std::string read_erase_in_buf(std::size_t n)
+    {
+        std::string before_separator = std::move(m_in_buf);
+        m_in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
+        before_separator.erase(n - 1,  before_separator.size() - 1);
+        return before_separator;
+    }
 };
 
 int main(int argc, char* argv[]) try
 {
     std::ios_base::sync_with_stdio(false);
-    mc::log::setup();
+    melon::core::log::setup();
 
     try
     {
@@ -167,6 +200,8 @@ int main(int argc, char* argv[]) try
         using namespace boost::log::trivial;
         BOOST_LOG_TRIVIAL(info) << "Using " << threads << " threads.";
 
+        namespace ba = boost::asio;
+
         ba::io_context ctx{int(threads)};
         ce::io_context_signal_interrupter iosi{ctx};
         ce::tcp_listener<MySaslSession, ba::io_context::executor_type> tl{ctx.get_executor(), port};
@@ -174,7 +209,7 @@ int main(int argc, char* argv[]) try
 
         for (unsigned i = 1; i < threads; ++i)
         {
-            ba::execution::execute(tp.get_executor(), [&ctx]{ ctx.run(); });
+            bae::execute(tp.get_executor(), [&ctx]{ ctx.run(); });
         }
         ctx.run();
         return 0;
@@ -187,6 +222,6 @@ int main(int argc, char* argv[]) try
 }
 catch (...)
 {
-    BOOST_LOG_TRIVIAL(fatal) << boost::current_exception_diagnostic_information();
+    std::cerr << '\n' << boost::current_exception_diagnostic_information() << '\n';
     return 1;
 }

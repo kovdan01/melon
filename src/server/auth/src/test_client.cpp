@@ -1,6 +1,4 @@
-#include <melon/core/sasl_client_wrapper.hpp>
-#include <melon/core/serialization.hpp>
-#include <melon/core/session.hpp>
+#include <sasl_server_wrapper.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
@@ -10,54 +8,77 @@
 
 #include <cassert>
 
-namespace mc = melon::core;
+
+using boost::asio::ip::tcp;
+
 namespace mca = melon::core::auth;
 
-static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
+constexpr std::size_t BUFFER_LIMIT = 3000;
+
+std::string get_client_response(const std::string& server_response, mca::SaslClientConnection& conn, int counter)
+{
+    std::string_view response;
+    if (counter == 0)
+        response = conn.start(server_response).response;
+    else
+        response = conn.step(server_response).response;
+    if (response.data() != nullptr)  // -V547
+        return std::string(response);
+    return "";
+}
+
+// The function copies string read before the delimiter and erases that part of buffer
+std::string read_erase_buffered_string(std::size_t n, std::string& in_buf)
+{
+    std::string before_separator = std::move(in_buf);
+    in_buf = std::string(before_separator.c_str() + n + 1, before_separator.size() - n);
+    before_separator.erase(n - 1,  before_separator.size() - 1);
+    return before_separator;
+}
+
+bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
     // Test client is supposed to run on the same computer as server
     // so client's and server's hostnames are the same
-    try
+    mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
+
+    boost::asio::io_context io_context;
+    tcp::resolver resolver(io_context);
+    tcp::socket s(io_context);
+    boost::asio::connect(s, resolver.resolve(ip, port));
+
+    std::string reply, to_send = wanted_mech;
+
+    bool confirmation_recieved = false;
+
+    std::string in_buf;
+    std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
+    read_erase_buffered_string(n, in_buf);
+
+    boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
+
+    n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
+    reply = read_erase_buffered_string(n, in_buf);
+
+    for (int counter = 0; ; ++counter)
     {
-        mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
-        mc::SyncSession session(ip, port);
-
-        mc::StringViewOverBinary supported_mechanisms(session.receive());
-        session.send(wanted_mech);
-
-        mc::StringViewOverBinary mechanism_confirmation(session.receive());
-        // TODO: handle mechanism mismatch
-        assert(mechanism_confirmation.view() == wanted_mech);
-        auto [start_response, selected_mechanism, completness] = client.start(mechanism_confirmation.view());
-        if (completness == mca::AuthState::COMPLETE)
-            return true;
-        assert(selected_mechanism == wanted_mech);
-        session.send(start_response);
-
-        while (completness == mca::AuthState::INCOMPLETE)
+        to_send = get_client_response(reply, client, counter);
+        boost::asio::write(s, boost::asio::buffer(to_send + '\n', to_send.size() + 1));
+        std::size_t n = boost::asio::read_until(s, boost::asio::dynamic_string_buffer{in_buf, BUFFER_LIMIT}, '\n');
+        reply = read_erase_buffered_string(n, in_buf);
+        if (reply == mca::AuthResultSingleton::get_instance().success())
         {
-            mc::buffer_t server_reply = session.receive();
-            mca::StepResult step_result = client.step(server_reply);
-            mc::buffer_view_t step_response = step_result.response;
-            completness = step_result.completness;
-            switch (completness)
-            {
-            case mca::AuthState::COMPLETE:
-                session.send(step_response);
-                return true;
-            case mca::AuthState::INCOMPLETE:
-                session.send(step_response);
-                break;
-            default:
-                return false;
-            }
+            confirmation_recieved = true;
+            break;
         }
-        return false;
+        if (reply == mca::AuthResultSingleton::get_instance().failure())
+        {
+            confirmation_recieved = false;
+            break;
+        }
     }
-    catch (const mca::Exception& e)
-    {
-        return false;
-    }
+    in_buf.erase(0, n);
+    return confirmation_recieved;
 }
 
 TEST_CASE("credential-based tests", "[creds]")
@@ -74,9 +95,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("DIGEST-MD5 mech")
+        SECTION("PLAIN mech")
         {
-            wanted_mech = "DIGEST-MD5";
+            wanted_mech = "PLAIN";
         }
         mca::Credentials credentials = { "john", "doe" };
         client_singletone.set_credentials(&credentials);
@@ -89,9 +110,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("DIGEST-MD5 mech")
+        SECTION("PLAIN mech")
         {
-            wanted_mech = "DIGEST-MD5";
+            wanted_mech = "PLAIN";
         }
         mca::Credentials credentials = { "Igor", "Shcherbakov" };
         client_singletone.set_credentials(&credentials);
@@ -104,9 +125,9 @@ TEST_CASE("credential-based tests", "[creds]")
         {
             wanted_mech = "SCRAM-SHA-256";
         }
-        SECTION("DIGEST-MD5 mech")
+        SECTION("PLAIN mech")
         {
-            wanted_mech = "DIGEST-MD5";
+            wanted_mech = "PLAIN";
         }
         mca::Credentials credentials = { "john", "password" };
         client_singletone.set_credentials(&credentials);
