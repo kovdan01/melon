@@ -1,3 +1,4 @@
+#include <config_db.hpp>
 #include <entities.hpp>
 
 #include <cassert>

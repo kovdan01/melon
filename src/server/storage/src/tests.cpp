@@ -1,4 +1,5 @@
 #include <entities.hpp>
+#include <config_db.hpp>
 
 #include <catch2/catch.hpp>
 
