@@ -70,7 +70,7 @@ enum class AuthState
 
 struct StepResult
 {
-    std::span<const melon::core::byte> response;
+    melon::core::buffer_view_t response;
     AuthState completness;
 };
 
@@ -98,13 +98,13 @@ public:
 
     struct StartResult
     {
-        std::span<const melon::core::byte> response;
+        melon::core::buffer_view_t response;
         std::string_view selected_mechanism;
         AuthState completness;
     };
 
     StartResult start(std::string_view wanted_mech_list);
-    StepResult step(std::span<const melon::core::byte> server_response);
+    StepResult step(std::span<const melon::core::byte_t> server_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
 

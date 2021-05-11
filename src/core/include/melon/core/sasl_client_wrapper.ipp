@@ -119,12 +119,12 @@ inline SaslClientConnection::StartResult SaslClientConnection::start(std::string
     sasl_res res = sasl_client_start(m_conn, wanted_mech_list.data(), nullptr, &out, &len, &selected_mechanism);
     detail::check_sasl_result(res, "client start");
 
-    return { .response = std::span{ reinterpret_cast<const melon::core::byte*>(out), len },
+    return { .response = std::span{ reinterpret_cast<const byte_t*>(out), len },
              .selected_mechanism = selected_mechanism,
              .completness = static_cast<AuthState>(res) };
 }
 
-inline StepResult SaslClientConnection::step(std::span<const melon::core::byte> server_response)
+inline StepResult SaslClientConnection::step(std::span<const byte_t> server_response)
 {
     const char* clientout;
     unsigned clientout_len;
@@ -134,7 +134,7 @@ inline StepResult SaslClientConnection::step(std::span<const melon::core::byte> 
 
     detail::check_sasl_result(res, "client step " + std::to_string(m_step_count));
 
-    return { .response = std::span{ reinterpret_cast<const melon::core::byte*>(clientout), clientout_len },
+    return { .response = std::span{ reinterpret_cast<const byte_t*>(clientout), clientout_len },
              .completness = static_cast<AuthState>(res) };
 }
 

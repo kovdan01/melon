@@ -43,6 +43,7 @@ set(HEADERS
     include/melon/core/sasl_client_wrapper.hpp
     include/melon/core/sasl_client_wrapper.ipp
     include/melon/core/serialization.hpp
+    include/melon/core/session.hpp
     include/melon/core/yaml_config.hpp
 )
 
@@ -65,7 +66,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::headers)
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log)
-target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
+target_link_libraries(${PROJECT_NAME} PUBLIC ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC msgpackc-cxx)

@@ -1,5 +1,6 @@
 #include <melon/core/sasl_client_wrapper.hpp>
 #include <melon/core/serialization.hpp>
+#include <melon/core/session.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
@@ -8,42 +9,13 @@
 #include <catch2/catch.hpp>
 
 #include <cassert>
-#include <span>
 
 using boost::asio::ip::tcp;
 
+namespace ba = boost::asio;
 namespace mc = melon::core;
 namespace mca = melon::core::auth;
 namespace mcs = melon::core::serialization;
-
-constexpr std::size_t BUFFER_LIMIT = 8192;
-
-class MySession
-{
-public:
-    MySession(const std::string& ip, const std::string& port)
-    {
-        boost::asio::connect(m_stream, boost::asio::ip::tcp::resolver{m_io_context}.resolve(ip, port));
-    }
-
-    template <typename What>
-    void send_serialized(const What& what)
-    {
-        m_serializer.serialize_to(m_stream, what);
-    }
-
-    template <typename What>
-    [[nodiscard]] What receive_serialized(std::size_t limit = BUFFER_LIMIT)
-    {
-        auto data = m_serializer.deserialize_from<decltype(m_stream), std::vector<mc::byte>>(m_stream, limit);
-        return data;
-    }
-
-private:
-    boost::asio::io_context m_io_context;
-    boost::asio::ip::tcp::socket m_stream{m_io_context};
-    mcs::Serializer m_serializer{};
-};
 
 static bool run_auth(const std::string& ip, const std::string& port, const std::string& wanted_mech)
 {
@@ -51,34 +23,34 @@ static bool run_auth(const std::string& ip, const std::string& port, const std::
     // so client's and server's hostnames are the same
     try
     {
-        mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
-        MySession session(ip, port);
+        mca::SaslClientConnection client("melon", ba::ip::host_name());
+        mc::SyncSession session(ip, port);
 
-        mcs::StringViewOverBinary supported_mechanisms(session.receive_serialized<std::vector<mc::byte>>());
-        session.send_serialized(wanted_mech);
+        mc::StringViewOverBinary supported_mechanisms(session.receive());
+        session.send(wanted_mech);
 
-        mcs::StringViewOverBinary mechanism_confirmation(session.receive_serialized<std::vector<mc::byte>>());
+        mc::StringViewOverBinary mechanism_confirmation(session.receive());
         // TODO: handle mechanism mismatch
         assert(mechanism_confirmation.view() == wanted_mech);
         auto [start_response, selected_mechanism, completness] = client.start(mechanism_confirmation.view());
         if (completness == mca::AuthState::COMPLETE)
             return true;
         assert(selected_mechanism == wanted_mech);
-        session.send_serialized(start_response);
+        session.send(start_response);
 
         while (completness == mca::AuthState::INCOMPLETE)
         {
-            auto server_reply = session.receive_serialized<std::vector<mc::byte>>();
+            mc::buffer_t server_reply = session.receive();
             mca::StepResult step_result = client.step(server_reply);
-            std::span<const mc::byte> step_response = step_result.response;
+            mc::buffer_view_t step_response = step_result.response;
             completness = step_result.completness;
             switch (completness)
             {
             case mca::AuthState::COMPLETE:
-                session.send_serialized(step_response);
+                session.send(step_response);
                 return true;
             case mca::AuthState::INCOMPLETE:
-                session.send_serialized(step_response);
+                session.send(step_response);
                 break;
             default:
                 return false;
