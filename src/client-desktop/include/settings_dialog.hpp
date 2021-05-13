@@ -1,5 +1,5 @@
-#ifndef SETTINGS_DIALOG_HPP
-#define SETTINGS_DIALOG_HPP
+#ifndef MELON_CLIENT_DESKTOP_SETTINGS_DIALOG_HPP_
+#define MELON_CLIENT_DESKTOP_SETTINGS_DIALOG_HPP_
 
 #include <ui_settings_dialog.h>
 
@@ -36,11 +36,11 @@ private:
     void load_current_settings(QWidget* tab);
     void current_tab_changed(int);
 
-    QSet<QWidget* > m_visited_tabs;
+    QSet<QWidget*> m_visited_tabs;
 
     Ui::SettingsDialog* m_ui;
 };
 
 }  // namespace melon::client_desktop
 
-#endif // SETTINGS_DIALOG_HPP
+#endif // MELON_CLIENT_DESKTOP_SETTINGS_DIALOG_HPP_

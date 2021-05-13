@@ -6,7 +6,6 @@
 #include <QFontComboBox>
 #include <QDialog>
 
-// For Log
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -55,7 +54,7 @@ void SettingsDialog::applied()
         {
             UserConfigSingletone::Appearance& app = config.appearance();
 
-            auto* font_box = tab->findChild<QComboBox* >(QStringLiteral("FontComboBox"));
+            auto* font_box = tab->findChild<QComboBox*>(QStringLiteral("FontComboBox"));
             QString font_family = font_box->currentText();
             app.set_font_family_common(font_family);
             BOOST_LOG_TRIVIAL(info) << "Now font family is " << config.appearance().chat_name_font_params().family.toStdString();
@@ -77,17 +76,17 @@ void SettingsDialog::applied()
         {
             UserConfigSingletone::Behaviour& behav = config.behaviour();
 
-            auto* white_check_box = tab->findChild<QCheckBox* >(QStringLiteral("RemoveWhiteCheckBox"));
+            auto* white_check_box = tab->findChild<QCheckBox*>(QStringLiteral("RemoveWhiteCheckBox"));
             bool is_check = white_check_box->isChecked();
             BOOST_LOG_TRIVIAL(info) << "Now remove_white_around is " << is_check;
             behav.set_remove_whitespaces_around(is_check);
 
-            auto* enter_to_send_button = tab->findChild<QRadioButton* >(QStringLiteral("EnterToSendButton"));
+            auto* enter_to_send_button = tab->findChild<QRadioButton*>(QStringLiteral("EnterToSendButton"));
             is_check = enter_to_send_button->isChecked();
             BOOST_LOG_TRIVIAL(info) << "Enter to send message? " << is_check;
             behav.set_send_message_by_enter(is_check);
 
-            auto* replace_hyphens_check_box = tab->findChild<QCheckBox* >(QStringLiteral("ReplaceHyphensCheckBox"));
+            auto* replace_hyphens_check_box = tab->findChild<QCheckBox*>(QStringLiteral("ReplaceHyphensCheckBox"));
             is_check = replace_hyphens_check_box->isChecked();
             BOOST_LOG_TRIVIAL(info) << "Replace hyphens? " << is_check;
             behav.set_replace_hyphens(is_check);
@@ -148,16 +147,16 @@ void SettingsDialog::load_current_settings(QWidget* tab)
         auto& config = UserConfigSingletone::get_instance();
         UserConfigSingletone::Behaviour& behav = config.behaviour();
 
-        auto* white_check_box = tab->findChild<QCheckBox* >(QStringLiteral("RemoveWhiteCheckBox"));
+        auto* white_check_box = tab->findChild<QCheckBox*>(QStringLiteral("RemoveWhiteCheckBox"));
         white_check_box->setChecked(behav.remove_whitespaces_around());
         BOOST_LOG_TRIVIAL(info) << "[loading settings] remove_whitespaces_around is " << behav.remove_whitespaces_around();
 
-        auto* enter_to_send_button = tab->findChild<QRadioButton* >(QStringLiteral("EnterToSendButton"));
-        auto* send_to_send_button = tab->findChild<QRadioButton* >(QStringLiteral("SendToSendButton"));
+        auto* enter_to_send_button = tab->findChild<QRadioButton*>(QStringLiteral("EnterToSendButton"));
+        auto* send_to_send_button = tab->findChild<QRadioButton*>(QStringLiteral("SendToSendButton"));
         bool is_enter_to_send = behav.send_message_by_enter();
         BOOST_LOG_TRIVIAL(info) << "[loading settings] enter to send message? " << behav.send_message_by_enter();
 
-        auto* replace_hyphens_check_box = tab->findChild<QCheckBox* >(QStringLiteral("ReplaceHyphensCheckBox"));
+        auto* replace_hyphens_check_box = tab->findChild<QCheckBox*>(QStringLiteral("ReplaceHyphensCheckBox"));
         replace_hyphens_check_box->setChecked(behav.replace_hyphens());
 
         enter_to_send_button->setChecked(is_enter_to_send);

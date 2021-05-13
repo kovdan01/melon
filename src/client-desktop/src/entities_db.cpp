@@ -1,7 +1,6 @@
 #include <entities_db.hpp>
 #include <storage_singletones.hpp>
 
-// For Log
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -149,6 +148,12 @@ void User::remove_from_db()
                          QStringLiteral(" and domain_id=") + QString::number(this->domain_id());
 
     exec_and_check_qtsql_query(qry, qry_string, "Deleting user");
+}
+
+[[nodiscard]] QString User::full_name() const noexcept
+{
+    Domain sender_domain(this->domain_id());
+    return this->username() + QStringLiteral("@") + sender_domain.hostname();
 }
 
 void User::set_full_name()

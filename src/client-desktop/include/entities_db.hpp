@@ -50,7 +50,7 @@ public:
 
     void remove_from_db();
 
-    [[nodiscard]] const QString& full_name() const noexcept;
+    [[nodiscard]] QString full_name() const noexcept;
 
 private:
     QString m_full_name;

@@ -7,7 +7,6 @@
 #include <QFont>
 #include <QString>
 
-// For Log
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -44,31 +43,31 @@ public:
         enum class FontSize
         {
             SMALL,
-            STANDART,
+            STANDARD,
             BIG
         };
 
         // Getters
 
         [[nodiscard]] FontSize message_font_size() const;
-        [[nodiscard]] FontParams sender_font_params() const;
-        [[nodiscard]] FontParams message_text_font_params() const;
-        [[nodiscard]] FontParams timestamp_font_params() const;
+        [[nodiscard]] const FontParams& sender_font_params() const;
+        [[nodiscard]] const FontParams& message_text_font_params() const;
+        [[nodiscard]] const FontParams& timestamp_font_params() const;
 
         [[nodiscard]] const QColor& receive_message_color() const;
         [[nodiscard]] const QColor& sended_message_color() const;
 
         [[nodiscard]] FontSize chatlist_font_size() const;
-        [[nodiscard]] FontParams chat_name_font_params() const;
-        [[nodiscard]] FontParams chat_timestamp_font_params() const;
-        [[nodiscard]] FontParams last_message_font_params() const;
-        [[nodiscard]] FontParams last_message_sender_font_params() const;
-        [[nodiscard]] FontParams unread_counter_font_params() const;
+        [[nodiscard]] const FontParams& chat_name_font_params() const;
+        [[nodiscard]] const FontParams& chat_timestamp_font_params() const;
+        [[nodiscard]] const FontParams& last_message_font_params() const;
+        [[nodiscard]] const FontParams& last_message_sender_font_params() const;
+        [[nodiscard]] const FontParams& unread_counter_font_params() const;
 
         [[nodiscard]] QColor selected_chat_color() const;
         [[nodiscard]] QColor unread_background_color() const;
 
-        [[nodiscard]] QString font_family() const;
+        [[nodiscard]] const QString& font_family() const;
 
         // Setters
 

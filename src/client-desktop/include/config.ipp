@@ -3,17 +3,17 @@ namespace melon::client_desktop
 
 using user_ap = UserConfigSingletone::Appearance;
 
-[[nodiscard]] inline user_ap::FontParams user_ap::sender_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::sender_font_params() const
 {
     return m_sender_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::message_text_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::message_text_font_params() const
 {
     return m_message_text_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::timestamp_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::timestamp_font_params() const
 {
     return m_timestamp_font_params;
 }
@@ -28,27 +28,27 @@ using user_ap = UserConfigSingletone::Appearance;
     return m_sended_message_color;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::chat_name_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::chat_name_font_params() const
 {
     return m_chat_name_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::chat_timestamp_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::chat_timestamp_font_params() const
 {
     return m_chat_timestamp_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::last_message_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::last_message_font_params() const
 {
     return m_last_message_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::unread_counter_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::unread_counter_font_params() const
 {
     return m_unread_counter_font_params;
 }
 
-[[nodiscard]] inline user_ap::FontParams user_ap::last_message_sender_font_params() const
+[[nodiscard]] inline const user_ap::FontParams& user_ap::last_message_sender_font_params() const
 {
     return m_last_message_sender_font_params;
 }
@@ -63,7 +63,7 @@ using user_ap = UserConfigSingletone::Appearance;
     return m_unread_background_color;
 }
 
-[[nodiscard]] inline QString user_ap::font_family() const
+[[nodiscard]] inline const QString& user_ap::font_family() const
 {
     return m_font_family;
 }

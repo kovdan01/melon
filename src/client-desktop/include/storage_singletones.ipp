@@ -56,12 +56,12 @@ inline StorageSingletone::chat_handle_t StorageSingletone::delete_chat(StorageSi
     return instance;
 }
 
-[[nodiscard]] inline QString StorageNameSingletone::db_name()
+[[nodiscard]] inline const QString& StorageNameSingletone::db_name()
 {
     return m_db_name;
 }
 
-[[nodiscard]] inline std::string StorageNameSingletone::user_settings_file_name()
+[[nodiscard]] inline const std::string& StorageNameSingletone::user_settings_file_name()
 {
     return m_user_settings_file_name;
 }

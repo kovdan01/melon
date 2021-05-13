@@ -74,4 +74,11 @@ DBSingletone::DBSingletone()
     m_another_user = User(QStringLiteral("SomeSender"), 1, User::Status::ONLINE);
 }
 
+StorageNameSingletone::StorageNameSingletone()
+{
+    std::filesystem::path m_config_path = std::filesystem::path(std::getenv("HOME")) / ".melon";
+    m_db_name = QString::fromStdString((m_config_path / "test_db").string());
+    m_user_settings_file_name = (m_config_path / "user_config.yaml").string();
+}
+
 }  // namespace melon::client_desktop

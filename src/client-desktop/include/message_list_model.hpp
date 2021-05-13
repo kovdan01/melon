@@ -34,11 +34,11 @@ public:
 
     enum MyRoles
     {
-        MessageTextRole = Qt::UserRole + 0,  // NOLINT (readability-identifier-naming)
-        MessageTimestampRole = Qt::UserRole + 1,  // NOLINT (readability-identifier-naming)
+        MessageTextRole = Qt::UserRole + 0,                 // NOLINT (readability-identifier-naming)
+        MessageTimestampRole = Qt::UserRole + 1,            // NOLINT (readability-identifier-naming)
         AreIconAndSendernameNeededRole = Qt::UserRole + 2,  // NOLINT (readability-identifier-naming)
-        IsEditRole = Qt::UserRole + 3,  // NOLINT (readability-identifier-naming)        
-        RepaintRole = Qt::UserRole + 4,  // NOLINT (readability-identifier-naming)
+        IsEditRole = Qt::UserRole + 3,                      // NOLINT (readability-identifier-naming)
+        RepaintRole = Qt::UserRole + 4,                     // NOLINT (readability-identifier-naming)
     };
 
 private:

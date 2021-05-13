@@ -2,6 +2,7 @@
 #define MELON_CLIENT_DESKTOP_STORAGE_SINGLETONES_HPP_
 
 #include <entities_db.hpp>
+#include <filesystem>
 
 namespace melon::client_desktop
 {
@@ -64,14 +65,14 @@ public:
     StorageNameSingletone(StorageNameSingletone&&) = delete;
     StorageNameSingletone& operator=(StorageNameSingletone&&) = delete;
 
-    [[nodiscard]] QString db_name();
-    [[nodiscard]] std::string user_settings_file_name();
+    [[nodiscard]] const QString& db_name();
+    [[nodiscard]] const std::string& user_settings_file_name();
 
 private:
-    QString m_db_name = QStringLiteral("test_db");
-    std::string m_user_settings_file_name = "user_config.yaml";
+    QString m_db_name;
+    std::string m_user_settings_file_name;
 
-    StorageNameSingletone() = default;
+    StorageNameSingletone();
 };
 
 }  // namespace melon::client_desktop
