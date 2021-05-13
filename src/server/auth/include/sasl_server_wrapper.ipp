@@ -36,28 +36,28 @@ inline SaslServerConnection::~SaslServerConnection()
     return { data, plen };
 }
 
-inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mechanism, std::string_view client_initial_response)
+inline mca::StepResult SaslServerConnection::start(std::string_view chosen_mechanism, std::span<const melon::core::byte_t> client_initial_response)
 {
     const char* serverout;
     unsigned serverout_len;
-    mca::sasl_res res = sasl_server_start(m_conn, chosen_mechanism.data(), client_initial_response.data(),
+    mca::sasl_res res = sasl_server_start(m_conn, chosen_mechanism.data(), reinterpret_cast<const char*>(client_initial_response.data()),
                                      static_cast<unsigned>(client_initial_response.size()), &serverout, &serverout_len);
     mca::detail::check_sasl_result(res, "server start");
 
-    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthState>(res) };
+    return { .response = std::span{ reinterpret_cast<const melon::core::byte_t*>(serverout), serverout_len }, .completness = static_cast<mca::AuthState>(res) };
 }
 
 
-inline mca::StepResult SaslServerConnection::step(std::string_view client_response)
+inline mca::StepResult SaslServerConnection::step(std::span<const melon::core::byte_t> client_response)
 {
     const char* serverout;
     unsigned serverout_len;
-    mca::sasl_res res = sasl_server_step(m_conn, client_response.data(), static_cast<unsigned>(client_response.size()), &serverout, &serverout_len);
+    mca::sasl_res res = sasl_server_step(m_conn, reinterpret_cast<const char*>(client_response.data()), static_cast<unsigned>(client_response.size()), &serverout, &serverout_len);
     ++m_step_count;
 
     mca::detail::check_sasl_result(res, "server step" + std::to_string(m_step_count));
 
-    return { .response = { serverout, serverout_len }, .completness = static_cast<mca::AuthState>(res) };
+    return { .response = std::span{ reinterpret_cast<const melon::core::byte_t*>(serverout), serverout_len }, .completness = static_cast<mca::AuthState>(res) };
 }
 
 [[nodiscard]] inline const sasl_conn_t* SaslServerConnection::conn() const

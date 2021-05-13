@@ -24,7 +24,7 @@ find_package(ce-utils REQUIRED)
 find_package(asio-utils REQUIRED)
 
 # message pack
-# find_package(msgpack REQUIRED)
+find_package(msgpack REQUIRED)
 
 # thread support
 set(THREADS_PREFER_PTHERAD_FLAG ON)
@@ -42,6 +42,8 @@ set(HEADERS
     include/melon/core/log_configuration.hpp
     include/melon/core/sasl_client_wrapper.hpp
     include/melon/core/sasl_client_wrapper.ipp
+    include/melon/core/serialization.hpp
+    include/melon/core/session.hpp
     include/melon/core/yaml_config.hpp
 )
 
@@ -50,6 +52,7 @@ set(SOURCES
     src/jni_tests.cpp
     src/log_configuration.cpp
     src/melon_core.cpp
+    src/serialization.cpp
     src/yaml_config.cpp
 )
 
@@ -61,9 +64,12 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
-target_link_libraries(${PROJECT_NAME} PRIVATE ce::asio-utils)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::headers)
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::log)
+target_link_libraries(${PROJECT_NAME} PUBLIC ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC msgpackc-cxx)
 
 ntc_target(${PROJECT_NAME}
     ALIAS_NAME melon::core
