@@ -283,7 +283,7 @@ void parse_settings_behaviour(const std::string& title, const YAML::Node& node)
         else if (title == "replace_hyphens")
             user_behav.set_replace_hyphens(node2.as<bool>());
         else
-            throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
+            throw meco::yaml_conf::UnknownParamsException("Parsing logic failure");
     }
 }
 
@@ -375,7 +375,7 @@ void parse_settings_appearance(const std::string& title, const YAML::Node& node)
         }
 
         else
-            throw std::runtime_error("Parsing logic failure");  // Something went really wrong, let's throw an exception...
+            throw meco::yaml_conf::UnknownParamsException("Parsing logic failure");
     }
 }
 
@@ -384,7 +384,7 @@ static void parameter_abnormalities_reaction(const std::vector<std::string>& mis
     if (!missing_params.empty())
         throw meco::yaml_conf::MissingParamsException("missing required params at " + where);
     if (!superfluous_params.empty())
-        throw meco::yaml_conf::ExtraParamsException("extra params at " + where);
+        throw meco::yaml_conf::UnknownParamsException("extra params at " + where);
 }
 
 

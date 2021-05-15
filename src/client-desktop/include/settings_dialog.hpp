@@ -34,7 +34,7 @@ private:
     void closeEvent(QCloseEvent* event) override;
     void applied();
     void load_current_settings(QWidget* tab);
-    void current_tab_changed(int);
+    void current_tab_changed(int /*new_tab_index*/);
 
     QSet<QWidget*> m_visited_tabs;
 

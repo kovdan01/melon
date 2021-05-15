@@ -72,7 +72,7 @@ private:
     QString m_db_name;
     std::string m_user_settings_file_name;
 
-    StorageNameSingletone();
+    StorageNameSingletone();  // NOLINT (modernize-use-equals-delete)
 };
 
 }  // namespace melon::client_desktop

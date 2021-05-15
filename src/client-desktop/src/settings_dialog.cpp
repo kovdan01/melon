@@ -125,7 +125,7 @@ void SettingsDialog::load_current_settings(QWidget* tab)
     {
         auto& config = UserConfigSingletone::get_instance();
         UserConfigSingletone::Appearance& app = config.appearance();
-        QString cur_font_family = app.font_family();
+        const QString& cur_font_family = app.font_family();
         auto* font_combobox = tab->findChild<QComboBox*>(QStringLiteral("FontComboBox"));
         font_combobox->setCurrentText(cur_font_family);
 
@@ -164,7 +164,7 @@ void SettingsDialog::load_current_settings(QWidget* tab)
     }
 }
 
-void SettingsDialog::current_tab_changed(int)
+void SettingsDialog::current_tab_changed(int /*new_tab_index*/)
 {
     BOOST_LOG_TRIVIAL(info) << "Tab changed!";
 

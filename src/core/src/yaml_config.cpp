@@ -3,7 +3,7 @@
 namespace melon::core::yaml_conf
 {
 
-ExtraParamsException::~ExtraParamsException() = default;
+UnknownParamsException::~UnknownParamsException() = default;
 MissingParamsException::~MissingParamsException() = default;
 
 }  // namespace melon::core::yaml_conf
