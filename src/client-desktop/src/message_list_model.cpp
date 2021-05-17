@@ -59,7 +59,7 @@ bool MessageListModel::setData(const QModelIndex& index, const QVariant& value, 
             this->set_message_in_ram_storage(index, value.toString());
             emit dataChanged(index, index);
             return true;
-        case MyRoles::IsEditRole:
+        case MyRoles::RepaintRole:
             emit dataChanged(index, index);
             return true;
         default:

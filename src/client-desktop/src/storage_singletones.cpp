@@ -7,7 +7,7 @@ DBSingletone::DBSingletone()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
 
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
     QString db_name = storage.db_name();
 
     db.setDatabaseName(db_name);
@@ -72,6 +72,13 @@ DBSingletone::DBSingletone()
     m_my_domain = Domain(QStringLiteral("melon"), false);
     m_me = User(QStringLiteral("MelonUser"), 1, User::Status::ONLINE);
     m_another_user = User(QStringLiteral("SomeSender"), 1, User::Status::ONLINE);
+}
+
+StorageNameSingletone::StorageNameSingletone()
+{
+    std::filesystem::path m_config_path = std::filesystem::path(std::getenv("HOME")) / ".melon";
+    m_db_name = QString::fromStdString((m_config_path / "test_db").string());
+    m_user_settings_file_name = (m_config_path / "user_config.yaml").string();
 }
 
 }  // namespace melon::client_desktop

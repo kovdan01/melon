@@ -2,6 +2,7 @@
 #define MELON_CLIENT_DESKTOP_STORAGE_SINGLETONES_HPP_
 
 #include <entities_db.hpp>
+#include <filesystem>
 
 namespace melon::client_desktop
 {
@@ -54,22 +55,24 @@ private:
     DBSingletone();  // NOLINT (modernize-use-equals-delete)
 };
 
-class DBNameSingletone
+class StorageNameSingletone
 {
 public:
-    [[nodiscard]] static DBNameSingletone& get_instance();
+    [[nodiscard]] static StorageNameSingletone& get_instance();
 
-    DBNameSingletone(const DBNameSingletone&) = delete;
-    DBNameSingletone& operator=(const DBNameSingletone&) = delete;
-    DBNameSingletone(DBNameSingletone&&) = delete;
-    DBNameSingletone& operator=(DBNameSingletone&&) = delete;
+    StorageNameSingletone(const StorageNameSingletone&) = delete;
+    StorageNameSingletone& operator=(const StorageNameSingletone&) = delete;
+    StorageNameSingletone(StorageNameSingletone&&) = delete;
+    StorageNameSingletone& operator=(StorageNameSingletone&&) = delete;
 
-    [[nodiscard]] QString db_name();
+    [[nodiscard]] const QString& db_name();
+    [[nodiscard]] const std::string& user_settings_file_name();
 
 private:
-    QString m_db_name = QStringLiteral("test_db");
+    QString m_db_name;
+    std::string m_user_settings_file_name;
 
-    DBNameSingletone() = default;
+    StorageNameSingletone();  // NOLINT (modernize-use-equals-delete)
 };
 
 }  // namespace melon::client_desktop

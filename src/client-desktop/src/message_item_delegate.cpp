@@ -19,28 +19,7 @@ namespace melon::client_desktop
 MessageItemDelegate::MessageItemDelegate(QObject* parent)
     : QStyledItemDelegate{parent}
 {
-    const auto& user_config = UserConfigSingletone::get_instance();
-    const UserConfigSingletone::Appearance& user_ap = user_config.appearance();
-
-    m_sender_font       = { user_ap.sender_font_params().family,
-                            user_ap.sender_font_params().size,
-                            user_ap.sender_font_params().weight };
-
-    m_message_text_font = { user_ap.message_text_font_params().family,
-                            user_ap.message_text_font_params().size,
-                            user_ap.message_text_font_params().weight };
-
-    m_timestamp_font    = { user_ap.timestamp_font_params().family,
-                            user_ap.timestamp_font_params().size,
-                            user_ap.timestamp_font_params().weight };
-
-
-    m_fm_sender = QFontMetrics(m_sender_font);
-    m_fm_message_text = QFontMetrics(m_message_text_font);
-    m_fm_timestamp = QFontMetrics(m_timestamp_font);
-
-    m_sended_message_color = user_ap.sended_message_color();
-    m_receive_message_color = user_ap.receive_message_color();
+    this->update_settings();
 
     const auto& dev_config = DevelopConfigSingletone::get_instance();
     const DevelopConfigSingletone::Appearance& dev_ap = dev_config.appearance();
@@ -239,6 +218,33 @@ QSize MessageItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
 
     const auto* p = qobject_cast<QListView*>(this->parent());
     return QSize(p->viewport()->size().width(), row_height);
+}
+
+void MessageItemDelegate::update_settings()
+{
+    BOOST_LOG_TRIVIAL(info) << "Updating message item delegate";
+    const auto& user_config = UserConfigSingletone::get_instance();
+    const UserConfigSingletone::Appearance& user_ap = user_config.appearance();
+
+    m_sender_font       = { user_ap.sender_font_params().family,
+                            user_ap.sender_font_params().size,
+                            user_ap.sender_font_params().weight };
+
+    m_message_text_font = { user_ap.message_text_font_params().family,
+                            user_ap.message_text_font_params().size,
+                            user_ap.message_text_font_params().weight };
+
+    m_timestamp_font    = { user_ap.timestamp_font_params().family,
+                            user_ap.timestamp_font_params().size,
+                            user_ap.timestamp_font_params().weight };
+
+
+    m_fm_sender = QFontMetrics(m_sender_font);
+    m_fm_message_text = QFontMetrics(m_message_text_font);
+    m_fm_timestamp = QFontMetrics(m_timestamp_font);
+
+    m_sended_message_color = user_ap.sended_message_color();
+    m_receive_message_color = user_ap.receive_message_color();
 }
 
 QString MessageItemDelegate::date_number_handler(const int& num) const
