@@ -3,6 +3,8 @@
 #include <melon/core/session.hpp>
 #include <sasl_server_wrapper.hpp>
 
+#include <ce/tcp_listener.hpp>
+
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
