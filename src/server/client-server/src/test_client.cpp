@@ -17,12 +17,15 @@ int main()
     const std::string port = "6667";
     mc::SyncSession session(ip, port);
     std::string to_send, to_recieve;
+    uint64_t uintosend;
     for(;;)
     {
         std::cin >> to_send;
-        session.send(to_send);
-        to_recieve = session.receive<std::string>();
-        std::cout << to_recieve << std::endl;
+        session.send<std::string>(to_send);
+        std::cin >> uintosend;
+        session.send(uintosend);
+        std::cin >> uintosend;
+        session.send(uintosend);
     }
 
     return 0;

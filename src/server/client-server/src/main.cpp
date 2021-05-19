@@ -36,6 +36,8 @@ struct Token
     {
         token = mt();
     }
+    Token(token_t tok, std::time_t tick) : token(tok), timestamp(tick){}
+
     token_t token;
     std::time_t timestamp;
     bool friend operator==(const Token& lhs, const Token& rhs) noexcept;
@@ -45,7 +47,7 @@ private:
 
 bool operator==(const Token& lhs, const Token& rhs) noexcept
 {
-    return lhs.token == rhs.token && lhs.timestamp == rhs.timestamp;
+    return lhs.token == rhs.token;
 }
 
 template<>
@@ -84,19 +86,34 @@ public:
             using namespace boost::log::trivial;
             boost::system::error_code ec;
 
-            mc::StringViewOverBinary session_username(async_recieve(NUMBER_LIMIT, yc, ec));
-            auto session_domain_id = async_recieve<id_t>(NUMBER_LIMIT, yc, ec);
-            //mc::User session_user;
+            //test user, igor@42
+            mc::User tu("igor\0", 42);
+            tu.set_status(mc::User::Status::OFFLINE);
+            tu.set_user_id(0);
+            Token tt(43, 1000);
+            g_session_tracker.insert({tu, {tt}});
+
+
+            auto session_username = async_recieve<std::string>(NUMBER_LIMIT, yc, ec);
+            auto session_domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
+            mc::User session_user("session_username", session_domain_id);
+            session_user.set_status(mc::User::Status::OFFLINE);
+            session_user.set_user_id(0);
+
             auto token = async_recieve<token_t>(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
-            //auto it = g_session_tracker.find(session_user);
-            if (1)//it != g_session_tracker.end() && std::find_if(*it.begin(), *it.end(), [&](Token const& t){ return t.token == token;}) != *it.end())
+            BOOST_LOG_TRIVIAL(info) << (session_user == tu);//For some reason I can't recieve a class to be equal to one that I recieve
+            auto it = g_session_tracker.find(session_user);
+            if (it != g_session_tracker.end() && std::find_if(it->second.begin(), it->second.end(),
+                                                              [&](Token const& t){ return t.token == token;}) != it->second.end())
             {
-                /// Token is good, token is nice
+                // Token is good, token is nice
+                BOOST_LOG_TRIVIAL(info) << "Recieved nice token";
             }
             else
             {
-                /// No token? That's problematic sweetie
+                // No token? That's problematic sweetie
+                BOOST_LOG_TRIVIAL(info) << "Giving a token";
             }
             /*
             if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
