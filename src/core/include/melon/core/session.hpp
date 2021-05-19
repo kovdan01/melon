@@ -93,7 +93,7 @@ public:
     template <typename What = buffer_t>
     [[nodiscard]] What receive(std::size_t limit = BUFFER_LIMIT)
     {
-        return m_serializer.deserialize_from(m_stream, limit);
+        return m_serializer.deserialize_from<What>(m_stream, limit);
     }
 
 private:
