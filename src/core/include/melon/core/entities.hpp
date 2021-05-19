@@ -85,8 +85,6 @@ public:
 
     void set_status(Status status) noexcept;
 
-    bool friend operator==(const User &lhs, const User &rhs) noexcept;
-
 protected:
     // Corresponding constructors in derived classes must
     // initialize all members that are not set here

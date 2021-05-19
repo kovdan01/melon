@@ -28,13 +28,15 @@
 namespace mc = melon::core;
 namespace ba = boost::asio;
 
+using token_t = std::uint64_t;
+
 struct Token
 {
     Token() : timestamp(std::time(nullptr)), mt(std::time(nullptr))
     {
         token = mt();
     }
-    std::uint64_t token;
+    token_t token;
     std::time_t timestamp;
     bool friend operator==(const Token& lhs, const Token& rhs) noexcept;
 private:
@@ -56,7 +58,7 @@ struct std::hash<Token>
 };
 
 
-std::unordered_map<melon::core::User, std::unordered_set<Token>> g_session_tracker;
+std::unordered_map<mc::User, std::unordered_set<Token>> g_session_tracker;
 
 #define MELON_CHECK_BA_ERROR_CODE(ec)                       \
     if (ec)                                                 \
@@ -79,21 +81,24 @@ public:
     {
         ce::spawn(this->executor(), [this, s=shared_from_this()](auto yc)
         {
-            /*using namespace boost::log::trivial;
+            using namespace boost::log::trivial;
             boost::system::error_code ec;
 
-            msa::SaslServerConnection server("melon");
-
-            // TODO:
-            // 1) should ec be passed to all async_* functions?
-            // 2) if yes, should ec be checked after every async_* function?
-
-            std::string_view supported_mechanisms = server.list_mechanisms();
-            async_send(supported_mechanisms, yc, ec);
+            mc::StringViewOverBinary session_username(async_recieve(NUMBER_LIMIT, yc, ec));
+            auto session_domain_id = async_recieve<id_t>(NUMBER_LIMIT, yc, ec);
+            //mc::User session_user;
+            auto token = async_recieve<token_t>(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
-
-            mc::StringViewOverBinary wanted_mechanism(async_recieve(NUMBER_LIMIT, yc, ec));
-            MELON_CHECK_BA_ERROR_CODE(ec);
+            //auto it = g_session_tracker.find(session_user);
+            if (1)//it != g_session_tracker.end() && std::find_if(*it.begin(), *it.end(), [&](Token const& t){ return t.token == token;}) != *it.end())
+            {
+                /// Token is good, token is nice
+            }
+            else
+            {
+                /// No token? That's problematic sweetie
+            }
+            /*
             if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
             {
                 throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. "

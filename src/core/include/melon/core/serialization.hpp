@@ -136,7 +136,7 @@ public:
         ba::async_write(to, ba::buffer(m_out_sbuf.data(), m_out_sbuf.size()), yc[ec]);
     }
 
-    template <typename Stream, typename What = buffer_t, typename YieldContext>
+    template <typename What = buffer_t, typename Stream, typename YieldContext>
     [[nodiscard]] What async_deserialize_from(Stream& from, std::size_t limit, YieldContext& yc, boost::system::error_code& ec)
     {
         namespace ba = boost::asio;
