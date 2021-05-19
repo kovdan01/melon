@@ -3,8 +3,11 @@
 
 #include <melon/core/export.h>
 
+#include <boost/functional/hash.hpp>
+
 #include <chrono>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -81,6 +84,8 @@ public:
     [[nodiscard]] Status status() const noexcept;
 
     void set_status(Status status) noexcept;
+
+    bool friend operator==(const User &lhs, const User &rhs) noexcept;
 
 protected:
     // Corresponding constructors in derived classes must
@@ -207,6 +212,17 @@ private:
 };
 
 }  // namespace melon::core
+
+template<> struct std::hash<melon::core::User>
+{
+    std::size_t operator()(melon::core::User const& u) const noexcept
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, u.username());
+        boost::hash_combine(seed, u.user_id());
+        return seed;
+    }
+};
 
 #include "entities.ipp"
 
