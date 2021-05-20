@@ -15,7 +15,7 @@ static void parameter_abnormalities_reaction(const std::vector<std::string>& mis
     if (!missing_params.empty())
         throw meco::yaml_conf::MissingParamsException("missing required params at " + where);
     if (!superfluous_params.empty())
-        throw meco::yaml_conf::ExtraParamsException("extra params at " + where);
+        throw meco::yaml_conf::UnknownParamsException("extra params at " + where);
 }
 
 template <std::size_t Size>

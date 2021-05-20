@@ -39,6 +39,8 @@ public:
         m_current_chat_it = it;
     }
 
+    void apply_appearance_settings();
+
 public slots:  // NOLINT (readability-redundant-access-specifiers)
     void change_chat(chat_handle_t current_it, chat_handle_t previous_it);
     void change_chat(chat_handle_t current_it);  // if current chat is the first and has no previous one
@@ -57,6 +59,8 @@ private slots:
     void provide_message_context_menu(const QPoint& pos);
     void delete_message();
     void edit_message();
+
+    void repaint_message_list();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
     QMenu m_submenu_sended_messages{this};

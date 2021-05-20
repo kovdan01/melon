@@ -14,7 +14,11 @@ find_package(melon-core REQUIRED)
 # boost asio
 find_package(
     Boost 1.76 REQUIRED
-    COMPONENTS system
+    COMPONENTS
+    system
+    log
+    log_setup
+    thread
 )
 
 # thread support
@@ -35,6 +39,7 @@ set(HEADERS
     include/chat_list_view.hpp
     include/chat_widget.hpp
     include/config.hpp
+    include/config.ipp
     include/entities_db.hpp
     include/entities_db.ipp
     include/entities_qt.hpp
@@ -43,6 +48,7 @@ set(HEADERS
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
+    include/settings_dialog.hpp
     include/storage_singletones.hpp
     include/storage_singletones.ipp
 )
@@ -52,17 +58,20 @@ set(SOURCES
     src/chat_list_model.cpp
     src/chat_list_view.cpp
     src/chat_widget.cpp
+    src/config.cpp
     src/entities_db.cpp
     src/main.cpp
     src/main_window.cpp
     src/message_item_delegate.cpp
     src/message_list_model.cpp
+    src/settings_dialog.cpp
     src/storage_singletones.cpp
 )
 
 set(UI_FILES
     ui/main_window.ui
     ui/chat_widget.ui
+    ui/settings_dialog.ui
 )
 
 add_executable(${PROJECT_NAME}
@@ -80,6 +89,8 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::log)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::log_setup)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Sql)
 

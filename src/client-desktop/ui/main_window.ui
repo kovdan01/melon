@@ -143,35 +143,14 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>39</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>Options</string>
     </property>
-    <widget class="QMenu" name="menuStyle">
-     <property name="title">
-      <string>Style</string>
-     </property>
-     <widget class="QMenu" name="menuTheme">
-      <property name="title">
-       <string>Theme</string>
-      </property>
-      <addaction name="actionLight"/>
-      <addaction name="actionDark"/>
-      <addaction name="actionStrange"/>
-     </widget>
-     <addaction name="menuTheme"/>
-    </widget>
-    <widget class="QMenu" name="menuProfile">
-     <property name="title">
-      <string>Profile</string>
-     </property>
-     <addaction name="actionSet_Name"/>
-    </widget>
-    <addaction name="menuProfile"/>
-    <addaction name="menuStyle"/>
+    <addaction name="OpenSettings"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
@@ -199,6 +178,17 @@
   <action name="actionStrange">
    <property name="text">
     <string>Strange</string>
+   </property>
+  </action>
+  <action name="OpenSettings">
+   <property name="text">
+    <string>Open settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>
