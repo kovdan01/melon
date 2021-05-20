@@ -144,19 +144,9 @@ public:
         std::uint32_t receive_size;
         std::size_t n = ba::async_read(from, ba::buffer(&receive_size, sizeof(receive_size)),
                                        ba::transfer_exactly(sizeof(receive_size)), yc[ec]);
-        if (n != sizeof(receive_size))
-        {
-            throw melon::core::Exception("Error: received " + std::to_string(n) + " bytes in size header, "
-                                         "expected " + std::to_string(receive_size));
-        }
 
         n = ba::async_read(from, ba::dynamic_vector_buffer{m_in_buf, limit},
                            ba::transfer_exactly(receive_size), yc[ec]);
-        if (n != receive_size)
-        {
-            throw melon::core::Exception("Error: received " + std::to_string(n) + " bytes in payload, "
-                                         "expected " + std::to_string(receive_size));
-        }
 
         What reply = deserialize<What>(m_in_buf);
         m_in_buf.erase(m_in_buf.begin(), m_in_buf.begin() + n);
@@ -183,19 +173,9 @@ public:
         std::uint32_t receive_size;
         std::size_t n = ba::read(from, ba::buffer(&receive_size, sizeof(receive_size)),
                                  ba::transfer_exactly(sizeof(receive_size)), 0);
-        if (n != sizeof(receive_size))
-        {
-            throw melon::core::Exception("Error: received " + std::to_string(n) + " bytes in size header, "
-                                         "expected " + std::to_string(receive_size));
-        }
 
         n = ba::read(from, ba::dynamic_vector_buffer{m_in_buf, limit},
                      ba::transfer_exactly(receive_size), 0);
-        if (n != receive_size)
-        {
-            throw melon::core::Exception("Error: received " + std::to_string(n) + " bytes in payload, "
-                                         "expected " + std::to_string(receive_size));
-        }
 
         What reply = deserialize<What>(m_in_buf);
         m_in_buf.erase(m_in_buf.begin(), m_in_buf.begin() + n);

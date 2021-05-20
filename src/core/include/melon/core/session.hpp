@@ -63,11 +63,28 @@ protected:
         return data;
     }
 
+    template <typename YieldContext>
+    std::uint32_t async_recieve_code(YieldContext& yc, boost::system::error_code& ec)
+    {
+        m_stream.expires_after(TIME_LIMIT);
+        std::uint32_t code;
+        std::size_t n = ba::async_read(m_stream, ba::buffer(&code, sizeof(code)),
+                                       ba::transfer_exactly(sizeof(code)), yc[ec]);
+        return code;
+    }
+
     template <typename What, typename YieldContext>
     void async_send(const What& what, YieldContext& yc, boost::system::error_code& ec)
     {
         m_stream.expires_after(TIME_LIMIT);
         m_serializer.async_serialize_to(m_stream, what, yc, ec);
+    }
+
+    template <typename YieldContext>
+    void async_send_code(std::uint32_t code, YieldContext& yc, boost::system::error_code& ec)
+    {
+        m_stream.expires_after(TIME_LIMIT);
+        ba::async_write(m_stream, ba::buffer(&code, sizeof(code)), yc[ec]);
     }
 
 private:
@@ -90,10 +107,23 @@ public:
         m_serializer.serialize_to(m_stream, what);
     }
 
+    void send_code(std::uint32_t code)
+    {
+        ba::write(m_stream, ba::buffer(&code, sizeof(code)));
+    }
+
     template <typename What = buffer_t>
     [[nodiscard]] What receive(std::size_t limit = BUFFER_LIMIT)
     {
         return m_serializer.deserialize_from<What>(m_stream, limit);
+    }
+
+    [[nodiscard]] std::uint32_t receive_code()
+    {
+        std::uint32_t code;
+        std::size_t n = ba::read(m_stream, ba::buffer(&code, sizeof(code)),
+                                 ba::transfer_exactly(sizeof(code)), 0);
+        return code;
     }
 
 private:

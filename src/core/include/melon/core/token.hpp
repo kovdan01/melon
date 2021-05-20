@@ -58,6 +58,11 @@ public:
             byte = rand.byte_dist()(rand.prng());
     }
 
+    Token(const token_t& token)
+        : m_token(token)
+    {
+    }
+
     [[nodiscard]] const token_t& token() const
     {
         return m_token;
@@ -65,7 +70,7 @@ public:
 
 private:
     token_t m_token;
-    std::time_t timestamp{std::time(nullptr)};
+    std::time_t m_timestamp{std::time(nullptr)};
 };
 
 inline bool operator==(const Token& lhs, const Token& rhs) noexcept

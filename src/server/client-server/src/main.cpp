@@ -1,10 +1,9 @@
 #include <melon/core.hpp>
+#include <melon/core/commands.hpp>
 #include <melon/core/entities.hpp>
-#include <melon/core/token.hpp>
-
-#include <melon/core.hpp>
 #include <melon/core/log_configuration.hpp>
 #include <melon/core/session.hpp>
+#include <melon/core/token.hpp>
 
 #include <ce/tcp_listener.hpp>
 
@@ -60,7 +59,26 @@ static std::unordered_map<User, std::unordered_set<mc::Token, mc::TokenHasher>, 
 {
     {
         { "igor", 42 },
-        { mc::Token() }
+        { mc::Token(),
+          mc::Token
+          ({
+              0x00, 0x01, 0x02, 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+              0x10, 0x11, 0x12, 0x13, 0x14, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+              0x20, 0x21, 0x22, 0x23, 0x24, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+              0x30, 0x31, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+          })
+        }
+    },
+    {
+        { "lana", 42 },
+        { mc::Token
+          ({
+              0x00, 0x01, 0x02, 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+              0x10, 0x11, 0x12, 0x13, 0x14, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+              0x20, 0x21, 0x22, 0x23, 0x24, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+              0x30, 0x31, 0x32, 0x33, 0x34, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+          })
+        }
     },
 };
 
@@ -88,32 +106,91 @@ public:
             using namespace boost::log::trivial;
             boost::system::error_code ec;
 
-            mc::StringViewOverBinary username = async_recieve(NUMBER_LIMIT, yc, ec);
-            auto domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
-            User user(std::string(username.view().data(), username.view().size()), domain_id);
-
-            auto token = async_recieve<mc::Token::token_t>(NUMBER_LIMIT, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-
-            auto it = g_session_tracker.find(user);
-            if (it != g_session_tracker.end())
+            for (;;)
             {
-                if (std::find_if(it->second.begin(), it->second.end(),
-                                 [&](mc::Token const& t){ return t.token() == token; }) != it->second.end())
+                auto code = static_cast<mc::ClientCode>(async_recieve_code(yc, ec));
+                MELON_CHECK_BA_ERROR_CODE(ec)
+
+                mc::StringViewOverBinary username = async_recieve(NUMBER_LIMIT, yc, ec);
+                auto domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
+                User user(std::string(username.view().data(), username.view().size()), domain_id);
+
+                switch (code)
                 {
-                    // Token is good, token is nice
-                    BOOST_LOG_TRIVIAL(info) << "Recieved nice token";
-                }
-                else
+                case mc::ClientCode::SEND_TOKEN:
                 {
-                    // No token? That's problematic sweetie
-                    BOOST_LOG_TRIVIAL(info) << "Giving a token";
+                    auto token = async_recieve<mc::Token::token_t>(NUMBER_LIMIT, yc, ec);
+                    MELON_CHECK_BA_ERROR_CODE(ec);
+
+                    auto it = g_session_tracker.find(user);
+                    if (it != g_session_tracker.end())
+                    {
+                        if (std::find_if(it->second.begin(), it->second.end(),
+                                         [&](mc::Token const& t){ return t.token() == token; }) != it->second.end())
+                        {
+                            BOOST_LOG_SEV(log(), info) << "Recieved nice token for user " << username.view() << '@' << domain_id;
+                        }
+                        else
+                        {
+                            BOOST_LOG_SEV(log(), info) << "Invalid token for user " << username.view() << '@' << domain_id;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        BOOST_LOG_SEV(log(), info) << "No tokens found for user " << username.view() << '@' << domain_id;
+                        return;
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                // No token? That's problematic sweetie
-                BOOST_LOG_TRIVIAL(info) << "Adding user to table and giving a token";
+                case mc::ClientCode::REQUEST_TOKEN:
+                {
+                    mc::SyncSession auth("localhost", "6666");
+                    mc::ServerCode auth_code;
+                    for (;;)
+                    {
+                        auth_code = static_cast<mc::ServerCode>(auth.receive_code());
+                        if (auth_code != mc::ServerCode::SEND_SASL_DATA)
+                            break;
+
+                        auto server_data = auth.receive();
+                        async_send(server_data, yc, ec);
+                        MELON_CHECK_BA_ERROR_CODE(ec);
+
+                        auto client_data = async_recieve(NUMBER_LIMIT, yc, ec);
+                        MELON_CHECK_BA_ERROR_CODE(ec);
+                        auth.send(client_data);
+                    }
+
+                    switch (auth_code)
+                    {
+                    case mc::ServerCode::AUTH_PROBLEM:
+                    {
+                        BOOST_LOG_SEV(log(), info) << "Auth problem";
+                        return;
+                    }
+                    case mc::ServerCode::ISSUED_A_TOKEN:
+                    {
+                        BOOST_LOG_SEV(log(), info) << "Issued a token";
+                        async_send_code(static_cast<std::uint32_t>(mc::ServerCode::ISSUED_A_TOKEN), yc, ec);
+                        MELON_CHECK_BA_ERROR_CODE(ec);
+                        mc::Token token;
+                        g_session_tracker[user].emplace(token);
+                        async_send<mc::Token::token_t>(token.token(), yc, ec);
+                        MELON_CHECK_BA_ERROR_CODE(ec);
+                        break;
+                    }
+                    default:
+                    {
+                        BOOST_LOG_SEV(log(), info) << "Unexpected code";
+                        return;
+                    }
+                    }
+
+                    break;
+                }
+                }
             }
 
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
