@@ -3,8 +3,6 @@
 
 #include <melon/core/export.h>
 
-#include <boost/functional/hash.hpp>
-
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -85,6 +83,7 @@ public:
 
     void set_status(Status status) noexcept;
 
+protected:
     // Corresponding constructors in derived classes must
     // initialize all members that are not set here
 
@@ -94,11 +93,6 @@ public:
     User(std::string username, id_t domain_id);
     // For Select by user_id and domain_id
     User(id_t user_id, id_t domain_id);
-
-    bool friend operator==(User const&  lhs, User const& rhs) noexcept
-    {
-        return std::tuple(lhs.user_id(), lhs.domain_id(), lhs.username(), lhs.status()) == std::tuple(rhs.user_id(), rhs.domain_id(), rhs.username(), rhs.status());
-    }
 
     void set_user_id(id_t user_id) noexcept;
     void set_domain_id(id_t domain_id) noexcept;
@@ -214,17 +208,6 @@ private:
 };
 
 }  // namespace melon::core
-
-template<> struct std::hash<melon::core::User>
-{
-    std::size_t operator()(melon::core::User const& u) const noexcept
-    {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, u.username());
-        boost::hash_combine(seed, u.user_id());
-        return seed;
-    }
-};
 
 #include "entities.ipp"
 

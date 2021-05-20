@@ -9,6 +9,7 @@
 
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/program_options.hpp>
 
 #include <exception>
@@ -19,7 +20,7 @@
 #include <thread>
 
 #include <ctime>
-#include <functional>
+#include <limits>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -28,39 +29,87 @@
 namespace mc = melon::core;
 namespace ba = boost::asio;
 
-using token_t = std::uint64_t;
-
-struct Token
+class Token
 {
-    Token() : timestamp(std::time(nullptr)), mt(std::time(nullptr))
-    {
-        token = mt();
-    }
-    Token(token_t tok, std::time_t tick) : token(tok), timestamp(tick){}
+public:
+    using token_t = std::array<mc::byte_t, 64>;
 
-    token_t token;
-    std::time_t timestamp;
+    Token()
+    {
+        for (mc::byte_t& byte : m_token)
+        {
+            byte = m_byte_dist(m_prng);
+        }
+    }
+
+    const token_t& token() const
+    {
+        return m_token;
+    }
+
     bool friend operator==(const Token& lhs, const Token& rhs) noexcept;
+
 private:
-    std::mt19937_64 mt;
+    std::time_t timestamp{std::time(nullptr)};
+    token_t m_token;
+
+    static std::mt19937_64 m_prng;
+    static std::uniform_int_distribution<mc::byte_t> m_byte_dist;
 };
+
+std::mt19937_64 Token::m_prng{std::random_device{}()};
+std::uniform_int_distribution<mc::byte_t> Token::m_byte_dist{std::numeric_limits<mc::byte_t>::min(),
+                                                             std::numeric_limits<mc::byte_t>::max()};
 
 bool operator==(const Token& lhs, const Token& rhs) noexcept
 {
-    return lhs.token == rhs.token;
+    return lhs.m_token == rhs.m_token;
 }
 
-template<>
-struct std::hash<Token>
+struct TokenHasher
 {
-    size_t operator()(const Token& x) const
+    std::size_t operator()(const Token& x) const
     {
-        return std::hash<uint64_t>{}(x.token);
+        std::size_t seed = 0;
+        for (mc::byte_t byte : x.token())
+            boost::hash_combine<mc::byte_t>(seed, byte);
+        return seed;
     }
 };
 
+class User : public mc::User
+{
+public:
+    User(std::string username, id_t domain_id)
+        : mc::User(std::move(username), domain_id)
+    {
+    }
+};
 
-std::unordered_map<mc::User, std::unordered_set<Token>> g_session_tracker;
+bool operator==(const User& lhs, const User& rhs)
+{
+    // TODO: use either string or numeric identifiers
+    return std::tuple(lhs.username(), lhs.domain_id()) == std::tuple(rhs.username(), rhs.domain_id());
+}
+
+struct UserHasher
+{
+    std::size_t operator()(const mc::User& u) const noexcept
+    {
+        std::size_t seed = 0;
+        boost::hash_combine<std::string>(seed, u.username());
+        boost::hash_combine<mc::id_t>(seed, u.domain_id());
+        return seed;
+    }
+};
+
+static std::unordered_map<User, std::unordered_set<Token, TokenHasher>, UserHasher> g_session_tracker =
+{
+    {
+        { "igor", 42 },
+        { Token() }
+    },
+};
 
 #define MELON_CHECK_BA_ERROR_CODE(ec)                       \
     if (ec)                                                 \
@@ -86,89 +135,33 @@ public:
             using namespace boost::log::trivial;
             boost::system::error_code ec;
 
-            //test user, igor@42
-            mc::User tu("igor\0", 42);
-            tu.set_status(mc::User::Status::OFFLINE);
-            tu.set_user_id(0);
-            Token tt(43, 1000);
-            g_session_tracker.insert({tu, {tt}});
+            mc::StringViewOverBinary username = async_recieve(NUMBER_LIMIT, yc, ec);
+            auto domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
+            User user(std::string(username.view().data(), username.view().size()), domain_id);
 
-
-            auto session_username = async_recieve<std::string>(NUMBER_LIMIT, yc, ec);
-            auto session_domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
-            mc::User session_user("session_username", session_domain_id);
-            session_user.set_status(mc::User::Status::OFFLINE);
-            session_user.set_user_id(0);
-
-            auto token = async_recieve<token_t>(NUMBER_LIMIT, yc, ec);
+            auto token = async_recieve<Token::token_t>(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
-            BOOST_LOG_TRIVIAL(info) << (session_user == tu);//For some reason I can't recieve a class to be equal to one that I recieve
-            auto it = g_session_tracker.find(session_user);
-            if (it != g_session_tracker.end() && std::find_if(it->second.begin(), it->second.end(),
-                                                              [&](Token const& t){ return t.token == token;}) != it->second.end())
+
+            auto it = g_session_tracker.find(user);
+            if (it != g_session_tracker.end())
             {
-                // Token is good, token is nice
-                BOOST_LOG_TRIVIAL(info) << "Recieved nice token";
+                if (std::find_if(it->second.begin(), it->second.end(),
+                                 [&](Token const& t){ return t.token() == token; }) != it->second.end())
+                {
+                    // Token is good, token is nice
+                    BOOST_LOG_TRIVIAL(info) << "Recieved nice token";
+                }
+                else
+                {
+                    // No token? That's problematic sweetie
+                    BOOST_LOG_TRIVIAL(info) << "Giving a token";
+                }
             }
             else
             {
                 // No token? That's problematic sweetie
-                BOOST_LOG_TRIVIAL(info) << "Giving a token";
+                BOOST_LOG_TRIVIAL(info) << "Adding user to table and giving a token";
             }
-            /*
-            if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
-            {
-                throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. "
-                                         "Supported mechanisms: " + std::string(supported_mechanisms));
-            }
-
-            async_send(wanted_mechanism.view(), yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-
-            auto client_response = async_recieve(NUMBER_LIMIT, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-            auto [server_response, server_completness] = server.start(wanted_mechanism.view(), { client_response.data(), client_response.size() });
-            async_send(server_response, yc, ec);
-            MELON_CHECK_BA_ERROR_CODE(ec);
-
-            while (server_completness == mca::AuthState::INCOMPLETE)
-            {
-                client_response = async_recieve(NUMBER_LIMIT, yc, ec);
-                MELON_CHECK_BA_ERROR_CODE(ec);
-
-                mca::StepResult server_step_result = server.step({ client_response.data(), client_response.size() });
-                server_response = server_step_result.response;
-                server_completness = server_step_result.completness;
-
-                if (server_completness != mca::AuthState::COMPLETE)
-                {
-                    async_send(server_response, yc, ec);
-                    MELON_CHECK_BA_ERROR_CODE(ec);
-                }
-
-                if (server_completness != mca::AuthState::INCOMPLETE)
-                    break;
-            }
-            assert(server_completness != mca::AuthState::INCOMPLETE);
-
-            switch (server_completness)
-            {
-            case mca::AuthState::COMPLETE:
-                BOOST_LOG_SEV(log(), info) << "Issued a token";
-                break;
-            case mca::AuthState::USER_NOT_FOUND:
-                BOOST_LOG_SEV(log(), info) << "User not found";
-                break;
-            case mca::AuthState::BAD_PROTOCOL:
-                BOOST_LOG_SEV(log(), info) << "Protocol error";
-                break;
-            case mca::AuthState::AUTHENTICATION_FAILURE:
-                BOOST_LOG_SEV(log(), info) << "Authentication failure";
-                break;
-            case mca::AuthState::AUTHORIZATION_FAILURE:
-                BOOST_LOG_SEV(log(), info) << "Authorization failure";
-                break;
-            }*/
 
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
