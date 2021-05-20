@@ -1,6 +1,7 @@
 #include <chat_item_delegate.hpp>
 #include <chat_list_model.hpp>
 #include <chat_widget.hpp>
+#include <config.hpp>
 #include <entities_db.hpp>
 #include <main_window.hpp>
 #include <melon/core/exception.hpp>
@@ -65,7 +66,7 @@ void MainWindow::replace_spacer_with_chat_widget()
 
 void MainWindow::load_data_from_database()
 {
-    auto& storage = DBNameSingletone::get_instance();
+    auto& storage = StorageNameSingletone::get_instance();
 
     QString db_name = storage.db_name();
     QSqlQuery qry_for_chats(db_name);
@@ -101,6 +102,13 @@ MainWindow::MainWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    auto& storage_name = StorageNameSingletone::get_instance();
+    std::string filename = storage_name.user_settings_file_name();
+    if (QFile::exists(QString::fromStdString(filename)))
+        parse_settings(YAML::LoadFile(filename));
+    else
+        set_standart_settings();
+
     connect(m_ui->AddChatButton,
             &QPushButton::clicked,
             this,
@@ -111,6 +119,16 @@ MainWindow::MainWindow(QWidget* parent)
             this,
             &MainWindow::provide_chat_context_menu);
 
+    connect(m_ui->OpenSettings,
+            &QAction::triggered,
+            this,
+            &MainWindow::exec_settings);
+
+    connect(m_settings_dialog,
+            &SettingsDialog::applied_appearance_settings,
+            this,
+            &MainWindow::apply_appearance_settings);
+
     m_submenu.addAction(tr("Rename"), this, SLOT(rename_chat()));
     m_submenu.addAction(tr("Delete"), this, SLOT(delete_chat()));
 
@@ -119,9 +137,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_chat_item_delegate = new ChatItemDelegate{m_ui->ChatList};
     m_ui->ChatList->setItemDelegate(m_chat_item_delegate);
 
-    auto& storage = DBNameSingletone::get_instance();
-
-    QSqlQuery qry(storage.db_name());
+    QSqlQuery qry(storage_name.db_name());
     exec_and_check_qtsql_query(qry, QStringLiteral("SELECT COUNT(chat_id) from chats"), "Counting chats");
     qry.next();
     if (qry.value(0).toInt() > 0)  // If count of chats > 0
@@ -133,6 +149,9 @@ MainWindow::MainWindow(QWidget* parent)
     {
         this->replace_chat_widget_with_spacer();
     }
+
+    auto& storage = DBSingletone::get_instance();
+    m_ui->UserName->setText(storage.me().full_name());
 }
 
 ChatNameException::~ChatNameException() = default;
@@ -234,6 +253,14 @@ void MainWindow::repaint_chat_list()
     m_model_chat_list->setData(cur_index, QVariant(), MyRoles::RepaintRole);
 }
 
+void MainWindow::apply_appearance_settings()
+{
+    BOOST_LOG_TRIVIAL(info) << "CATCH SETTINGS SIGNAL applied appearance settings";
+    m_chat_item_delegate->update_settings();
+    this->repaint_chat_list();
+    m_chat_widget->apply_appearance_settings();
+}
+
 void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex& previous_chat)
 {
     if (!current_chat.isValid())
@@ -248,6 +275,12 @@ void MainWindow::change_chat(const QModelIndex& current_chat, const QModelIndex&
 
     auto previous_it = m_model_chat_list->chat_it_by_index(previous_chat);
     m_chat_widget->change_chat(current_it, previous_it);
+}
+
+void MainWindow::exec_settings()
+{
+    m_settings_dialog->load_current_settings();
+    return m_settings_dialog->show();
 }
 
 }  // namespace melon::client_desktop
