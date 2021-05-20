@@ -44,6 +44,8 @@ set(HEADERS
     include/melon/core/sasl_client_wrapper.ipp
     include/melon/core/serialization.hpp
     include/melon/core/session.hpp
+    include/melon/core/token.hpp
+    include/melon/core/token.ipp
     include/melon/core/yaml_config.hpp
 )
 

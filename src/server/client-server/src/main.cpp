@@ -1,5 +1,6 @@
 #include <melon/core.hpp>
 #include <melon/core/entities.hpp>
+#include <melon/core/token.hpp>
 
 #include <melon/core.hpp>
 #include <melon/core/log_configuration.hpp>
@@ -29,54 +30,6 @@
 namespace mc = melon::core;
 namespace ba = boost::asio;
 
-class Token
-{
-public:
-    using token_t = std::array<mc::byte_t, 64>;
-
-    Token()
-    {
-        for (mc::byte_t& byte : m_token)
-        {
-            byte = m_byte_dist(m_prng);
-        }
-    }
-
-    const token_t& token() const
-    {
-        return m_token;
-    }
-
-    bool friend operator==(const Token& lhs, const Token& rhs) noexcept;
-
-private:
-    std::time_t timestamp{std::time(nullptr)};
-    token_t m_token;
-
-    static std::mt19937_64 m_prng;
-    static std::uniform_int_distribution<mc::byte_t> m_byte_dist;
-};
-
-std::mt19937_64 Token::m_prng{std::random_device{}()};
-std::uniform_int_distribution<mc::byte_t> Token::m_byte_dist{std::numeric_limits<mc::byte_t>::min(),
-                                                             std::numeric_limits<mc::byte_t>::max()};
-
-bool operator==(const Token& lhs, const Token& rhs) noexcept
-{
-    return lhs.m_token == rhs.m_token;
-}
-
-struct TokenHasher
-{
-    std::size_t operator()(const Token& x) const
-    {
-        std::size_t seed = 0;
-        for (mc::byte_t byte : x.token())
-            boost::hash_combine<mc::byte_t>(seed, byte);
-        return seed;
-    }
-};
-
 class User : public mc::User
 {
 public:
@@ -103,11 +56,11 @@ struct UserHasher
     }
 };
 
-static std::unordered_map<User, std::unordered_set<Token, TokenHasher>, UserHasher> g_session_tracker =
+static std::unordered_map<User, std::unordered_set<mc::Token, mc::TokenHasher>, UserHasher> g_session_tracker =
 {
     {
         { "igor", 42 },
-        { Token() }
+        { mc::Token() }
     },
 };
 
@@ -139,14 +92,14 @@ public:
             auto domain_id = async_recieve<mc::id_t>(NUMBER_LIMIT, yc, ec);
             User user(std::string(username.view().data(), username.view().size()), domain_id);
 
-            auto token = async_recieve<Token::token_t>(NUMBER_LIMIT, yc, ec);
+            auto token = async_recieve<mc::Token::token_t>(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
             auto it = g_session_tracker.find(user);
             if (it != g_session_tracker.end())
             {
                 if (std::find_if(it->second.begin(), it->second.end(),
-                                 [&](Token const& t){ return t.token() == token; }) != it->second.end())
+                                 [&](mc::Token const& t){ return t.token() == token; }) != it->second.end())
                 {
                     // Token is good, token is nice
                     BOOST_LOG_TRIVIAL(info) << "Recieved nice token";
