@@ -80,13 +80,13 @@ struct TokenHasher
 class User : public mc::User
 {
 public:
-    User(std::string username, id_t domain_id)
+    User(std::string username, mc::id_t domain_id)
         : mc::User(std::move(username), domain_id)
     {
     }
 };
 
-bool operator==(const User& lhs, const User& rhs)
+static bool operator==(const User& lhs, const User& rhs)
 {
     // TODO: use either string or numeric identifiers
     return std::tuple(lhs.username(), lhs.domain_id()) == std::tuple(rhs.username(), rhs.domain_id());
