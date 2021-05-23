@@ -21,8 +21,9 @@ public:
     explicit MessageItemDelegate(QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
     [[nodiscard]] QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
+    void update_settings();
 
 private:
     [[nodiscard]] QString date_number_handler(const int& num) const;

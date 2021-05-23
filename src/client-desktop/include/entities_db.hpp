@@ -49,6 +49,13 @@ public:
     User() = default;
 
     void remove_from_db();
+
+    [[nodiscard]] QString full_name() const noexcept;
+
+private:
+    QString m_full_name;
+
+    void set_full_name();
 };
 
 class Message : public detail::Message

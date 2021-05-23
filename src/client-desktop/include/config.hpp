@@ -1,9 +1,15 @@
 #ifndef MELON_CLIENT_DESKTOP_CONFIG_HPP_
 #define MELON_CLIENT_DESKTOP_CONFIG_HPP_
 
+#include <yaml-cpp/yaml.h>
+
 #include <QColor>
 #include <QFont>
 #include <QString>
+
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 namespace melon::client_desktop
 {
@@ -29,107 +35,127 @@ public:
 
         struct FontParams
         {
-            const QString family;
-            const int size;
-            const int weight;
+            QString family;
+            int size;
+            int weight;
         };
 
-        [[nodiscard]] FontParams sender_font_params() const
+        enum class FontSize
         {
-            return m_sender_font_params;
-        }
+            SMALL,
+            STANDARD,
+            BIG
+        };
 
-        [[nodiscard]] FontParams message_text_font_params() const
-        {
-            return m_message_text_font_params;
-        }
+        // Getters
 
-        [[nodiscard]] FontParams timestamp_font_params() const
-        {
-            return m_timestamp_font_params;
-        }
+        [[nodiscard]] FontSize message_font_size() const;
+        [[nodiscard]] const FontParams& sender_font_params() const;
+        [[nodiscard]] const FontParams& message_text_font_params() const;
+        [[nodiscard]] const FontParams& timestamp_font_params() const;
 
-        [[nodiscard]] const QColor& receive_message_color() const
-        {
-            return m_receive_message_color;
-        }
+        [[nodiscard]] const QColor& receive_message_color() const;
+        [[nodiscard]] const QColor& sended_message_color() const;
 
-        [[nodiscard]] const QColor& sended_message_color() const
-        {
-            return m_sended_message_color;
-        }
+        [[nodiscard]] FontSize chatlist_font_size() const;
+        [[nodiscard]] const FontParams& chat_name_font_params() const;
+        [[nodiscard]] const FontParams& chat_timestamp_font_params() const;
+        [[nodiscard]] const FontParams& last_message_font_params() const;
+        [[nodiscard]] const FontParams& last_message_sender_font_params() const;
+        [[nodiscard]] const FontParams& unread_counter_font_params() const;
 
-        [[nodiscard]] FontParams chat_name_font_params() const
-        {
-            return m_chat_name_font_params;
-        }
+        [[nodiscard]] QColor selected_chat_color() const;
+        [[nodiscard]] QColor unread_background_color() const;
 
-        [[nodiscard]] FontParams chat_timestamp_font_params() const
-        {
-            return m_chat_timestamp_font_params;
-        }
+        [[nodiscard]] const QString& font_family() const;
 
-        [[nodiscard]] FontParams last_message_font_params() const
-        {
-            return m_last_message_font_params;
-        }
+        // Setters
 
-        [[nodiscard]] FontParams unread_counter_font_params() const
-        {
-            return m_unread_counter_font_params;
-        }
+        void set_message_font_size_var(FontSize size);
+        void set_message_font_size(FontSize size);
+        void set_sender_font_params(const FontParams& pm);
+        void set_message_text_font_params(const FontParams& pm);
+        void set_timestamp_font_params(const FontParams& pm);
 
-        [[nodiscard]] FontParams last_message_sender_font_params() const
-        {
-            return m_last_message_sender_font_params;
-        }
+        void set_receive_message_color(const QColor& c);
+        void set_sended_message_color(const QColor& c);
 
-        [[nodiscard]] QColor selected_chat_color() const
-        {
-            return m_selected_chat_color;
-        }
+        void set_chatlist_font_size_var(FontSize size);
+        void set_chatlist_font_size(FontSize size);
+        void set_chat_name_font_params(const FontParams& pm);
+        void set_chat_timestamp_font_params(const FontParams& pm);
+        void set_last_message_font_params(const FontParams& pm);
+        void set_unread_counter_font_params(const FontParams& pm);
+        void set_last_message_sender_font_params(const FontParams& pm);
 
-        [[nodiscard]] QColor unread_background_color() const
-        {
-            return m_unread_background_color;
-        }
+        void set_selected_chat_color(const QColor& c);
+        void set_unread_background_color(const QColor& c);
+
+        void set_font_family_common(const QString& family);
+        void set_font_family_var(const QString& family);
 
     private:
         Appearance() = default;
 
-        // for message item delegate
-        const FontParams m_sender_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-        const FontParams m_message_text_font_params = {QStringLiteral("Cantarell"), 9, 41};
-        const FontParams m_timestamp_font_params = {QStringLiteral("Cantarell"), 6, 35};
+        QString m_font_family;
+        FontSize m_message_font_size;
+        FontSize m_chatlist_font_size;
 
-        const QColor m_receive_message_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
-        const QColor m_sended_message_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+        // for message item delegate
+        FontParams m_sender_font_params;
+        FontParams m_message_text_font_params;
+        FontParams m_timestamp_font_params;
+
+        QColor m_receive_message_color;
+        QColor m_sended_message_color;
 
         // for chat item delegate
-        const FontParams m_chat_name_font_params = {QStringLiteral("Cantarell"), 9, QFont::DemiBold};
-        const FontParams m_chat_timestamp_font_params = {QStringLiteral("Cantarell"), 7, 35};
-        const FontParams m_last_message_font_params = {QStringLiteral("Cantarell"), 7, 35};
-        const FontParams m_unread_counter_font_params = {QStringLiteral("Cantarell"), 7, 45};
-        const FontParams m_last_message_sender_font_params = {QStringLiteral("Cantarell"), 7, 40};
+        FontParams m_chat_name_font_params;
+        FontParams m_chat_timestamp_font_params;
+        FontParams m_last_message_font_params;
+        FontParams m_unread_counter_font_params;
+        FontParams m_last_message_sender_font_params;
 
-        const QColor m_selected_chat_color{/*r*/ 255, /*g*/ 243, /*b*/ 223};
-        const QColor m_unread_background_color{/*r*/ 235, /*g*/ 235, /*b*/ 235};
+        QColor m_selected_chat_color;
+        QColor m_unread_background_color;
     };
 
-    [[nodiscard]] Appearance& appearance()
+    class Behaviour
     {
-        return m_appearance;
-    }
+    public:
+        friend class UserConfigSingletone;
 
-    [[nodiscard]] const Appearance& appearance() const
-    {
-        return m_appearance;
-    }
+        // Getters
+
+        [[nodiscard]] bool remove_whitespaces_around() const;
+        [[nodiscard]] bool replace_hyphens() const;
+        [[nodiscard]] bool send_message_by_enter() const;
+
+        // Setters
+
+        void set_remove_whitespaces_around(bool new_config);
+        void set_replace_hyphens(bool new_config);
+        void set_send_message_by_enter(bool new_config);
+
+    private:
+        Behaviour() = default;
+
+        bool m_remove_whitespaces_around_message;
+        bool m_replace_hyphens;
+        bool m_send_message_by_enter;
+    };
+
+    [[nodiscard]] Appearance& appearance();
+    [[nodiscard]] const Appearance& appearance() const;
+
+    [[nodiscard]] Behaviour& behaviour();
+    [[nodiscard]] const Behaviour& behaviour() const;
 
 private:
     UserConfigSingletone() = default;
 
     Appearance m_appearance;
+    Behaviour m_behaviour;
 };
 
 
@@ -152,55 +178,16 @@ public:
     public:
         friend class DevelopConfigSingletone;
 
-        [[nodiscard]] const QColor& selected_message_color() const
-        {
-            return m_selected_message_color;
-        }
-
-        [[nodiscard]] int min_message_width() const
-        {
-            return m_min_message_width;
-        }
-
-        [[nodiscard]] qreal scale_message_width() const
-        {
-            return m_scale_message_width;
-        }
-
-        [[nodiscard]] int base_margin() const
-        {
-            return m_base_margin;
-        }
-
-        [[nodiscard]] int icon_diameter() const
-        {
-            return m_icon_diameter;
-        }
-
-        [[nodiscard]] int message_round_radius() const
-        {
-            return m_message_round_radius;
-        }
-
-        [[nodiscard]] int chat_base_margin() const
-        {
-            return m_chat_base_margin;
-        }
-
-        [[nodiscard]] int chat_icon_radius() const
-        {
-            return m_chat_icon_radius;
-        }
-
-        [[nodiscard]] int unread_indicator_round() const
-        {
-            return m_unread_indicator_round;
-        }
-
-        [[nodiscard]] const QColor& item_under_mouse_color() const
-        {
-            return m_item_under_mouse_color;
-        }
+        [[nodiscard]] const QColor& selected_message_color() const;
+        [[nodiscard]] int min_message_width() const;
+        [[nodiscard]] qreal scale_message_width() const;
+        [[nodiscard]] int base_margin() const;
+        [[nodiscard]] int icon_diameter() const;
+        [[nodiscard]] int message_round_radius() const;
+        [[nodiscard]] int chat_base_margin() const;
+        [[nodiscard]] int chat_icon_radius() const;
+        [[nodiscard]] int unread_indicator_round() const;
+        [[nodiscard]] const QColor& item_under_mouse_color() const;
 
     private:
         Appearance() = default;
@@ -221,15 +208,8 @@ public:
         const QColor m_item_under_mouse_color{/*r*/230, /*g*/230, /*b*/230};
     };
 
-    [[nodiscard]] Appearance& appearance()
-    {
-        return m_appearance;
-    }
-
-    [[nodiscard]] const Appearance& appearance() const
-    {
-        return m_appearance;
-    }
+    [[nodiscard]] Appearance& appearance();
+    [[nodiscard]] const Appearance& appearance() const;
 
 private:
     DevelopConfigSingletone() = default;
@@ -237,6 +217,12 @@ private:
     Appearance m_appearance;
 };
 
+void save_settings_to_yaml();
+void set_standart_settings();
+void parse_settings(const YAML::Node& conf_file);
+
 }  // namespace melon::client_desktop
+
+#include "config.ipp"
 
 #endif  // MELON_CLIENT_DESKTOP_CONFIG_HPP_
