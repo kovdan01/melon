@@ -59,7 +59,7 @@ protected:
     What async_recieve(std::size_t limit, YieldContext& yc, boost::system::error_code& ec)
     {
         m_stream.expires_after(TIME_LIMIT);
-        What data = m_serializer.async_deserialize_from<What>(m_stream, limit, yc, ec);
+        What data = m_serializer.async_deserialize_from<decltype(m_stream), What, YieldContext>(m_stream, limit, yc, ec);
         return data;
     }
 
