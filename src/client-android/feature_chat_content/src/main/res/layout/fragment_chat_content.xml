@@ -8,14 +8,27 @@
         android:id="@+id/chatContentRv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/messageTi"
+        app:layout_constraintBottom_toTopOf="@id/attachedFilesRv"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/attachedFilesRv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/files_background"
+        android:clipToPadding="false"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/messageTi"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/messageTi"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/your_message"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="parent"
         app:layout_constraintStart_toStartOf="parent">

@@ -1,6 +1,8 @@
 package org.melon.feature_chat_content.presentation.chat_content
 
+import android.database.Cursor
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -8,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
@@ -19,12 +22,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_chat_content.*
 import org.melon.core.presentation.base.BaseFragment
 import org.melon.feature_chat_content.R
-import org.melon.feature_chat_content.presentation.chat_content.items.FileMessageItem
+import org.melon.feature_chat_content.presentation.chat_content.items.AttachedFileItem
 import org.melon.feature_chat_content.presentation.chat_content.items.OtherMessageItem
 import org.melon.feature_chat_content.presentation.chat_content.items.UserMessageItem
-import org.melon.feature_chat_content.presentation.chat_content.model.FileMessageUi
-import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
-import timber.log.Timber
+import org.melon.feature_chat_content.presentation.chat_content.model.FileUi
 
 @AndroidEntryPoint
 class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
@@ -40,14 +41,18 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
 
     private val args: ChatContentFragmentArgs by navArgs()
 
+    private val chatAdapter = GroupAdapter<GroupieViewHolder>()
+    private lateinit var chatLayoutManager: LinearLayoutManager
+
+    private val attachedFilesAdapter = GroupAdapter<GroupieViewHolder>()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = GroupAdapter<GroupieViewHolder>()
-        val layoutManager = LinearLayoutManager(requireContext()).apply {
-        }
-        chatContentRv.adapter = adapter
-        chatContentRv.layoutManager = layoutManager
+        chatLayoutManager = LinearLayoutManager(requireContext())
+
+        initChatRv()
+        initAttachedFilesRv()
 
         //Action mode
         val activity = requireActivity() as AppCompatActivity
@@ -83,14 +88,37 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
 
         sendMsgBtn.setOnClickListener {
             viewModel.onSendClick(messageEt.text.toString())
-            layoutManager.scrollToPosition(adapter.itemCount - 1)
+            chatLayoutManager.scrollToPosition(chatAdapter.itemCount - 1)
         }
 
-        val getDocument = registerForActivityResult(ActivityResultContracts.GetContent()) {
-            viewModel.onFileSelected()
-        }
+        val getDocument =
+            registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { files ->
+                files.forEach { uri ->
+                    val cursor: Cursor? = requireContext().contentResolver.query(
+                        uri, null, null, null, null, null
+                    )
+
+                    cursor?.use {
+                        if (it.moveToFirst()) {
+
+                            // Note it's called "Display Name". This is
+                            // provider-specific, and might not necessarily be the file name.
+                            val fileName: String =
+                                it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+
+                            viewModel.onFileSelected(
+                                FileUi(
+                                    fileName = fileName,
+                                    uri = uri
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
         attachBtn.setOnClickListener {
-            getDocument.launch("*/*")
+            getDocument.launch(arrayOf("*/*"))
         }
 
         messageEt.addTextChangedListener {
@@ -100,23 +128,19 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
         viewModel.liveMessagesList.observe(
             viewLifecycleOwner,
             {
-                adapter.update(
+                chatAdapter.update(
                     it.map { message ->
-                        if (message is MessageUi) {
-                            if (message.isUserMessage) {
-                                UserMessageItem(
-                                    message,
-                                    onLongClick = { selectedMessage ->
-                                        viewModel.onMessageLongClick(selectedMessage)
-                                    },
-                                    onClick = { clickedMessage ->
-                                        viewModel.onMessageClick(clickedMessage)
-                                    }
-                                )
-                            } else OtherMessageItem(message)
-                        } else {
-                            FileMessageItem((message as FileMessageUi).messageText)
-                        }
+                        if (message.isUserMessage) {
+                            UserMessageItem(
+                                message,
+                                onLongClick = { selectedMessage ->
+                                    viewModel.onMessageLongClick(selectedMessage)
+                                },
+                                onClick = { clickedMessage ->
+                                    viewModel.onMessageClick(clickedMessage)
+                                }
+                            )
+                        } else OtherMessageItem(message)
                     }
                 )
 
@@ -172,6 +196,29 @@ class ChatContentFragment : BaseFragment(R.layout.fragment_chat_content) {
             }
         )
 
+        viewModel.liveAttachedFiles.observe(
+            viewLifecycleOwner,
+            {
+                attachedFilesRv.isVisible = it.isNotEmpty()
+                attachedFilesAdapter.update(
+                    it.map { file ->
+                        AttachedFileItem(file, viewModel::onFileClose)
+                    }
+                )
+            }
+        )
+
         viewModel.onViewCreated(args.chatId)
+    }
+
+    private fun initChatRv() {
+        chatContentRv.adapter = chatAdapter
+        chatContentRv.layoutManager = chatLayoutManager
+    }
+
+    private fun initAttachedFilesRv() {
+        attachedFilesRv.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        attachedFilesRv.adapter = attachedFilesAdapter
     }
 }

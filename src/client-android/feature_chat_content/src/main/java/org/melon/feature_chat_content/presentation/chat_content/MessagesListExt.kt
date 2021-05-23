@@ -1,6 +1,5 @@
 package org.melon.feature_chat_content.presentation.chat_content
 
-import org.melon.feature_chat_content.presentation.chat_content.model.BaseMessageUi
 import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
 
 fun List<MessageUi>.getAvailableMessageId(): Int {
@@ -16,23 +15,21 @@ fun List<MessageUi>.getAvailableMessageId(): Int {
     }
 }
 
-fun MutableList<BaseMessageUi>.addOrRemoveMessageSelection(messageUi: MessageUi) {
+fun MutableList<MessageUi>.addOrRemoveMessageSelection(messageUi: MessageUi) {
     if (this.firstOrNull { messageUi.messageId == it.messageId } != null) {
         val index = this.indexOfFirst { it.messageId == messageUi.messageId }
         this.removeAt(index)
     } else this.add(messageUi)
 }
 
-fun MutableList<BaseMessageUi>.toggleMessageSelection(messageUi: MessageUi) {
+fun MutableList<MessageUi>.toggleMessageSelection(messageUi: MessageUi) {
     if (this.indexOf(messageUi) != -1) {
         this[this.indexOf(messageUi)] = messageUi.copy(isSelected = messageUi.isSelected.not())
     }
 }
 
-fun MutableList<BaseMessageUi>.deselectAll() {
+fun MutableList<MessageUi>.deselectAll() {
     for (i in 0 until size) {
-        if (this[i] is MessageUi) {
-            this[i] = (this[i] as MessageUi).copy(isSelected = false)
-        }
+        this[i] = this[i].copy(isSelected = false)
     }
 }

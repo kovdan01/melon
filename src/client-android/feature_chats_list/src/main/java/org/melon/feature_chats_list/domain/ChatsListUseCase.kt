@@ -1,7 +1,7 @@
 package org.melon.feature_chats_list.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.melon.feature_chat_content.domain.chat_content.BaseMessage
+import org.melon.feature_chat_content.domain.model.Message
 import javax.inject.Inject
 
 class ChatsListUseCase @Inject constructor(
@@ -32,7 +32,7 @@ class ChatsListUseCase @Inject constructor(
         chatsListRepository.updateChat(chat.copy(isRead = true))
     }
 
-    suspend fun changeChatPreview(message: BaseMessage) {
+    suspend fun changeChatPreview(message: Message) {
         chatsListRepository.updateChatInfo(message)
     }
 

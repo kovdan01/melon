@@ -1,32 +1,33 @@
 package org.melon.feature_chat_content.presentation.chat_content
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.melon.feature_chat_content.domain.chat_content.ChatContentUseCase
-import org.melon.feature_chat_content.presentation.chat_content.model.BaseMessageUi
+import org.melon.feature_chat_content.presentation.chat_content.model.FileUi
 import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
-import org.melon.feature_chat_content.presentation.chat_content.model.FileMessageUi
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatContentViewModel @Inject constructor(
+    private val state: SavedStateHandle,
     private val chatContentUseCase: ChatContentUseCase,
     private val chatContentUiTransformer: ChatContentUiTransformer
 ) : ViewModel() {
 
+    companion object {
+        private const val KEY_SAVED_ATTACHMENTS = "key_saved_attachments"
+    }
+
     private var chatId: Int? = null
 
-    private var messagesList: MutableList<BaseMessageUi> = mutableListOf()
+    private var messagesList: MutableList<MessageUi> = mutableListOf()
     private var messageToEdit: MessageUi? = null
+    private lateinit var attachedFiles: MutableList<FileUi>
 
-    private val _liveMessagesList: MutableLiveData<List<BaseMessageUi>> = MutableLiveData()
-    val liveMessagesList: LiveData<List<BaseMessageUi>>
+    private val _liveMessagesList: MutableLiveData<List<MessageUi>> = MutableLiveData()
+    val liveMessagesList: LiveData<List<MessageUi>>
         get() = _liveMessagesList
 
     private val _liveActionMode: MutableLiveData<Boolean> = MutableLiveData()
@@ -41,8 +42,15 @@ class ChatContentViewModel @Inject constructor(
     val liveChatDraft: LiveData<String?>
         get() = _liveChatDraft
 
+    private val _liveAttachedFiles: MutableLiveData<List<FileUi>> = MutableLiveData()
+    val liveAttachedFiles: LiveData<List<FileUi>>
+        get() = _liveAttachedFiles
+
     fun onViewCreated(chatId: Int) {
         this.chatId = chatId
+        attachedFiles =
+            state.get<List<FileUi>>(KEY_SAVED_ATTACHMENTS)?.toMutableList() ?: mutableListOf()
+
         viewModelScope.launch {
             chatContentUseCase.getMessage(chatId).collect {
                 messagesList = it.map(chatContentUiTransformer::transform).toMutableList()
@@ -68,7 +76,13 @@ class ChatContentViewModel @Inject constructor(
 
                     _liveMessageToEdit.value = null
                 } else {
-                    chatContentUseCase.sendMessage(messageText!!, chatId!!)
+                    chatContentUseCase.sendMessage(
+                        messageText!!,
+                        chatId!!,
+                        attachedFiles.map(chatContentUiTransformer::transform)
+                    )
+                    attachedFiles.clear()
+                    _liveAttachedFiles.value = attachedFiles
                 }
             }
         }
@@ -94,20 +108,16 @@ class ChatContentViewModel @Inject constructor(
         _liveMessagesList.value = messagesList
     }
 
-    fun onFileSelected() {
-        messagesList.add(
-            FileMessageUi(
-                chatId = messagesList.lastOrNull()?.chatId ?: 1,
-                messageId = messagesList.lastOrNull()?.messageId ?: 1,
-                messageText = "YouPorn.txt",
-                messageDate = Date(),
-                isUserMessage = true,
-                isRead = true,
-                isSelected = false
-            )
-        )
+    fun onFileSelected(file: FileUi) {
+        attachedFiles.add(file)
+        state.set(KEY_SAVED_ATTACHMENTS, attachedFiles)
+        _liveAttachedFiles.value = attachedFiles
+    }
 
-        _liveMessagesList.value = messagesList
+    fun onFileClose(file: FileUi) {
+        attachedFiles.remove(file)
+        state.set(KEY_SAVED_ATTACHMENTS, attachedFiles)
+        _liveAttachedFiles.value = attachedFiles
     }
 
     fun onActionModeDestroy() {
@@ -121,7 +131,6 @@ class ChatContentViewModel @Inject constructor(
         viewModelScope.launch {
             chatContentUseCase.deleteMessages(
                 messagesList
-                    .filterIsInstance<MessageUi>()
                     .filter { it.isSelected }
                     .map(chatContentUiTransformer::transform)
             )

@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="end"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/messageTextTv"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/background_user_message"
-        android:padding="16dp"
-        android:text="Hello mfka??"
-        android:textColor="@color/black" />
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/messageTextTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="Hello mfka??"
+            android:textColor="@color/black" />
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/filesRv"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:padding="8dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/messageTimeTv"
