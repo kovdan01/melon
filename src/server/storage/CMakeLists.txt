@@ -11,11 +11,19 @@ include(ntc-dev-build)
 # own libraries
 find_package(melon-core REQUIRED)
 
+find_package(ce-utils REQUIRED)
+find_package(asio-utils REQUIRED)
+
 # boost program options, asio
 find_package(
     Boost 1.76 REQUIRED
     COMPONENTS
+    context
+    exception
+    program_options
     log
+    system
+    thread
 )
 
 # mariadb
@@ -82,6 +90,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::mariadb)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::sqlpp11)
 target_link_libraries(${PROJECT_NAME} PRIVATE sqlpp11::connector-mysql)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE melon::storage_entities)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
