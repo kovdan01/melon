@@ -65,6 +65,28 @@ RUN chown -R builduser archlinux-android-pkgs &&                                
         -D YAML_CPP_BUILD_TESTS=OFF . &&                                                                              \
       cmake --build . --target all &&                                                                                 \
       sudo cmake --build . --target install' &&                                                                       \
+    cd .. &&                                                                                                          \
+    sudo -u builduser bash -c 'wget https://github.com/msgpack/msgpack-c/releases/download/cpp-3.3.0/msgpack-3.3.0.tar.gz' && \
+    sudo -u builduser bash -c 'tar -xf msgpack-3.3.0.tar.gz' &&                                                       \
+    cd msgpack-3.3.0 &&                                                                                               \
+    sudo -u builduser bash -c                                                                                         \
+      'cmake                                                                                                          \
+        -G Ninja                                                                                                      \
+        -D CMAKE_BUILD_TYPE=Release                                                                                   \
+        -D CMAKE_C_COMPILER=gcc                                                                                       \
+        -D CMAKE_CXX_COMPILER=g++                                                                                     \
+        -D CMAKE_INSTALL_PREFIX=/opt/android-libs/aarch64/                                                            \
+        -D CMAKE_ANDROID_NDK=/opt/android-ndk/                                                                        \
+        -D CMAKE_SYSTEM_NAME=Android                                                                                  \
+        -D CMAKE_SYSTEM_VERSION=23                                                                                    \
+        -D CMAKE_ANDROID_ARCH_ABI=arm64-v8a                                                                           \
+        -D MSGPACK_CXX17=ON                                                                                           \
+        -D MSGPACK_BUILD_TESTS=OFF                                                                                    \
+        -D MSGPACK_BUILD_EXAMPLES=OFF                                                                                 \
+        -D BUILD_SHARED_LIBS=OFF                                                                                      \
+        -D MSGPACK_ENABLE_STATIC=ON . &&                                                                              \
+      cmake --build . --target all &&                                                                                 \
+      sudo cmake --build . --target install' &&                                                                       \
     cd ../.. &&                                                                                                       \
     rm -rf archlinux-android-pkgs                                                                                     \
            cyrus-sasl-2.1.27 cyrus-sasl-2.1.27.tar.gz                                                                 \

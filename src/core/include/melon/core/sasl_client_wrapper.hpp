@@ -1,6 +1,8 @@
 #ifndef MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
 #define MELON_CORE_SASL_CLIENT_WRAPPER_HPP_
 
+#include <melon/core.hpp>
+
 #include <sasl/saslutil.h>
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
@@ -9,31 +11,12 @@
 #include <cstring>
 #include <memory>
 #include <new>
+#include <span>
 #include <string>
 #include <string_view>
 
 namespace melon::core::auth
 {
-
-class AuthResultSingleton
-{
-public:
-    static AuthResultSingleton& get_instance();
-
-    AuthResultSingleton(const AuthResultSingleton& root) = delete;
-    AuthResultSingleton& operator=(const AuthResultSingleton&) = delete;
-    AuthResultSingleton(AuthResultSingleton&& root) = delete;
-    AuthResultSingleton& operator=(AuthResultSingleton&&) = delete;
-
-    [[nodiscard]] const std::string& success() const noexcept;
-    [[nodiscard]] const std::string& failure() const noexcept;
-
-private:
-    AuthResultSingleton() = default;
-
-    const std::string m_success = "Okay, Mr. Client, here's your token...";
-    const std::string m_failure = "Can't perform authentication!";
-};
 
 using sasl_res = int;
 
@@ -59,6 +42,12 @@ private:
     std::unique_ptr<sasl_secret_t, FreeDeleter> m_password;
 };
 
+class Exception : public melon::core::Exception
+{
+public:
+    using melon::core::Exception::Exception;
+};
+
 enum class AuthState
 {
     // common
@@ -81,7 +70,7 @@ enum class AuthState
 
 struct StepResult
 {
-    std::string_view response;
+    melon::core::buffer_view_t response;
     AuthState completness;
 };
 
@@ -109,12 +98,13 @@ public:
 
     struct StartResult
     {
-        std::string_view response;
+        melon::core::buffer_view_t response;
         std::string_view selected_mechanism;
+        AuthState completness;
     };
 
     StartResult start(std::string_view wanted_mech_list);
-    StepResult step(std::string_view server_response);
+    StepResult step(std::span<const melon::core::byte_t> server_response);
     [[nodiscard]] const sasl_conn_t* conn() const;
     [[nodiscard]] sasl_conn_t* conn();
 
