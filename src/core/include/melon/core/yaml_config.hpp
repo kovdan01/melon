@@ -22,11 +22,11 @@ public:
     ~MissingParamsException() override;
 };
 
-class MELON_CORE_EXPORT ExtraParamsException : public melon::core::Exception
+class MELON_CORE_EXPORT UnknownParamsException : public melon::core::Exception
 {
 public:
     using melon::core::Exception::Exception;
-    ~ExtraParamsException() override;
+    ~UnknownParamsException() override;
 };
 
 /**
