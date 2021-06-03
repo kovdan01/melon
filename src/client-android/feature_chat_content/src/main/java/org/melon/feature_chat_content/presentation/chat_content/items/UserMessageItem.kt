@@ -8,7 +8,9 @@ import com.xwray.groupie.GroupieViewHolder
 import com.xwray.groupie.Item
 import kotlinx.android.synthetic.main.fragment_chat_content.*
 import kotlinx.android.synthetic.main.item_other_message.view.messageTextTv
+import kotlinx.android.synthetic.main.item_user_file_message.view.*
 import kotlinx.android.synthetic.main.item_user_message.view.*
+import kotlinx.android.synthetic.main.item_user_message.view.messageTimeTv
 import org.melon.feature_chat_content.R
 import org.melon.feature_chat_content.presentation.chat_content.model.FileUi
 import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
@@ -24,6 +26,7 @@ class UserMessageItem(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) = with(viewHolder.itemView) {
         messageTextTv.text = message.messageText
+        messageTextTv.isVisible = message.messageText.isNotBlank()
 
         setOnLongClickListener {
             onLongClick(message)

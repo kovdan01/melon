@@ -62,7 +62,7 @@ class ChatContentViewModel @Inject constructor(
     }
 
     fun onSendClick(messageText: String?) {
-        if (messageText.isNullOrBlank().not()) {
+        if (messageText.isNullOrBlank().not() || attachedFiles.isNotEmpty()) {
             viewModelScope.launch {
                 if (messageToEdit != null) {
 
@@ -77,7 +77,7 @@ class ChatContentViewModel @Inject constructor(
                     _liveMessageToEdit.value = null
                 } else {
                     chatContentUseCase.sendMessage(
-                        messageText!!,
+                        messageText ?: "",
                         chatId!!,
                         attachedFiles.map(chatContentUiTransformer::transform)
                     )
