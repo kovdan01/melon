@@ -59,12 +59,14 @@ private slots:
     void provide_message_context_menu(const QPoint& pos);
     void delete_message();
     void edit_message();
+    void select_message();
 
     void repaint_message_list();
 
 private:  // NOLINT (readability-redundant-access-specifiers)
-    QMenu m_submenu_sended_messages{this};
-    QMenu m_submenu_received_messages{this};
+    QMenu m_submenu_sended_message{this};
+    QMenu m_submenu_received_message{this};
+    QMenu m_submenu_multiselection{this};
     MessageListModel* m_model_message_list = new MessageListModel{this};
     MessageItemDelegate* m_message_item_delegate;
     QScopedPointer<Ui::ChatWidget> m_ui;
@@ -72,9 +74,11 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     QSet<int> m_pressed_keys;
     QString m_incomplete_message;
     QString m_pre_edit_message;
+    QPoint m_pos_menu;
     int m_current_chat_row;
     int m_edit_row;
     bool m_edit_mode = false;
+//    bool m_selection_mode = false;
 };
 
 }  // namespace melon::client_desktop

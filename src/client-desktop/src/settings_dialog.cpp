@@ -40,6 +40,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 SettingsDialog::~SettingsDialog()
 {
+    BOOST_LOG_TRIVIAL(info) << "Deleting SettingsDialog";
     delete m_ui;
 }
 
