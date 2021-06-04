@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fileNameTv"
+    android:background="?selectableItemBackground"
+    android:layout_width="150dp"
+    android:layout_height="wrap_content"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true"
+    app:drawableStartCompat="@drawable/ic_file"
+    app:drawableTint="@color/file_color"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />

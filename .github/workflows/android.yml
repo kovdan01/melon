@@ -8,7 +8,7 @@ on:
 
 env:
   CORE_ARM_RELEASE_ARTIFACT: "core-arm-release-android"
-  EXACT_NDK_VERSION: "22.0.7026061"
+  EXACT_NDK_VERSION: "22.1.7171670"
 
 jobs:
   build-core-arm:

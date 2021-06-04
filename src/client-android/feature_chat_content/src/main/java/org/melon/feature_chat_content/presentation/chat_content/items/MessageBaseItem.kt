@@ -1,6 +1,5 @@
-package org.melon.feature_chat_content.presentation.chat_content
+package org.melon.feature_chat_content.presentation.chat_content.items
 
-import androidx.annotation.LayoutRes
 import com.xwray.groupie.GroupieViewHolder
 import com.xwray.groupie.Item
 import java.text.SimpleDateFormat

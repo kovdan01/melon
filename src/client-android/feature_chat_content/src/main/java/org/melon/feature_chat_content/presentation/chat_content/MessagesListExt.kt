@@ -1,5 +1,7 @@
 package org.melon.feature_chat_content.presentation.chat_content
 
+import org.melon.feature_chat_content.presentation.chat_content.model.MessageUi
+
 fun List<MessageUi>.getAvailableMessageId(): Int {
     val max = this.maxByOrNull { it.messageId }?.messageId ?: return 1
     val min: Int = this.minByOrNull { it.messageId }?.messageId ?: return 1
@@ -26,8 +28,8 @@ fun MutableList<MessageUi>.toggleMessageSelection(messageUi: MessageUi) {
     }
 }
 
-fun MutableList<MessageUi>.deselectAll(){
-    for(i in 0 until size){
+fun MutableList<MessageUi>.deselectAll() {
+    for (i in 0 until size) {
         this[i] = this[i].copy(isSelected = false)
     }
 }

@@ -1,7 +1,7 @@
 package org.melon.feature_chats_list.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.melon.feature_chat_content.domain.chat_content.Message
+import org.melon.feature_chat_content.domain.model.Message
 import javax.inject.Inject
 
 class ChatsListUseCase @Inject constructor(

@@ -2,7 +2,7 @@ package org.melon.feature_chats_list.domain
 
 import kotlinx.coroutines.flow.Flow
 import org.melon.core.data.base.BaseRepository
-import org.melon.feature_chat_content.domain.chat_content.Message
+import org.melon.feature_chat_content.domain.model.Message
 
 interface ChatsListRepository : BaseRepository {
     fun getChatsList(): Flow<List<Chat>>
