@@ -39,4 +39,21 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 target_link_libraries(${PROJECT_NAME} PRIVATE Boost::system)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
+# melon-auth-test executable
+set(TEST_CLIENT_NAME melon-test-client)
+
+add_executable(${TEST_CLIENT_NAME}
+    ${HEADERS}
+    src/test_client.cpp
+)
+
+if(WIN32)
+    target_link_libraries(${TEST_CLIENT_NAME} PRIVATE ws2_32 mswsock)
+endif()
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::core)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE melon::sasl_wrappers)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Boost::program_options)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Boost::system)
+target_link_libraries(${TEST_CLIENT_NAME} PRIVATE Threads::Threads)
+
 ntc_target(${PROJECT_NAME})

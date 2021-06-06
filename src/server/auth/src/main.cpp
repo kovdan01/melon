@@ -1,7 +1,10 @@
 #include <melon/core.hpp>
+#include <melon/core/commands.hpp>
 #include <melon/core/log_configuration.hpp>
 #include <melon/core/session.hpp>
 #include <sasl_server_wrapper.hpp>
+
+#include <ce/tcp_listener.hpp>
 
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -51,6 +54,7 @@ public:
             // 2) if yes, should ec be checked after every async_* function?
 
             std::string_view supported_mechanisms = server.list_mechanisms();
+            async_send_code(static_cast<std::uint32_t>(mc::ServerCode::SEND_SASL_DATA), yc, ec);
             async_send(supported_mechanisms, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
@@ -62,16 +66,18 @@ public:
                                          "Supported mechanisms: " + std::string(supported_mechanisms));
             }
 
+            async_send_code(static_cast<std::uint32_t>(mc::ServerCode::SEND_SASL_DATA), yc, ec);
             async_send(wanted_mechanism.view(), yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
             auto client_response = async_recieve(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
             auto [server_response, server_completness] = server.start(wanted_mechanism.view(), { client_response.data(), client_response.size() });
+            async_send_code(static_cast<std::uint32_t>(mc::ServerCode::SEND_SASL_DATA), yc, ec);
             async_send(server_response, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
-            while (server_completness == mca::AuthState::INCOMPLETE)
+            for (;;)
             {
                 client_response = async_recieve(NUMBER_LIMIT, yc, ec);
                 MELON_CHECK_BA_ERROR_CODE(ec);
@@ -80,14 +86,16 @@ public:
                 server_response = server_step_result.response;
                 server_completness = server_step_result.completness;
 
-                if (server_completness != mca::AuthState::COMPLETE)
+                if (server_completness == mca::AuthState::INCOMPLETE)
                 {
+                    async_send_code(static_cast<std::uint32_t>(mc::ServerCode::SEND_SASL_DATA), yc, ec);
                     async_send(server_response, yc, ec);
                     MELON_CHECK_BA_ERROR_CODE(ec);
                 }
-
-                if (server_completness != mca::AuthState::INCOMPLETE)
+                else
+                {
                     break;
+                }
             }
             assert(server_completness != mca::AuthState::INCOMPLETE);
 
@@ -107,6 +115,16 @@ public:
                 break;
             case mca::AuthState::AUTHORIZATION_FAILURE:
                 BOOST_LOG_SEV(log(), info) << "Authorization failure";
+                break;
+            }
+
+            switch (server_completness)
+            {
+            case mca::AuthState::COMPLETE:
+                async_send_code(static_cast<std::uint32_t>(mc::ServerCode::ISSUED_A_TOKEN), yc, ec);
+                break;
+            default:
+                async_send_code(static_cast<std::uint32_t>(mc::ServerCode::AUTH_PROBLEM), yc, ec);
                 break;
             }
 

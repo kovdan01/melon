@@ -7,15 +7,15 @@
 
 #include <ce/format.hpp>
 #include <ce/io_context_signal_interrupter.hpp>
+#include <ce/socket_session.hpp>
 #include <ce/spawn.hpp>
-#include <ce/tcp_listener.hpp>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+#include <boost/beast/core/basic_stream.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <msgpack.hpp>
 
@@ -59,8 +59,18 @@ protected:
     What async_recieve(std::size_t limit, YieldContext& yc, boost::system::error_code& ec)
     {
         m_stream.expires_after(TIME_LIMIT);
-        What data = m_serializer.async_deserialize_from(m_stream, limit, yc, ec);
+        What data = m_serializer.async_deserialize_from<What>(m_stream, limit, yc, ec);
         return data;
+    }
+
+    template <typename YieldContext>
+    std::uint32_t async_recieve_code(YieldContext& yc, boost::system::error_code& ec)
+    {
+        m_stream.expires_after(TIME_LIMIT);
+        std::uint32_t code;
+        std::size_t n = ba::async_read(m_stream, ba::buffer(&code, sizeof(code)),
+                                       ba::transfer_exactly(sizeof(code)), yc[ec]);
+        return code;
     }
 
     template <typename What, typename YieldContext>
@@ -68,6 +78,13 @@ protected:
     {
         m_stream.expires_after(TIME_LIMIT);
         m_serializer.async_serialize_to(m_stream, what, yc, ec);
+    }
+
+    template <typename YieldContext>
+    void async_send_code(std::uint32_t code, YieldContext& yc, boost::system::error_code& ec)
+    {
+        m_stream.expires_after(TIME_LIMIT);
+        ba::async_write(m_stream, ba::buffer(&code, sizeof(code)), yc[ec]);
     }
 
 private:
@@ -90,10 +107,23 @@ public:
         m_serializer.serialize_to(m_stream, what);
     }
 
+    void send_code(std::uint32_t code)
+    {
+        ba::write(m_stream, ba::buffer(&code, sizeof(code)));
+    }
+
     template <typename What = buffer_t>
     [[nodiscard]] What receive(std::size_t limit = BUFFER_LIMIT)
     {
-        return m_serializer.deserialize_from(m_stream, limit);
+        return m_serializer.deserialize_from<What>(m_stream, limit);
+    }
+
+    [[nodiscard]] std::uint32_t receive_code()
+    {
+        std::uint32_t code;
+        std::size_t n = ba::read(m_stream, ba::buffer(&code, sizeof(code)),
+                                 ba::transfer_exactly(sizeof(code)), 0);
+        return code;
     }
 
 private:

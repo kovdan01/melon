@@ -33,8 +33,13 @@ find_package(Threads REQUIRED)
 # yaml-cpp
 find_package(yaml-cpp REQUIRED)
 
+# cyrus SASL
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(cyrus-sasl REQUIRED IMPORTED_TARGET libsasl2)
+
 set(HEADERS
     include/melon/core.hpp
+    include/melon/core/commands.hpp
     include/melon/core/entities.hpp
     include/melon/core/entities.ipp
     include/melon/core/exception.hpp
@@ -44,6 +49,8 @@ set(HEADERS
     include/melon/core/sasl_client_wrapper.ipp
     include/melon/core/serialization.hpp
     include/melon/core/session.hpp
+    include/melon/core/token.hpp
+    include/melon/core/token.ipp
     include/melon/core/yaml_config.hpp
 )
 
@@ -70,6 +77,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ce::asio-utils)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC msgpackc-cxx)
+target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::cyrus-sasl)
 
 ntc_target(${PROJECT_NAME}
     ALIAS_NAME melon::core
