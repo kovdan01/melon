@@ -250,16 +250,13 @@ void ChatWidget::select_message()
 
 void ChatWidget::delete_message()
 {
-    QModelIndexList selected_indexes;
-    QModelIndex cur_index;
-    int row;
+    QModelIndexList selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes();
+    QModelIndex cur_index = m_ui->MsgList->selectionModel()->currentIndex();
+    int row = cur_index.row();
 
     // If we want to delete just one message in NoSelection mode, we should set it selected
-    if (m_ui->MsgList->selectionModel()->selectedIndexes().empty())
-    {
-        m_ui->MsgList->selectionModel()->select(m_ui->MsgList->selectionModel()->currentIndex(),
-                                                QItemSelectionModel::Toggle);
-    }
+    if (selected_indexes.empty())
+        m_ui->MsgList->selectionModel()->select(cur_index, QItemSelectionModel::Toggle);
 
     BOOST_LOG_TRIVIAL(info) << "[delete msgs] Count of items to delete: " << m_ui->MsgList->selectionModel()->selectedIndexes().size();
     while (!(selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes()).empty())
