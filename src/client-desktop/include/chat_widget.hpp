@@ -78,7 +78,6 @@ private:  // NOLINT (readability-redundant-access-specifiers)
     int m_current_chat_row;
     int m_edit_row;
     bool m_edit_mode = false;
-//    bool m_selection_mode = false;
 };
 
 }  // namespace melon::client_desktop

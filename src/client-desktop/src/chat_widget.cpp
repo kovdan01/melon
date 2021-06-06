@@ -190,13 +190,13 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     cursor.movePosition(QTextCursor::End);
     m_ui->MsgEdit->setTextCursor(cursor);
 
-    m_ui->MsgList->clearSelection();
+//    m_ui->MsgList->clearSelection();
     m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)
 {
-    m_ui->MsgList->set_selection_mode(false);
+    m_ui->MsgList->set_multiselection_mode(false);
     m_ui->MsgList->clearSelection();
     previous_it->set_incomplete_message(capture_message_from_editor());
     previous_it->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
@@ -218,31 +218,23 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 {
     m_pos_menu = pos;
     QModelIndexList selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes();
-
+//    m_ui->MsgList->selectionModel()->select(m_ui->MsgList->indexAt(pos), QItemSelectionModel::Toggle);
     BOOST_LOG_TRIVIAL(info) << "Count of selected items: " << selected_indexes.size();
 
-    if (selected_indexes.count() == 1 || m_ui->MsgList->selection_mode() == false)  // for single selection
+    // for single selection
+    // when popup menu triggered and we are not in multiselection mode,
+    // NO items are selected!
+    if (selected_indexes.count() == 1 || !m_ui->MsgList->multiselection_mode())
     {
         BOOST_LOG_TRIVIAL(info) << "In single selection context menu";
-        m_ui->MsgList->selectionModel()->setCurrentIndex(m_ui->MsgList->indexAt(pos), QItemSelectionModel::Toggle);
         QModelIndex cur_index = m_ui->MsgList->selectionModel()->currentIndex();
-
-        if (!cur_index.isValid())
-        {
-            BOOST_LOG_TRIVIAL(info) << "Invalid index of message!";
-            return;
-        }
 
         auto it_message = this->m_model_message_list->data(cur_index, Qt::DisplayRole).value<message_handle_t>();
 
         if (it_message->status() == Message::Status::SENT)
-        {
             m_submenu_sended_message.popup(m_ui->MsgList->mapToGlobal(pos));
-        }
         else
-        {
             m_submenu_received_message.popup(m_ui->MsgList->mapToGlobal(pos));
-        }
     }
     else  // for multiselection
     {
@@ -253,8 +245,7 @@ void ChatWidget::provide_message_context_menu(const QPoint& pos)
 void ChatWidget::select_message()
 {
     m_ui->MsgList->selectionModel()->select(m_ui->MsgList->indexAt(m_pos_menu), QItemSelectionModel::Toggle);
-    m_ui->MsgList->set_selection_mode(true);
-    BOOST_LOG_TRIVIAL(info) << "Now SelectionMode is MultiSelection";
+    m_ui->MsgList->set_multiselection_mode(true);
 }
 
 void ChatWidget::delete_message()
@@ -263,13 +254,15 @@ void ChatWidget::delete_message()
     QModelIndex cur_index;
     int row;
 
-    if (m_ui->MsgList->selectionModel()->selectedIndexes().size() == 0)
+    // If we want to delete just one message in NoSelection mode, we should set it selected
+    if (m_ui->MsgList->selectionModel()->selectedIndexes().empty())
     {
         m_ui->MsgList->selectionModel()->select(m_ui->MsgList->selectionModel()->currentIndex(),
                                                 QItemSelectionModel::Toggle);
     }
 
-    while ((selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes()).size())
+    BOOST_LOG_TRIVIAL(info) << "[delete msgs] Count of items to delete: " << m_ui->MsgList->selectionModel()->selectedIndexes().size();
+    while (!(selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes()).empty())
     {
         cur_index = selected_indexes.first();
         m_model_message_list->delete_message(m_current_chat_it, cur_index);
@@ -278,15 +271,13 @@ void ChatWidget::delete_message()
 
     if (row == m_model_message_list->rowCount(QModelIndex()))
         emit this->last_message_changed();
-    m_ui->MsgList->disable_selection_mode();
+    m_ui->MsgList->set_multiselection_mode(false);
 }
 
 void ChatWidget::edit_message()
 {
     m_ui->MsgList->selectionModel()->select(m_ui->MsgList->selectionModel()->currentIndex(),
                                             QItemSelectionModel::Toggle);
-    m_ui->MsgList->setSelectionMode(QAbstractItemView::SelectionMode::NoSelection);
-    BOOST_LOG_TRIVIAL(info) << "Selection mode change to NoSelection in EditMode";
     QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
 
     m_edit_mode = true;

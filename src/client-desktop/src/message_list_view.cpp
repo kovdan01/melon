@@ -11,33 +11,33 @@ MessageListView::MessageListView(QWidget* parent)
 
 void MessageListView::mousePressEvent(QMouseEvent* event)
 {
-
-    if (m_selection_mode &&
+    if (m_multiselection_mode &&
         event->button() == Qt::MouseButton::LeftButton &&
         this->selectionModel()->isSelected(this->indexAt(event->pos())) &&
         this->selectionModel()->selectedIndexes().size() == 1)
     {
-        BOOST_LOG_TRIVIAL(info) << "[last] Current row is " << this->indexAt(event->pos()).row();
-        this->selectionModel()->clear();
-        this->disable_selection_mode();
-    }
-    else if (event->button() == Qt::MouseButton::RightButton)
-    {
-        BOOST_LOG_TRIVIAL(info) << "There was right button click";
-        emit customContextMenuRequested(event->pos());
+        this->selectionModel()->clearSelection();
+        this->set_multiselection_mode(false);
     }
     else
     {
-        BOOST_LOG_TRIVIAL(info) << "There was another click";
         QListView::mousePressEvent(event);
     }
 }
 
-void MessageListView::disable_selection_mode()
+void MessageListView::set_multiselection_mode(bool mode)
 {
-    m_selection_mode = false;
-    this->setSelectionMode(QAbstractItemView::SelectionMode::NoSelection);
-    BOOST_LOG_TRIVIAL(info) << "Now SelectionMode is NoSelection";
+    m_multiselection_mode = mode;
+    if(mode)
+    {
+        BOOST_LOG_TRIVIAL(info) << "Now message selection mode is MultiSelection";
+        this->setSelectionMode(QAbstractItemView::SelectionMode::MultiSelection);
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(info) << "Now message selection mode is NoSelection";
+        this->setSelectionMode(QAbstractItemView::SelectionMode::NoSelection);
+    }
 }
 
 }  // namespace melon::client_desktop
