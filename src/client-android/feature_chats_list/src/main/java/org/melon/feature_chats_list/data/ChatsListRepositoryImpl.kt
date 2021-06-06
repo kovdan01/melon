@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
-import org.melon.feature_chat_content.domain.chat_content.Message
+import org.melon.feature_chat_content.domain.model.Message
 import org.melon.feature_chats_list.data.db.ChatDataEntity
 import org.melon.feature_chats_list.data.db.ChatsListDao
 import org.melon.feature_chats_list.domain.Chat
