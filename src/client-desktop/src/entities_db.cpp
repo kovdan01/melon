@@ -31,7 +31,7 @@ Domain::Domain(const QString& hostname, bool external)
 
     QSqlQuery qry(storage.db_name());
     prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO domains VALUES(:domain_id, :hostname, :external)"),
-                                  "Prepare inserting domain");
+                                                      "Prepare inserting domain");
 
     qry.bindValue(QStringLiteral(":domain_id"), QVariant::fromValue(this->domain_id()));
     qry.bindValue(QStringLiteral(":hostname"), this->hostname());
@@ -91,7 +91,7 @@ User::User(const QString& username, id_t domain_id, Status status)
 
     QSqlQuery qry(storage.db_name());
     prepare_and_check_qtsql_query(qry, QStringLiteral("INSERT INTO users VALUES(:user_id, :username, :domain_id, :status)"),
-                                  "Prepare inserting user");
+                                                      "Prepare inserting user");
 
     qry.bindValue(QStringLiteral(":user_id"), QVariant::fromValue(this->user_id()));
     qry.bindValue(QStringLiteral(":username"), this->username());
@@ -248,7 +248,6 @@ void Message::set_text(const QString& text)
                          QStringLiteral("' WHERE message_id=") + QString::number(this->message_id()) +
                          QStringLiteral(" and chat_id=") + QString::number(this->chat_id()) +
                          QStringLiteral(" and domain_id_chat=") + QString::number(this->domain_id_chat());
-    BOOST_LOG_TRIVIAL(info) << "sql-query for updating message is:\n" << qry_string.toStdString();
     exec_and_check_qtsql_query(qry, qry_string, "Updating message text");
 
     this->set_is_edit(true);

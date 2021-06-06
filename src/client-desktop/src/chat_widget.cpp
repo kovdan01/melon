@@ -38,10 +38,14 @@ ChatWidget::ChatWidget(QWidget* parent)
             this,
             &ChatWidget::provide_message_context_menu);
 
-    m_submenu_sended_messages.addAction(tr("Edit"), this, SLOT(edit_message()));
-    m_submenu_sended_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_sended_message.addAction(tr("Edit"), this, SLOT(edit_message()));
+    m_submenu_sended_message.addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_sended_message.addAction(tr("Select"), this, SLOT(select_message()));
 
-    m_submenu_received_messages.addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_received_message.addAction(tr("Delete"), this, SLOT(delete_message()));
+    m_submenu_received_message.addAction(tr("Select"), this, SLOT(select_message()));
+
+    m_submenu_multiselection.addAction(tr("Delete"), this, SLOT(delete_message()));
 
     m_ui->MsgEdit->installEventFilter(this);
 }
@@ -123,6 +127,7 @@ void ChatWidget::send_message()
 
         if (m_edit_row == m_model_message_list->rowCount(QModelIndex()) - 1)
             emit this->last_message_changed();
+        m_ui->MsgList->selectionModel()->clearSelection();
         return;
     }
 
@@ -185,12 +190,14 @@ void ChatWidget::change_chat(chat_handle_t current_it)
     cursor.movePosition(QTextCursor::End);
     m_ui->MsgEdit->setTextCursor(cursor);
 
-    m_ui->MsgList->clearSelection();
+//    m_ui->MsgList->clearSelection();
     m_ui->MsgList->scrollToBottom();
 }
 
 void ChatWidget::change_chat(chat_handle_t current_it, chat_handle_t previous_it)
 {
+    m_ui->MsgList->set_multiselection_mode(false);
+    m_ui->MsgList->clearSelection();
     previous_it->set_incomplete_message(capture_message_from_editor());
     previous_it->set_scrolling_position(m_ui->MsgList->verticalScrollBar()->value());
 
@@ -209,34 +216,65 @@ void ChatWidget::load_message_to_editor(const Message& message)
 
 void ChatWidget::provide_message_context_menu(const QPoint& pos)
 {
-    QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
-    if (!index.isValid())
-        return;
+    m_pos_menu = pos;
+    QModelIndexList selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes();
+//    m_ui->MsgList->selectionModel()->select(m_ui->MsgList->indexAt(pos), QItemSelectionModel::Toggle);
+    BOOST_LOG_TRIVIAL(info) << "Count of selected items: " << selected_indexes.size();
 
-    auto it_message = this->m_model_message_list->data(index, Qt::DisplayRole).value<message_handle_t>();
+    // for single selection
+    // when popup menu triggered and we are not in multiselection mode,
+    // NO items are selected!
+    if (selected_indexes.count() == 1 || !m_ui->MsgList->multiselection_mode())
+    {
+        BOOST_LOG_TRIVIAL(info) << "In single selection context menu";
+        QModelIndex cur_index = m_ui->MsgList->selectionModel()->currentIndex();
 
-    if (it_message->status() == Message::Status::SENT)
-    {
-        m_submenu_sended_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+        auto it_message = this->m_model_message_list->data(cur_index, Qt::DisplayRole).value<message_handle_t>();
+
+        if (it_message->status() == Message::Status::SENT)
+            m_submenu_sended_message.popup(m_ui->MsgList->mapToGlobal(pos));
+        else
+            m_submenu_received_message.popup(m_ui->MsgList->mapToGlobal(pos));
     }
-    else
+    else  // for multiselection
     {
-        m_submenu_received_messages.popup(m_ui->MsgList->mapToGlobal(pos));
+        m_submenu_multiselection.popup(m_ui->MsgList->mapToGlobal(pos));
     }
+}
+
+void ChatWidget::select_message()
+{
+    m_ui->MsgList->selectionModel()->select(m_ui->MsgList->indexAt(m_pos_menu), QItemSelectionModel::Toggle);
+    m_ui->MsgList->set_multiselection_mode(true);
 }
 
 void ChatWidget::delete_message()
 {
-    QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
-    int row = index.row();
-    m_model_message_list->delete_message(m_current_chat_it, index);
+    QModelIndexList selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes();
+    QModelIndex cur_index = m_ui->MsgList->selectionModel()->currentIndex();
+    int row = cur_index.row();
+
+    // If we want to delete just one message in NoSelection mode, we should set it selected
+    if (selected_indexes.empty())
+        m_ui->MsgList->selectionModel()->select(cur_index, QItemSelectionModel::Toggle);
+
+    BOOST_LOG_TRIVIAL(info) << "[delete msgs] Count of items to delete: " << m_ui->MsgList->selectionModel()->selectedIndexes().size();
+    while (!(selected_indexes = m_ui->MsgList->selectionModel()->selectedIndexes()).empty())
+    {
+        cur_index = selected_indexes.first();
+        m_model_message_list->delete_message(m_current_chat_it, cur_index);
+        row = cur_index.row();
+    }
 
     if (row == m_model_message_list->rowCount(QModelIndex()))
         emit this->last_message_changed();
+    m_ui->MsgList->set_multiselection_mode(false);
 }
 
 void ChatWidget::edit_message()
 {
+    m_ui->MsgList->selectionModel()->select(m_ui->MsgList->selectionModel()->currentIndex(),
+                                            QItemSelectionModel::Toggle);
     QModelIndex index = m_ui->MsgList->selectionModel()->currentIndex();
 
     m_edit_mode = true;

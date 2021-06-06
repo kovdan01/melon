@@ -35,7 +35,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
      <item>
-      <widget class="QListView" name="MsgList">
+      <widget class="melon::client_desktop::MessageListView" name="MsgList">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
@@ -74,8 +74,11 @@
        <property name="sizeAdjustPolicy">
         <enum>QAbstractScrollArea::AdjustToContents</enum>
        </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+        <enum>QAbstractItemView::NoSelection</enum>
        </property>
        <property name="selectionBehavior">
         <enum>QAbstractItemView::SelectItems</enum>
@@ -178,6 +181,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>melon::client_desktop::MessageListView</class>
+   <extends>QListView</extends>
+   <header location="global">message_list_view.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

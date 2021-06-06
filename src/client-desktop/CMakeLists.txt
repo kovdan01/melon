@@ -48,6 +48,7 @@ set(HEADERS
     include/main_window.hpp
     include/message_item_delegate.hpp
     include/message_list_model.hpp
+    include/message_list_view.hpp
     include/settings_dialog.hpp
     include/storage_singletones.hpp
     include/storage_singletones.ipp
@@ -64,6 +65,7 @@ set(SOURCES
     src/main_window.cpp
     src/message_item_delegate.cpp
     src/message_list_model.cpp
+    src/message_list_view.cpp
     src/settings_dialog.cpp
     src/storage_singletones.cpp
 )
