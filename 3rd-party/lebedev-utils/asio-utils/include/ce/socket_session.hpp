@@ -13,6 +13,7 @@
 
 #include <exception>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <type_traits>
 

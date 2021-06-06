@@ -1,7 +1,6 @@
 #include <melon/core.hpp>
 #include <melon/core/log_configuration.hpp>
 #include <melon/core/session.hpp>
-#include <entities.hpp>
 
 #include <boost/asio/static_thread_pool.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -11,7 +10,6 @@
 #include <thread>
 
 namespace mc = melon::core;
-namespace mss = melon::server::storage;
 namespace ba = boost::asio;
 
 #define MELON_CHECK_BA_ERROR_CODE(ec)                       \
@@ -24,20 +22,20 @@ namespace ba = boost::asio;
     }                                                       \
 
 
-enum class OpCode : std::uint32_t
+enum class OpCode : std::uint8_t
 {
-    ADD,
-    UPDATE,
-    DELETE,
-    //SMTHELSE,
+    ADD = 0,
+    UPDATE = 1,
+    DELETE = 2,
+    //SMTHELSE = 3,
 };
 
-enum class TypeCode : std::uint32_t
+enum class TypeCode : std::uint8_t
 {
-    DOMAIN,
-    USER,
-    CHAT,
-    MESSAGE,
+    DOMAIN = 0,
+    USER = 1,
+    CHAT = 2,
+    MESSAGE = 3,
 };
 
 class StorageSession final: public mc::AsyncSession
@@ -55,24 +53,23 @@ public:
             using namespace boost::log::trivial;
             boost::system::error_code ec;
 
-            // how to check that I recieve what I send, why BOOST_LOG print nothing? how to send and recieve int not std::string_view
-//            std::string_view send_op = "0";
-//            async_send(send_op, yc, ec);
-//            mc::StringViewOverBinary op(async_recieve(NUMBER_LIMIT, yc, ec)); // add, update, ..
-//            MELON_CHECK_BA_ERROR_CODE(ec);
-//            BOOST_LOG_TRIVIAL(info) << "Using " << std::string(op.view()) << " threads.";
+            //for (;;)
+            //{
+                std::string_view send_op = "0";
+                async_send(send_op, yc, ec);
+                auto op = async_recieve(NUMBER_LIMIT, yc, ec); // add, update, ..
+                MELON_CHECK_BA_ERROR_CODE(ec);
 
-//            std::string_view send_type = "2";
-//            async_send(send_type, yc, ec);
-//            mc::StringViewOverBinary type(async_recieve(NUMBER_LIMIT, yc, ec)); // user, message, ...
-//            MELON_CHECK_BA_ERROR_CODE(ec);
+                std::string_view send_type = "2";
+                async_send(send_type, yc, ec);
+                auto type = async_recieve(NUMBER_LIMIT, yc, ec); // user, message, ...
+                MELON_CHECK_BA_ERROR_CODE(ec);
 
-
-             uint32_t send_op = 1;
-             async_send(send_op, yc, ec);
-             auto rec_op = async_recieve<uint32_t>(NUMBER_LIMIT, yc, ec);
-
-
+//                std::tuple send_body = std::tuple(1, 2, "new_chatname");
+//                async_send(send_body, yc, ec);
+//                auto body = async_recieve(NUMBER_LIMIT, yc, ec); // "5, 2, "new_chatname"", ...
+//                MELON_CHECK_BA_ERROR_CODE(ec);
+            //}
 
         }, {}, ba::bind_executor(this->cont_executor(), [](std::exception_ptr e)  // NOLINT (performance-unnecessary-value-param)
         {
