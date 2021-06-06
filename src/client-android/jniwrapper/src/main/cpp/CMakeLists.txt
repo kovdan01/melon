@@ -8,5 +8,4 @@ target_link_libraries(
     hello-jni
     PRIVATE
     android
-    melon-core
 )
