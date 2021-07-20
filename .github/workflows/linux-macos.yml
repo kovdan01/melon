@@ -19,7 +19,7 @@ jobs:
       BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
-      THIRD_PARTY_INSTALL_PATH: "3rd-party-install"
+      LEBEDEV_UTILS_INSTALL_PATH: "3rd-party-install"
       CYRUS_SASL_VERSION: "2.1.27"
       CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
       YAML_CPP_VERSION: "0.6.3"
@@ -28,7 +28,6 @@ jobs:
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MSGPACK_VERSION: "3.3.0"
       MSGPACK_INSTALL_PATH: "msgpack-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
@@ -271,7 +270,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_lebedev_utils_unix
       with:
-        path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
+        path: ${{ env.ROOT_PATH }}/${{ env.LEBEDEV_UTILS_INSTALL_PATH }}
         key: ${{ runner.os }}-lebedev-utils-10
 
     - name: Utils by Pavel A. Lebedev
@@ -291,7 +290,7 @@ jobs:
         # utils and asio-utils from cosec-examples
         cd ${{ env.REPO_PATH }}/3rd-party/lebedev-utils
         mkdir build
-        instal_prefix="${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}"
+        instal_prefix="${{ env.ROOT_PATH }}/${{ env.LEBEDEV_UTILS_INSTALL_PATH }}"
         [ -d $instal_prefix ] && rm -r $instal_prefix
         mkdir $instal_prefix
         cd build
@@ -506,7 +505,7 @@ jobs:
       id: cache_msgpack_unix
       with:
         path: ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }}
-        key: ${{ runner.os }}-msgpack-${{ env.MSGPACK_VERSION }}-8
+        key: ${{ runner.os }}-msgpack-submodule
 
     - name: MsgPack
       if: ${{ steps.cache_msgpack_unix.outputs.cache-hit != 'true' }}
@@ -531,22 +530,13 @@ jobs:
 
         os.chdir(root)
 
-        msgpack_version = os.environ['MSGPACK_VERSION']
-
-        msgpack_source_dir  = os.path.normpath(os.path.join(root, "msgpack-{}".format(msgpack_version)))
+        msgpack_source_dir  = os.path.normpath(os.path.join(repo, "3rd-party", "msgpack-c"))
         msgpack_install_dir = os.path.normpath(os.path.join(root, "${{ env.MSGPACK_INSTALL_PATH }}"))
         os.mkdir(msgpack_install_dir)
 
-        msgpack_url = "https://github.com/msgpack/msgpack-c/releases/download/cpp-{}/msgpack-{}.tar.gz".format(msgpack_version, msgpack_version)
-        open("msgpack.tar.gz", "wb").write(requests.get(msgpack_url, allow_redirects=True).content)
-        execute_command("tar -xf msgpack.tar.gz")
-
         os.chdir(msgpack_source_dir)
 
-        execute_command("patch -p1 < {}/build-config/patches/msgpack-3.3.0/struct_iovec.patch".format(repo))
-
         execute_command("{} -B build -DCMAKE_BUILD_TYPE=Release -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
-                        "-DMSGPACK_CXX17=ON -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF -DBUILD_SHARED_LIBS=ON -DMSGPACK_ENABLE_STATIC=OFF "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    msgpack_install_dir))
@@ -691,7 +681,7 @@ jobs:
         ${{ env.ROOT_PATH }}/${{ env.MSGPACK_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.CATCH2_INSTALL_PATH }};\
         ${{ env.ROOT_PATH }}/${{ env.QT_INSTALL_PATH }};\
-        ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}" \
+        ${{ env.ROOT_PATH }}/${{ env.LEBEDEV_UTILS_INSTALL_PATH }}" \
         -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Initialize CodeQL
@@ -799,7 +789,7 @@ jobs:
       BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
-      THIRD_PARTY_INSTALL_PATH: "3rd-party-install"
+      LEBEDEV_UTILS_INSTALL_PATH: "lebedev-utils-install"
       CYRUS_SASL_VERSION: "2.1.27"
       CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
       YAML_CPP_VERSION: "0.6.3"
@@ -881,7 +871,7 @@ jobs:
       uses: actions/cache@v2
       id: cache_lebedev_utils_unix
       with:
-        path: ${{ env.ROOT_PATH }}/${{ env.THIRD_PARTY_INSTALL_PATH }}
+        path: ${{ env.ROOT_PATH }}/${{ env.LEBEDEV_UTILS_INSTALL_PATH }}
         key: ${{ runner.os }}-lebedev-utils-10
 
     - name: Cyrus SASL cache
