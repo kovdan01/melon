@@ -54,20 +54,20 @@ public:
             async_send(supported_mechanisms, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
-            mc::StringViewOverBinary wanted_mechanism(async_recieve(NUMBER_LIMIT, yc, ec));
+            std::string wanted_mechanism(async_recieve<std::string>(NUMBER_LIMIT, yc, ec));
             MELON_CHECK_BA_ERROR_CODE(ec);
-            if (supported_mechanisms.find(wanted_mechanism.view()) == std::string_view::npos)
+            if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
             {
-                throw std::runtime_error("Wanted mechanism " + std::string(wanted_mechanism.view()) + " is not supported by server. "
+                throw std::runtime_error("Wanted mechanism " + wanted_mechanism + " is not supported by server. "
                                          "Supported mechanisms: " + std::string(supported_mechanisms));
             }
 
-            async_send(wanted_mechanism.view(), yc, ec);
+            async_send(wanted_mechanism, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
             auto client_response = async_recieve(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
-            auto [server_response, server_completness] = server.start(wanted_mechanism.view(), { client_response.data(), client_response.size() });
+            auto [server_response, server_completness] = server.start(wanted_mechanism, { client_response.data(), client_response.size() });
             async_send(server_response, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
