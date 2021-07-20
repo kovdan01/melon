@@ -54,7 +54,7 @@ public:
             async_send(supported_mechanisms, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
 
-            std::string wanted_mechanism(async_recieve<std::string>(NUMBER_LIMIT, yc, ec));
+            auto wanted_mechanism = async_recieve<std::string>(NUMBER_LIMIT, yc, ec);
             MELON_CHECK_BA_ERROR_CODE(ec);
             if (supported_mechanisms.find(wanted_mechanism) == std::string_view::npos)
             {

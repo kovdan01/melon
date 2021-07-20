@@ -22,10 +22,10 @@ static bool run_auth(const std::string& ip, const std::string& port, const std::
         mca::SaslClientConnection client("melon", boost::asio::ip::host_name());
         mc::SyncSession session(ip, port);
 
-        std::string supported_mechanisms(session.receive<std::string>());
+        auto supported_mechanisms = session.receive<std::string>();
         session.send(wanted_mech);
 
-        std::string mechanism_confirmation(session.receive<std::string>());
+        auto mechanism_confirmation = session.receive<std::string>();
         // TODO: handle mechanism mismatch
         assert(mechanism_confirmation == wanted_mech);
         auto [start_response, selected_mechanism, completness] = client.start(mechanism_confirmation);
