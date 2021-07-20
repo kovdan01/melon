@@ -86,7 +86,7 @@ jobs:
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pyparsing
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}gcc
-        pacman -S --noconfirm ${{ matrix.config.package_prefix }}pkg-config
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}pkgconf
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}brotli
 
     - name: Ninja and CMake cache
