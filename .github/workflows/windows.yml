@@ -372,6 +372,7 @@ jobs:
         os.chdir(msgpack_source_dir)
 
         execute_msys_command("{} -B build -DCMAKE_BUILD_TYPE=Release -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
+                             "-DCMAKE_PREFIX_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }} "
                              ".".format(cmake_binary, ninja_binary,
                                         msgpack_install_dir))
         execute_msys_command("{} --build build --target all".format(cmake_binary))

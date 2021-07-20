@@ -539,6 +539,7 @@ jobs:
         os.chdir(msgpack_source_dir)
 
         execute_command("{} -B build -DCMAKE_BUILD_TYPE=Release -GNinja -DCMAKE_MAKE_PROGRAM={} -DCMAKE_INSTALL_PREFIX={} "
+                        "-DCMAKE_PREFIX_PATH=${{ env.ROOT_PATH }}/${{ env.BOOST_INSTALL_PATH }} "
                         ".".format(os.path.join(cmake_tool_binary_path, "cmake"),
                                    os.path.join(root, ninja_tool_path, "ninja"),
                                    msgpack_install_dir))
