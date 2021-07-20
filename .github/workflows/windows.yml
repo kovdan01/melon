@@ -84,7 +84,7 @@ jobs:
       run: |
         pacman -Syu
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pip
-        /${{ matrix.config.msys_variant }}/bin/pip install pyparsing
+        pacman -S --noconfirm ${{ matrix.config.package_prefix }}python-pyparsing
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}gcc
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}pkg-config
         pacman -S --noconfirm ${{ matrix.config.package_prefix }}brotli
