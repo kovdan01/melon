@@ -18,32 +18,32 @@ RUN cd repo &&                                                                \
     mkdir build &&                                                            \
     mkdir prefix &&                                                           \
     cd build &&                                                               \
-    cmake                                                                     \
-        -G Ninja                                                              \
+    export CMAKE_PREFIX_PATH="$REPO_PATH/cmake/ntc/prefix" &&                 \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
+        -S ..                                                                 \
         -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix                               \
-        -D CMAKE_BUILD_TYPE=Release                                           \
-        -D CMAKE_PREFIX_PATH="$REPO_PATH/cmake/ntc/prefix;/opt/android-libs/aarch64/" \
-        -D CMAKE_FIND_ROOT_PATH="$REPO_PATH/cmake/ntc/prefix;/opt/android-libs/aarch64" \
-        -D CMAKE_ANDROID_NDK=/opt/android-ndk/                                \
-        -D CMAKE_SYSTEM_NAME=Android                                          \
-        -D CMAKE_SYSTEM_VERSION=23                                            \
-        -D CMAKE_ANDROID_ARCH_ABI=arm64-v8a                                   \
-        -S .. &&                                                              \
+        -D CMAKE_BUILD_TYPE=Release &&                                        \
     cmake --build . --target all &&                                           \
     cmake --build . --target install &&                                       \
     cd $REPO_PATH &&                                                          \
-    cmake                                                                     \
+    cd 3rd-party/msgpack-c &&                                                 \
+    mkdir build &&                                                            \
+    mkdir prefix &&                                                           \
+    cd build &&                                                               \
+    export CMAKE_PREFIX_PATH="" &&                                            \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
+        -S ..                                                                 \
+        -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix                               \
+        -D CMAKE_BUILD_TYPE=Release &&                                        \
+    cmake --build . --target all &&                                           \
+    cmake --build . --target install &&                                       \
+    cd $REPO_PATH &&                                                          \
+    export CMAKE_PREFIX_PATH="$REPO_PATH/3rd-party/lebedev-utils/prefix;$REPO_PATH/3rd-party/msgpack-c/prefix" && \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
         -S .                                                                  \
         -B build                                                              \
-        -G Ninja                                                              \
-        -D MELON_BUILD_SERVER=OFF                                             \
-        -D MELON_BUILD_DESKTOP_CLIENT=OFF                                     \
         -D CMAKE_BUILD_TYPE=Release                                           \
-        -D CMAKE_PREFIX_PATH="/opt/android-libs/aarch64;$REPO_PATH/3rd-party/lebedev-utils/prefix" \
-        -D CMAKE_FIND_ROOT_PATH="/opt/android-libs/aarch64;$REPO_PATH/3rd-party/lebedev-utils/prefix" \
-        -D CMAKE_ANDROID_NDK=/opt/android-ndk/                                \
-        -D CMAKE_SYSTEM_NAME=Android                                          \
-        -D CMAKE_SYSTEM_VERSION=23                                            \
-        -D CMAKE_ANDROID_ARCH_ABI=arm64-v8a &&                                \
+        -D MELON_BUILD_SERVER=OFF                                             \
+        -D MELON_BUILD_DESKTOP_CLIENT=OFF &&                                  \
     cmake --build build --target all &&                                       \
     cmake --install build --prefix install --strip

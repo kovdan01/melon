@@ -19,84 +19,8 @@
 namespace melon::core
 {
 
-class StringViewOverBinary
-{
-public:
-    StringViewOverBinary(buffer_t binary)
-        : m_binary(std::move(binary))
-    {
-        // ensure that binary data contains a null-terminated string
-        assert(!m_binary.empty());
-        assert(m_binary.back() == 0);
-
-        auto* data_ptr = reinterpret_cast<char*>(m_binary.data());
-        m_view = std::string_view(data_ptr, m_binary.size() - 1);
-    }
-
-    StringViewOverBinary(const StringViewOverBinary&) = default;
-    StringViewOverBinary& operator=(const StringViewOverBinary&) = default;
-    StringViewOverBinary(StringViewOverBinary&&) = default;
-    StringViewOverBinary& operator=(StringViewOverBinary&&) = default;
-
-    [[nodiscard]] std::string_view view() const
-    {
-        return m_view;
-    }
-
-private:
-    buffer_t m_binary;
-    std::string_view m_view;
-};
-
 namespace serialization
 {
-
-[[nodiscard]] inline msgpack::sbuffer serialize(buffer_view_t in)
-{
-    msgpack::sbuffer sbuf;
-    msgpack::packer<msgpack::sbuffer> packer(sbuf);
-    // PVS-Studio V547 warning looks like false positive
-    // see (1) at https://en.cppreference.com/w/cpp/container/span/span
-    if (in.data() == nullptr)  // -V547
-    {
-        assert(in.empty());
-        melon::core::byte_t c = 0;
-        packer.pack_bin(0);
-        packer.pack_bin_body(reinterpret_cast<const char*>(&c), 0);
-    }
-    else
-    {
-        auto size = static_cast<std::uint32_t>(in.size());
-        packer.pack_bin(size);
-        packer.pack_bin_body(reinterpret_cast<const char*>(in.data()), size);
-    }
-    return sbuf;
-}
-
-[[nodiscard]] inline msgpack::sbuffer serialize(const buffer_t& in)
-{
-    return serialize(std::span{ in.data(), in.size() });
-}
-
-// send strings as binary buffers because msgpack crashes
-// on empty string deserialization
-[[nodiscard]] inline msgpack::sbuffer serialize(std::string_view in)
-{
-    // precondition: std::string_view must be null-terminated
-    // *in.end() == '\0'
-    // use std::span to store not null-terminated data
-    msgpack::sbuffer sbuf;
-    msgpack::packer<msgpack::sbuffer> packer(sbuf);
-    std::uint32_t size = static_cast<std::uint32_t>(in.size()) + 1;
-    packer.pack_bin(size);  // +1 for '\0'
-    packer.pack_bin_body(in.data(), size);
-    return sbuf;
-}
-
-[[nodiscard]] inline msgpack::sbuffer serialize(const std::string& in)
-{
-    return serialize(std::string_view{in.data(), in.size()});
-}
 
 template <typename T>
 [[nodiscard]] msgpack::sbuffer serialize(const T& in)
@@ -104,14 +28,6 @@ template <typename T>
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, in);
     return sbuf;
-}
-
-template <typename T>
-[[nodiscard]] T deserialize(const std::string& s)
-{
-    msgpack::object_handle obj;
-    msgpack::unpack(obj, s.data(), s.size());
-    return obj.get().as<T>();
 }
 
 template <typename T>
@@ -125,7 +41,7 @@ template <typename T>
 class Serializer
 {
 public:
-    template <typename Stream, typename What, typename YieldContext>
+    template <typename What, typename Stream, typename YieldContext>
     void async_serialize_to(Stream& to, const What& what, YieldContext& yc, boost::system::error_code& ec)
     {
         namespace ba = boost::asio;
@@ -136,7 +52,7 @@ public:
         ba::async_write(to, ba::buffer(m_out_sbuf.data(), m_out_sbuf.size()), yc[ec]);
     }
 
-    template <typename Stream, typename What = buffer_t, typename YieldContext>
+    template <typename What = buffer_t, typename Stream, typename YieldContext>
     [[nodiscard]] What async_deserialize_from(Stream& from, std::size_t limit, YieldContext& yc, boost::system::error_code& ec)
     {
         namespace ba = boost::asio;
@@ -164,7 +80,7 @@ public:
         return reply;
     }
 
-    template <typename Stream, typename What>
+    template <typename What, typename Stream>
     void serialize_to(Stream& to, const What& what)
     {
         namespace ba = boost::asio;
@@ -175,7 +91,7 @@ public:
         ba::write(to, ba::buffer(m_out_sbuf.data(), m_out_sbuf.size()));
     }
 
-    template <typename Stream, typename What = buffer_t>
+    template <typename What = buffer_t, typename Stream>
     [[nodiscard]] What deserialize_from(Stream& from, std::size_t limit)
     {
         namespace ba = boost::asio;

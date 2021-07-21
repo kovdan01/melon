@@ -59,7 +59,7 @@ protected:
     What async_recieve(std::size_t limit, YieldContext& yc, boost::system::error_code& ec)
     {
         m_stream.expires_after(TIME_LIMIT);
-        What data = m_serializer.async_deserialize_from(m_stream, limit, yc, ec);
+        What data = m_serializer.async_deserialize_from<What>(m_stream, limit, yc, ec);
         return data;
     }
 
@@ -67,7 +67,7 @@ protected:
     void async_send(const What& what, YieldContext& yc, boost::system::error_code& ec)
     {
         m_stream.expires_after(TIME_LIMIT);
-        m_serializer.async_serialize_to(m_stream, what, yc, ec);
+        m_serializer.async_serialize_to<What>(m_stream, what, yc, ec);
     }
 
 private:
@@ -87,13 +87,13 @@ public:
     template <typename What>
     void send(const What& what)
     {
-        m_serializer.serialize_to(m_stream, what);
+        m_serializer.serialize_to<What>(m_stream, what);
     }
 
     template <typename What = buffer_t>
     [[nodiscard]] What receive(std::size_t limit = BUFFER_LIMIT)
     {
-        return m_serializer.deserialize_from(m_stream, limit);
+        return m_serializer.deserialize_from<What>(m_stream, limit);
     }
 
 private:

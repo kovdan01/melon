@@ -1,0 +1,4 @@
+[submodule "3rd-party/msgpack-c"]
+	path = 3rd-party/msgpack-c
+	url = https://github.com/kovdan01/msgpack-c.git
+	branch = cpp3.3.1-rc1

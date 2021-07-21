@@ -1,0 +1,15 @@
+#!/bin/bash
+
+self_dir=`dirname "$0"`
+
+$self_dir/windows_configure_base.sh \
+    -S . \
+    -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D CMAKE_PREFIX_PATH=\
+"/$MSYS_VARIANT;\
+$ROOT_PATH/$BOOST_INSTALL_PATH;\
+$ROOT_PATH/$SQLPP11_INSTALL_PATH;\
+$ROOT_PATH/$MSGPACK_INSTALL_PATH;\
+$ROOT_PATH/$CATCH2_INSTALL_PATH;\
+$ROOT_PATH/$LEBEDEV_UTILS_INSTALL_PATH"
