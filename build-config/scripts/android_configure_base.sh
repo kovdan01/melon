@@ -8,4 +8,4 @@ cmake                                                                       \
     -D CMAKE_SYSTEM_NAME=Android                                            \
     -D CMAKE_SYSTEM_VERSION=23                                              \
     -D CMAKE_ANDROID_ARCH_ABI=arm64-v8a                                     \     
-    "$@"
+    $@

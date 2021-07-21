@@ -11,4 +11,4 @@ $CMAKE_TOOL_BINARY_PATH\\cmake \
     -D CMAKE_LINKER=/$MSYS_VARIANT/bin/ld.exe \
     -D CMAKE_DLLTOOL=/$MSYS_VARIANT/bin/dlltool.exe \
     -D CMAKE_NM=/$MSYS_VARIANT/bin/nm.exe \
-    "$@"
+    $@

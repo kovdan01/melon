@@ -19,7 +19,7 @@ RUN cd repo &&                                                                \
     mkdir prefix &&                                                           \
     cd build &&                                                               \
     export CMAKE_PREFIX_PATH="$REPO_PATH/cmake/ntc/prefix" &&                 \
-    $REPO_PATH/build-config/scripts/android-configure-base.sh                 \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
         -S ..                                                                 \
         -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix                               \
         -D CMAKE_BUILD_TYPE=Release &&                                        \
@@ -31,7 +31,7 @@ RUN cd repo &&                                                                \
     mkdir prefix &&                                                           \
     cd build &&                                                               \
     export CMAKE_PREFIX_PATH="" &&                                            \
-    $REPO_PATH/build-config/scripts/android-configure-base.sh                 \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
         -S ..                                                                 \
         -D CMAKE_INSTALL_PREFIX=`pwd`/../prefix                               \
         -D CMAKE_BUILD_TYPE=Release &&                                        \
@@ -39,7 +39,7 @@ RUN cd repo &&                                                                \
     cmake --build . --target install &&                                       \
     cd $REPO_PATH &&                                                          \
     export CMAKE_PREFIX_PATH="$REPO_PATH/3rd-party/lebedev-utils/prefix;$REPO_PATH/3rd-party/msgpack-c/prefix" && \
-    $REPO_PATH/build-config/scripts/android-configure-base.sh                 \
+    $REPO_PATH/build-config/scripts/android_configure_base.sh                 \
         -S .                                                                  \
         -B build                                                              \
         -D CMAKE_BUILD_TYPE=Release                                           \

@@ -215,7 +215,7 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       shell: cmd
       run: |
-        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-lebedev-utils.sh"
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows_lebedev_utils.sh"
 
     - name: Cyrus SASL
       shell: C:\\msys64\\msys2_shell.cmd -defterm -no-start -msys2 -shell sh {0}
@@ -448,7 +448,7 @@ jobs:
         CXX: ${{ matrix.config.cxx }}
       shell: cmd
       run: |
-        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows-configure.sh"
+        C:\\msys64\\msys2_shell.cmd -defterm -no-start -here -${{ matrix.config.msys_variant }} -shell sh "${{ env.REPO_PATH }}/build-config/scripts/windows_configure.sh"
 
     - name: Build
       run: ${{ env.CMAKE_TOOL_BINARY_PATH }}\\cmake --build build --target all
