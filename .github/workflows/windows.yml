@@ -19,11 +19,11 @@ jobs:
       BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
+      LEBEDEV_UTILS_INSTALL_PATH: "lebedev-utils-install"
       SQLPP11_VERSION: "0.60"
       SQLPP11_CONNECTOR_MYSQL_VERSION: "0.29"
       CHRONO_DATE_VERSION: "3.0.0"
       SQLPP11_INSTALL_PATH: "sqlpp11-install"
-      MSGPACK_VERSION: "3.3.0"
       MSGPACK_INSTALL_PATH: "msgpack-install"
       CATCH2_VERSION: "2.13.4"
       CATCH2_INSTALL_PATH: "catch2-install"
@@ -201,7 +201,15 @@ jobs:
 
         os.chdir(repo)
 
+    - name: Utils by Pavel A. Lebedev cache
+      uses: actions/cache@v2
+      id: cache_lebedev_utils
+      with:
+        path: ${{ env.ROOT_PATH }}/${{ env.LEBEDEV_UTILS_INSTALL_PATH }}
+        key: ${{ runner.os }}-${{ matrix.config.msys_variant }}-lebedev-utils
+
     - name: Utils by Pavel A. Lebedev
+      if: ${{ steps.cache_lebedev_utils.outputs.cache-hit != 'true' }}
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}

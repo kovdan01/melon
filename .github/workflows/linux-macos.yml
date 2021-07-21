@@ -19,7 +19,7 @@ jobs:
       BOOST_MINOR: 76
       BOOST_BUILD: 0
       BOOST_INSTALL_PATH: "boost-install"
-      LEBEDEV_UTILS_INSTALL_PATH: "3rd-party-install"
+      LEBEDEV_UTILS_INSTALL_PATH: "lebedev-utils-install"
       CYRUS_SASL_VERSION: "2.1.27"
       CYRUS_SASL_INSTALL_PATH: "cyrus-sasl-install"
       YAML_CPP_VERSION: "0.6.3"
