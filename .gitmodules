@@ -2,3 +2,6 @@
 	path = 3rd-party/msgpack-c
 	url = https://github.com/kovdan01/msgpack-c.git
 	branch = cpp3.3.1-rc1
+[submodule "3rd-party/cpp-deps-automation"]
+	path = 3rd-party/cpp-deps-automation
+	url = https://github.com/kovdan01/cpp-deps-automation.git
