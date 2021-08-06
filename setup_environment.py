@@ -83,75 +83,67 @@ def build_dependencies(builder):
     os.chdir(current)
 
 
-def main():
-    builder = MelonBuilder(current)
-    build_dependencies(builder)
+def create_debug_release_path(path):
+    delete_dir_if_exists(path)
+    debug_path = os.path.join(path, "debug-asan-ubsan")
+    release_path = os.path.join(path, "release")
+    os.mkdir(path)
+    os.mkdir(debug_path)
+    os.mkdir(release_path)
+    return (debug_path, release_path)
 
+
+def configure_melon(builder):
     cmake_prefix_path = ";".join(list(builder.prefixes.values()))
-    cmake_prefix_path += ";/home/kovdan01/lib/sqlpp11-connector-mysql-0.29/prefix"
 
-    build_path = os.path.join(current, "build")
-    delete_dir_if_exists(build_path)
-    build_debug_path = os.path.join(build_path, "debug-asan-ubsan")
-    build_release_path = os.path.join(build_path, "release")
-    os.mkdir(build_path)
-    os.mkdir(build_debug_path)
-    os.mkdir(build_release_path)
+    build_debug_path, build_release_path = create_debug_release_path(os.path.join(current, "build"))
+    prefix_debug_path, prefix_release_path = create_debug_release_path(os.path.join(current, "prefix"))
 
-    prefix_path = os.path.join(current, "prefix")
-    delete_dir_if_exists(prefix_path)
-    prefix_debug_path = os.path.join(prefix_path, "debug-asan-ubsan")
-    prefix_release_path = os.path.join(prefix_path, "release")
-    os.mkdir(prefix_path)
-    os.mkdir(prefix_debug_path)
-    os.mkdir(prefix_release_path)
+    builder.build_cmake(source_dur=current,
+                        build_type="Debug",
+                        build_dir=build_debug_path,
+                        prefix_dir=prefix_debug_path,
+                        cmake_params='-D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all" ' +
+                                     '-D CMAKE_PREFIX_PATH="{}" '.format(cmake_prefix_path))
 
-    execute_command('{} '.format(builder.cmake_binary) +
-                    '-S {} '.format(current) +
-                    '-B {} '.format(build_debug_path) +
-                    '-D CMAKE_BUILD_TYPE=Debug ' +
-                    '-G Ninja ' + 
-                    '-D CMAKE_MAKE_PROGRAM={} '.format(builder.ninja_binary) +
-                    '-D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all" ' +
-                    '-D CMAKE_PREFIX_PATH="{}" '.format(cmake_prefix_path) +
-                    '-D CMAKE_INSTALL_PREFIX="{}" '.format(prefix_debug_path))
+    builder.build_cmake(source_dur=current,
+                        build_type="Release",
+                        build_dir=build_release_path,
+                        prefix_dir=prefix_release_path,
+                        cmake_params='-D CMAKE_PREFIX_PATH="{}" '.format(cmake_prefix_path))
 
-    execute_command('{} '.format(builder.cmake_binary) +
-                    '-S {} '.format(current) +
-                    '-B {} '.format(build_release_path) +
-                    '-D CMAKE_BUILD_TYPE=Release ' +
-                    '-G Ninja ' + 
-                    '-D CMAKE_MAKE_PROGRAM={} '.format(builder.ninja_binary) +
-                    '-D CMAKE_PREFIX_PATH="{}" '.format(cmake_prefix_path) +
-                    '-D CMAKE_INSTALL_PREFIX="{}" '.format(prefix_release_path))
 
-    with open('build_debug.sh', 'w') as f:
-        f.write('#!/bin/bash\n\n' +
-                'repo=`dirname "$0"`\n' +
-                '{} --build $repo/build/debug-asan-ubsan --target all\n'.format(builder.cmake_binary) +
-                '{} --build $repo/build/debug-asan-ubsan --target install\n'.format(builder.cmake_binary))
-    execute_command("chmod +x build_debug.sh")
+def create_shell_scripts(builder):
+    build_debug_path, build_release_path = create_debug_release_path(os.path.join(current, "build"))
 
-    with open('build_release.sh', 'w') as f:
-        f.write('#!/bin/bash\n\n' +
-                'repo=`dirname "$0"`\n' +
-                '{} --build $repo/build/release --target all\n'.format(builder.cmake_binary) +
-                '{} --build $repo/build/release --target install\n'.format(builder.cmake_binary))
-    execute_command("chmod +x build_release.sh")
+    def create_build_script(build_path, build_type):
+        with open("build_{}.sh".format(build_type), "w") as f:
+            f.write('#!/bin/bash\n\n' +
+                    '{} --build {} --target all\n'.format(builder.cmake_binary, build_path) +
+                    '{} --build {} --target install\n'.format(builder.cmake_binary, build_path))
+        execute_command("chmod +x build_{}.sh".format(build_type))
 
     ctest_binary = os.path.join(os.path.dirname(builder.cmake_binary), "ctest")
 
-    with open('test_debug.sh', 'w') as f:
-        f.write('#!/bin/bash\n\n' +
-                'repo=`dirname "$0"`\n' +
-                '{} -VV --test-dir $repo/build/debug-asan-ubsan\n'.format(ctest_binary))
-    execute_command("chmod +x test_debug.sh")
+    def create_test_script(build_path, build_type):
+        with open("test_{}.sh".format(build_type), "w") as f:
+            f.write('#!/bin/bash\n\n' +
+                    '{} -VV --test-dir {}\n'.format(ctest_binary, build_path))
+        execute_command("chmod +x test_{}.sh".format(build_type))
 
-    with open('test_release.sh', 'w') as f:
-        f.write('#!/bin/bash\n\n' +
-                'repo=`dirname "$0"`\n' +
-                '{} -VV --test-dir $repo/build/release\n'.format(ctest_binary))
-    execute_command("chmod +x test_release.sh")
+    def create_both_scripts(build_path, build_type):
+        create_build_script(build_path, build_type)
+        create_test_script(build_path, build_type)
+
+    create_both_scripts(build_debug_path, "debug")
+    create_both_scripts(build_release_path, "release")
+
+
+def main():
+    builder = MelonBuilder(current)
+    build_dependencies(builder)
+    configure_melon(builder)
+    create_shell_scripts(builder)
 
 
 if __name__ == "__main__":
