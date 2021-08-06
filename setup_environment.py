@@ -7,12 +7,13 @@ import sys
 current = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(current, "3rd-party", "cpp-deps-automation"))
 
-from builder import Builder, execute_command
+from builder import Builder, save_builder, execute_command
 
 
-def delete_dir_if_exists(directory):
+def recreate_directory(directory):
     if os.path.isdir(directory):
         shutil.rmtree(directory)
+    os.mkdir(directory)
 
 
 def dependency_build_and_prefix(label):
@@ -61,8 +62,7 @@ class MelonBuilder(Builder):
 
 def build_dependencies(builder):
     deps_path = os.path.join(current, ".deps")
-    delete_dir_if_exists(deps_path)
-    os.mkdir(deps_path)
+    recreate_directory(deps_path)
     os.chdir(deps_path)
 
     builder.download_cmake()
@@ -80,33 +80,32 @@ def build_dependencies(builder):
     builder.build_lebedev_utils()
     builder.build_msgpack()
 
+    save_builder(builder)
     os.chdir(current)
 
 
-def create_debug_release_path(path):
-    delete_dir_if_exists(path)
+def construct_debug_release_path(path):
     debug_path = os.path.join(path, "debug-asan-ubsan")
     release_path = os.path.join(path, "release")
-    os.mkdir(path)
-    os.mkdir(debug_path)
-    os.mkdir(release_path)
     return (debug_path, release_path)
 
 
-def configure_melon(builder):
+def build_melon(builder):
     cmake_prefix_path = ";".join(list(builder.prefixes.values()))
 
-    build_debug_path, build_release_path = create_debug_release_path(os.path.join(current, "build"))
-    prefix_debug_path, prefix_release_path = create_debug_release_path(os.path.join(current, "prefix"))
+    recreate_directory("build")
+    build_debug_path, build_release_path = construct_debug_release_path(os.path.join(current, "build"))
+    recreate_directory("prefix")
+    prefix_debug_path, prefix_release_path = construct_debug_release_path(os.path.join(current, "prefix"))
 
-    builder.build_cmake(source_dur=current,
+    builder.build_cmake(source_dir=current,
                         build_type="Debug",
                         build_dir=build_debug_path,
                         prefix_dir=prefix_debug_path,
                         cmake_params='-D CMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=all" ' +
                                      '-D CMAKE_PREFIX_PATH="{}" '.format(cmake_prefix_path))
 
-    builder.build_cmake(source_dur=current,
+    builder.build_cmake(source_dir=current,
                         build_type="Release",
                         build_dir=build_release_path,
                         prefix_dir=prefix_release_path,
@@ -114,7 +113,7 @@ def configure_melon(builder):
 
 
 def create_shell_scripts(builder):
-    build_debug_path, build_release_path = create_debug_release_path(os.path.join(current, "build"))
+    build_debug_path, build_release_path = construct_debug_release_path(os.path.join(current, "build"))
 
     def create_build_script(build_path, build_type):
         with open("build_{}.sh".format(build_type), "w") as f:
@@ -142,7 +141,7 @@ def create_shell_scripts(builder):
 def main():
     builder = MelonBuilder(current)
     build_dependencies(builder)
-    configure_melon(builder)
+    build_melon(builder)
     create_shell_scripts(builder)
 
 
