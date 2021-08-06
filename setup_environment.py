@@ -15,13 +15,54 @@ def delete_dir_if_exists(directory):
         shutil.rmtree(directory)
 
 
-def main():    
-    builder = Builder()
+def dependency_build_and_prefix(label):
+    os.mkdir(label)
+    dependency_path = os.path.abspath(label)
+    dependency_build_path = os.path.join(dependency_path, "build")
+    dependency_prefix_path = os.path.join(dependency_path, "prefix")
+    return (dependency_build_path, dependency_prefix_path)
 
+
+class MelonBuilder(Builder):
+    def __init__(self, repo_path):
+        self.repo_path = repo_path
+        Builder.__init__(self)
+
+
+    def build_ntc_cmake(self):
+        build_path, prefix_path = dependency_build_and_prefix("ntc-cmake")
+        source_dir = os.path.join(self.repo_path, "cmake", "ntc")
+        self.prefixes["ntc-cmake"] = self.build_cmake(source_dir=source_dir,
+                                                      build_dir=build_path,
+                                                      prefix_dir=prefix_path)
+
+
+    def build_lebedev_utils(self):
+        build_path, prefix_path = dependency_build_and_prefix("lebedev-utils")
+        source_dir = os.path.join(self.repo_path, "3rd-party", "lebedev-utils")
+        cmake_params = '-D CMAKE_PREFIX_PATH="{};{}"'.format(self.prefixes["ntc-cmake"], self.prefixes["boost"])
+        self.prefixes["lebedev-utils"] = self.build_cmake(source_dir=source_dir,
+                                                          cmake_params=cmake_params,
+                                                          build_dir=build_path,
+                                                          prefix_dir=prefix_path)
+
+
+    def build_msgpack(self):
+        build_path, prefix_path = dependency_build_and_prefix("msgpack-c")
+        source_dir = os.path.join(self.repo_path, "3rd-party", "msgpack-c")
+        cmake_params = '-D MSGPACK_BUILD_TESTS=OFF -D CMAKE_PREFIX_PATH="{}"'.format(self.prefixes["boost"])
+        self.prefixes["msgpack-c"] = self.build_cmake(source_dir=source_dir,
+                                                      cmake_params=cmake_params,
+                                                      build_dir=build_path,
+                                                      prefix_dir=prefix_path)
+
+
+def build_dependencies(builder):
     deps_path = os.path.join(current, ".deps")
     delete_dir_if_exists(deps_path)
     os.mkdir(deps_path)
     os.chdir(deps_path)
+
     builder.download_cmake()
     builder.download_ninja()
     builder.build_yaml_cpp()
@@ -30,34 +71,16 @@ def main():
     builder.build_date()
     builder.build_sqlpp11()
     builder.build_cyrus_sasl()
-
-    ntc_cmake_path = os.path.join(deps_path, "ntc-cmake")
-    os.mkdir(ntc_cmake_path)
-    ntc_cmake_build_path = os.path.join(ntc_cmake_path, "build")
-    ntc_cmake_prefix_path = os.path.join(ntc_cmake_path, "prefix")
-    builder.prefixes["ntc-cmake"] = builder.build_cmake(source_dir=os.path.join(current, "cmake", "ntc"),
-                                                        build_dir=ntc_cmake_build_path,
-                                                        prefix_dir=ntc_cmake_prefix_path)
-
-    lebedev_utils_path = os.path.join(deps_path, "lebedev-utils")
-    os.mkdir(lebedev_utils_path)
-    lebedev_utils_build_path = os.path.join(lebedev_utils_path, "build")
-    lebedev_utils_prefix_path = os.path.join(lebedev_utils_path, "prefix")
-    builder.prefixes["lebedev-utils"] = builder.build_cmake(source_dir=os.path.join(current, "3rd-party", "lebedev-utils"),
-                                                            cmake_params='-D CMAKE_PREFIX_PATH="{};{}"'.format(builder.prefixes["ntc-cmake"], builder.prefixes["boost"]),
-                                                            build_dir=lebedev_utils_build_path,
-                                                            prefix_dir=lebedev_utils_prefix_path)
-    
-    msgpack_path = os.path.join(deps_path, "msgpack-c")
-    os.mkdir(msgpack_path)
-    msgpack_build_path = os.path.join(msgpack_path, "build")
-    msgpack_prefix_path = os.path.join(msgpack_path, "prefix")
-    builder.prefixes["msgpack-c"] = builder.build_cmake(source_dir=os.path.join(current, "3rd-party", "msgpack-c"),
-                                                        cmake_params='-D MSGPACK_BUILD_TESTS=OFF -D CMAKE_PREFIX_PATH="{}"'.format(builder.prefixes["boost"]),
-                                                        build_dir=msgpack_build_path,
-                                                        prefix_dir=msgpack_prefix_path)
+    builder.build_ntc_cmake()
+    builder.build_lebedev_utils()
+    builder.build_msgpack()
 
     os.chdir(current)
+
+
+def main():
+    builder = MelonBuilder(current)
+    build_dependencies(builder)
 
     cmake_prefix_path = ";".join(list(builder.prefixes.values()))
     cmake_prefix_path += ";/home/kovdan01/lib/sqlpp11-connector-mysql-0.29/prefix"
