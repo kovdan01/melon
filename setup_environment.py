@@ -40,7 +40,9 @@ class MelonBuilder(Builder):
     def build_lebedev_utils(self):
         build_path, prefix_path = dependency_build_and_prefix("lebedev-utils")
         source_dir = os.path.join(self.repo_path, "3rd-party", "lebedev-utils")
-        cmake_params = '-D CMAKE_PREFIX_PATH="{};{}"'.format(self.prefixes["ntc-cmake"], self.prefixes["boost"])
+        ntc_cmake_prefix = self.get_prefix("ntc-cmake")
+        boost_prefix = self.get_prefix("boost")
+        cmake_params = '-D CMAKE_PREFIX_PATH="{};{}"'.format(ntc_cmake_prefix, boost_prefix)
         self.prefixes["lebedev-utils"] = self.build_cmake(source_dir=source_dir,
                                                           cmake_params=cmake_params,
                                                           build_dir=build_path,
@@ -50,7 +52,7 @@ class MelonBuilder(Builder):
     def build_msgpack(self):
         build_path, prefix_path = dependency_build_and_prefix("msgpack-c")
         source_dir = os.path.join(self.repo_path, "3rd-party", "msgpack-c")
-        cmake_params = '-D MSGPACK_BUILD_TESTS=OFF -D CMAKE_PREFIX_PATH="{}"'.format(self.prefixes["boost"])
+        cmake_params = '-D MSGPACK_BUILD_TESTS=OFF -D CMAKE_PREFIX_PATH="{}"'.format(self.get_prefix("boost"))
         self.prefixes["msgpack-c"] = self.build_cmake(source_dir=source_dir,
                                                       cmake_params=cmake_params,
                                                       build_dir=build_path,
